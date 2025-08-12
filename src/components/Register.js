@@ -94,7 +94,7 @@ const Register = () => {
       <div className="right-panel">
         <div className="logo">
           <img src={logoImage} alt="Logo" />
-          <h4>Recruitment</h4>
+          <h4>Candidate</h4>
         </div>
 
         <form onSubmit={handleRegister} className="d-flex flex-column">

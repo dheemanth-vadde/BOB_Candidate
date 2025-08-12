@@ -27,7 +27,7 @@ const Login = () => {
       } else {
         const token = res.data.access_token;
         localStorage.setItem("access_token", token);
-        navigate("/job-requisition");
+        navigate("/candidate-portal");
 
         // // 🔍 Decode token to get roles
         // const decoded = jwtDecode(token);
@@ -66,7 +66,7 @@ const Login = () => {
       <div className="right-panel">
         <div className="logo">
           <img src={boblogo} alt="Logo" />
-          <h4>Recruitment</h4>
+          <h4>Candidate</h4>
         </div>
 
         <form className="login_form" onSubmit={handleLogin}>

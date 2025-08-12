@@ -28,7 +28,7 @@ const CandidatePortal = () => {
 
   return (
     
-    <div className="main-container container">
+    <div className="">
       <Header /> 
       <div className='d-flex'>
         
