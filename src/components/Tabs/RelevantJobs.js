@@ -1,6 +1,6 @@
 // components/Tabs/RelevantJobs.jsx
-import React, { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faBriefcase,
@@ -10,40 +10,42 @@ import {
   faUsers,
   faClock,
   faCode,
-  faTools 
-} from '@fortawesome/free-solid-svg-icons';
-
+  faTools,
+} from "@fortawesome/free-solid-svg-icons";
+import Razorpay from "../Razorpay";
 
 const RelevantJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem('formData'));
+    const storedData = JSON.parse(localStorage.getItem("formData"));
     if (!storedData || !storedData.skills) return;
 
-    const cachedJobs = localStorage.getItem('matchedJobs');
+    const cachedJobs = localStorage.getItem("matchedJobs");
     if (cachedJobs) {
       setJobs(JSON.parse(cachedJobs));
       setLoading(false);
       return;
     }
 
-    const candidateSkills = storedData.skills.split(',').map(skill => skill.trim());
+    const candidateSkills = storedData.skills
+      .split(",")
+      .map((skill) => skill.trim());
 
-    fetch('https://backend.sentrifugo.com/relevant-jobs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ skills: candidateSkills })
+    fetch("https://backend.sentrifugo.com/relevant-jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skills: candidateSkills }),
     })
-      .then(res => res.json())
-      .then(data => {
-        localStorage.setItem('matchedJobs', JSON.stringify(data.matchedJobs));
+      .then((res) => res.json())
+      .then((data) => {
+        localStorage.setItem("matchedJobs", JSON.stringify(data.matchedJobs));
         setJobs(data.matchedJobs);
         setLoading(false);
       })
-      .catch(err => {
-        console.error('Error:', err);
+      .catch((err) => {
+        console.error("Error:", err);
         setLoading(false);
       });
   }, []);
@@ -51,7 +53,7 @@ const RelevantJobs = () => {
   return (
     <div>
       {loading && (
-        <div style={{ textAlign: 'center', margin: '20px' }}>
+        <div style={{ textAlign: "center", margin: "20px" }}>
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
@@ -88,38 +90,79 @@ const RelevantJobs = () => {
           // </div>
           // This is the for static purpose
           <div className="col-md-4 mb-4" key={index}>
-   
-                  <div className="card h-100" style={{
-      background: 'linear-gradient(135deg, #e0f7fa, #ffffff)',
-      boxShadow: '0px 8px 20px rgba(0, 123, 255, 0.15)',
-      borderRadius: '12px',
-      
-      border: 0
-    }}>
+            <div
+              className="card h-100"
+              style={{
+                background: "linear-gradient(135deg, #e0f7fa, #ffffff)",
+                boxShadow: "0px 8px 20px rgba(0, 123, 255, 0.15)",
+                borderRadius: "12px",
 
-                    <div className="card-body">
-                      
-<h6 className="job-title">
-  
-            <FontAwesomeIcon icon={faUser} className="me-2 text-secondary" />
-             <b>{job.JobTitle}</b>
-          </h6>       
-                       <p className="mb-1 text-muted small "><FontAwesomeIcon icon={faBriefcase} className="me-2 text-muted" />{job.JobDescription}</p>
-                      <p className="mb-1 text-muted small"> <FontAwesomeIcon icon={faMapMarkerAlt} className="me-2 text-muted" /><b>Location:</b> {job.JobLocation}</p>
-                      <p className="mb-1 text-muted small"><FontAwesomeIcon icon={faUsers} className="me-2 text-muted" /><b>Vacancies:</b> {job.Vacancies || 'NA'}</p>
-                      <p className="mb-1 text-muted small"><FontAwesomeIcon icon={faClock} className="me-2 text-muted" /><b>Experience:</b> {job.Experience || 'As per details'}</p>
-                      <p className="mb-1 text-muted small"><FontAwesomeIcon icon={faTools} className="me-2 text-muted" /><b>Required Skills:</b> {job.JobSkills || 'As per details'}</p>
+                border: 0,
+              }}
+            >
+              <div className="card-body">
+                <h6 className="job-title">
+                  <FontAwesomeIcon
+                    icon={faUser}
+                    className="me-2 text-secondary"
+                  />
+                  <b>{job.JobTitle}</b>
+                </h6>
+                <p className="mb-1 text-muted small ">
+                  <FontAwesomeIcon
+                    icon={faBriefcase}
+                    className="me-2 text-muted"
+                  />
+                  {job.JobDescription}
+                </p>
+                <p className="mb-1 text-muted small">
+                  {" "}
+                  <FontAwesomeIcon
+                    icon={faMapMarkerAlt}
+                    className="me-2 text-muted"
+                  />
+                  <b>Location:</b> {job.JobLocation}
+                </p>
+                <p className="mb-1 text-muted small">
+                  <FontAwesomeIcon icon={faUsers} className="me-2 text-muted" />
+                  <b>Vacancies:</b> {job.Vacancies || "NA"}
+                </p>
+                <p className="mb-1 text-muted small">
+                  <FontAwesomeIcon icon={faClock} className="me-2 text-muted" />
+                  <b>Experience:</b> {job.Experience || "As per details"}
+                </p>
+                <p className="mb-1 text-muted small">
+                  <FontAwesomeIcon icon={faTools} className="me-2 text-muted" />
+                  <b>Required Skills:</b> {job.JobSkills || "As per details"}
+                </p>
 
-                      <p className="mb-1 text-muted small"><FontAwesomeIcon icon={faCalendarAlt} className="me-2 text-muted" /><b>Last Date to Apply:</b>  {job.JobPostedDate}</p>
+                <p className="mb-1 text-muted small">
+                  <FontAwesomeIcon
+                    icon={faCalendarAlt}
+                    className="me-2 text-muted"
+                  />
+                  <b>Last Date to Apply:</b> {job.JobPostedDate}
+                </p>
 
-                      <div className="d-flex   mt-3">
-                        <button className="btn btn-sm btn-outline-primary hovbtn"><b>Apply Online</b></button>
-                        <button className="btn btn-sm knowntb ms-2"><b>Know More</b></button>
-                      </div>
-                    </div>
+                <div className="d-flex justify-content-between mt-3">
+                  <div>
+                    <button className="btn btn-sm btn-outline-primary hovbtn">
+                      <b>Apply Online</b>
+                    </button>
+                    <button className="btn btn-sm knowntb ms-2">
+                      <b>Know More</b>
+                    </button>
+                  </div>
+                  <div>
+                    {/* <button className="btn btn-sm btn-outline-primary hovbtn">
+                      <b>Pay</b>
+                    </button> */}
+                    <Razorpay />
                   </div>
                 </div>
-          
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </div>

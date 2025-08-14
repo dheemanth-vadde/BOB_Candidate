@@ -1,9 +1,7 @@
-import logo from './logo.svg';
 import './App.css';
 import CandidatePortal from './CandidatePortal';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Spinner } from 'react-bootstrap';
-import { Navigate, Route, Router, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 

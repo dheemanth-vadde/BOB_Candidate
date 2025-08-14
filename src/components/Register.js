@@ -35,7 +35,7 @@ const Register = () => {
 
   try {
     // 1. Register user via your backend
-    await axios.post("http://bobbe.sentrifugo.com/api/auth/candidate-register", {
+    await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-register", {
       name,
       email,
       phone,
@@ -43,7 +43,7 @@ const Register = () => {
     });
 
     // 2. Immediately try to log in (to trigger MFA)
-    // const loginRes = await axios.post("http://bobbe.sentrifugo.com/api/auth/candidate-login", {
+    // const loginRes = await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-login", {
     //   email,
     //   password,
     // });
