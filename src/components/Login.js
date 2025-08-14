@@ -15,7 +15,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/candidatelogin", {
+      const res = await axios.post("http://bobbe.sentrifugo.com/api/auth/candidate-login", {
         email,
         password,
       });
@@ -95,7 +95,7 @@ const Login = () => {
               onClick={async () => {
                 try {
                   await axios.post(
-                    "http://localhost:5000/api/auth/candidateresend-verification",
+                    "http://bobbe.sentrifugo.com/api/auth/candidate-resend-verification",
                     {
                       user_id: unverifiedUserId,
                     }
