@@ -1,41 +1,126 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const ReviewDetails = () => {
-  const [details, setDetails] = useState({});
+const ReviewDetails = ({ initialData = {}, onSubmit }) => {
+  const [formData, setFormData] = useState(initialData);
 
+  // ✅ Keep formData in sync with initialData
   useEffect(() => {
-    const stored = localStorage.getItem('formData');
-    if (stored) {
-      const data = JSON.parse(stored);
-      setDetails({
-        'Name *': data.Name || '',
-        'Date of Birth *': data.DateOfBirth
-          ? new Date(data.DateOfBirth).toLocaleDateString('en-US')
-          : '',
-        'Email *': data.Email || '',
-        'Skills': data.skills || '',
-        'Total Experience': data.totalExperience || '',
-        'Current Designation': data.currentDesignation || '',
-        'Current Employer': data.currentEmployer || '',
-        'Address': data.address || ''
-      });
-    }
-  }, []);
+    setFormData(initialData);
+  }, [initialData]);
+
+const handleChange = (e) => {
+  const { id, value } = e.target;
+  setFormData(prev => ({ ...prev, [id]: value }));
+};
+const handleSubmit = (e) => {
+  e.preventDefault();
+  onSubmit(formData); // Send updated data back to parent
+};
+
+  if (!formData) {
+    return <p>Loading details...</p>; // fallback UI
+  }
 
   return (
-    <div className="details-section">
-      <div className="details-header">
-        <h5>My Details</h5>
-      </div>
-      <div className="details-grid">
-        {details && typeof details === 'object' &&
-          Object.entries(details).map(([label, value]) => (
-            <div className="detail-item" key={label}>
-              <label>{label}</label>
-              <p>{value}</p>
-            </div>
-          ))}
-      </div>
+    <div className="form-content-section text-start p-4 spaceform">
+      <form className="row g-4" onSubmit={handleSubmit}>
+        <div className="col-md-4">
+          <label htmlFor="name" className="form-label">Name *</label>
+          <input
+            type="text"
+            className="form-control"
+            id="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="col-md-4">
+          <label htmlFor="dob" className="form-label">Date of Birth *</label>
+          <input
+            type="date"
+            className="form-control"
+            id="dob"
+            value={formData.dob}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="col-md-4">
+          <label htmlFor="email" className="form-label">Email *</label>
+          <input
+            type="email"
+            className="form-control"
+            id="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="col-md-4">
+          <label htmlFor="skills" className="form-label">Skills</label>
+          <textarea
+            className="form-control"
+            id="skills"
+            rows="3"
+            value={formData.skills}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="col-md-4">
+          <label htmlFor="totalExperience" className="form-label">Total Experience</label>
+          <input
+            type="text"
+            className="form-control"
+            id="totalExperience"
+            value={formData.totalExperience}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="col-md-4">
+          <label htmlFor="currentDesignation" className="form-label">Current Designation</label>
+          <input
+            type="text"
+            className="form-control"
+            id="currentDesignation"
+            value={formData.currentDesignation}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="col-md-4">
+          <label htmlFor="currentEmployer" className="form-label">Current Employer</label>
+          <input
+            type="text"
+            className="form-control"
+            id="currentEmployer"
+            value={formData.currentEmployer}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="col-md-4">
+          <label htmlFor="address" className="form-label">Address</label>
+          <textarea
+            className="form-control"
+            id="address"
+            rows="3"
+            value={formData.address}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="col-12">
+          <button type="submit" className="btn btn-primary">
+            Submit & Continue
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

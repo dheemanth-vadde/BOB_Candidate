@@ -1,17 +1,15 @@
 // components/Tabs/ResumeUpload.jsx
 import React, { useState } from 'react';
 
-const ResumeUpload = ({ setActiveTab }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [fileName, setFileName] = useState('');
+const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, goNext }) => {
+  const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedFile(file);
+      setResumeFile(file);
       setFileName(file.name);
-      localStorage.clear();
     }
   };
 
@@ -20,14 +18,14 @@ const ResumeUpload = ({ setActiveTab }) => {
   };
 
   const handleContinue = async () => {
-    if (!selectedFile) {
+    if (!resumeFile) {
       alert('Please select a file');
       return;
     }
 
     setLoading(true);
     const formData = new FormData();
-    formData.append('resume', selectedFile);
+    formData.append('resume', resumeFile);
 
     try {
       const response = await fetch('https://backend.sentrifugo.com/parse-resume2', {
@@ -35,11 +33,15 @@ const ResumeUpload = ({ setActiveTab }) => {
         body: formData,
       });
 
+      if (!response.ok) throw new Error('Failed to parse resume');
+
       const data = await response.json();
 
-      localStorage.setItem('formData', JSON.stringify(data));
+      // Save parsed data in parent state instead of localStorage
+      setParsedData(data);
 
-      setActiveTab('info');
+      // Move to next tab
+      goNext();
     } catch (err) {
       alert('Error parsing resume: ' + err.message);
     } finally {
@@ -56,10 +58,18 @@ const ResumeUpload = ({ setActiveTab }) => {
         <i className="ph-light ph-upload-simple"></i>
         <div className="dropzone-text">
           Drag and drop your files here<br />or{' '}
-          <span onClick={handleBrowseClick} style={{ color: '#ff7043 ', cursor: 'pointer' }}>browse to upload</span>
+          <span onClick={handleBrowseClick} style={{ color: '#ff7043', cursor: 'pointer' }}>
+            browse to upload
+          </span>
         </div>
-        <input type="file" id="resume-input" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={handleFileChange} />
-        <div id="selected-file-name" style={{ marginTop: '10px' }}>{fileName}</div>
+        <input
+          type="file"
+          id="resume-input"
+          accept=".pdf,.doc,.docx"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+        {fileName && <div id="selected-file-name" style={{ marginTop: '10px' }}>{fileName}</div>}
       </div>
 
       {loading && (
@@ -72,7 +82,13 @@ const ResumeUpload = ({ setActiveTab }) => {
       )}
 
       <div className="form-navigation">
-        <button className="btn btn-primary mt-3 btncolor" onClick={handleContinue} disabled={loading}>Continue</button>
+        <button
+          className="btn btn-primary mt-3 btncolor"
+          onClick={handleContinue}
+          disabled={loading}
+        >
+          Continue
+        </button>
       </div>
     </div>
   );

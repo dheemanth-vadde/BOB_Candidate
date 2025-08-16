@@ -1,98 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-const MyDetailsForm = ({ setActiveTab }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    dob: '',
-    email: '',
-    skills: '',
-    totalExperience: '',
-    currentDesignation: '',
-    currentEmployer: '',
-    address: ''
-  });
-
-  useEffect(() => {
-    const stored = localStorage.getItem('formData');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setFormData({
-        name: parsed.name || parsed.Name || '',
-        dob: parsed.dob || parsed.DateOfBirth || '',
-        email: parsed.email || parsed.Email || '',
-        skills: parsed.skills || '',
-        totalExperience: parsed.totalExperience || '',
-        currentDesignation: parsed.currentDesignation || '',
-        currentEmployer: parsed.currentEmployer || '',
-        address: parsed.address || ''
-      });
-    }
-  }, []);
-
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const payload = {
-      Name: formData.name,
-      DateOfBirth: formData.dob,
-      Email: formData.email,
-      skills: formData.skills,
-      currentEmployer: formData.currentEmployer,
-      currentDesignation: formData.currentDesignation,
-      totalExperience: formData.totalExperience,
-      address: formData.address
-    };
-
-    localStorage.setItem('formData', JSON.stringify(payload));
-    setActiveTab('details');
-  };
+const MyDetails = ({ data }) => {
+  if (!data || Object.keys(data).length === 0) {
+    return <p>No details available. Please complete the Review Details form first.</p>;
+  }
 
   return (
-    <div className="form-content-section text-start p-4 spaceform">
-      <form className="row g-4" onSubmit={handleSubmit}>
-        <div className="col-md-4">
-          <label htmlFor="name" className="form-label">Name *</label>
-          <input type="text" className="form-control" id="name" value={formData.name} onChange={handleChange} required />
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="dob" className="form-label">Date of Birth *</label>
-          <input type="date" className="form-control" id="dob" value={formData.dob} onChange={handleChange} required />
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="email" className="form-label">Email *</label>
-          <input type="email" className="form-control" id="email" value={formData.email} onChange={handleChange} required />
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="skills" className="form-label">Skills</label>
-          <textarea className="form-control" id="skills" rows="3" value={formData.skills} onChange={handleChange} />
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="totalExperience" className="form-label">Total Experience</label>
-          <input type="text" className="form-control" id="totalExperience" value={formData.totalExperience} onChange={handleChange} />
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="currentDesignation" className="form-label">Current Designation</label>
-          <input type="text" className="form-control" id="currentDesignation" value={formData.currentDesignation} onChange={handleChange} />
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="currentEmployer" className="form-label">Current Employer</label>
-          <input type="text" className="form-control" id="currentEmployer" value={formData.currentEmployer} onChange={handleChange} />
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="address" className="form-label">Address</label>
-          <textarea className="form-control" id="address" rows="3" value={formData.address} onChange={handleChange} />
-        </div>
-        <div className="col-md-12">
-          <button className="btn btn-primary btncolor" type="submit">Submit</button>
-        </div>
-      </form>
+    <div className="details-section p-4">
+      <h5>My Details</h5>
+      <div className="details-grid row">
+        <div className="col-md-4"><strong>Name:</strong> {data.name || "—"}</div>
+        <div className="col-md-4"><strong>Date of Birth:</strong> {data.dob || "—"}</div>
+        <div className="col-md-4"><strong>Email:</strong> {data.email || "—"}</div>
+        <div className="col-md-4"><strong>Skills:</strong> {data.skills || "—"}</div>
+        <div className="col-md-4"><strong>Total Experience:</strong> {data.totalExperience || "—"}</div>
+        <div className="col-md-4"><strong>Current Designation:</strong> {data.currentDesignation || "—"}</div>
+        <div className="col-md-4"><strong>Current Employer:</strong> {data.currentEmployer || "—"}</div>
+        <div className="col-md-12"><strong>Address:</strong> {data.address || "—"}</div>
+      </div>
     </div>
   );
 };
 
-export default MyDetailsForm;
+export default MyDetails;
