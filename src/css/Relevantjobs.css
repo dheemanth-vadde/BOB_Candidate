@@ -1,0 +1,21 @@
+.modal-header-custom {
+    background-color: rgb(255, 112, 67) !important;
+    color: white !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .modal-header-custom .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+  }
+  
+  /* If you want to style the title specifically */
+  .modal-header-custom .modal-title {
+    color: white !important;
+  }
+  .section-header {
+    color: rgb(255, 112, 67) !important;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 112, 67, 0.2);
+  }
