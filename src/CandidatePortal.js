@@ -6,9 +6,14 @@ import MyDetailsForm from './components/Tabs/MyDetailsForm';
 import ReviewDetails from './components/Tabs/ReviewDetails';
 import RelevantJobs from './components/Tabs/RelevantJobs';
 import './custom-bootstrap-overrides.css';
+import { useSelector } from 'react-redux';
+
 
 const CandidatePortal = () => {
-  // Centralized state
+  const user = useSelector((state) => state.user.user);
+  const authUser = useSelector((state) => state.user.authUser);
+  console.log("User from Redux:", user);
+  console.log("Auth User from Redux:", authUser);
   const [activeTab, setActiveTab] = useState('resume');
   const [resumeFile, setResumeFile] = useState(null);
   const [candidateData, setCandidateData] = useState({});

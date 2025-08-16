@@ -5,8 +5,11 @@ import axios from "axios";
 import "../css/Login.css";
 import pana from "../assets/pana.png";
 import boblogo from "../assets/bob-logo.png";
+import { useDispatch } from 'react-redux';
+import { setUser, setAuthUser } from '../store/userSlice';
 
 const Login = () => {
+  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [unverifiedUserId, setUnverifiedUserId] = useState(null);
@@ -20,6 +23,10 @@ const Login = () => {
         password,
       });
 
+      const dbRes = await axios.post("https://bobbe.sentrifugo.com/api/getdetails/users", {
+        email,
+      });
+
       if (res.data.mfa_required) {
         localStorage.setItem("mfa_token", res.data.mfa_token);
         alert("MFA required. Please verify your Mail.");
@@ -28,6 +35,11 @@ const Login = () => {
         const token = res.data.access_token;
         localStorage.setItem("access_token", token);
         navigate("/candidate-portal");
+        setAuthUser(res.data);
+        setUser(dbRes.data); // Store user details from DB in context
+        dispatch(setUser(dbRes.data));
+        dispatch(setAuthUser(res.data));
+        // console.log("User details:", dbRes.data);
 
         // // 🔍 Decode token to get roles
         // const decoded = jwtDecode(token);
