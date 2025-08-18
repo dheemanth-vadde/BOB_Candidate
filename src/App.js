@@ -5,8 +5,9 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';import ForgotPassword from './components/ForgotPassword';
+import { ToastContainer } from 'react-toastify';
 import ForgotPassword from './components/ForgotPassword';
+
 function App() {
   return (
     // <Router>
