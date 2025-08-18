@@ -12,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Modal } from 'react-bootstrap';
 import '../../css/Relevantjobs.css';
+import axios from 'axios';
 
 const RelevantJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -87,7 +88,9 @@ const [showModal, setShowModal] = useState(false);
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch('http://192.168.20.111:8081/api/active_jobs');
+        
+        //const response = await fetch('http://192.168.20.111:8081/api/active_jobs');
+        const response = await axios.get('http://docs.sentrifugo.com:8080/jobcreation/api/active_jobs');
         if (!response.ok) {
           throw new Error('Failed to fetch jobs');
         }
@@ -103,6 +106,38 @@ const [showModal, setShowModal] = useState(false);
 
     fetchJobs();
   }, []); // Empty dependency array means this runs once on mount
+
+const handleApply = async (positionId) => {
+    try {
+      // You'll need to get these values from your application state or props
+      const candidateId = "d90b00ab-9d58-469e-a474-7afd76864d01"; // Replace with actual candidate ID
+      const resumePath = "path/to/resume.pdf"; // Replace with actual resume path
+  
+      const response = await fetch('YOUR_API_ENDPOINT_HERE', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          candidate_id: candidateId,
+          position_id: positionId,
+          resumePath: resumePath
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to submit application');
+      }
+  
+      const result = await response.json();
+      alert('Application submitted successfully!');
+      // Handle successful application (e.g., show success message, update UI)
+      
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      alert('Failed to submit application. Please try again.');
+    }
+  };
 
   return (
     
@@ -167,7 +202,7 @@ const [showModal, setShowModal] = useState(false);
                 </p>
 
                 <div className="d-flex mt-3">
-                  <button className="btn btn-sm btn-outline-primary hovbtn"><b>Apply Online</b></button>
+                  <button className="btn btn-sm btn-outline-primary hovbtn" onClick={() => handleApply(job.position_id)}><b>Apply Online</b></button>
                   <button
                       className="btn btn-sm knowntb ms-2"
                       onClick={() => handleKnowMore(job)}
