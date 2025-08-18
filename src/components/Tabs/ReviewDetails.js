@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {apiService} from '../../services/apiService';
 import { toast } from 'react-toastify';
+import { useSelector } from "react-redux";
 const ReviewDetails = ({ initialData = {}, onSubmit ,resumePublicUrl }) => {
   const [formData, setFormData] = useState(initialData);
-
+  const user = useSelector((state) => state.user.user);
+  const candidateId = user?.candidate_id; // TODO: replace with logged-in candidate id
   // ✅ Keep formData in sync with initialData
   useEffect(() => {
     setFormData(initialData);
@@ -22,7 +24,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit ,resumePublicUrl }) => {
     useEffect(() => {
       const fetchMasterData = async () => {
         try {
-          const response = await axios.get('https://bobjava.sentrifugo.com:8443/master/api/all');
+          const response = await apiService.getMasterData();
          // console.log("Master Data:", response);
           const data = await response.data;
           setMasterData({
@@ -52,7 +54,7 @@ const handleSubmit = async (e) => {
     // Prepare the candidate data with resume URL
     const candidatePayload = {
       //...formData,
-      candidate_id: 'dcc22c8e-6818-433b-9769-afa45f84ff9e',
+      candidate_id: candidateId,
       file_url: resumePublicUrl,
       // Map your form fields to match the API expected format
       full_name: formData.name || '',
