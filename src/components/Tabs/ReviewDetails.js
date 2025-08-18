@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-
+import axios from 'axios';
+import {apiService} from '../../services/apiService';
+import { toast } from 'react-toastify';
 const ReviewDetails = ({ initialData = {}, onSubmit ,resumePublicUrl }) => {
   const [formData, setFormData] = useState(initialData);
 
@@ -7,7 +9,37 @@ const ReviewDetails = ({ initialData = {}, onSubmit ,resumePublicUrl }) => {
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);
+  
 
+  const [masterData, setMasterData] = useState({
+    countries: [],
+    specialCategories: [],
+    reservationCategories: []
+  });
+  const [loading, setLoading] = useState(true);
+  
+    // Fetch master data on component mount
+    useEffect(() => {
+      const fetchMasterData = async () => {
+        try {
+          const response = await axios.get('https://bobjava.sentrifugo.com:8443/master/api/all');
+         // console.log("Master Data:", response);
+          const data = await response.data;
+          setMasterData({
+            countries: response.data.countries || [],
+            specialCategories: data.special_categories || [],
+            reservationCategories: data.reservation_categories || []
+          });
+          
+        } catch (error) {
+          console.error('Error fetching master data:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchMasterData();
+    }, []);
 const handleChange = (e) => {
   const { id, value } = e.target;
   setFormData(prev => ({ ...prev, [id]: value }));
@@ -20,7 +52,8 @@ const handleSubmit = async (e) => {
     // Prepare the candidate data with resume URL
     const candidatePayload = {
       //...formData,
-      resume_url: resumePublicUrl,
+      candidate_id: 'dcc22c8e-6818-433b-9769-afa45f84ff9e',
+      file_url: resumePublicUrl,
       // Map your form fields to match the API expected format
       full_name: formData.name || '',
     
@@ -34,30 +67,23 @@ const handleSubmit = async (e) => {
       current_designation: formData.currentDesignation || '',
       current_employer: formData.currentEmployer || '',
       address: formData.address || '',
+      nationality_id: formData.nationality_id || '',
+      education_qualification: formData.education_qualification || '',
       // Add any other fields that match your API requirements
     };
 
     console.log('Submitting candidate data:', candidatePayload);
-
-    // const response = await fetch('https://bobbe.sentrifugo.com/api/candidate', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     // Add any required headers (e.g., authorization)
-    //     // 'Authorization': `Bearer ${yourAuthToken}`
-    //   },
-    //   body: JSON.stringify(candidatePayload)
-    // });
-
-    // if (!response.ok) {
-    //   throw new Error('Failed to submit candidate data');
-    // }
-
-    // const result = await response.json();
-    // console.log('Candidate data submitted successfully:', result);
+    try {
+      const response = await apiService.updateCandidates(candidatePayload);
+      console.log('Candidate data updated successfully:', response);
+      toast.success('Candidate data updated successfully!');
+      onSubmit(formData);
+    } catch (error) {
+      console.error('Error updating candidate data:', error);
+      throw error; // Re-throw to be caught by the outer catch block
+    }
     
-    // Call the original onSubmit with the form data
-    onSubmit(formData);
+   
     
   } catch (error) {
     console.error('Error submitting candidate data:', error);
@@ -135,6 +161,28 @@ const handleSubmit = async (e) => {
           />
         </div>
         <div className="col-md-4">
+          <label htmlFor="phone" className="form-label">Phone *</label>
+          <input
+            type="text"
+            className="form-control"
+            id="phone"
+            value={formData.phone || ''}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="col-md-4">
+          <label htmlFor="education_qualification" className="form-label">Education Qualification *</label>
+          <input
+            type="text"
+            className="form-control"
+            id="education_qualification"
+            value={formData.education_qualification || ''}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="col-md-4">
           <label htmlFor="skills" className="form-label">Skills</label>
           <textarea
             className="form-control"
@@ -188,7 +236,57 @@ const handleSubmit = async (e) => {
             onChange={handleChange}
           />
         </div>
+        <div className="col-md-4">
+          <label htmlFor="nationality_id" className="form-label">Nationality *</label>
+          <select
+            className="form-select"
+            id="nationality_id"
+            value={formData.nationality_id || ''}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Nationality</option>
+            {masterData.countries.map(country => (
+              <option key={country.country_id} value={country.country_id}>
+                {country.country_name}
+              </option>
+            ))}
+          </select>
+        </div>
 
+        {/* Special Category Dropdown */}
+        {/* <div className="col-md-4">
+          <label htmlFor="special_category_id" className="form-label">Special Category</label>
+          <select
+            className="form-select"
+            id="special_category_id"
+            value={formData.special_category_id || ''}
+            onChange={handleChange}
+          >
+            <option value="">Select Special Category</option>
+            {masterData.specialCategories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-md-4">
+          <label htmlFor="reservation_category_id" className="form-label">Reservation Category</label>
+          <select
+            className="form-select"
+            id="reservation_category_id"
+            value={formData.reservation_category_id || ''}
+            onChange={handleChange}
+          >
+            <option value="">Select Reservation Category</option>
+            {masterData.reservationCategories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div> */}
         <div className="col-12">
           <button type="submit" className="btn btn-primary" style={{
               backgroundColor: 'rgb(255, 112, 67)',
@@ -201,6 +299,7 @@ const handleSubmit = async (e) => {
             Submit & Continue
           </button>
         </div>
+        
       </form>
     </div>
   );

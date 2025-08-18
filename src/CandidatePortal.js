@@ -6,8 +6,8 @@ import MyDetailsForm from './components/Tabs/MyDetailsForm';
 import ReviewDetails from './components/Tabs/ReviewDetails';
 import RelevantJobs from './components/Tabs/RelevantJobs';
 import './custom-bootstrap-overrides.css';
+import {apiService} from './services/apiService';
 import { useSelector } from 'react-redux';
-
 const CandidatePortal = () => {
   const user = useSelector((state) => state.user.user);
   const authUser = useSelector((state) => state.user.authUser);
@@ -27,16 +27,13 @@ const handleFormSubmit = (updatedData) => {
 };
 useEffect(() => {
   const fetchCandidateData = async () => {
+    if (!user?.candidate_id) return; // Add a guard clause
+    const candidateId = user?.candidate_id;
     try {
-      const response = await fetch('YOUR_GET_CANDIDATE_API_ENDPOINT', {
-        headers: {
-          // Add any required auth headers
-          // 'Authorization': `Bearer ${authToken}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
+      const response = await apiService.getCandidateDetails(candidateId);
+      if (response.success && response.data) {
+        const data = response.data;
+        console.log("Candidate Data:", data);
         if (data) {
           // Map API response to your form fields
           setCandidateData({
@@ -45,17 +42,21 @@ useEffect(() => {
             phone: data.phone || '',
             gender: data.gender || 'Male',
             id_proof: data.id_proof || '',
-            dob: data.date_of_birth || '',
-            skills: data.skills || '',
-            totalExperience: data.total_experience || '',
+            dob: data.date_of_birth ? data.date_of_birth.split('T')[0] : '',
+            nationality_id: data.nationality_id || '',
+            special_category_id: data.special_category_id || '',
+            reservation_category_id: data.reservation_category_id || '',
+            education_qualification: data.highest_qualification_id || '',
+            totalExperience: data.total_experience || 0,
             currentDesignation: data.current_designation || '',
             currentEmployer: data.current_employer || '',
-            address: data.address || ''
+            address: data.address || '',
+            skills: data.skills || ''
           });
           
           // Set resume URL if exists
-          if (data.resume_url) {
-            setResumePublicUrl(data.resume_url);
+          if (data.file_url) {
+            setResumePublicUrl(data.file_url);
             // You might want to set a flag to show resume is already uploaded
           }
         }
@@ -68,7 +69,7 @@ useEffect(() => {
   };
 
   fetchCandidateData();
-}, []);
+}, [user?.candidate_id]);
   const renderTabContent = () => {
     switch (activeTab) {
       case 'resume':

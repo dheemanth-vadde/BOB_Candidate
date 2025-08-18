@@ -24,9 +24,7 @@ const Login = () => {
         password,
       });
 
-      const dbRes = await axios.post("https://bobbe.sentrifugo.com/api/getdetails/users", {
-              // const dbRes = await axios.post("http://localhost:5000/api/getdetails/candidates", {
-
+      const dbRes = await axios.post("https://bobbe.sentrifugo.com/api/getdetails/candidates", {
         email,
       });
 
