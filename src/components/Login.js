@@ -19,11 +19,14 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-login", {
+              // const res = await axios.post("http://localhost:5000/api/auth/candidate-login", {
         email,
         password,
       });
 
       const dbRes = await axios.post("https://bobbe.sentrifugo.com/api/getdetails/users", {
+              // const dbRes = await axios.post("http://localhost:5000/api/getdetails/candidates", {
+
         email,
       });
 
@@ -108,6 +111,8 @@ const Login = () => {
                 try {
                   await axios.post(
                     "https://bobbe.sentrifugo.com/api/auth/candidate-resend-verification",
+                    // "http://localhost:5000/api/auth/candidate-resend-verification",
+
                     {
                       user_id: unverifiedUserId,
                     }

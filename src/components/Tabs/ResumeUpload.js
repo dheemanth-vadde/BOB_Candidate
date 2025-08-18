@@ -100,14 +100,14 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       <div className="dropzone-text">
         {resumePublicUrl ? (
           <>
-            Drag and drop to update your resume or{' '}
+            Click here to upload your resume or{' '}
             <span style={{ color: '#ff7043', cursor: 'pointer' }}>
               browse to upload
             </span>
           </>
         ) : (
           <>
-            Drag and drop your files here or{' '}
+            Click here to Upload your files here or{' '}
             <span style={{ color: '#ff7043', cursor: 'pointer' }}>
               browse to upload
             </span>

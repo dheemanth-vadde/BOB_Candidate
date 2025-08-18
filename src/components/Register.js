@@ -36,6 +36,8 @@ const Register = () => {
   try {
     // 1. Register user via your backend
     await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-register", {
+          // await axios.post("http://localhost:5000/api/auth/candidate-register", {
+
       name,
       email,
       phone,

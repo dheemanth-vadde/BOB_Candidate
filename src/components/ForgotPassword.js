@@ -9,6 +9,8 @@ const ForgotPassword = () => {
     e.preventDefault();
     try {
       const res = await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-forgot-password", {
+        // const res = await axios.post("http://localhost:5000/api/auth/candidate-forgot-password", {
+
         email,
     });
     setMessage("Password reset link sent. Check your email.");
