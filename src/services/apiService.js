@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Use the environment variables with a fallback to the new URLs you provided.
 // This is the correct way to handle different API services.
-const API_BASE_URL ='http://192.168.20.111:8081/api';
+const API_BASE_URL ='https://bobjava.sentrifugo.com:8443/jobcreation/api';
+//const API_BASE_URL ='http://192.168.20.111:8081/api';
 const API_BASE_URLS =  'https://bobjava.sentrifugo.com:8443/master/api';
 const NODE_API_URL = 'https://bobbe.sentrifugo.com/api';
 
@@ -91,7 +92,7 @@ export const apiService = {
   // jobpost: (data) => api.post('/job_postings',data),
   // getDashboardQueries: () => api.get('/dashboard/queries'),
   // getDashboardMetrics: () => api.get('/dashboard/metrics'),
-
+  getMasterData: () => apis.get('/all'),
   updateCandidates: (data) => api.put('candidates/update_candidate', data),
   getCandidateDetails: (candidate_id) => api.get(`candidates/details-by-candidates/${candidate_id}`),
   applyJobs: (data) => api.post('candidates/apply/job',data),
