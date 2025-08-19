@@ -300,7 +300,7 @@ const handleSubmit = async (e) => {
               borderRadius: '4px',
               cursor: 'pointer'
             }}>
-            Submit & Continue
+            Submit
           </button>
         </div>
         
