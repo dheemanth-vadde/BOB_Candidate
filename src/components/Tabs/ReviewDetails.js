@@ -131,8 +131,9 @@ const handleSubmit = async (e) => {
             type="email"
             className="form-control"
             id="email"
-            value={formData.email}
+            value={user?.email || formData.email || ''}
             onChange={handleChange}
+            disabled
             required
           />
         </div>
