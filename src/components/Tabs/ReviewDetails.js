@@ -11,7 +11,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit ,resumePublicUrl }) => {
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);
-  
+  console.log(formData)
 
   const [masterData, setMasterData] = useState({
     countries: [],
@@ -25,12 +25,13 @@ const ReviewDetails = ({ initialData = {}, onSubmit ,resumePublicUrl }) => {
       const fetchMasterData = async () => {
         try {
           const response = await apiService.getMasterData();
-         // console.log("Master Data:", response);
-          const data = await response.data;
+         
+          // const data = await response.data;
+          // console.log("Master Data:", response.countries);
           setMasterData({
-            countries: response.data.countries || [],
-            specialCategories: data.special_categories || [],
-            reservationCategories: data.reservation_categories || []
+            countries: response.countries || [],
+            specialCategories: response.special_categories || [],
+            reservationCategories: response.reservation_categories || []
           });
           
         } catch (error) {

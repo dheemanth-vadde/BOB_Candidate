@@ -46,7 +46,7 @@ useEffect(() => {
             nationality_id: data.nationality_id || '',
             special_category_id: data.special_category_id || '',
             reservation_category_id: data.reservation_category_id || '',
-            education_qualification: data.highest_qualification_id || '',
+            education_qualification: data.education_qualification || '',
             totalExperience: data.total_experience || 0,
             currentDesignation: data.current_designation || '',
             currentEmployer: data.current_employer || '',
@@ -93,12 +93,12 @@ useEffect(() => {
         />
         );
 
-      case 'details':
-        return (
-          <MyDetailsForm
-            data={candidateData}     
-          />
-        );
+      // case 'details':
+      //   return (
+      //     <MyDetailsForm
+      //       data={candidateData}     
+      //     />
+      //   );
 
       case 'jobs':
         return (
@@ -137,14 +137,14 @@ useEffect(() => {
                 Review Details
               </button>
             </li>
-            <li className="nav-item">
+            {/* <li className="nav-item">
               <button
                 className={`nav-link bornav ${activeTab === 'details' ? 'active' : ''}`}
                 onClick={() => setActiveTab('details')}
               >
                 My Details
               </button>
-            </li>
+            </li> */}
             <li className="nav-item">
               <button
                 className={`nav-link bornav ${activeTab === 'jobs' ? 'active' : ''}`}

@@ -1,10 +1,11 @@
 // components/Tabs/ResumeUpload.jsx
 import React, { useState } from 'react';
-
+import { useSelector } from 'react-redux';
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl,goNext,resumePublicUrl }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
-
+  const user = useSelector((state) => state.user.user);
+  const candidateId = user?.candidate_id;
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -28,8 +29,8 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
 
     setLoading(true);
     const uploadedformData = new FormData();
-    uploadedformData.append('pdfFile', resumeFile);
-    uploadedformData.append('candidateId', 124578);
+    uploadedformData.append('resumeFile', resumeFile);
+    uploadedformData.append('candidateId', candidateId);
 
     const formData = new FormData();
     formData.append('resume', resumeFile);
