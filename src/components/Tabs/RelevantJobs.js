@@ -16,6 +16,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import apiService from "../../services/apiService";
 import { useSelector } from "react-redux";
+import Razorpay from "../Razorpay"; // Import Razorpay component
+
 const RelevantJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -178,26 +180,31 @@ const RelevantJobs = () => {
                   <b>Status:</b> {job.position_status}
                 </p>
 
-                <div className="d-flex mt-3">
-                  {isJobApplied(job.position_id) ? (
-                    <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
-                      <FontAwesomeIcon icon={faCheckCircle} />
-                      <span>Applied</span>
-                    </div>
-                  ) : (
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                  <div className="d-flex">
+                    {isJobApplied(job.position_id) ? (
+                      <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
+                        <FontAwesomeIcon icon={faCheckCircle} />
+                        <span>Applied</span>
+                      </div>
+                    ) : (
+                      <button
+                        className="btn btn-sm btn-outline-primary hovbtn"
+                        onClick={() => handleApply(job.position_id)}
+                      >
+                        <b>Apply Online</b>
+                      </button>
+                    )}
                     <button
-                      className="btn btn-sm btn-outline-primary hovbtn"
-                      onClick={() => handleApply(job.position_id)}
+                      className="btn btn-sm knowntb ms-2"
+                      onClick={() => handleKnowMore(job)}
                     >
-                      <b>Apply Online</b>
+                      Know More
                     </button>
-                  )}
-                  <button
-                    className="btn btn-sm knowntb ms-2"
-                    onClick={() => handleKnowMore(job)}
-                  >
-                    Know More
-                  </button>
+                  </div>
+                  <div>
+                    <Razorpay />
+                  </div>
                 </div>
               </div>
             </div>
