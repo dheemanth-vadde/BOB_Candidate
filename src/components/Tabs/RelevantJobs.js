@@ -46,7 +46,7 @@ const RelevantJobs = () => {
     try {
       await fetchAppliedJobs();
       const response = await axios.get(
-        "http://docs.sentrifugo.com:8080/jobcreation/api/active_jobs"
+        "https://bobjava.sentrifugo.com:8443/jobcreation/api/active_jobs"
       );
       if (response.data && response.data.success) {
         setJobs(response.data.data || []);
