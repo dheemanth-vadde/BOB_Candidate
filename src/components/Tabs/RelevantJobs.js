@@ -83,14 +83,14 @@ const RelevantJobs = () => {
         position_id: jobToApply.position_id,
         candidate_id: candidateId,
       });
-      if (response.status === 200) {
+      // if (response.status === 200) {
         // ✅ update UI immediately
         setAppliedJobs((prev) => [
           ...prev,
           { position_id: jobToApply.position_id },
         ]);
         toast.success("Application submitted successfully!");
-      }
+      // }
     } catch (error) {
       console.error("Error submitting application:", error);
       toast.error("Failed to submit application. Please try again.");
