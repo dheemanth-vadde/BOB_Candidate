@@ -83,8 +83,8 @@ const RelevantJobs = () => {
         position_id: jobToApply.position_id,
         candidate_id: candidateId,
       });
-
-      if (response) {
+      if (response.status === 200) {
+        // ✅ update UI immediately
         setAppliedJobs((prev) => [
           ...prev,
           { position_id: jobToApply.position_id },
