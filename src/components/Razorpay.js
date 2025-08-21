@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { useSelector } from "react-redux";
 
 /** Change this if your backend runs elsewhere */
 const PAY_API_BASE = "https://bobbe.sentrifugo.com/api/payments/razorpay";
@@ -23,7 +24,7 @@ async function getRzpKey() {
   if (!keyId) throw new Error("Invalid key from server");
   return keyId;
 }
-async function createOrder({ amountPaise, receipt, notes }) {
+async function createOrder({ amountPaise, receipt, notes, candidate_id, position_id }) {
   const r = await fetch('https://bobbe.sentrifugo.com/api/payments/razorpay/orders', {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -32,6 +33,8 @@ async function createOrder({ amountPaise, receipt, notes }) {
       currency: "INR",
       receipt,
       notes,
+      candidate_id,
+      position_id
     }),
   });
   if (!r.ok) {
@@ -70,7 +73,9 @@ export default function Razorpay({
   className = "btn btn-sm btn-outline-primary hovbtn",
   label = "Pay",
   onSuccess,
+  position_id
 }) {
+  const userLoginData = useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(false);
 
   const handlePayClick = useCallback(async () => {
@@ -86,6 +91,8 @@ export default function Razorpay({
           candidateId: candidate?.id || "demo",
           purpose: "InterviewFee",
         },
+        candidate_id: userLoginData?.candidate_id,
+        position_id: position_id,
       });
 
       const rzp = new window.Razorpay({

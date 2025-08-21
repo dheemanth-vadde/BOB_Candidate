@@ -203,11 +203,27 @@ const RelevantJobs = () => {
           <p>Please pay the required amount to apply for this job.</p>
         </Modal.Body>
         <Modal.Footer>
-          <button className="btn btn-outline-secondary" onClick={() => setShowPaymentModal(false)}>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => setShowPaymentModal(false)}
+          >
             Cancel
           </button>
-          {/* Razorpay Component → call handleConfirmApply on success */}
-          <Razorpay onSuccess={handleConfirmApply} />
+
+          {/* ✅ Use jobToApply instead of job */}
+          {jobToApply && (
+            <Razorpay
+              onSuccess={handleConfirmApply}
+              position_id={jobToApply.position_id}
+              amountPaise={jobToApply?.application_fee_paise ?? 50000} // fallback amount
+              candidate={{
+                id: candidateId,
+                full_name: user?.full_name,
+                email: user?.email,
+                phone: user?.phone,
+              }}
+            />
+          )}
         </Modal.Footer>
       </Modal>
 
