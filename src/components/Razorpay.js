@@ -112,7 +112,7 @@ export default function Razorpay({
           try {
             const result = await verifyPayment(resp);
             if (result?.success) {
-              alert("Payment successful ✅");
+              // alert("Payment successful ✅");
               onSuccess?.({
                 orderId: order.id,
                 amountPaise: order.amount,
