@@ -47,6 +47,9 @@ const RelevantJobs = () => {
       const response = await axios.get(
         "https://bobjava.sentrifugo.com:8443/jobcreation/api/active_jobs"
       );
+      // const response = await axios.get(
+      //   "http://192.168.20.111:8080/api/active_jobs"
+      // );
       if (response.data && response.data.success) {
         setJobs(response.data.data || []);
       }
@@ -137,7 +140,7 @@ const RelevantJobs = () => {
               <div className="card-body">
                 <h6 className="job-title">
                   <FontAwesomeIcon icon={faUser} className="me-2 text-secondary" />
-                  <b>{job.position_title}</b>
+                  <b>{job.requisition_code} - {job.position_title}</b>
                 </h6>
 
                 <p className="mb-1 text-muted small">
@@ -235,7 +238,70 @@ const RelevantJobs = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {/* ... your existing job details ... */}
+        {selectedJob && (
+            <div className="job-details">
+              <h5 className="section-header">Job Description</h5>
+              <p className="mb-4">
+                {selectedJob.description || "No description available"}
+              </p>
+
+              <div className="row">
+                <div className="col-md-6">
+                  <h6 className="section-header">Key Details</h6>
+                  <ul className="list-unstyled">
+                    <li>
+                      <strong>Employment Type:</strong>{" "}
+                      {selectedJob.employment_type || "N/A"}
+                    </li>
+                    <li>
+                      <strong>Eligibility Age:</strong>{" "}
+                      {selectedJob.eligibility_age_min} -{" "}
+                      {selectedJob.eligibility_age_max} years
+                    </li>
+                    <li>
+                      <strong>Mandatory Experience:</strong>{" "}
+                      {selectedJob.mandatory_experience} years
+                    </li>
+                    <li>
+                      <strong>Preferred Experience:</strong>{" "}
+                      {selectedJob.preferred_experience} years
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="col-md-6">
+                  <h6 className="section-header">Requirements</h6>
+                  <ul className="list-unstyled">
+                    <li>
+                      <strong>Mandatory Qualification:</strong>{" "}
+                      {selectedJob.mandatory_qualification || "Not specified"}
+                    </li>
+                    <li>
+                      <strong>Preferred Qualification:</strong>{" "}
+                      {selectedJob.preferred_qualification || "Not specified"}
+                    </li>
+                    <li>
+                      <strong>Probation Period:</strong>{" "}
+                      {selectedJob.probation_period} months
+                    </li>
+                    <li>
+                      <strong>Documents Required:</strong>{" "}
+                      {selectedJob.documents_required || "Not specified"}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {selectedJob.roles_responsibilities && (
+                <div className="mt-4">
+                  <h6 className="section-header">Roles & Responsibilities</h6>
+                  <p className="text-muted">
+                    {selectedJob.roles_responsibilities}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </Modal.Body>
         <Modal.Footer className="bg-light">
           <button className="btn btn-outline-secondary" onClick={handleCloseModal}>
