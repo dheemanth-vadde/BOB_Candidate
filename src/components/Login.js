@@ -79,7 +79,7 @@ const Login = () => {
       <div className="right-panel">
         <div className="logo">
           <img src={boblogo} alt="Logo" />
-          <h4>Candidate</h4>
+          <h4>Candidate Login</h4>
         </div>
 
         <form className="login_form" onSubmit={handleLogin}>

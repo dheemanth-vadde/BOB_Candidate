@@ -63,7 +63,17 @@ const Register = () => {
     navigate("/login");
   } catch (err) {
     console.error(err);
-    alert("Registration/Login failed");
+
+    if (err.response) {
+      // Example: API returns 409 Conflict if user exists
+      if (err.response.status === 400) {
+        alert("User already exists. Please login instead.");
+      } else {
+        // Or check message returned by backend
+        const msg = err.response.data?.message || "Registration/Login failed";
+        alert(msg);
+      }
+    }
   }
 };
 // const handleVerifyOtp = async () => {
@@ -94,28 +104,35 @@ const Register = () => {
       </div>
 
       <div className="right-panel">
-        <div className="logo">
+        <div className="logo" style={{ marginBottom: '15px' }}>
           <img src={logoImage} alt="Logo" />
-          <h4>Candidate</h4>
+          <h4>Register</h4>
         </div>
 
-        <form onSubmit={handleRegister} className="d-flex flex-column">
+        <form onSubmit={handleRegister} className="d-flex flex-column w-50 align-self-center">
+          {/* <button
+            className="back-button"
+            onClick={() => navigate("/login")}
+          >
+            ← Login
+          </button> */}
+
           <label>Full Name</label>
-          <input name="name" onChange={handleChange} required style={{ borderRadius: "20px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px 12px' }}/>
+          <input name="name" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
 
           <label>Email</label>
-          <input type="email" name="email" onChange={handleChange} required style={{ borderRadius: "20px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px 12px' }}/>
+          <input type="email" name="email" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
 
           <label>Phone</label>
-          <input type="text" name="phone" onChange={handleChange} required style={{ borderRadius: "20px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px 12px' }}/>
+          <input type="text" name="phone" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
 
           <label>Password</label>
-          <input type="password" name="password" onChange={handleChange} required style={{ borderRadius: "20px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px 12px' }}/>
+          <input type="password" name="password" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
 
           <label>Confirm Password</label>
-          <input type="password" name="confirmPassword" onChange={handleChange} required style={{ borderRadius: "20px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px 12px' }}/>
+          <input type="password" name="confirmPassword" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
 
-          <button type="submit" className="login-button mt-4">Register</button>
+          <button type="submit" className="login-button mt-4">REGISTER</button>
           {/* {showOtpInput && (
   <>
     <input
