@@ -150,7 +150,7 @@ useEffect(() => {
                 className={`nav-link bornav ${activeTab === 'jobs' ? 'active' : ''}`}
                 onClick={() => setActiveTab('jobs')}
               >
-                Relevant Jobs
+                Careers
               </button>
             </li>
           </ul>
