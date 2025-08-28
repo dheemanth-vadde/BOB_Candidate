@@ -7,12 +7,16 @@ import pana from "../assets/pana.png";
 import boblogo from "../assets/bob-logo.png";
 import { useDispatch } from 'react-redux';
 import { setUser, setAuthUser } from '../store/userSlice';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+
 
 const Login = () => {
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [unverifiedUserId, setUnverifiedUserId] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -93,14 +97,29 @@ const Login = () => {
           />
 
           <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            required
-            placeholder="Enter password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
+           <div className="" style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              required
+              placeholder="Enter password"
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ paddingRight: '40px' }}
+            />
+            <FontAwesomeIcon
+              icon={showPassword ? faEye : faEyeSlash}
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '15px',
+                top: '35%',
+                transform: 'translateY(-50%)',
+                cursor: 'pointer',
+                color: '#666',
+              }}
+              title={showPassword ? 'Hide password' : 'Show password'}
+            />
+          </div>
           {unverifiedUserId && (
             <button
               className="resend-btn my-2 mb-3"

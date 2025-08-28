@@ -145,14 +145,17 @@ useEffect(() => {
                 My Details
               </button>
             </li> */}
-            <li className="nav-item">
-              <button
-                className={`nav-link bornav ${activeTab === 'jobs' ? 'active' : ''}`}
-                onClick={() => setActiveTab('jobs')}
-              >
-                Careers
-              </button>
-            </li>
+            {/* Careers tab → show only if resume exists */}
+              {ResumePublicUrl && (
+                <li className="nav-item">
+                  <button
+                    className={`nav-link bornav ${activeTab === 'jobs' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('jobs')}
+                  >
+                    Careers
+                  </button>
+                </li>
+              )}
           </ul>
 
           {/* Tab Content */}
