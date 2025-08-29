@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import panaImage from "../assets/pana.png";
 import logoImage from "../assets/bob-logo.png";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 const Register = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -17,7 +18,8 @@ const Register = () => {
 //   const [otp, setOtp] = useState("");
 // const [mfaToken, setMfaToken] = useState("");
 // const [showOtpInput, setShowOtpInput] = useState(false);
-
+ const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -127,10 +129,69 @@ const Register = () => {
           <input type="text" name="phone" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
 
           <label>Password</label>
-          <input type="password" name="password" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
+          <div style={{ position: "relative" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              onChange={handleChange}
+              required
+              style={{
+                borderRadius: "5px",
+                backgroundColor: "#fff",
+                border: "1px solid #ccc",
+                padding: "8px",
+                width: "100%",
+                paddingRight: "40px",
+              }}
+            />
+            <FontAwesomeIcon
+              icon={showPassword ? faEye : faEyeSlash}
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#666",
+              }}
+              title={showPassword ? "Hide password" : "Show password"}
+            />
+          </div>
+
 
           <label>Confirm Password</label>
-          <input type="password" name="confirmPassword" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
+          <div style={{ position: "relative" }}>
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              onChange={handleChange}
+              required
+              style={{
+                borderRadius: "5px",
+                backgroundColor: "#fff",
+                border: "1px solid #ccc",
+                padding: "8px",
+                width: "100%",
+                paddingRight: "40px",
+              }}
+            />
+            <FontAwesomeIcon
+              icon={showConfirmPassword ? faEye : faEyeSlash}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#666",
+              }}
+              title={
+                showConfirmPassword ? "Hide password" : "Show password"
+              }
+            />
+          </div>
 
           <button type="submit" className="login-button mt-4">REGISTER</button>
           {/* {showOtpInput && (
