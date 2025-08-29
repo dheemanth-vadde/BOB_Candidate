@@ -98,7 +98,7 @@ const Header = () => {
                 className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow"
                 style={{ minWidth: "200px", zIndex: 1000 }}
               >
-                <p className="mb-1 fw-bold">{user?.name}</p>
+                <p className="mb-1 fw-bold">{user?.full_name}</p>
                 <p className="mb-0 text-muted">{user?.role === "L1" || user?.role === "L2"
                   ? `${user.role} Approver`
                   : user?.role}</p>
