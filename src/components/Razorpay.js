@@ -1,8 +1,5 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-
-/** Change this if your backend runs elsewhere */
-const PAY_API_BASE = "https://bobbe.sentrifugo.com/api/payments/razorpay";
 
 /** Load Razorpay SDK once */
 function loadRazorpay() {
@@ -18,14 +15,15 @@ function loadRazorpay() {
 
 /** Backend calls */
 async function getRzpKey() {
-  const r = await fetch('https://bobbe.sentrifugo.com/api/payments/razorpay/config');
+  const r = await fetch("https://bobbe.sentrifugo.com/api/payments/razorpay/config");
   if (!r.ok) throw new Error("Failed to load Razorpay key");
   const { keyId } = await r.json();
   if (!keyId) throw new Error("Invalid key from server");
   return keyId;
 }
+
 async function createOrder({ amountPaise, receipt, notes, candidate_id, position_id }) {
-  const r = await fetch('https://bobbe.sentrifugo.com/api/payments/razorpay/orders', {
+  const r = await fetch("https://bobbe.sentrifugo.com/api/payments/razorpay/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -34,7 +32,7 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
       receipt,
       notes,
       candidate_id,
-      position_id
+      position_id,
     }),
   });
   if (!r.ok) {
@@ -45,11 +43,12 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
   if (!order?.id) throw new Error("Invalid order from server");
   return order; // { id, amount, currency, ... }
 }
+
 async function verifyPayment(payload) {
-  const r = await fetch('https://bobbe.sentrifugo.com/api/payments/razorpay/verify', {
+  const r = await fetch("https://bobbe.sentrifugo.com/api/payments/razorpay/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload), // { razorpay_order_id, razorpay_payment_id, razorpay_signature }
+    body: JSON.stringify(payload),
   });
   if (!r.ok) {
     const txt = await r.text().catch(() => "");
@@ -58,27 +57,21 @@ async function verifyPayment(payload) {
   return r.json(); // { success: true, message: "Payment verified" }
 }
 
-/**
- * Reusable Pay button for Razorpay
- * Props:
- * - amountPaise (number) -> amount in paise (₹500 => 50000)
- * - candidate (object)   -> { id, full_name, email, phone }
- * - className (string)   -> additional CSS classes for the button
- * - label (string)       -> button label
- * - onSuccess (fn)       -> callback after successful verification
- */
 export default function Razorpay({
   amountPaise = 50000,
   candidate = {},
   className = "btn btn-sm btn-outline-primary hovbtn",
   label = "Pay",
   onSuccess,
-  position_id
+    // 🔹 NEW: Called when user closes popup
+  position_id,
+  onClose,
+  autoTrigger = false, // 🔹 NEW: Auto-open Razorpay when mounted
 }) {
   const userLoginData = useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(false);
 
-  const handlePayClick = useCallback(async () => {
+  const initiatePayment = useCallback(async () => {
     try {
       setLoading(true);
       await loadRazorpay();
@@ -92,12 +85,12 @@ export default function Razorpay({
           purpose: "InterviewFee",
         },
         candidate_id: userLoginData?.candidate_id,
-        position_id: position_id,
+        position_id,
       });
 
       const rzp = new window.Razorpay({
         key: keyId,
-        order_id: order.id, // REQUIRED for signature verification
+        order_id: order.id,
         amount: String(order.amount),
         currency: order.currency,
         name: "Sentrifugo 2.0",
@@ -112,7 +105,6 @@ export default function Razorpay({
           try {
             const result = await verifyPayment(resp);
             if (result?.success) {
-              // alert("Payment successful ✅");
               onSuccess?.({
                 orderId: order.id,
                 amountPaise: order.amount,
@@ -128,14 +120,16 @@ export default function Razorpay({
         },
         modal: {
           ondismiss: () => {
-            // User closed the popup
+           // onClose?.(); // Call when user closes popup
+           if (typeof onClose === "function") {
+            onClose(); // Call a callback passed from parent
+          }
           },
         },
       });
 
       rzp.on("payment.failed", (res) => {
-        const msg = res?.error?.description || "Payment failed";
-        alert(msg);
+        alert(res?.error?.description || "Payment failed");
       });
 
       rzp.open();
@@ -145,13 +139,23 @@ export default function Razorpay({
     } finally {
       setLoading(false);
     }
-  }, [amountPaise, candidate, onSuccess]);
+  }, [amountPaise, candidate, onSuccess, onClose, position_id]);
+
+  // 🔹 Auto-trigger Razorpay when mounted
+  useEffect(() => {
+    if (autoTrigger) {
+      initiatePayment();
+    }
+  }, [autoTrigger, initiatePayment]);
+
+  // If auto-triggering, no need to render a button
+  if (autoTrigger) return null;
 
   return (
     <button
       type="button"
       className={className}
-      onClick={handlePayClick}
+      onClick={initiatePayment}
       disabled={loading}
       title={loading ? "Processing..." : label}
     >

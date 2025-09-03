@@ -93,6 +93,7 @@ useEffect(() => {
           initialData={candidateData}
           resumePublicUrl={ResumePublicUrl}
            onSubmit={handleFormSubmit}
+           goNext={() => setActiveTab('jobs')}
         />
         );
 
@@ -146,7 +147,7 @@ useEffect(() => {
                 className={`nav-link bornav ${activeTab === 'info' ? 'active' : ''}`}
                 onClick={() => setActiveTab('info')}
               >
-                Review Details
+                My Profile
               </button>
             </li>
             {/* <li className="nav-item">
