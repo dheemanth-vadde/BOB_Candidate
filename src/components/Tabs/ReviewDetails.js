@@ -13,6 +13,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   const [selectedIdProof, setSelectedIdProof] = useState('');
   const [idProofFile, setIdProofFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState('');
   const [masterData, setMasterData] = useState({
     countries: [],
     specialCategories: [],
@@ -20,10 +21,15 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   });
   const [dobError, setDobError] = useState("");
   const [aadharDob, setAadharDob] = useState(""); // extracted DOB from Aadhaar
+ 
 
-  // Sync formData with initialData
+
+  // Sync formData and selectedIdProof with initialData
   useEffect(() => {
+    console.log( 'initialData',initialData )
     setFormData(initialData);
+    setSelectedIdProof(initialData.id_proof || '');
+    setDocumentUrl(initialData.document_url || '');
   }, [initialData]);
 
   // Fetch master data on mount
@@ -31,6 +37,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     const fetchMasterData = async () => {
       try {
         const response = await apiService.getMasterData();
+        console.log("Master data:", response);
         setMasterData({
           countries: response.countries || [],
           specialCategories: response.special_categories || [],
@@ -79,6 +86,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       const candidatePayload = {
         candidate_id: candidateId,
         file_url: resumePublicUrl,
+        document_url: documentUrl,
         full_name: formData.name || '',
         email: formData.email || '',
         gender: formData.gender || 'Male',
@@ -93,6 +101,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         nationality_id: formData.nationality_id || '',
         education_qualification: formData.education_qualification || ''
       };
+        console.log("candidatePayload",candidatePayload);
 
       const response = await apiService.updateCandidates(candidatePayload);
       toast.success('Candidate data updated successfully!');
@@ -164,7 +173,36 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       throw new Error('Failed to extract DOB from Aadhaar');
     }
   };
+  const handleDocumentUpload = async (file) => {
+    console.log("file",file);
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('docFile', file);
+      formData.append('candidateId', candidateId);
 
+      const uploadResponse = await fetch('https://bobbe.sentrifugo.com/api/uploaddoc/uploaddoc', {
+        method: 'POST',
+        body: formData,
+      });
+    console.log("uploadResponse",uploadResponse);
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload resume');
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log('Resume upload successful:', uploadResult);
+     // toast.success('Document uploaded successfully!');
+     setDocumentUrl(uploadResult.public_url);
+      }
+     catch (error) {
+      console.error('Error uploading document:', error);
+      toast.error('Failed to upload document. Please try again.');
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -189,11 +227,12 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   
       if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
       //  toast.info('Processing Aadhaar card...');
+      
         const extractedDOB = await extractDOBFromAadhar(file);
   
         if (extractedDOB) {
           setAadharDob(extractedDOB);
-  
+          
           if (!formData.dob) {
             setFormData(prev => ({ ...prev, dob: extractedDOB }));
             toast.success(`DOB auto-filled from Aadhaar: ${extractedDOB.split('-').reverse().join('/')}`);
@@ -204,11 +243,16 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
               return;
             }
            // toast.success('Aadhaar verified successfully!');
+           
+
           }
+          await handleDocumentUpload(file);
         } else {
           toast.error("Could not extract DOB from Aadhaar. Please upload a clear image.");
         }
       }
+      
+
     } catch (error) {
       console.error('Error handling file upload:', error);
       toast.error('Error processing file: ' + error.message);
@@ -286,34 +330,41 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           </select>
 
           {selectedIdProof && (
-            <div className="mt-2">
-              <label htmlFor="id_proof_file" className="form-label">
-                Upload {selectedIdProof} Card {isUploading && <span className="spinner-border spinner-border-sm ms-2"></span>}
-                <span className="text-danger">*</span>
-              </label>
-              <input
-                type="file"
-                className={`form-control ${isUploading ? 'opacity-50' : ''}`}
-                id="id_proof_file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
-                required={!idProofFile}
-                disabled={isUploading}
-              />
-              {idProofFile ? (
-                <div className="mt-2 text-success">
-                  <i className="bi bi-check-circle-fill me-1"></i>
-                  {idProofFile.name} ({(idProofFile.size / 1024).toFixed(2)} KB)
-                </div>
-              ) : (
-                <div className="form-text">
-                  {selectedIdProof === 'Aadhar'
-                    ? 'Upload a clear image of your Aadhaar card (Front side with DOB visible)'
-                    : 'Upload your PAN card (PDF, JPG, or PNG, max 5MB)'}
-                </div>
-              )}
-            </div>
-          )}
+  <div className="mt-2">
+    <label htmlFor="id_proof_file" className="form-label">
+      Upload {selectedIdProof} Card {isUploading && <span className="spinner-border spinner-border-sm ms-2"></span>}
+      <span className="text-danger">*</span>
+    </label>
+    <input
+      type="file"
+      className={`form-control ${isUploading ? 'opacity-50' : ''}`}
+      id="id_proof_file"
+      accept=".pdf,.jpg,.jpeg,.png"
+      onChange={handleFileChange}
+      required={!idProofFile && !documentUrl}  // <-- updated condition
+      disabled={isUploading}
+    />
+
+    {idProofFile ? (
+      <div className="mt-2 text-success">
+        <i className="bi bi-check-circle-fill me-1"></i>
+        {idProofFile.name} ({(idProofFile.size / 1024).toFixed(2)} KB)
+      </div>
+    ) : documentUrl ? ( // <-- if document already exists
+      <div className="mt-2">
+        <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="btn btn-link p-0">
+          <i className="bi bi-download me-2"></i> Download Document
+        </a>
+      </div>
+    ) : (
+      <div className="form-text">
+        {selectedIdProof === 'Aadhar'
+          ? 'Upload a clear image of your Aadhaar card (Front side with DOB visible)'
+          : 'Upload your PAN card (PDF, JPG, or PNG, max 5MB)'}
+      </div>
+    )}
+  </div>
+)}
         </div>
         <div className="col-md-3">
           <label htmlFor="phone" className="form-label">Phone *</label>

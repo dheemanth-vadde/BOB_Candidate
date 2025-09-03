@@ -19,8 +19,6 @@ import { useSelector } from "react-redux";
 import Razorpay from "../Razorpay";
 
 const RelevantJobs = () => {
-  const [processingPositionId, setProcessingPositionId] = useState(null);
-
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -34,6 +32,15 @@ const RelevantJobs = () => {
   const candidateId = user?.candidate_id;
   const [showRedirectModal, setShowRedirectModal] = useState(false);
 const [redirectUrl, setRedirectUrl] = useState("");
+const [candidateExperience, setCandidateExperience] = useState(0);
+
+
+ // New state variables for filters
+ const [departments, setDepartments] = useState([]);
+ const [locations, setLocations] = useState([]);
+ const [selectedDepartments, setSelectedDepartments] = useState([]);
+ const [selectedLocations, setSelectedLocations] = useState([]);
+ const [showFilters, setShowFilters] = useState(false);
   const fetchAppliedJobs = async () => {
   if (!candidateId) return; // wait until candidateId exists
 
@@ -93,6 +100,9 @@ useEffect(() => {
       if (details?.data?.date_of_birth) {
         setCandidateDob(details.data.date_of_birth);
       }
+      if (details?.data?.total_experience) {
+        setCandidateExperience(parseFloat(details.data.total_experience) || 0);
+      }
     } catch (error) {
       console.error('Error fetching candidate details:', error);
     }
@@ -101,21 +111,49 @@ useEffect(() => {
   fetchCandidateDetails();
 }, [candidateId]);
   const fetchJobs = async () => {
-    try {
-      await fetchAppliedJobs();
-      const response = await axios.get(
-        "https://bobjava.sentrifugo.com:8443/jobcreation/api/active_jobs"
-      );
-      console.log("Fetched jobs:", response.data);
-      if (response.data && response.data.success) {
-        setJobs(response.data.data || []);
-      }
-    } catch (err) {
-      console.error("Error fetching jobs:", err);
-    } finally {
-      setLoading(false);
+  try {
+    await fetchAppliedJobs();
+
+    // Fetch jobs
+    const jobsResponse = await axios.get(
+      "https://bobjava.sentrifugo.com:8443/jobcreation/api/active_jobs"
+    );
+
+    // Fetch master data
+    const masterDataResponse = await apiService.getMasterData();
+
+    const jobsData = jobsResponse.data?.data || [];
+    const departments = masterDataResponse.departments || [];
+    const locations = masterDataResponse.locations || [];
+    // Set departments and locations from master data
+    if (masterDataResponse.departments) {
+      setDepartments(masterDataResponse.departments);
     }
-  };
+    if (masterDataResponse.locations) {
+      setLocations(masterDataResponse.locations);
+    }
+
+    // Map jobs with department and location names
+    const mappedJobs = jobsData.map((job) => {
+      const department = departments.find(d => d.department_id === job.dept_id);
+      const location = locations.find(l => l.location_id === job.location_id);
+
+      return {
+        ...job,
+        department_id: job.dept_id, // <-- ADD THIS LINE
+        department_name: department ? department.department_name : "Unknown",
+        location_name: location ? location.location_name : "Unknown",
+      };
+    });
+
+    console.log("Mapped jobs:", mappedJobs);
+    setJobs(mappedJobs);
+  } catch (err) {
+    console.error("Error fetching jobs:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
      if (candidateId) {
@@ -129,31 +167,36 @@ useEffect(() => {
     );
   };
 
-const handleApplyClick = (job) => {
-  if (isJobApplied(job.position_id)) return;
-
-  if (!candidateId) {
-    toast.error("Please complete your profile before applying");
-    return;
-  }
-
-  if (job.eligibility_age_min || job.eligibility_age_max) {
-    if (!candidateDob) {
-      toast.error("Please update your date of birth in your profile");
+  const handleApplyClick = (job) => {
+    if (isJobApplied(job.position_id)) return;
+  
+    if (!candidateId) {
+      toast.error("Please complete your profile before applying");
       return;
     }
-    if (!meetsAgeRequirement(candidateDob, job.eligibility_age_min, job.eligibility_age_max)) {
-      const minAge = job.eligibility_age_min || 0;
-      const maxAge = job.eligibility_age_max || "No Limit";
-      toast.error(`Age must be between ${minAge} - ${maxAge} years.`);
+    console.log("candidateExperience",candidateExperience);
+     if (job.mandatory_experience && candidateExperience < parseFloat(job.mandatory_experience)) {
+      toast.error(`This position requires at least ${job.mandatory_experience} years of experience`);
       return;
     }
-  }
-
-  setProcessingPositionId(job.position_id);   // 👈 NEW
-  setJobToApply(job);                         // triggers Razorpay mount
-};
-
+  
+    if (job.eligibility_age_min || job.eligibility_age_max) {
+      if (!candidateDob) {
+        toast.error("Please update your date of birth in your profile");
+        return;
+      }
+  
+      if (!meetsAgeRequirement(candidateDob, job.eligibility_age_min, job.eligibility_age_max)) {
+        const minAge = job.eligibility_age_min || 0;
+        const maxAge = job.eligibility_age_max || "No Limit";
+        toast.error(`Age must be between ${minAge} - ${maxAge} years.`);
+        return;
+      }
+    }
+  
+    // If all validations pass, trigger Razorpay
+    setJobToApply(job); 
+  };
   
 
   const handleConfirmApply = async () => {
@@ -189,10 +232,39 @@ const handleApplyClick = (job) => {
   };
 
   // 🔹 Filter jobs based on search
-  const filteredJobs = jobs.filter((job) =>
-    (job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase()))
+ // Filter jobs based on selected departments and locations
+ const filteredJobs = jobs.filter(job => {
+  const matchesDepartment = selectedDepartments.length === 0 || 
+    //selectedDepartments.includes(job.department_id);
+    selectedDepartments.includes(job.dept_id);
+  const matchesLocation = selectedLocations.length === 0 || 
+    selectedLocations.includes(job.location_id);
+  const matchesSearch = job.position_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.requisition_code.toLowerCase().includes(searchTerm.toLowerCase());
+  
+  return matchesDepartment && matchesLocation && matchesSearch;
+});
+const handleDepartmentChange = (deptId) => {
+  setSelectedDepartments(prev => 
+    prev.includes(deptId)
+      ? prev.filter(id => id !== deptId)
+      : [...prev, deptId]
   );
+};
+
+const handleLocationChange = (locationId) => {
+  setSelectedLocations(prev => 
+    prev.includes(locationId)
+      ? prev.filter(id => id !== locationId)
+      : [...prev, locationId]
+  );
+};
+
+const clearFilters = () => {
+  setSelectedDepartments([]);
+  setSelectedLocations([]);
+  setSearchTerm('');
+};
 
   return (
     <div>
@@ -273,40 +345,66 @@ const handleApplyClick = (job) => {
         <div className="bob-filter-c-div bob-inner-categories-c-div">
           <h6>Filter By </h6>
 
+          {/* Departments Filter */}
           <div className="career-checkbox-div">
-            <div className="form-group bob-form-control bob-check-radio-form-control">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="SeniorManagerBullion"
-                value="Senior Manager - Bullion"
-                // checked={selectedDepartments.includes("Senior Manager - Bullion")}
-                // onChange={() => handleChange("Senior Manager - Bullion")}
-              />
-              <label
-                className="form-check-label"
-                htmlFor="SeniorManagerBullion"
-              >
-                &nbsp;Department
-              </label>
-            </div>
-
-            <div className="form-group bob-form-control bob-check-radio-form-control">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="DigitalMsmeRiskManagement"
-                value="Digital MSME Risk Management"
-                
-              />
-              <label
-                className="form-check-label"
-                htmlFor="DigitalMsmeRiskManagement"
-              >
-                &nbsp;Location
-              </label>
+            <h6 className="mt-3 mb-2">Departments</h6>
+            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              {departments.map((dept) => (
+                <div key={dept.department_id} className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`dept-${dept.department_id}`}
+                    checked={selectedDepartments.includes(dept.department_id)}
+                    onChange={() => handleDepartmentChange(dept.department_id)}
+                  />
+                  <label className="form-check-label" htmlFor={`dept-${dept.department_id}`}>
+                    {dept.department_name}
+                  </label>
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Locations Filter */}
+          <div className="career-checkbox-div mt-3">
+            <h6 className="mt-3 mb-2">Locations</h6>
+            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              {locations.map((location) => (
+                <div key={location.location_id} className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`loc-${location.location_id}`}
+                    checked={selectedLocations.includes(location.location_id)}
+                    onChange={() => handleLocationChange(location.location_id)}
+                  />
+                  <label className="form-check-label" htmlFor={`loc-${location.location_id}`}>
+                    {location.location_name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          {(selectedDepartments.length > 0 || selectedLocations.length > 0) && (
+            <div className="mt-3">
+              <button 
+                className="btn btn-sm btn-outline-secondary"
+                onClick={clearFilters}
+              >
+                Clear All Filters
+              </button>
+            </div>
+          )}
+
+          {/* Active Filters Count */}
+          {(selectedDepartments.length > 0 || selectedLocations.length > 0) && (
+            <div className="mt-2 text-muted small">
+              {selectedDepartments.length} department(s) and {selectedLocations.length} location(s) selected
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -332,59 +430,52 @@ const handleApplyClick = (job) => {
                     {job.requisition_code} - {job.position_title}
                  
                 </h6>
- <div className="justify-content-between align-items-center apply_btn">
-
-                
+            <div className="justify-content-between align-items-center apply_btn">
 
                 <div className="d-flex">
                   {isJobApplied(job.position_id) ? (
-  <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
-    <FontAwesomeIcon icon={faCheckCircle} />
-    <span>Applied</span>
-  </div>
-) : (
-  <>
-    <button
-      className="btn btn-sm btn-outline-primary hovbtn"
-      onClick={() => handleApplyClick(job)}
-    >
-      <b>Apply Now</b>
-    </button>
+                    <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                      <span>Applied</span>
+                    </div>
+                  ) : jobToApply?.position_id === job.position_id ? (
+                    <Razorpay
+                      autoTrigger={true}
+                      onSuccess={async () => {
+                        try {
+                          await apiService.applyJobs({
+                            position_id: job.position_id,
+                            candidate_id: candidateId,
+                          });
+                          setAppliedJobs((prev) => [...prev, { position_id: job.position_id }]);
+                          setRedirectUrl("https://bankapps.bankofbaroda.co.in/BOBRECRUITMENT2_A25/");
+                          setShowRedirectModal(true);
+                        } catch (err) {
+                          console.error(err);
+                          toast.error("Failed to submit application.");
+                        } finally {
+                          setJobToApply(null);
+                        }
+                      }}
+                      onClose={() => setJobToApply(null)} // <-- THIS FIXES YOUR ISSUE
+                      position_id={job.position_id}
+                      amountPaise={job?.application_fee_paise ?? 50000}
+                      candidate={{
+                        id: candidateId,
+                        full_name: user?.full_name,
+                        email: user?.email,
+                        phone: user?.phone,
+                      }}
+                    />
 
-    {/* Razorpay mounts invisibly when this job is selected */}
-    {jobToApply?.position_id === job.position_id && (
-      <Razorpay
-        autoTrigger={true}
-        onSuccess={async () => {
-          try {
-            await apiService.applyJobs({
-              position_id: job.position_id,
-              candidate_id: candidateId,
-            });
-            setAppliedJobs((prev) => [...prev, { position_id: job.position_id }]);
-            setRedirectUrl("https://bankapps.bankofbaroda.co.in/BOBRECRUITMENT2_A25/");
-            setShowRedirectModal(true);
-          } catch (err) {
-            console.error(err);
-            toast.error("Failed to submit application.");
-          } finally {
-            setJobToApply(null);
-          }
-        }}
-        onClose={() => setJobToApply(null)}
-        position_id={job.position_id}
-        amountPaise={job?.application_fee_paise ?? 50000}
-        candidate={{
-          id: candidateId,
-          full_name: user?.full_name,
-          email: user?.email,
-          phone: user?.phone,
-        }}
-      />
-    )}
-  </>
-)}
-
+                  ) : (
+                    <button
+                      className="btn btn-sm btn-outline-primary hovbtn"
+                      onClick={() => handleApplyClick(job)}
+                    >
+                      <b>Apply Now</b>
+                    </button>
+                  )}
 
 
                     <button
@@ -424,14 +515,14 @@ const handleApplyClick = (job) => {
                     icon={faClock}
                     className="me-2 text-muted"
                   /> */}
-                  <span class="subtitle">Department:</span> {job.mandatory_experience} years
+                  <span class="subtitle">Department:</span> {job.department_name} 
                 </p>
                 <p className="mb-1 text-muted small size35">
                   {/* <FontAwesomeIcon
                     icon={faClock}
                     className="me-2 text-muted"
                   /> */}
-                  <span class="subtitle">Location:</span> {job.mandatory_experience} years
+                  <span class="subtitle">Location:</span> {job.location_name} 
                 </p>
 
                 <p className="mb-1 text-muted small qualification">
@@ -485,7 +576,7 @@ const handleApplyClick = (job) => {
       </Modal> */}
 
       {/* Job Details Modal */}
-<Modal show={showModal} onHide={handleCloseModal} size="xl" centered scrollable>
+      <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton className="modal-header-custom">
           <Modal.Title className="text-primary">
             {selectedJob?.position_title || "Job Details"}

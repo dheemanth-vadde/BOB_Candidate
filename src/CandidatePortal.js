@@ -5,6 +5,7 @@ import ResumeUpload from './components/Tabs/ResumeUpload';
 import MyDetailsForm from './components/Tabs/MyDetailsForm';
 import ReviewDetails from './components/Tabs/ReviewDetails';
 import RelevantJobs from './components/Tabs/RelevantJobs';
+import AppliedJobs from './components/Tabs/AppliedJobs';
 import Career from './components/Tabs/Career';
 import './custom-bootstrap-overrides.css';
 import {apiService} from './services/apiService';
@@ -52,7 +53,8 @@ useEffect(() => {
             currentDesignation: data.current_designation || '',
             currentEmployer: data.current_employer || '',
             address: data.address || '',
-            skills: data.skills || ''
+            skills: data.skills || '',
+            document_url: data.documentUrl || ''
           });
           
           // Set resume URL if exists
@@ -73,7 +75,7 @@ useEffect(() => {
 }, [user?.candidate_id]);
   const renderTabContent = () => {
     switch (activeTab) {
-       case 'career':  // ✅ New case for Career.js
+       case 'career':  
         return <Career candidateData={candidateData} />;
       case 'resume':
         return (
@@ -113,6 +115,9 @@ useEffect(() => {
           />
         );
 
+      case 'applied-jobs':
+        return <AppliedJobs candidateData={candidateData} />;
+
       default:
         return null;
     }
@@ -134,7 +139,6 @@ useEffect(() => {
 
           {/* Tabs */}
           <ul className="nav nav-tabs navbarupload justify-content-start">
-             {/* ✅ New Career Tab */}
             <li className="nav-item">
               <button
                 className={`nav-link bornav ${activeTab === 'career' ? 'active' : ''}`}
@@ -159,30 +163,29 @@ useEffect(() => {
                 My Profile
               </button>
             </li>
-            {/* <li className="nav-item">
+            <li className="nav-item">
               <button
-                className={`nav-link bornav ${activeTab === 'details' ? 'active' : ''}`}
-                onClick={() => setActiveTab('details')}
+                className={`nav-link bornav ${activeTab === 'jobs' ? 'active' : ''}`}
+                onClick={() => setActiveTab('jobs')}
               >
-                My Details
+                Current Opportunities
               </button>
-            </li> */}
-            {/* Careers tab → show only if resume exists */}
-              {ResumePublicUrl && (
-                <li className="nav-item">
-                  <button
-                    className={`nav-link bornav ${activeTab === 'jobs' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('jobs')}
-                  >
-                    Current Opportunities
-                  </button>
-                </li>
-              )}
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link bornav ${activeTab === 'applied-jobs' ? 'active' : ''}`}
+                onClick={() => setActiveTab('applied-jobs')}
+              >
+                Applied Jobs
+              </button>
+            </li>
           </ul>
           </div>
 
           {/* Tab Content */}
-          <div className="tab-content mt-3">{renderTabContent()}</div>
+          <div className="tab-content p-4 border border-top-0 rounded-bottom">
+            {renderTabContent()}
+          </div>
         </div>
       </div>
     </div>
