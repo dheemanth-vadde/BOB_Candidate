@@ -275,7 +275,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         </div>
 
         <div className="col-md-3">
-          <label htmlFor="dob" className="form-label">Date of Birth *</label>
+          <label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
           <input
             type="date"
             className={`form-control ${dobError ? 'is-invalid' : ''}`}
@@ -295,7 +295,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         </div>
 
         <div className="col-md-3">
-          <label htmlFor="email" className="form-label">Email *</label>
+          <label htmlFor="email" className="form-label">Email <span className="text-danger">*</span></label>
           <input
             type="email"
             className="form-control"
@@ -307,7 +307,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           />
         </div>
         <div className="col-md-3">
-          <label htmlFor="gender" className="form-label">Gender *</label>
+          <label htmlFor="gender" className="form-label">Gender <span className="text-danger">*</span></label>
           <select
             className="form-select"
             id="gender"
@@ -321,53 +321,9 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           </select>
         </div>
 
+        
         <div className="col-md-3">
-          <label htmlFor="id_proof" className="form-label">ID Proof <span className="text-danger">*</span></label>
-          <select className="form-select mb-2" id="id_proof" value={selectedIdProof} onChange={handleIdProofChange} required>
-            <option value="">Select ID Proof</option>
-            <option value="Aadhar">Aadhar</option>
-            <option value="PAN">PAN</option>
-          </select>
-
-          {selectedIdProof && (
-  <div className="mt-2">
-    <label htmlFor="id_proof_file" className="form-label">
-      Upload {selectedIdProof} Card {isUploading && <span className="spinner-border spinner-border-sm ms-2"></span>}
-      <span className="text-danger">*</span>
-    </label>
-    <input
-      type="file"
-      className={`form-control ${isUploading ? 'opacity-50' : ''}`}
-      id="id_proof_file"
-      accept=".pdf,.jpg,.jpeg,.png"
-      onChange={handleFileChange}
-      required={!idProofFile && !documentUrl}  // <-- updated condition
-      disabled={isUploading}
-    />
-
-    {idProofFile ? (
-      <div className="mt-2 text-success">
-        <i className="bi bi-check-circle-fill me-1"></i>
-        {idProofFile.name} ({(idProofFile.size / 1024).toFixed(2)} KB)
-      </div>
-    ) : documentUrl ? ( // <-- if document already exists
-      <div className="mt-2">
-        <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="btn btn-link p-0">
-          <i className="bi bi-download me-2"></i> Download Document
-        </a>
-      </div>
-    ) : (
-      <div className="form-text">
-        {selectedIdProof === 'Aadhar'
-          ? 'Upload a clear image of your Aadhaar card (Front side with DOB visible)'
-          : 'Upload your PAN card (PDF, JPG, or PNG, max 5MB)'}
-      </div>
-    )}
-  </div>
-)}
-        </div>
-        <div className="col-md-3">
-          <label htmlFor="phone" className="form-label">Phone *</label>
+          <label htmlFor="phone" className="form-label">Phone <span className="text-danger">*</span></label>
           <input
             type="text"
             className="form-control"
@@ -378,7 +334,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           />
         </div>
         <div className="col-md-3">
-          <label htmlFor="education_qualification" className="form-label">Education Qualification *</label>
+          <label htmlFor="education_qualification" className="form-label">Education Qualification <span className="text-danger">*</span></label>
           <input
             type="text"
             className="form-control"
@@ -460,7 +416,58 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             ))}
           </select>
         </div>
+        <div className="col-md-3">
+          <label htmlFor="id_proof" className="form-label">ID Proof <span className="text-danger">*</span></label>
+          <select className="form-select mb-2" id="id_proof" value={selectedIdProof} onChange={handleIdProofChange} required>
+            <option value="">Select ID Proof</option>
+            <option value="Aadhar">Aadhar</option>
+            <option value="PAN">PAN</option>
+          </select>
 
+          
+        </div>
+
+
+        <div className="col-md-3">
+  
+
+          {selectedIdProof && (
+            <div className="mt-2">
+              <label htmlFor="id_proof_file" className="form-label">
+                Upload {selectedIdProof} Card {isUploading && <span className="spinner-border spinner-border-sm ms-2"></span>}
+                <span className="text-danger">*</span>
+              </label>
+              <input
+                type="file"
+                className={`form-control ${isUploading ? 'opacity-50' : ''}`}
+                id="id_proof_file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileChange}
+                required={!idProofFile && !documentUrl}  // <-- updated condition
+                disabled={isUploading}
+              />
+
+              {idProofFile ? (
+                <div className="mt-2 text-success">
+                  <i className="bi bi-check-circle-fill me-1"></i>
+                  {idProofFile.name} ({(idProofFile.size / 1024).toFixed(2)} KB)
+                </div>
+              ) : documentUrl ? ( // <-- if document already exists
+                <div className="mt-2">
+                  <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="btn btn-link p-0">
+                    <i className="bi bi-download me-2"></i> Download Document
+                  </a>
+                </div>
+              ) : (
+                <div className="form-text">
+                  {selectedIdProof === 'Aadhar'
+                    ? 'Upload a clear image of your Aadhaar card (Front side with DOB visible)'
+                    : 'Upload your PAN card (PDF, JPG, or PNG, max 5MB)'}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         {/* Special Category Dropdown */}
         {/* <div className="col-md-4">
           <label htmlFor="special_category_id" className="form-label">Special Category</label>
