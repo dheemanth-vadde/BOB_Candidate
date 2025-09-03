@@ -19,6 +19,8 @@ import { useSelector } from "react-redux";
 import Razorpay from "../Razorpay";
 
 const RelevantJobs = () => {
+  const [processingPositionId, setProcessingPositionId] = useState(null);
+
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -127,31 +129,31 @@ useEffect(() => {
     );
   };
 
-  const handleApplyClick = (job) => {
-    if (isJobApplied(job.position_id)) return;
-  
-    if (!candidateId) {
-      toast.error("Please complete your profile before applying");
+const handleApplyClick = (job) => {
+  if (isJobApplied(job.position_id)) return;
+
+  if (!candidateId) {
+    toast.error("Please complete your profile before applying");
+    return;
+  }
+
+  if (job.eligibility_age_min || job.eligibility_age_max) {
+    if (!candidateDob) {
+      toast.error("Please update your date of birth in your profile");
       return;
     }
-  
-    if (job.eligibility_age_min || job.eligibility_age_max) {
-      if (!candidateDob) {
-        toast.error("Please update your date of birth in your profile");
-        return;
-      }
-  
-      if (!meetsAgeRequirement(candidateDob, job.eligibility_age_min, job.eligibility_age_max)) {
-        const minAge = job.eligibility_age_min || 0;
-        const maxAge = job.eligibility_age_max || "No Limit";
-        toast.error(`Age must be between ${minAge} - ${maxAge} years.`);
-        return;
-      }
+    if (!meetsAgeRequirement(candidateDob, job.eligibility_age_min, job.eligibility_age_max)) {
+      const minAge = job.eligibility_age_min || 0;
+      const maxAge = job.eligibility_age_max || "No Limit";
+      toast.error(`Age must be between ${minAge} - ${maxAge} years.`);
+      return;
     }
-  
-    // If all validations pass, trigger Razorpay
-    setJobToApply(job); 
-  };
+  }
+
+  setProcessingPositionId(job.position_id);   // 👈 NEW
+  setJobToApply(job);                         // triggers Razorpay mount
+};
+
   
 
   const handleConfirmApply = async () => {
@@ -336,48 +338,53 @@ useEffect(() => {
 
                 <div className="d-flex">
                   {isJobApplied(job.position_id) ? (
-                    <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
-                      <FontAwesomeIcon icon={faCheckCircle} />
-                      <span>Applied</span>
-                    </div>
-                  ) : jobToApply?.position_id === job.position_id ? (
-                    <Razorpay
-                      autoTrigger={true}
-                      onSuccess={async () => {
-                        try {
-                          await apiService.applyJobs({
-                            position_id: job.position_id,
-                            candidate_id: candidateId,
-                          });
-                          setAppliedJobs((prev) => [...prev, { position_id: job.position_id }]);
-                          setRedirectUrl("https://bankapps.bankofbaroda.co.in/BOBRECRUITMENT2_A25/");
-                          setShowRedirectModal(true);
-                        } catch (err) {
-                          console.error(err);
-                          toast.error("Failed to submit application.");
-                        } finally {
-                          setJobToApply(null);
-                        }
-                      }}
-                      onClose={() => setJobToApply(null)} // <-- THIS FIXES YOUR ISSUE
-                      position_id={job.position_id}
-                      amountPaise={job?.application_fee_paise ?? 50000}
-                      candidate={{
-                        id: candidateId,
-                        full_name: user?.full_name,
-                        email: user?.email,
-                        phone: user?.phone,
-                      }}
-                    />
+  <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
+    <FontAwesomeIcon icon={faCheckCircle} />
+    <span>Applied</span>
+  </div>
+) : (
+  <>
+    <button
+      className="btn btn-sm btn-outline-primary hovbtn"
+      onClick={() => handleApplyClick(job)}
+    >
+      <b>Apply Now</b>
+    </button>
 
-                  ) : (
-                    <button
-                      className="btn btn-sm btn-outline-primary hovbtn"
-                      onClick={() => handleApplyClick(job)}
-                    >
-                      <b>Apply Now</b>
-                    </button>
-                  )}
+    {/* Razorpay mounts invisibly when this job is selected */}
+    {jobToApply?.position_id === job.position_id && (
+      <Razorpay
+        autoTrigger={true}
+        onSuccess={async () => {
+          try {
+            await apiService.applyJobs({
+              position_id: job.position_id,
+              candidate_id: candidateId,
+            });
+            setAppliedJobs((prev) => [...prev, { position_id: job.position_id }]);
+            setRedirectUrl("https://bankapps.bankofbaroda.co.in/BOBRECRUITMENT2_A25/");
+            setShowRedirectModal(true);
+          } catch (err) {
+            console.error(err);
+            toast.error("Failed to submit application.");
+          } finally {
+            setJobToApply(null);
+          }
+        }}
+        onClose={() => setJobToApply(null)}
+        position_id={job.position_id}
+        amountPaise={job?.application_fee_paise ?? 50000}
+        candidate={{
+          id: candidateId,
+          full_name: user?.full_name,
+          email: user?.email,
+          phone: user?.phone,
+        }}
+      />
+    )}
+  </>
+)}
+
 
 
                     <button
@@ -478,7 +485,7 @@ useEffect(() => {
       </Modal> */}
 
       {/* Job Details Modal */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
+<Modal show={showModal} onHide={handleCloseModal} size="xl" centered scrollable>
         <Modal.Header closeButton className="modal-header-custom">
           <Modal.Title className="text-primary">
             {selectedJob?.position_title || "Job Details"}

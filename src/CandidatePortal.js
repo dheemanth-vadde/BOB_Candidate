@@ -123,6 +123,15 @@ useEffect(() => {
       <Header />
       <div className="d-flex">
         <div className="flex-grow-1 m-4">
+  <div
+  className="bg-white"
+  style={{
+    position: "sticky",
+    top: "64px",   // 👈 must equal Header height above
+    zIndex: 1020,
+  }}
+>
+
           {/* Tabs */}
           <ul className="nav nav-tabs navbarupload justify-content-start">
              {/* ✅ New Career Tab */}
@@ -131,7 +140,7 @@ useEffect(() => {
                 className={`nav-link bornav ${activeTab === 'career' ? 'active' : ''}`}
                 onClick={() => setActiveTab('career')}
               >
-                Careers
+                Home
               </button>
             </li>
             <li className="nav-item">
@@ -170,6 +179,7 @@ useEffect(() => {
                 </li>
               )}
           </ul>
+          </div>
 
           {/* Tab Content */}
           <div className="tab-content mt-3">{renderTabContent()}</div>

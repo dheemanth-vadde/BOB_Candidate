@@ -41,7 +41,7 @@ const Header = () => {
   }, []);
 
   return (
-    <Navbar bg="warning" variant="light" expand="lg" className="py-2 position-relative">
+<Navbar sticky="top" bg="warning" variant="light" expand="lg" className="py-2" style={{ zIndex: 1030, height: "64px" }}>
       <div className="container-fluid">
         <Navbar.Brand href="#" className="fw-bold logobob">
           <img src={logo_Bob} alt="BobApp Logo" className="me-2" />
@@ -140,18 +140,23 @@ const Header = () => {
               />
             </OverlayTrigger>
 
-            {showDropdown && (
-              <div
-                className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow"
-                style={{ minWidth: "200px", zIndex: 1000 }}
-              >
-                <p className="mb-1">{user?.full_name}</p>
-                <p className="mb-0 text-muted">
-                  {user?.role === "L1" || user?.role === "L2" ? `${user.role} Approver` : user?.role}
-                </p>
-                <p onClick={() => navigate('/login')} style={{cursor: 'pointer'}}> Logout</p>
-              </div>
-            )}
+           {showDropdown && (
+  <div
+    className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow"
+    style={{ minWidth: "200px", zIndex: 1000 }}
+  >
+    <p className="mb-1">{user?.full_name}</p>
+    <p className="mb-0 text-muted">
+      {user?.role === "L1" || user?.role === "L2" ? `${user.role} Approver` : user?.role}
+    </p>
+
+    {/* separator */}
+    <hr className="my-2" />
+
+    <p onClick={() => navigate('/login')} style={{cursor: 'pointer', margin: 0}}>Logout</p>
+  </div>
+)}
+
           </div>
         </div>
       </div>
