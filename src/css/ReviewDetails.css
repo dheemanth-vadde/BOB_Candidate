@@ -1,0 +1,12 @@
+.nationality{
+    margin-top: -25px;
+
+}
+.formfields label{
+    font-size: 14px;
+  color: #656565;
+}
+.formfields input, .formfields textarea{
+    font-size: 14px;
+  color: #000;
+}

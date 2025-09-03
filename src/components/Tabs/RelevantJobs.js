@@ -136,14 +136,14 @@ const RelevantJobs = () => {
   return (
     <div>
       {/* 🔹 Search Bar */}
-      <div className="d-flex justify-content-end mb-3">
-        <div className="input-group" style={{ maxWidth: "350px"}}>
+      <div className="d-flex justify-content-end mb-3 ">
+        <div className="input-group searchinput" style={{ maxWidth: "350px"}}>
           <span className="input-group-text" style={{ backgroundColor: "rgb(255, 112, 67)" }}>
             <FontAwesomeIcon icon={faSearch}  style={{color:' #fff'}}/>
           </span>
           <input
             type="text"
-            className="form-control"
+            className="form-control title"
             placeholder="Search by Job title or Req code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -165,9 +165,96 @@ const RelevantJobs = () => {
         {filteredJobs.length === 0 && !loading && (
           <p>No matching jobs found.</p>
         )}
+    <div
+      className="col-md-3 bob-left-fixed-filter bob-mob-side-filter"
+      style={{ paddingBottom: "30px" }}
+    >
+      {/* Header */}
+      <div className="bob-left-filter-div">
+        <strong>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="19.005"
+            height="17.413"
+            viewBox="0 0 19.005 17.413"
+            fill="#707070"
+          >
+            <g transform="translate(-4.77 -5.962)">
+              <path
+                d="M82.529,81.927H71.206a2.335,2.335,0,0,0-4.428,0H65.01a.743.743,0,0,0,0,1.487h1.767a2.335,2.335,0,0,0,4.428,0H82.529a.743.743,0,1,0,0-1.487ZM68.992,83.519a.849.849,0,1,1,.849-.849A.85.85,0,0,1,68.992,83.519Z"
+                transform="translate(-59.497 -74.372)"
+              />
+              <path
+                d="M82.529,210.46H80.761a2.335,2.335,0,0,0-4.428,0H65.01a.743.743,0,0,0,0,1.487H76.333a2.335,2.335,0,0,0,4.428,0h1.767a.743.743,0,1,0,0-1.487Zm-3.981,1.593a.849.849,0,1,1,.849-.849A.85.85,0,0,1,78.547,212.052Z"
+                transform="translate(-59.497 -196.534)"
+              />
+              <path
+                d="M82.529,338.993H74.391a2.335,2.335,0,0,0-4.428,0H65.01a.743.743,0,0,0,0,1.487h4.953a2.335,2.335,0,0,0,4.428,0h8.138a.743.743,0,1,0,0-1.487Zm-10.352,1.593a.849.849,0,1,1,.849-.849A.85.85,0,0,1,72.177,340.585Z"
+                transform="translate(-59.497 -318.697)"
+              />
+            </g>
+          </svg>
+          <span style={{ marginLeft: "8px" }}>Filters</span>
+        </strong>
+      </div>
 
+      {/* Filters */}
+      <div
+        className="bob-left-custom-filter-div"
+        style={{
+          background: "#fff",
+          boxShadow: "0 3px 6px #1a2c7129",
+          borderRadius: "10px",
+          padding: "20px 10px",
+          marginTop: "25px",
+        }}
+      >
+        <div className="bob-filter-c-div bob-inner-categories-c-div">
+          <h6>Filter By </h6>
+
+          <div className="career-checkbox-div">
+            <div className="form-group bob-form-control bob-check-radio-form-control">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="SeniorManagerBullion"
+                value="Senior Manager - Bullion"
+                // checked={selectedDepartments.includes("Senior Manager - Bullion")}
+                // onChange={() => handleChange("Senior Manager - Bullion")}
+              />
+              <label
+                className="form-check-label"
+                htmlFor="SeniorManagerBullion"
+              >
+                &nbsp;Department
+              </label>
+            </div>
+
+            <div className="form-group bob-form-control bob-check-radio-form-control">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="DigitalMsmeRiskManagement"
+                value="Digital MSME Risk Management"
+                
+              />
+              <label
+                className="form-check-label"
+                htmlFor="DigitalMsmeRiskManagement"
+              >
+                &nbsp;Location
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+     <div class="col-md-9" >
         {filteredJobs.map((job) => (
-          <div className="col-md-4 mb-4" key={job.position_id}>
+          
+         
+          <div className="col-md-12 mb-4" key={job.position_id}>
             <div
               className="card h-100"
               style={{
@@ -177,52 +264,18 @@ const RelevantJobs = () => {
                 border: 0,
               }}
             >
-              <div className="card-body">
+              <div className="card-body job-main-header-sec">
                 <h6 className="job-title">
-                  <FontAwesomeIcon
+                  {/* <FontAwesomeIcon
                     icon={faUser}
                     className="me-2 text-secondary"
-                  />
-                  <b>
+                  /> */}
+                  
                     {job.requisition_code} - {job.position_title}
-                  </b>
+                 
                 </h6>
-
-                <p className="mb-1 text-muted small">
-                  <FontAwesomeIcon
-                    icon={faMapMarkerAlt}
-                    className="me-2 text-muted"
-                  />
-                  <b>Employment Type:</b> {job.employment_type}
-                </p>
-
-                <p className="mb-1 text-muted small">
-                  <FontAwesomeIcon
-                    icon={faUsers}
-                    className="me-2 text-muted"
-                  />
-                  <b>Eligibility Age:</b> {job.eligibility_age_min} -{" "}
-                  {job.eligibility_age_max} years
-                </p>
-
-                <p className="mb-1 text-muted small">
-                  <FontAwesomeIcon
-                    icon={faClock}
-                    className="me-2 text-muted"
-                  />
-                  <b>Experience:</b> {job.mandatory_experience} years
-                </p>
-
-                <p className="mb-1 text-muted small">
-                  <FontAwesomeIcon
-                    icon={faTools}
-                    className="me-2 text-muted"
-                  />
-                  <b>Qualification:</b> {job.mandatory_qualification}
-                </p>
-
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div className="d-flex">
+                <div className="justify-content-between align-items-center apply_btn">
+                  <div className="d-flex ">
                     {isJobApplied(job.position_id) ? (
                       <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
                         <FontAwesomeIcon icon={faCheckCircle} />
@@ -233,7 +286,7 @@ const RelevantJobs = () => {
                         className="btn btn-sm btn-outline-primary hovbtn"
                         onClick={() => handleApplyClick(job)}
                       >
-                        <b>Apply Online</b>
+                        <b>Apply Now</b>
                       </button>
                     )}
                     <button
@@ -244,10 +297,60 @@ const RelevantJobs = () => {
                     </button>
                   </div>
                 </div>
+                <p className="mb-1 text-muted small size35">
+                  {/* <FontAwesomeIcon
+                    icon={faMapMarkerAlt}
+                    className="me-2 text-muted"
+                  /> */}
+                  <span class="subtitle">Employment Type:</span> {job.employment_type}
+                </p>
+
+                <p className="mb-1 text-muted small size35">
+                  {/* <FontAwesomeIcon
+                    icon={faUsers}
+                    className="me-2 text-muted"
+                  /> */}
+                  <span class="subtitle">Eligibility Age:</span> {job.eligibility_age_min} -{" "}
+                  {job.eligibility_age_max} years
+                </p>
+
+                <p className="mb-1 text-muted small size30">
+                  {/* <FontAwesomeIcon
+                    icon={faClock}
+                    className="me-2 text-muted"
+                  /> */}
+                  <span class="subtitle">Experience:</span> {job.mandatory_experience} years
+                </p>
+                <p className="mb-1 text-muted small size35">
+                  {/* <FontAwesomeIcon
+                    icon={faClock}
+                    className="me-2 text-muted"
+                  /> */}
+                  <span class="subtitle">Department:</span> {job.mandatory_experience} years
+                </p>
+                <p className="mb-1 text-muted small size35">
+                  {/* <FontAwesomeIcon
+                    icon={faClock}
+                    className="me-2 text-muted"
+                  /> */}
+                  <span class="subtitle">Location:</span> {job.mandatory_experience} years
+                </p>
+
+                <p className="mb-1 text-muted small qualification">
+                  {/* <FontAwesomeIcon
+                    icon={faTools}
+                    className="me-2 text-muted"
+                  /> */}
+                  <span class="subtitle">Qualification:</span> {job.mandatory_qualification}
+                </p>
+
+                
               </div>
             </div>
           </div>
+          
         ))}
+        </div>
       </div>
 
       {/* ✅ Payment Confirmation Modal */}

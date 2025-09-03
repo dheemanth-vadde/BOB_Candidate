@@ -9,8 +9,8 @@
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light-grey);
+            font-family: poppins !important;
+            background-color: #333;
         }
 
         /* Header */
@@ -288,8 +288,8 @@
             gap: 1.5rem 2rem;
         }
         .spaceform{
-          border: 1px solid #ff5722;
-  border-radius: 0.75rem;
+          box-shadow: rgba(0, 123, 255, 0.15) 0px 8px 20px;
+  border-radius: 12px;
         }
         .detail-item label {
             display: block;

@@ -7,6 +7,9 @@ import Register from './components/Register';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import ForgotPassword from './components/ForgotPassword';
+import '@fontsource/poppins'; // Defaults to weight 400
+import '@fontsource/poppins/600.css'; // Specific weight
+import Notifications from './components/Notifications';
 
 function App() {
   return (
@@ -16,6 +19,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
 
           <Route path="/candidate-portal" element={<CandidatePortal />} />
+          <Route path="/notifications" element={<Notifications />} />
           {/* Auth pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

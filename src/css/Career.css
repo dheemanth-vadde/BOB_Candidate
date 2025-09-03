@@ -1,0 +1,25 @@
+.fs14{
+    font-size: 24px;
+    color: #162b75;
+    font-weight: 500 !important;
+    font-family: poppins !important;
+}
+.icons{
+    width:100%;
+}
+.icons img{
+    height: 80px !important;
+  width: auto !important;
+} 
+.card-body .h5{
+    color:#162b75 !important;
+}
+.card-body p{
+    color:#757575 !important;
+    font-weight:300 !important;
+}
+.cardshadow{
+    box-shadow: rgba(0, 123, 255, 0.15) 0px 8px 20px !important;
+  border-radius: 12px;
+  border: none !important;
+}

@@ -19,3 +19,59 @@
     padding-bottom: 5px;
     border-bottom: 1px solid rgba(255, 112, 67, 0.2);
   }
+  .job-title{
+    color: #162A75;
+  font-size: 16px;
+  width: 75%;
+  float: left;
+    margin-bottom: 10px;
+    font-weight: 500 !important;
+  }
+  .qualification{
+    color: #1a2c71 !important;
+  width: 100%;
+  float: left;
+  }
+  .subtitle{
+    font-weight:500;
+    color:#414141;
+  }
+   
+  .size30{
+  width: 30%;
+  float: left;
+  }
+    .size35{
+  width: 35%;
+  float: left;
+  }
+  .text-muted{
+    color: #000 !important;
+  font-size: 14px;
+  }
+  .apply_btn{
+    display: block !important;
+  float: right;
+   margin-bottom: 5px;
+  }
+  .job-main-header-sec{
+    display: block;
+  line-height: 20px;
+  }
+  #matched-jobs-container{
+    padding:0px !important;
+  }
+  .form-check-label{
+    font-size:14px;
+  }
+  .searchinput {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 50% !important;
+  float: right;
+}
+.title{
+  font-size:12px !important;
+}

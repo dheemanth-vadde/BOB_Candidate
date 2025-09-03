@@ -1,6 +1,7 @@
 // components/Tabs/ResumeUpload.jsx
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import '../../css/Resumeupload.css';
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl,goNext,resumePublicUrl }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
@@ -78,7 +79,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
   return (
     <div className="form-content-section text-center">
     <h2>Upload Resume</h2>
-    <p>Resume/CV* (Supported format: .docx/.pdf; Max size: 4.5 MB)</p>
+    <p className="subtext">Resume/CV* (Supported format: .docx/.pdf; Max size: 4.5 MB)</p>
 
     {/* Show existing resume if available */}
     {resumePublicUrl && (
@@ -90,7 +91,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
           rel="noopener noreferrer"
           className="btn btn-link"
         >
-          <i className="ph-light ph-file-text me-2"></i>View Current Resume
+          <i className="ph-light ph-file-text me-2"></i><b>View Current Resume</b>
         </a>
       </div>
     )}
@@ -122,9 +123,9 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
-      {fileName && <div className="mt-2">{fileName}</div>}
+     
     </div>
-
+ {fileName && <div className="mt-2">{fileName}</div>}
     <div className="mt-4">
       <button
         className="btn btn-primary"
@@ -132,7 +133,8 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
           backgroundColor: '#ff7043',
           border: 'none',
           padding: '8px 24px',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          color:"#fff"
         }}
         onClick={handleContinue}
         disabled={!resumeFile && !resumePublicUrl}

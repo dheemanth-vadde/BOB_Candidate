@@ -5,6 +5,7 @@ import ResumeUpload from './components/Tabs/ResumeUpload';
 import MyDetailsForm from './components/Tabs/MyDetailsForm';
 import ReviewDetails from './components/Tabs/ReviewDetails';
 import RelevantJobs from './components/Tabs/RelevantJobs';
+import Career from './components/Tabs/Career';
 import './custom-bootstrap-overrides.css';
 import {apiService} from './services/apiService';
 import { useSelector } from 'react-redux';
@@ -13,7 +14,7 @@ const CandidatePortal = () => {
   const authUser = useSelector((state) => state.user.authUser);
   console.log("User from Redux:", user);
   console.log("Auth User from Redux:", authUser);
-  const [activeTab, setActiveTab] = useState('resume');
+  const [activeTab, setActiveTab] = useState('career'); // Default to 'career' tab
   const [resumeFile, setResumeFile] = useState(null);
   const [ResumePublicUrl, setResumePublicUrl] = useState(null);
   const [candidateData, setCandidateData] = useState({});
@@ -72,6 +73,8 @@ useEffect(() => {
 }, [user?.candidate_id]);
   const renderTabContent = () => {
     switch (activeTab) {
+       case 'career':  // ✅ New case for Career.js
+        return <Career candidateData={candidateData} />;
       case 'resume':
         return (
           <ResumeUpload
@@ -121,6 +124,15 @@ useEffect(() => {
         <div className="flex-grow-1 m-4">
           {/* Tabs */}
           <ul className="nav nav-tabs navbarupload justify-content-start">
+             {/* ✅ New Career Tab */}
+            <li className="nav-item">
+              <button
+                className={`nav-link bornav ${activeTab === 'career' ? 'active' : ''}`}
+                onClick={() => setActiveTab('career')}
+              >
+                Careers
+              </button>
+            </li>
             <li className="nav-item">
               <button
                 className={`nav-link bornav ${activeTab === 'resume' ? 'active' : ''}`}
@@ -152,7 +164,7 @@ useEffect(() => {
                     className={`nav-link bornav ${activeTab === 'jobs' ? 'active' : ''}`}
                     onClick={() => setActiveTab('jobs')}
                   >
-                    Careers
+                    Current Opportunities
                   </button>
                 </li>
               )}

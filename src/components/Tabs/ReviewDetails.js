@@ -3,6 +3,7 @@ import axios from 'axios';
 import {apiService} from '../../services/apiService';
 import { toast } from 'react-toastify';
 import { useSelector } from "react-redux";
+import '../../css/ReviewDetails.css';
 const ReviewDetails = ({ initialData = {}, onSubmit ,resumePublicUrl }) => {
   const [formData, setFormData] = useState(initialData);
   const user = useSelector((state) => state.user.user);
@@ -100,8 +101,8 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="form-content-section text-start p-4 spaceform">
-      <form className="row g-4" onSubmit={handleSubmit}>
-        <div className="col-md-4">
+      <form className="row g-4 formfields" onSubmit={handleSubmit}>
+        <div className="col-md-3">
           <label htmlFor="name" className="form-label">Name *</label>
           <input
             type="text"
@@ -113,7 +114,7 @@ const handleSubmit = async (e) => {
           />
         </div>
 
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="dob" className="form-label">Date of Birth *</label>
           <input
             type="date"
@@ -125,7 +126,7 @@ const handleSubmit = async (e) => {
           />
         </div>
 
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="email" className="form-label">Email *</label>
           <input
             type="email"
@@ -137,7 +138,7 @@ const handleSubmit = async (e) => {
             required
           />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="gender" className="form-label">Gender *</label>
           <select
             className="form-select"
@@ -152,7 +153,7 @@ const handleSubmit = async (e) => {
           </select>
         </div>
 
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="id_proof" className="form-label">ID Proof*</label>
           <input
             type="text"
@@ -164,7 +165,7 @@ const handleSubmit = async (e) => {
             placeholder="Enter ID Proof (Aadhar/Passport/Driving License)"
           />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="phone" className="form-label">Phone *</label>
           <input
             type="text"
@@ -175,7 +176,7 @@ const handleSubmit = async (e) => {
             required
           />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="education_qualification" className="form-label">Education Qualification *</label>
           <input
             type="text"
@@ -186,18 +187,9 @@ const handleSubmit = async (e) => {
             required
           />
         </div>
-        <div className="col-md-4">
-          <label htmlFor="skills" className="form-label">Skills</label>
-          <textarea
-            className="form-control"
-            id="skills"
-            rows="3"
-            value={formData.skills}
-            onChange={handleChange}
-          />
-        </div>
+        
 
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="totalExperience" className="form-label">Total Experience</label>
           <input
             type="text"
@@ -208,7 +200,7 @@ const handleSubmit = async (e) => {
           />
         </div>
 
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="currentDesignation" className="form-label">Current Designation</label>
           <input
             type="text"
@@ -219,7 +211,7 @@ const handleSubmit = async (e) => {
           />
         </div>
 
-        <div className="col-md-4">
+        <div className="col-md-3">
           <label htmlFor="currentEmployer" className="form-label">Current Employer</label>
           <input
             type="text"
@@ -229,8 +221,18 @@ const handleSubmit = async (e) => {
             onChange={handleChange}
           />
         </div>
-
-        <div className="col-md-4">
+        
+      <div className="col-md-3">
+          <label htmlFor="skills" className="form-label">Skills</label>
+          <textarea
+            className="form-control"
+            id="skills"
+            rows="3"
+            value={formData.skills}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-3">
           <label htmlFor="address" className="form-label">Address</label>
           <textarea
             className="form-control"
@@ -240,7 +242,7 @@ const handleSubmit = async (e) => {
             onChange={handleChange}
           />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-3 nationality">
           <label htmlFor="nationality_id" className="form-label">Nationality *</label>
           <select
             className="form-select"
