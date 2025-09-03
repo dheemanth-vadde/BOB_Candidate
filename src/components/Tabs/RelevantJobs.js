@@ -27,10 +27,11 @@ const RelevantJobs = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [jobToApply, setJobToApply] = useState(null);
   const [searchTerm, setSearchTerm] = useState(""); // 🔹 NEW
-
+  const [candidateDob, setCandidateDob] = useState(null);
   const user = useSelector((state) => state.user.user);
   const candidateId = user?.candidate_id;
-
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
+const [redirectUrl, setRedirectUrl] = useState("");
   const fetchAppliedJobs = async () => {
   if (!candidateId) return; // wait until candidateId exists
 
@@ -58,8 +59,45 @@ const RelevantJobs = () => {
     setAppliedJobs([]);
   }
 };
+// Add this utility function at the top of the file
+const calculateAge = (dobString) => {
+  const dob = new Date(dobString);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
+const meetsAgeRequirement = (candidateDob, jobMinAge, jobMaxAge) => {
+  if (!candidateDob) return false;
+  console.log("candidateDob",candidateDob, jobMinAge, jobMaxAge);
+  const age = calculateAge(candidateDob);
+  console.log("age",age);
+  return age >= (jobMinAge || 18) && (!jobMaxAge || age <= jobMaxAge);
+};
 
-
+useEffect(() => {
+  const fetchCandidateDetails = async () => {
+    if (!candidateId) return;
+    
+    try {
+      const details = await apiService.getCandidateDetails(candidateId);
+      console.log("Candidate details:", details);
+      console.log("Candidate details:", details.data.date_of_birth);
+      if (details?.data?.date_of_birth) {
+        setCandidateDob(details.data.date_of_birth);
+      }
+    } catch (error) {
+      console.error('Error fetching candidate details:', error);
+    }
+  };
+  
+  fetchCandidateDetails();
+}, [candidateId]);
   const fetchJobs = async () => {
     try {
       await fetchAppliedJobs();
@@ -91,9 +129,30 @@ const RelevantJobs = () => {
 
   const handleApplyClick = (job) => {
     if (isJobApplied(job.position_id)) return;
-    setJobToApply(job);
-    setShowPaymentModal(true);
+  
+    if (!candidateId) {
+      toast.error("Please complete your profile before applying");
+      return;
+    }
+  
+    if (job.eligibility_age_min || job.eligibility_age_max) {
+      if (!candidateDob) {
+        toast.error("Please update your date of birth in your profile");
+        return;
+      }
+  
+      if (!meetsAgeRequirement(candidateDob, job.eligibility_age_min, job.eligibility_age_max)) {
+        const minAge = job.eligibility_age_min || 0;
+        const maxAge = job.eligibility_age_max || "No Limit";
+        toast.error(`Age must be between ${minAge} - ${maxAge} years.`);
+        return;
+      }
+    }
+  
+    // If all validations pass, trigger Razorpay
+    setJobToApply(job); 
   };
+  
 
   const handleConfirmApply = async () => {
     if (!jobToApply) return;
@@ -136,7 +195,7 @@ const RelevantJobs = () => {
   return (
     <div>
       {/* 🔹 Search Bar */}
-      <div className="d-flex justify-content-end mb-3 ">
+      <div className="d-flex justify-content-end mb-3">
         <div className="input-group searchinput" style={{ maxWidth: "350px"}}>
           <span className="input-group-text" style={{ backgroundColor: "rgb(255, 112, 67)" }}>
             <FontAwesomeIcon icon={faSearch}  style={{color:' #fff'}}/>
@@ -165,7 +224,7 @@ const RelevantJobs = () => {
         {filteredJobs.length === 0 && !loading && (
           <p>No matching jobs found.</p>
         )}
-    <div
+<div
       className="col-md-3 bob-left-fixed-filter bob-mob-side-filter"
       style={{ paddingBottom: "30px" }}
     >
@@ -249,11 +308,8 @@ const RelevantJobs = () => {
         </div>
       </div>
     </div>
-
-     <div class="col-md-9" >
+    <div class="col-md-9" >
         {filteredJobs.map((job) => (
-          
-         
           <div className="col-md-12 mb-4" key={job.position_id}>
             <div
               className="card h-100"
@@ -274,21 +330,56 @@ const RelevantJobs = () => {
                     {job.requisition_code} - {job.position_title}
                  
                 </h6>
-                <div className="justify-content-between align-items-center apply_btn">
-                  <div className="d-flex ">
-                    {isJobApplied(job.position_id) ? (
-                      <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
-                        <FontAwesomeIcon icon={faCheckCircle} />
-                        <span>Applied</span>
-                      </div>
-                    ) : (
-                      <button
-                        className="btn btn-sm btn-outline-primary hovbtn"
-                        onClick={() => handleApplyClick(job)}
-                      >
-                        <b>Apply Now</b>
-                      </button>
-                    )}
+ <div className="justify-content-between align-items-center apply_btn">
+
+                
+
+                <div className="d-flex">
+                  {isJobApplied(job.position_id) ? (
+                    <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                      <span>Applied</span>
+                    </div>
+                  ) : jobToApply?.position_id === job.position_id ? (
+                    <Razorpay
+                      autoTrigger={true}
+                      onSuccess={async () => {
+                        try {
+                          await apiService.applyJobs({
+                            position_id: job.position_id,
+                            candidate_id: candidateId,
+                          });
+                          setAppliedJobs((prev) => [...prev, { position_id: job.position_id }]);
+                          setRedirectUrl("https://bankapps.bankofbaroda.co.in/BOBRECRUITMENT2_A25/");
+                          setShowRedirectModal(true);
+                        } catch (err) {
+                          console.error(err);
+                          toast.error("Failed to submit application.");
+                        } finally {
+                          setJobToApply(null);
+                        }
+                      }}
+                      onClose={() => setJobToApply(null)} // <-- THIS FIXES YOUR ISSUE
+                      position_id={job.position_id}
+                      amountPaise={job?.application_fee_paise ?? 50000}
+                      candidate={{
+                        id: candidateId,
+                        full_name: user?.full_name,
+                        email: user?.email,
+                        phone: user?.phone,
+                      }}
+                    />
+
+                  ) : (
+                    <button
+                      className="btn btn-sm btn-outline-primary hovbtn"
+                      onClick={() => handleApplyClick(job)}
+                    >
+                      <b>Apply Now</b>
+                    </button>
+                  )}
+
+
                     <button
                       className="btn btn-sm knowntb ms-2"
                       onClick={() => handleKnowMore(job)}
@@ -343,18 +434,15 @@ const RelevantJobs = () => {
                   /> */}
                   <span class="subtitle">Qualification:</span> {job.mandatory_qualification}
                 </p>
-
-                
               </div>
             </div>
           </div>
-          
         ))}
-        </div>
+      </div>
       </div>
 
       {/* ✅ Payment Confirmation Modal */}
-      <Modal
+      {/* <Modal
         show={showPaymentModal}
         onHide={() => setShowPaymentModal(false)}
         centered
@@ -387,7 +475,7 @@ const RelevantJobs = () => {
             />
           )}
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
 
       {/* Job Details Modal */}
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
@@ -468,6 +556,31 @@ const RelevantJobs = () => {
             onClick={handleCloseModal}
           >
             Close
+          </button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showRedirectModal} onHide={() => setShowRedirectModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>You are being redirected to an external site.</Modal.Title>
+        </Modal.Header>
+        {/* <Modal.Body className="text-center">
+          <p>Do you want to continue?</p>
+        </Modal.Body> */}
+        <Modal.Footer>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => setShowRedirectModal(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setShowRedirectModal(false);
+              window.open(redirectUrl, "_blank"); // Or window.location.href = redirectUrl;
+            }}
+          >
+            Proceed
           </button>
         </Modal.Footer>
       </Modal>
