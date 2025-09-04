@@ -174,7 +174,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     }
   };
   const handleDocumentUpload = async (file) => {
-    console.log("file",file);
+    console.log("file1111111111",file);
     try {
       setIsUploading(true);
       const formData = new FormData();
@@ -224,7 +224,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         setIdProofFile(null);
         return;
       }
-  
+      await handleDocumentUpload(file);
       if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
       //  toast.info('Processing Aadhaar card...');
       
@@ -246,7 +246,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
            
 
           }
-          await handleDocumentUpload(file);
+         
         } else {
           toast.error("Could not extract DOB from Aadhaar. Please upload a clear image.");
         }
