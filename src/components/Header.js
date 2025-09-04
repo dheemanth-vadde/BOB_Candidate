@@ -13,11 +13,18 @@ const Header = ({ hideIcons }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [notifications, setNotifications] = useState([
-    { id: 1, message: "Bank of Baroda has posted a new opening for Probationary Officer (PO).", time: "1h ago", read: true },
-    { id: 2, message: "Your application for Relationship Manager has been successfully submitted.", time: "3h ago", read: true },
-    { id: 3, message: "Application for Assistant Manager is currently under review by HR.", time: "1d ago", read: true },
-    { id: 4, message: "Online assessment for Clerk role scheduled on 15 Sept, 11:00 AM.", time: "2d ago", read: true },
-    { id: 5, message: "Congratulations! You are shortlisted for the final interview round (Senior Analyst).", time: "3d ago", read: true },
+{ id: 1, message: "📢 Bank of Baroda has posted a new opening for Probationary Officer (PO).", time: "1h ago", read: true },
+      { id: 2, message: "✅ Your application for Relationship Manager has been successfully submitted.", time: "3h ago", read: true },
+      { id: 3, message: "🔎 Application for Assistant Manager is currently under review by HR.", time: "1d ago", read: true },
+      { id: 4, message: "📅 Online assessment for Clerk role scheduled on 15 Sept, 11:00 AM.", time: "2d ago",  read: true},
+      { id: 5, message: "⭐ Congratulations! You are shortlisted for the final interview round (Senior Analyst).", time: "3d ago" ,  read: true},
+      { id: 6, message: "🎓 New campus recruitment drive announced for Graduate Trainee positions.", time: "5d ago",  read: true },
+      { id: 7, message: "📢 BoB HR team has published the final results for Assistant Manager recruitment.", time: "1w ago",  read: true },
+      { id: 8, message: "⚡ Reminder: Please update your KYC details before applying for new roles.", time: "2w ago" ,  read: true},
+      { id: 9, message: "📢 New job alert: Wealth Manager positions open across multiple cities.", time: "3w ago" ,  read: true},
+      { id: 10, message: "📅 Technical interview scheduled for IT Officer role on 25 Sept, 2:00 PM.", time: "1mo ago" ,  read: true},
+      { id: 11, message: "✅ Application for Marketing Associate has been successfully submitted.", time: "1mo ago",  read: true },
+      { id: 12, message: "⭐ You have been selected in the merit list for Clerk recruitment 2025.", time: "1mo ago",  read: true }
 
   ]);
 
@@ -67,20 +74,20 @@ const Header = ({ hideIcons }) => {
             onClick={() => setShowNotification((prev) => !prev)}
           >
             <FontAwesomeIcon icon={faBell} size="lg" style={{ color: "orangered" }} />
-            {unreadCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  width: "8px",
-                  height: "8px",
-                  backgroundColor: "red",
-                  borderRadius: "50%",
-                  border: "2px solid white",
-                }}
-              />
-            )}
+           
+               <span
+              style={{
+                position: "absolute",
+                top: "8px",
+                right: "8px",
+                width: "8px",
+                height: "8px",
+                backgroundColor: "red",
+                borderRadius: "50%",
+                border: "2px solid white",   // neat border
+              }}
+            ></span>
+            
           </Button>
 
           {/* Notification Popup */}
@@ -127,14 +134,14 @@ const Header = ({ hideIcons }) => {
                 )}
                 <div className="text-center p-2">
                   <Button
-                    variant="outline-warning"
+                    variant="outline-warning bgbtn"
                     size="sm"
                     className="mt-2"
                     onClick={() => {
                       setShowNotification(false);
                       navigate('/notifications');
                     }}
-                    style={{ color: 'orangered', border: '1px solid orangered' }}
+                    style={{  border: '1px solid orangered' }}
                   >
                     View All
                   </Button>
