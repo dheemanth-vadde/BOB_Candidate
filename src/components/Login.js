@@ -5,6 +5,7 @@ import axios from "axios";
 import "../css/Login.css";
 import pana from "../assets/pana.png";
 import boblogo from "../assets/bob-logo.png";
+import BobLogo from "../assets/bob-logo1.jpg";
 import { useDispatch } from 'react-redux';
 import { setUser, setAuthUser } from '../store/userSlice';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -76,13 +77,13 @@ const Login = () => {
     <div className="login-container">
       <div className="left-panel">
         <img src={pana} alt="Illustration" />
-        <h2>बैंक ऑफ़ बड़ौदा</h2>
-        <h3>Bank of Baroda</h3>
+        {/* <h2>बैंक ऑफ़ बड़ौदा</h2>
+        <h3>Bank of Baroda</h3> */}
       </div>
 
       <div className="right-panel">
         <div className="logo">
-          <img src={boblogo} alt="Logo" />
+          <img src={BobLogo} alt="Logo" />
           <h4>Candidate Login</h4>
         </div>
 

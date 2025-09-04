@@ -667,8 +667,8 @@ const clearFilters = () => {
           </button>
         </Modal.Footer>
       </Modal>
-      <Modal show={showRedirectModal} onHide={() => setShowRedirectModal(false)} centered>
-        <Modal.Header closeButton className="modal-header-custom">
+      <Modal show={showRedirectModal} onHide={() => setShowRedirectModal(false)} centered className="modelexternal">
+        <Modal.Header  className="modal-header-custom">
           <Modal.Title className="externalfont">You are being redirected to an external site.</Modal.Title>
         </Modal.Header>
         {/* <Modal.Body className="text-center">

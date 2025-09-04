@@ -57,7 +57,7 @@ const Notifications = () => {
                     key={note.id}
                     className="shadow-sm mb-3 w-100"
                     style={{
-                      borderLeft: `6px solid ${note.read ? "#ccc" : "#FF6F00"}`,
+                      borderLeft: `6px solid ${note.read ? "#FF6F00" : "#FF6F00"}`,
                       backgroundColor: note.read ? "#f8f9fa" : "white",
                       textAlign: "left",
                     }}
