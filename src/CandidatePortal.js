@@ -76,7 +76,7 @@ useEffect(() => {
   const renderTabContent = () => {
     switch (activeTab) {
        case 'career':  
-        return <Career candidateData={candidateData} />;
+        return <Career candidateData={candidateData} setActiveTab={setActiveTab}/>;
       case 'resume':
         return (
           <ResumeUpload

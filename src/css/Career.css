@@ -23,3 +23,13 @@
   border-radius: 12px;
   border: none !important;
 }
+
+/* ------------ HOME -----------------  */
+
+.register-here-btn {
+    background-color: #fff;
+    color: orangered;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 10px;
+}

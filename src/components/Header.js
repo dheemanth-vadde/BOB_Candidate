@@ -6,7 +6,7 @@ import logo_Bob from '../assets/logo_Bob.png';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const Header = () => {
+const Header = ({ hideIcons }) => {
   const navigate = useNavigate();
   const user = useSelector((state) => state?.user?.user);
 
@@ -48,119 +48,130 @@ const Header = () => {
         <img src={logo_Bob} alt="BobApp Logo" className="me-2" />
       </Navbar.Brand>
 
-      <div className="d-flex align-items-center">
-        {/* Notification Bell */}
-        <Button
-          variant="link"
-          className="me-2 position-relative"
-          style={{
-            backgroundColor: "white",
-            borderRadius: "50%",
-            width: "35px",
-            height: "35px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 0,
-          }}
-          onClick={() => setShowNotification((prev) => !prev)}
-        >
-          <FontAwesomeIcon icon={faBell} size="lg" style={{ color: "#FF6F00" }} />
-          {unreadCount > 0 && (
-            <span
-              style={{
-                position: "absolute",
-                top: "8px",
-                right: "8px",
-                width: "8px",
-                height: "8px",
-                backgroundColor: "red",
-                borderRadius: "50%",
-                border: "2px solid white",
-              }}
-            />
-          )}
-        </Button>
-
-        {/* Notification Popup */}
-        {showNotification && (
-          <Card
-            ref={notificationRef}
-            className="position-absolute backgroundcol"
+      {!hideIcons && (
+        <div className="d-flex align-items-center">
+          {/* Notification Bell */}
+          <Button
+            variant="link"
+            className="me-2 position-relative"
             style={{
-              top: "60px",
-              right: "80px",
-              width: "350px",
-              maxHeight: "400px",
-              borderRadius: "10px",
-              boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
-              overflow: "hidden",
-              backgroundColor: "#fff",
+              backgroundColor: "white",
+              borderRadius: "50%",
+              width: "35px",
+              height: "35px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
             }}
+            onClick={() => setShowNotification((prev) => !prev)}
           >
-            <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-              <h6 className="fw-bold mb-0">Notifications</h6>
-            </Card.Header>
-            <Card.Body className="p-0" style={{ overflowY: 'auto', maxHeight: '350px' }}>
-              {notifications.length === 0 ? (
-                <p className="text-muted text-center py-3">No notifications</p>
-              ) : (
-                notifications.map((note) => (
-                  <div
-                    key={note.id}
-                    className="p-3 border-bottom"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: note.read ? 'white' : '#fff9e6'
-                    }}
-                    onClick={() => {
-                      markAsRead(note.id);
-                      navigate('/notifications');
-                      setShowNotification(false);
-                    }}
-                  >
-                    <p className="mb-1" style={{ fontSize: '0.9rem' }}>{note.message}</p>
-                    <small className="text-muted">{note.time}</small>
-                  </div>
-                ))
-              )}
-              <div className="text-center p-2">
-                <Button
-                  variant="outline-warning"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => {
-                    setShowNotification(false);
-                    navigate('/notifications');
-                  }}
-                >
-                  View All
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        )}
+            <FontAwesomeIcon icon={faBell} size="lg" style={{ color: "orangered" }} />
+            {unreadCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  width: "8px",
+                  height: "8px",
+                  backgroundColor: "red",
+                  borderRadius: "50%",
+                  border: "2px solid white",
+                }}
+              />
+            )}
+          </Button>
 
-        {/* User Profile Dropdown */}
-        <div className="position-relative" ref={dropdownRef}>
-          <FontAwesomeIcon
-            icon={faUserCircle}
-            size="2x"
-            style={{ color: '#fff', cursor: "pointer" }}
-            onClick={() => setShowDropdown(prev => !prev)}
-          />
-          {showDropdown && (
-            <div className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow" style={{ minWidth: "200px" }}>
-              <p className="mb-1">{user?.full_name}</p>
-              <p className="mb-0 text-muted">
-                {user?.role === "L1" || user?.role === "L2" ? `${user.role} Approver` : user?.role}
-              </p>
-              <hr className="my-2" />
-              <p onClick={() => navigate('/login')} style={{ cursor: 'pointer', margin: 0 }}>Logout</p>
-            </div>
+          {/* Notification Popup */}
+          {showNotification && (
+            <Card
+              ref={notificationRef}
+              className="position-absolute backgroundcol"
+              style={{
+                top: "60px",
+                right: "80px",
+                width: "350px",
+                maxHeight: "400px",
+                borderRadius: "10px",
+                boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
+                overflow: "hidden",
+                backgroundColor: "#fff",
+              }}
+            >
+              <Card.Header className="d-flex justify-content-between align-items-center bg-white">
+                <h6 className="fw-bold mb-0">Notifications</h6>
+              </Card.Header>
+              <Card.Body className="p-0" style={{ overflowY: 'auto', maxHeight: '350px' }}>
+                {notifications.length === 0 ? (
+                  <p className="text-muted text-center py-3">No notifications</p>
+                ) : (
+                  notifications.map((note) => (
+                    <div
+                      key={note.id}
+                      className="p-3 border-bottom"
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: note.read ? 'white' : '#fff9e6'
+                      }}
+                      onClick={() => {
+                        markAsRead(note.id);
+                        navigate('/notifications');
+                        setShowNotification(false);
+                      }}
+                    >
+                      <p className="mb-1" style={{ fontSize: '0.9rem' }}>{note.message}</p>
+                      <small className="text-muted">{note.time}</small>
+                    </div>
+                  ))
+                )}
+                <div className="text-center p-2">
+                  <Button
+                    variant="outline-warning"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => {
+                      setShowNotification(false);
+                      navigate('/notifications');
+                    }}
+                    style={{ color: 'orangered', border: '1px solid orangered' }}
+                  >
+                    View All
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
           )}
+
+          {/* User Profile Dropdown */}
+          <div className="position-relative" ref={dropdownRef}>
+            <FontAwesomeIcon
+              icon={faUserCircle}
+              size="2x"
+              style={{ color: '#fff', cursor: "pointer" }}
+              onClick={() => setShowDropdown(prev => !prev)}
+            />
+            {showDropdown && (
+              <div className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow" style={{ minWidth: "200px" }}>
+                <p className="mb-1">{user?.full_name}</p>
+                <p className="mb-0 text-muted">
+                  {user?.role === "L1" || user?.role === "L2" ? `${user.role} Approver` : user?.role}
+                </p>
+                <hr className="my-2" />
+                <p onClick={() => navigate('/careers-portal')} style={{ cursor: 'pointer', margin: 0 }}>Logout</p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {hideIcons && (
+        <div>
+          <button className="register-here-btn shadow-sm" onClick={() => navigate('/login')}>
+            Register here
+          </button>
+        </div>
+      )}
     </div>
     </Navbar>
   );

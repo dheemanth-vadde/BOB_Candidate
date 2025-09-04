@@ -7,7 +7,7 @@ import whybob from "../../assets/whybob.png";
 import isbob from "../../assets/isbob.png";
 import "../../css/Career.css";
  
-const Career = () => {
+const Career = ({ setActiveTab }) => {
   return (
     <>
      
@@ -51,7 +51,7 @@ const Career = () => {
               </div>
               <Card.Body>
                 <Card.Title>Current Opportunities</Card.Title>
-                <Card.Text className="text-primary fw-bold">
+                <Card.Text className="text-primary fw-bold" style={{ cursor: 'pointer' }} onClick={() => setActiveTab('jobs')}>
                   Know More →
                 </Card.Text>
               </Card.Body>
@@ -72,7 +72,7 @@ const Career = () => {
               </div>
               <Card.Body>
                 <Card.Title>Why Bank of Baroda?</Card.Title>
-                <Card.Text className="text-primary fw-bold">
+                <Card.Text className="text-primary fw-bold" style={{ cursor: 'pointer' }} onClick={() => window.open("https://www.bankofbaroda.in/career/why-bank-of-baroda", "_blank")}>
                   Know More →
                 </Card.Text>
               </Card.Body>
@@ -93,7 +93,7 @@ const Career = () => {
               </div>
               <Card.Body>
                 <Card.Title>Is Bank of Baroda For Me?</Card.Title>
-                <Card.Text className="text-primary fw-bold">
+                <Card.Text className="text-primary fw-bold" style={{ cursor: 'pointer' }} onClick={() => window.open("https://www.bankofbaroda.in/career/is-bank-of-baroda-for-me", "_blank")}>
                   Know More →
                 </Card.Text>
               </Card.Body>
