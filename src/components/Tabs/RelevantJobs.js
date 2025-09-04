@@ -586,7 +586,7 @@ const clearFilters = () => {
       </Modal> */}
 
       {/* Job Details Modal */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
+      <Modal show={showModal} onHide={handleCloseModal} className="modalwidth">
         <Modal.Header closeButton className="modal-header-custom">
           <Modal.Title className="text-primary">
             {selectedJob?.position_title || "Job Details"}
@@ -601,46 +601,46 @@ const clearFilters = () => {
               </p>
 
               <div className="row">
-                <div className="col-md-6">
+                <div className="col-md-4">
                   <h6 className="section-header">Key Details</h6>
-                  <ul className="list-unstyled">
+                  <ul className="list-unstyled fontweight">
                     <li>
-                      <strong>Employment Type:</strong>{" "}
+                      <span>Employment Type:</span>{" "}
                       {selectedJob.employment_type || "N/A"}
                     </li>
                     <li>
-                      <strong>Eligibility Age:</strong>{" "}
+                     <span>Eligibility Age:</span>{" "}
                       {selectedJob.eligibility_age_min} -{" "}
                       {selectedJob.eligibility_age_max} years
                     </li>
                     <li>
-                      <strong>Mandatory Experience:</strong>{" "}
+                     <span>Mandatory Experience:</span>{" "}
                       {selectedJob.mandatory_experience} years
                     </li>
                     <li>
-                      <strong>Preferred Experience:</strong>{" "}
+                    <span>Preferred Experience:{" "}</span>
                       {selectedJob.preferred_experience} years
                     </li>
                   </ul>
                 </div>
 
-                <div className="col-md-6">
+                <div className="col-md-8">
                   <h6 className="section-header">Requirements</h6>
-                  <ul className="list-unstyled">
+                  <ul className="list-unstyled overul">
                     <li>
-                      <strong>Mandatory Qualification:</strong>{" "}
+                      <span>Mandatory Qualification:</span>{" "}
                       {selectedJob.mandatory_qualification || "Not specified"}
                     </li>
                     <li>
-                      <strong>Preferred Qualification:</strong>{" "}
+                      <span>Preferred Qualification:</span>{" "}
                       {selectedJob.preferred_qualification || "Not specified"}
                     </li>
                     <li>
-                      <strong>Probation Period:</strong>{" "}
+                      <span>Probation Period:</span>{" "}
                       {selectedJob.probation_period} months
                     </li>
                     <li>
-                      <strong>Documents Required:</strong>{" "}
+                      <span>Documents Required:</span>{" "}
                       {selectedJob.documents_required || "Not specified"}
                     </li>
                   </ul>
@@ -648,9 +648,9 @@ const clearFilters = () => {
               </div>
 
               {selectedJob.roles_responsibilities && (
-                <div className="mt-4">
+                <div className="mt-2">
                   <h6 className="section-header">Roles & Responsibilities</h6>
-                  <p className="text-muted">
+                  <p className="text-muted overres">
                     {selectedJob.roles_responsibilities}
                   </p>
                 </div>
@@ -668,21 +668,21 @@ const clearFilters = () => {
         </Modal.Footer>
       </Modal>
       <Modal show={showRedirectModal} onHide={() => setShowRedirectModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>You are being redirected to an external site.</Modal.Title>
+        <Modal.Header closeButton className="modal-header-custom">
+          <Modal.Title className="externalfont">You are being redirected to an external site.</Modal.Title>
         </Modal.Header>
         {/* <Modal.Body className="text-center">
           <p>Do you want to continue?</p>
         </Modal.Body> */}
-        <Modal.Footer>
+        <Modal.Footer className="custom-footer">
           <button
-            className="btn btn-outline-secondary"
+            className="btn btn-outline-secondary externalcolor"
             onClick={() => setShowRedirectModal(false)}
           >
             Cancel
           </button>
           <button
-            className="btn btn-primary"
+            className="btn btn-primary externalcolor"
             onClick={() => {
               setShowRedirectModal(false);
               window.open(redirectUrl, "_blank"); // Or window.location.href = redirectUrl;

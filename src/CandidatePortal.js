@@ -133,7 +133,7 @@ useEffect(() => {
   style={{
     position: "sticky",
     top: "64px",   // 👈 must equal Header height above
-    zIndex: 1020,
+    zIndex: 10,
   }}
 >
 

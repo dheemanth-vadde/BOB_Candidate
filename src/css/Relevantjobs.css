@@ -1,24 +1,26 @@
 .modal-header-custom {
-    background-color: rgb(255, 112, 67) !important;
+    background-color: #fff !important;
     color: white !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
   }
   
-  .modal-header-custom .btn-close {
+  /* .modal-header-custom .btn-close {
     filter: invert(1) grayscale(100%) brightness(200%);
-  }
+  } */
   
   /* If you want to style the title specifically */
-  .modal-header-custom .modal-title {
-    color: white !important;
-  }
-  .section-header {
-    color: rgb(255, 112, 67) !important;
-    font-weight: 600;
-    margin-bottom: 15px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid rgba(255, 112, 67, 0.2);
-  }
+.modalwidth .modal-header-custom .modal-title {
+	color: rgb(255, 112, 67) !important;
+	font-size: 16px;
+}
+.section-header {
+	color: #162b75 !important;
+	font-weight: 500;
+	margin-bottom: 15px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid rgba(22, 43, 117, 0.2);
+	font-size: 14px;
+}
   .job-title{
     color: #162A75;
   font-size: 16px;
@@ -74,4 +76,53 @@
 }
 .title{
   font-size:12px !important;
+}
+
+.modalwidth .modal-dialog{
+ height: 660px;
+width: 80% !important;
+  max-width: 80%;
+}
+.overul{
+ height: 215px;
+  overflow-y: auto;
+}
+.overres {
+	height: 100px;
+	overflow-y: auto;
+	font-size: 14px;
+	color: #414141;
+  padding-right: 10px;
+	
+}
+.job-details{
+  font-size: 14px;
+  color: var(--bs-secondary-color);
+}
+.overul li{
+  padding-right: 10px;
+}
+.fontweight span{
+  font-weight: 500 !important;
+  color: #162b75;
+}
+.overul span{
+   font-weight: 500 !important;
+  color: #162b75;
+}
+.externalfont {
+	font-size: 14px !important;
+	color: #162b75 !important;
+	font-weight: 400 !important;
+}
+
+.custom-footer{
+  justify-content: center !important;
+}
+.externalcolor {
+	background-color: #fff !important;
+	border-color: #ff7043 !important;
+	color: #ff7043 !important;
+	font-size: 12px !important;
+	font-weight: 500 !important;
 }
