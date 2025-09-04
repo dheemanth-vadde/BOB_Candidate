@@ -233,15 +233,25 @@ useEffect(() => {
 
   // 🔹 Filter jobs based on search
  // Filter jobs based on selected departments and locations
- const filteredJobs = jobs.filter(job => {
-  const matchesDepartment = selectedDepartments.length === 0 || 
-    //selectedDepartments.includes(job.department_id);
-    selectedDepartments.includes(job.dept_id);
-  const matchesLocation = selectedLocations.length === 0 || 
-    selectedLocations.includes(job.location_id);
-  const matchesSearch = job.position_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.requisition_code.toLowerCase().includes(searchTerm.toLowerCase());
-  
+ // Get only the jobs the candidate has NOT applied for
+const unappliedJobs = jobs.filter(
+  job => !appliedJobs.some(
+    applied => String(applied.position_id).trim() === String(job.position_id).trim()
+  )
+);
+
+// Apply filters on the unapplied jobs
+const filteredJobs = unappliedJobs.filter(job => {
+  const matchesDepartment =
+    selectedDepartments.length === 0 || selectedDepartments.includes(job.dept_id);
+
+  const matchesLocation =
+    selectedLocations.length === 0 || selectedLocations.includes(job.location_id);
+
+  const matchesSearch =
+    job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
+
   return matchesDepartment && matchesLocation && matchesSearch;
 });
 const handleDepartmentChange = (deptId) => {
