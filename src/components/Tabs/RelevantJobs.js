@@ -113,16 +113,12 @@ useEffect(() => {
   const fetchJobs = async () => {
   try {
     await fetchAppliedJobs();
-
-    // Fetch jobs
-    const jobsResponse = await axios.get(
-      "https://bobjava.sentrifugo.com:8443/jobcreation/api/active_jobs"
-    );
+    const jobsResponse = await apiService.getActiveJobs();
 
     // Fetch master data
     const masterDataResponse = await apiService.getMasterData();
 
-    const jobsData = jobsResponse.data?.data || [];
+    const jobsData = jobsResponse?.data || [];
     const departments = masterDataResponse.departments || [];
     const locations = masterDataResponse.locations || [];
     // Set departments and locations from master data
