@@ -46,24 +46,21 @@ const [candidateExperience, setCandidateExperience] = useState(0);
 
   try {
     console.log("Fetching applied jobs for candidateId:", candidateId);
+
     const response = await apiService.appliedpositions(candidateId);
+    console.log("Applied jobs fetched:", response);
 
-    let jobsArray = [];
-
-    if (response?.success && Array.isArray(response.data)) {
-      jobsArray = response.data;
-    } else if (Array.isArray(response)) {
-      jobsArray = response;
-    }
-
+    // Normalize response into an array
+    const jobsArray = Array.isArray(response) ? response : response ? [response] : [];
+console.log("Normalized applied jobs array:", jobsArray);
     setAppliedJobs(jobsArray);
   } catch (error) {
     console.error("Error in fetchAppliedJobs:", error);
 
-    // Only show toast for true server/network errors
-    // if (error.response || error.request) {
-    //   toast.error("Failed to load applied jobs. Please try refreshing the page.");
-    // }
+    // Optional: toast only for actual server/network errors
+    if (error.response || error.request) {
+      // toast.error("Failed to load applied jobs. Please try refreshing the page.");
+    }
 
     setAppliedJobs([]);
   }
@@ -120,8 +117,9 @@ useEffect(() => {
     // Fetch master data
     const masterDataResponse = await apiService.getMasterData();
 
-    const jobsData = jobsResponse.data?.data || [];
+    const jobsData = jobsResponse.data || [];
     const departments = masterDataResponse.departments || [];
+    //console.log("departments", departments);
     const locations = masterDataResponse.locations || [];
     // Set departments and locations from master data
     if (masterDataResponse.departments) {
@@ -132,10 +130,12 @@ useEffect(() => {
     }
 
     // Map jobs with department and location names
+    console.log("Jobs data fetched:", jobsData);
     const mappedJobs = jobsData.map((job) => {
+      
       const department = departments.find(d => d.department_id === job.dept_id);
       const location = locations.find(l => l.location_id === job.location_id);
-
+console.log("department",department);
       return {
         ...job,
         department_id: job.dept_id, // <-- ADD THIS LINE
@@ -229,12 +229,12 @@ useEffect(() => {
     setSelectedJob(null);
   };
 
-  const appliedJobsWithDetails = jobs.filter(job =>
-    appliedJobs.some(applied => String(applied.position_id).trim() === String(job.position_id).trim())
-  );
-  
+  // const appliedJobsWithDetails = jobs.filter(job =>
+  //   appliedJobs.some(applied => String(applied.position_id).trim() === String(job.position_id).trim())
+  // );
+  // console.log("appliedJobsWithDetails", appliedJobsWithDetails);
   // Apply filters on that
-  const filteredJobs = appliedJobsWithDetails.filter(job => {
+  const filteredJobs = appliedJobs.filter(job => {
     const matchesDepartment =
       selectedDepartments.length === 0 || selectedDepartments.includes(job.dept_id);
   
@@ -476,7 +476,7 @@ const clearFilters = () => {
                     icon={faClock}
                     className="me-2 text-muted"
                   /> */}
-                  <span class="subtitle">Department:</span> {job.department_name} 
+                  <span class="subtitle">Department:</span> {job.dept_name} 
                 </p>
                 <p className="mb-1 text-muted small size35">
                   {/* <FontAwesomeIcon
