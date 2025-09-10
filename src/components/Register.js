@@ -6,7 +6,10 @@ import panaImage from "../assets/pana.png";
 import logoImage from "../assets/bob-logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import CryptoJS from "crypto-js";
+
 const Register = () => {
+  const SECRET_KEY = "fdf4-832b-b4fd-ccfb9258a6b3";
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -20,6 +23,10 @@ const Register = () => {
 // const [showOtpInput, setShowOtpInput] = useState(false);
  const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const encryptPassword = (password) => {
+    return CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
+  };
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -36,14 +43,14 @@ const Register = () => {
   }
 
   try {
+    const encryptedPassword = encryptPassword(password);
     // 1. Register user via your backend
     await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-register", {
-          // await axios.post("http://localhost:5000/api/auth/candidate-register", {
-
+    // await axios.post("http://localhost:5000/api/auth/candidate-register", {
       name,
       email,
       phone,
-      password,
+      password: encryptedPassword,
     });
 
     // 2. Immediately try to log in (to trigger MFA)

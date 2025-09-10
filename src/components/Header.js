@@ -4,10 +4,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import logo_Bob from '../assets/logo_Bob.png';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearUser } from "../store/userSlice";
 
 const Header = ({ hideIcons }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const user = useSelector((state) => state?.user?.user);
 
   const [showDropdown, setShowDropdown] = useState(false);
@@ -165,7 +167,7 @@ const Header = ({ hideIcons }) => {
                   {user?.role === "L1" || user?.role === "L2" ? `${user.role} Approver` : user?.role}
                 </p>
                 <hr className="my-2" />
-                <p onClick={() => navigate('/careers-portal')} style={{ cursor: 'pointer', margin: 0 }}>Logout</p>
+                <p onClick={() => {dispatch(clearUser()); navigate("/login");}} style={{ cursor: 'pointer', margin: 0 }}>Logout</p>
               </div>
             )}
           </div>

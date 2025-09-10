@@ -11,21 +11,31 @@ import '@fontsource/poppins'; // Defaults to weight 400
 import '@fontsource/poppins/600.css'; // Specific weight
 import Notifications from './components/Notifications';
 import Home from './components/Tabs/Home';
+import Tokenexp from './components/Tokenexp';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
     // <Router>
       <div className="App">
         <Routes>
+          {/* Default redirect */}
           <Route path="/" element={<Navigate to="/careers-portal" replace />} />
 
-          <Route path="/candidate-portal" element={<CandidatePortal />} />
-          <Route path="/notifications" element={<Notifications />} />
+          {/* Public routes (accessible without login) */}
           <Route path="/careers-portal" element={<Home />} />
-          {/* Auth pages */}
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          {/* All other routes require auth */}
+          <Route element={<PrivateRoute />}>
+            <Route element={<Tokenexp />}>
+              <Route path="/candidate-portal" element={<CandidatePortal />} />
+              <Route path="/notifications" element={<Notifications />} />
+            </Route>
+          </Route>
+
+          {/* Catch-all for non-allowed public routes */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
         <ToastContainer position="top-right" autoClose={3000} />
       </div>

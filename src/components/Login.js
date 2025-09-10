@@ -10,9 +10,10 @@ import { useDispatch } from 'react-redux';
 import { setUser, setAuthUser } from '../store/userSlice';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-
+import CryptoJS from "crypto-js";
 
 const Login = () => {
+  const SECRET_KEY = "fdf4-832b-b4fd-ccfb9258a6b3";
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,31 +21,38 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  const encryptPassword = (password) => {
+    return CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      const encryptedPassword = encryptPassword(password);
       const res = await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-login", {
-              // const res = await axios.post("http://localhost:5000/api/auth/candidate-login", {
+      // const res = await axios.post("http://localhost:5000/api/auth/candidate-login", {
         email,
-        password,
+        password: encryptedPassword,
       });
 
       const dbRes = await axios.post("https://bobbe.sentrifugo.com/api/getdetails/candidates", {
+      // const dbRes = await axios.post("http://localhost:5000/api/getdetails/candidates", {
         email,
       });
 
       if (res.data.mfa_required) {
-        localStorage.setItem("mfa_token", res.data.mfa_token);
+        // localStorage.setItem("mfa_token", res.data.mfa_token);
+        dispatch(setAuthUser({ mfaToken: res.mfa_token, mfaRequired: true }));
         alert("MFA required. Please verify your Mail.");
         navigate("/verify-otp"); // ⬅️ You must build this page to complete OTP
       } else {
-        const token = res.data.access_token;
-        localStorage.setItem("access_token", token);
+        // const token = res.data.access_token;
+        // localStorage.setItem("access_token", token);
+        dispatch(setUser(dbRes.data));
         navigate("/candidate-portal");
         setAuthUser(res.data);
         setUser(dbRes.data); // Store user details from DB in context
-        dispatch(setUser(dbRes.data));
-        dispatch(setAuthUser(res.data));
+        // dispatch(setAuthUser(res.data));
         // console.log("User details:", dbRes.data);
 
         // // 🔍 Decode token to get roles
