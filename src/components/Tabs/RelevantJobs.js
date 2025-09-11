@@ -275,7 +275,7 @@ const clearFilters = () => {
   return (
     <div>
       {/* 🔹 Search Bar */}
-      <div className="d-flex justify-content-end mb-3">
+      <div className="d-flex justify-content-end mb-3 row">
         <div className="input-group searchinput" style={{ maxWidth: "350px"}}>
           <span className="input-group-text" style={{ backgroundColor: "rgb(255, 112, 67)" }}>
             <FontAwesomeIcon icon={faSearch}  style={{color:' #fff'}}/>
@@ -346,6 +346,7 @@ const clearFilters = () => {
           borderRadius: "10px",
           padding: "20px 10px",
           marginTop: "25px",
+          border: "1px solid #eaeaea"
         }}
       >
         <div className="bob-filter-c-div bob-inner-categories-c-div">
@@ -415,18 +416,21 @@ const clearFilters = () => {
       </div>
     </div>
     <div class="col-md-9" >
+      
         {filteredJobs.map((job) => (
           <div className="col-md-12 mb-4" key={job.position_id}>
+
             <div
               className="card h-100"
               style={{
                 background: "linear-gradient(135deg, #e0f7fa, #ffffff)",
                 boxShadow: "0px 8px 20px rgba(0, 123, 255, 0.15)",
                 borderRadius: "12px",
-                border: 0,
+                border: "1px solid #eaeaea"
               }}
             >
               <div className="card-body job-main-header-sec">
+                <div className="left_content">
                 <h6 className="job-title">
                   {/* <FontAwesomeIcon
                     icon={faUser}
@@ -436,62 +440,6 @@ const clearFilters = () => {
                     {job.requisition_code} - {job.position_title}
                  
                 </h6>
-            <div className="justify-content-between align-items-center apply_btn">
-
-                <div className="d-flex">
-                  {isJobApplied(job.position_id) ? (
-                    <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
-                      <FontAwesomeIcon icon={faCheckCircle} />
-                      <span>Applied</span>
-                    </div>
-                  ) : jobToApply?.position_id === job.position_id ? (
-                    <Razorpay
-                      autoTrigger={true}
-                      onSuccess={async () => {
-                        try {
-                          await apiService.applyJobs({
-                            position_id: job.position_id,
-                            candidate_id: candidateId,
-                          });
-                          setAppliedJobs((prev) => [...prev, { position_id: job.position_id }]);
-                          setRedirectUrl("https://bankapps.bankofbaroda.co.in/BOBRECRUITMENT2_A25/");
-                          setShowRedirectModal(true);
-                        } catch (err) {
-                          console.error(err);
-                          toast.error("Failed to submit application.");
-                        } finally {
-                          setJobToApply(null);
-                        }
-                      }}
-                      onClose={() => setJobToApply(null)} // <-- THIS FIXES YOUR ISSUE
-                      position_id={job.position_id}
-                      amountPaise={job?.application_fee_paise ?? 50000}
-                      candidate={{
-                        id: candidateId,
-                        full_name: user?.full_name,
-                        email: user?.email,
-                        phone: user?.phone,
-                      }}
-                    />
-
-                  ) : (
-                    <button
-                      className="btn btn-sm btn-outline-primary hovbtn"
-                      onClick={() => handleApplyClick(job)}
-                    >
-                      <b>Apply Now</b>
-                    </button>
-                  )}
-
-
-                    <button
-                      className="btn btn-sm knowntb ms-2"
-                      onClick={() => handleKnowMore(job)}
-                    >
-                      Know More
-                    </button>
-                  </div>
-                </div>
                 <p className="mb-1 text-muted small size35">
                   {/* <FontAwesomeIcon
                     icon={faMapMarkerAlt}
@@ -539,8 +487,66 @@ const clearFilters = () => {
                   <span class="subtitle">Qualification:</span> {job.mandatory_qualification}
                 </p>
               </div>
+            <div className="justify-content-between align-items-center apply_btn">
+
+                <div>
+                  {isJobApplied(job.position_id) ? (
+                    <div className="text-success d-flex align-items-center gap-2 px-4 py-2">
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                      <span>Applied</span>
+                    </div>
+                  ) : jobToApply?.position_id === job.position_id ? (
+                    <Razorpay
+                      autoTrigger={true}
+                      onSuccess={async () => {
+                        try {
+                          await apiService.applyJobs({
+                            position_id: job.position_id,
+                            candidate_id: candidateId,
+                          });
+                          setAppliedJobs((prev) => [...prev, { position_id: job.position_id }]);
+                          setRedirectUrl("https://bankapps.bankofbaroda.co.in/BOBRECRUITMENT2_A25/");
+                          setShowRedirectModal(true);
+                        } catch (err) {
+                          console.error(err);
+                          toast.error("Failed to submit application.");
+                        } finally {
+                          setJobToApply(null);
+                        }
+                      }}
+                      onClose={() => setJobToApply(null)} // <-- THIS FIXES YOUR ISSUE
+                      position_id={job.position_id}
+                      amountPaise={job?.application_fee_paise ?? 50000}
+                      candidate={{
+                        id: candidateId,
+                        full_name: user?.full_name,
+                        email: user?.email,
+                        phone: user?.phone,
+                      }}
+                    />
+
+                  ) : (
+                    <button
+                      className="btn btn-sm btn-outline-primary hovbtn"
+                      onClick={() => handleApplyClick(job)}
+                    >
+                      Apply Now
+                    </button>
+                  )}
+
+
+                    <button
+                      className="btn btn-sm knowntb"
+                      onClick={() => handleKnowMore(job)}
+                    >
+                      Know More
+                    </button>
+                  </div>
+                </div>
+                
+              </div>
             </div>
-          </div>
+         </div>
         ))}
       </div>
       </div>
