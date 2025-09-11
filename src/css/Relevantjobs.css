@@ -51,11 +51,25 @@
     color: #000 !important;
   font-size: 14px;
   }
+  .left_content{
+    width:90%;
+    float:left;
+  }
   .apply_btn{
     display: block !important;
   float: right;
    margin-bottom: 5px;
+   width:10%;
   }
+  .apply_btn .btn{
+    padding: 8px 15px;
+  margin: 0px 0 8px;
+  font-weight:normal;
+  font-size: 12px;
+  }
+    .apply_btn .hovbtn{
+      margin-top: 10px;
+    }
   .job-main-header-sec{
     display: block;
   line-height: 20px;
