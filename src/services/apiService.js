@@ -1,4 +1,41 @@
 import axios from 'axios';
+import { store } from "../store"; // adjust path if needed
+import { clearUser } from "../store/userSlice";
+
+// --- JWT Decoder helper ---
+function decodeJWT(token) {
+  try {
+    const base64Url = token.split('.')[1]; // payload part
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(window.atob(base64));
+    return payload;
+  } catch (err) {
+    console.error("Failed to decode token", err);
+    return null;
+  }
+}
+
+function getToken() {
+  const state = store.getState();
+  const token = state.user?.authUser?.access_token || null;
+
+  if (token) {
+    const decoded = decodeJWT(token);
+    if (decoded?.exp) {
+      const expiry = new Date(decoded.exp * 1000);
+      console.log("🔑 Token will expire at:", expiry.toLocaleString());
+
+      const timeLeft = expiry.getTime() - Date.now();
+      console.log("⏳ Time left (ms):", timeLeft, "≈", Math.round(timeLeft / 60000), "minutes");
+
+      if (timeLeft < 3 * 60 * 1000) {
+        console.warn("⚠️ Token expiring soon! Refresh flow will trigger soon.");
+      }
+    }
+  }
+
+  return token;
+}
 
 // Use the environment variables with a fallback to the new URLs you provided.
 // This is the correct way to handle different API services.
@@ -31,7 +68,7 @@ const jobcreationapis  = axios.create({
 // Request interceptor to add auth token for the primary API
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -47,9 +84,7 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      store.dispatch(clearUser());
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -59,7 +94,7 @@ api.interceptors.response.use(
 // Request interceptor to add auth token for the secondary API
 apis.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -75,11 +110,22 @@ apis.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      store.dispatch(clearUser());
       window.location.href = '/login';
     }
+    return Promise.reject(error);
+  }
+);
+
+jobcreationapis.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );
@@ -88,9 +134,7 @@ jobcreationapis.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      store.dispatch(clearUser());
       window.location.href = '/login';
     }
     return Promise.reject(error);

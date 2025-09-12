@@ -48,11 +48,11 @@ const Login = () => {
       } else {
         // const token = res.data.access_token;
         // localStorage.setItem("access_token", token);
+        dispatch(setAuthUser(res.data));
         dispatch(setUser(dbRes.data));
         navigate("/candidate-portal");
         setAuthUser(res.data);
         setUser(dbRes.data); // Store user details from DB in context
-        // dispatch(setAuthUser(res.data));
         // console.log("User details:", dbRes.data);
 
         // // 🔍 Decode token to get roles
