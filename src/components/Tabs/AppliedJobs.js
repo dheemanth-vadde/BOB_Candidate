@@ -424,6 +424,7 @@ const clearFilters = () => {
               }}
             >
               <div className="card-body job-main-header-sec">
+                <div className="left_content">
                 <h6 className="job-title">
                   {/* <FontAwesomeIcon
                     icon={faUser}
@@ -433,20 +434,7 @@ const clearFilters = () => {
                     {job.requisition_code} - {job.position_title}
                  
                 </h6>
-            <div className="justify-content-between align-items-center apply_btn">
-
-                <div className="d-flex">
-                  
-
-
-                    <button
-                      className="btn btn-sm knowntb ms-2"
-                      onClick={() => handleKnowMore(job)}
-                    >
-                      Know More
-                    </button>
-                  </div>
-                </div>
+            
                 <p className="mb-1 text-muted small size35">
                   {/* <FontAwesomeIcon
                     icon={faMapMarkerAlt}
@@ -494,7 +482,23 @@ const clearFilters = () => {
                   <span class="subtitle">Qualification:</span> {job.mandatory_qualification}
                 </p>
               </div>
+              <div className="justify-content-between align-items-center apply_btn">
+
+                <div className="">
+                  
+
+
+                    <button
+                      className="btn btn-sm knowntb my-4"
+                      onClick={() => handleKnowMore(job)}
+                    >
+                      Know More
+                    </button>
+                  </div>
+                </div>
             </div>
+              </div>
+              
           </div>
         ))}
       </div>
