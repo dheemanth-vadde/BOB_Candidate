@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { apiService } from '../../services/apiService';
+import { faTrash, faEye, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast } from 'react-toastify';
 import { useSelector } from "react-redux";
 import '../../css/ReviewDetails.css';
@@ -20,13 +22,139 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     reservationCategories: []
   });
   const [dobError, setDobError] = useState("");
+  const [documentError, setDocumentError] = useState("");
   const [aadharDob, setAadharDob] = useState(""); // extracted DOB from Aadhaar
- 
+  const [casteList, setCasteList] = useState([]);
+  const [selectedCaste, setSelectedCaste] = useState("");
+  const [specialList, setSpecialList] = useState([]);
+  const [documentTypes, setDocumentTypes] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [existingDocuments, setExistingDocuments] = useState([]);
+
+
+  useEffect(() => {
+    apiService.getAllCategories()
+   
+      .then((res) => {
+        console.log("Categories response:", res);
+        // API already returns response.data from the interceptor
+        setCasteList(res.data || []);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch categories:", err);
+      });
+    apiService.getAllSpecialCategories()
+      .then((res) => setSpecialList(res.data || []))
+      .catch((err) => console.error("Failed to fetch special categories:", err));
+
+  }, []);
+
+  useEffect(() => {
+    const fetchDocumentTypes = async () => {
+      try {
+        setLoadingDocs(true);
+        const [docsRes, typesRes] = await Promise.all([
+          candidateId ? apiService.getCandidateDocuments(candidateId) : Promise.resolve({ data: [] }),
+          apiService.getAllDocuments()
+        ]);
+
+        console.log("Documents response:", docsRes);
+        console.log("Document types response:", typesRes);
+
+        // Map document types with their names
+        const types = typesRes.data || [];
+        setDocumentTypes(types);
+
+        // Map existing documents with their type names
+        if (docsRes.data) {
+          const docsWithTypeNames = docsRes.data.map(doc => ({
+            ...doc,
+            document_type: types.find(t => t.document_id === doc.document_id)?.document_name || 'Unknown'
+          }));
+          setExistingDocuments(docsWithTypeNames);
+        }
+      } catch (err) {
+        console.error("Failed to fetch documents:", err);
+        toast.error("Failed to load documents");
+      } finally {
+        setLoadingDocs(false);
+      }
+    };
+
+    fetchDocumentTypes();
+  }, [candidateId]);
+
+
+  const [additionalDocs, setAdditionalDocs] = useState([
+    { docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false, required: true }
+  ]);
+
+
+  const handleAdditionalDocChange = (index, field, value) => {
+    const updated = [...additionalDocs];
+    updated[index][field] = value;
+
+    // If document type is selected, update docName from documentTypes
+    if (field === 'docId') {
+      const selectedDoc = documentTypes.find(doc => doc.document_id == value);
+      if (selectedDoc) {
+        updated[index].docName = selectedDoc.document_name;
+      }
+    }
+
+    setAdditionalDocs(updated);
+  };
+
+
+  const handleAdditionalDocFile = async (index, file) => {
+    if (!file) return;
+
+    const updated = [...additionalDocs];
+    updated[index].file = file;
+    updated[index].fileName = file.name;
+    updated[index].uploading = true;
+    setAdditionalDocs(updated);
+
+    try {
+      // Prepare FormData
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const doc = updated[index];
+      let othersValue = "";
+
+      // If 'Others' is selected, use the freeText as 'others'
+      if (doc.docName === "Others" && doc.freeText) {
+        othersValue = doc.freeText;
+      }
+
+      // Call API
+      await apiService.addCandidateDocument(candidateId, doc.docId, othersValue, fd);
+
+      updated[index].uploading = false;
+      updated[index].url = URL.createObjectURL(file);
+
+      // Add new empty row if last
+      if (index === updated.length - 1 && doc.docId && doc.url) {
+        updated.push({ docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false });
+      }
+
+      setAdditionalDocs([...updated]);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      updated[index].uploading = false;
+      setAdditionalDocs([...updated]);
+      toast.error("Failed to upload document");
+    }
+  };
+
+
+
 
 
   // Sync formData and selectedIdProof with initialData
   useEffect(() => {
-    console.log( 'initialData',initialData )
+    console.log('initialData', initialData)
     setFormData(initialData);
     setSelectedIdProof(initialData.id_proof || '');
     setDocumentUrl(initialData.document_url || '');
@@ -50,39 +178,66 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     fetchMasterData();
   }, []);
 
+
+  // Revalidate Aadhar DOB when formData.dob changes
+  useEffect(() => {
+    if (aadharDob && formData.dob) {
+      const formDob = new Date(formData.dob).toISOString().split('T')[0];
+      if (formDob === aadharDob) {
+        setDobError("");
+      } else if (dobError && dobError.includes("Aadhaar shows")) {
+        // Only update the error if there's an existing Aadhar DOB mismatch error
+        const formattedAadharDob = aadharDob.split('-').reverse().join('/');
+        setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+      }
+    }
+  }, [formData.dob, aadharDob, dobError]);
+
   const handleChange = (e) => {
+    console.log("ravali")
     const { id, value } = e.target;
+    console.log('id', id)
+    console.log('value', value)
+    
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isUploading) {
-      toast.info("Please wait until your Aadhaar is processed.");
+
+   // ✅ Check if either Aadhar or PAN is uploaded
+  const hasValidIdProof =
+  existingDocuments.some(doc =>
+    doc.document_type === 'Aadhar Card' || doc.document_type === 'Pan Card'
+  ) ||
+  additionalDocs.some(doc =>
+    (doc.docName === 'Aadhar Card' || doc.docName === 'Pan Card') && doc.url
+  );
+
+if (!hasValidIdProof) {
+  setDocumentError("Please upload either Aadhar Card or Pan Card (mandatory)");
+  return;
+}
+
+// ✅ DOB validation for Aadhar/PAN
+if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
+  if (!idProofFile || !aadharDob) {
+    setDobError("DOB verification incomplete. Please upload a valid Id Proof.");
+    toast.error("Please correct your Date of Birth before submitting.");
+    return;
+  }
+
+  if (formData.dob) {
+    const formDob = new Date(formData.dob).toISOString().split('T')[0];
+    if (formDob !== aadharDob) {
+      setDobError(`DOB mismatch! Aadhaar shows: ${aadharDob.split('-').reverse().join('/')}`);
+      toast.error(`DOB mismatch! Aadhaar shows: ${aadharDob.split('-').reverse().join('/')}`);
       return;
     }
-      // Aadhaar DOB validation at submission
-      if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
-        // Ensure file is uploaded and OCR processed
-        if (!idProofFile || !aadharDob) {
-          setDobError("Dob verification incomplete. Please upload a valid Id Proof.");
-          return;
-        }
-      
-        if (formData.dob) {
-          const formDob = new Date(formData.dob).toISOString().split('T')[0];
-          if (formDob !== aadharDob) {
-            setDobError(`DOB mismatch! Aadhaar shows: ${aadharDob.split('-').reverse().join('/')}`);
-            return;
-          }
-        }
-      }
-      
-    if (dobError) {
-      toast.error("Please correct your Date of Birth before submitting.");
-      return; // Stop submission
-    }
+  }
+}
     try {
+      console.log("formData.reservation_category_id", formData.reservation_category_id);
       const candidatePayload = {
         candidate_id: candidateId,
         file_url: resumePublicUrl,
@@ -99,12 +254,46 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         current_employer: formData.currentEmployer || '',
         address: formData.address || '',
         nationality_id: formData.nationality_id || '',
-        education_qualification: formData.education_qualification || ''
+        education_qualification: formData.education_qualification || '',
+        extra_documents: additionalDocs.map(d => ({
+          type_id: d.docId,
+          type: d.docName,
+          url: d.url
+        })),
+        candidate_other_details: {},
+        reservation_category_id: formData.reservation_category_id || '',
+        special_category_id: formData.special_category_id || '',
+     
+
+
       };
-        console.log("candidatePayload",candidatePayload);
+
+      console.log("candidatePayload", candidatePayload);
+      
 
       const response = await apiService.updateCandidates(candidatePayload);
       toast.success('Candidate data updated successfully!');
+
+      const docsPayload = additionalDocs
+        .filter(d => d.docId && d.file)
+        .map(d => ({
+          docId: d.docId,
+          file: d.file,       // actual File
+          fileName: d.fileName
+        }));
+
+      for (const doc of additionalDocs.filter(d => d.docId && d.file)) {
+        const formData = new FormData();
+        formData.append('file', doc.file);       // actual File object
+        formData.append('file_name', doc.fileName);
+
+        // If user typed something in freeText, send it as "others" query param
+        const others = doc.freeText || '';
+
+        await apiService.addCandidateDocument(candidateId, doc.docId, others, formData);
+      }
+
+      toast.success("All additional documents saved successfully!");
       onSubmit(formData);
       goNext();
     } catch (error) {
@@ -134,26 +323,25 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         logger: (m) => console.log(m),
       });
 
-      console.log("Extracted text:", text);
+      console.log("Extracted text from Aadhar:", text);
 
-      // Step 1: Find DOB near "DOB"
+      // Look for DOB in various formats
       let extractedDob = "";
-      const dobLine = text.split("\n").find((line) =>
-        line.toUpperCase().includes("DOB")
-      );
 
+      // 1. Look near "DOB" text
+      const dobLine = text.split("\n").find(line => line.toUpperCase().includes("DOB"));
       if (dobLine) {
         const match = dobLine.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
         if (match) extractedDob = match[1];
       }
 
-      // Step 2: If not found, check whole text
+      // 2. Look for any date in the format DD/MM/YYYY or DD-MM-YYYY
       if (!extractedDob) {
         const match = text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
         if (match) extractedDob = match[1];
       }
 
-      // Step 3: As fallback, check just for year
+      // 3. Look for just the year
       if (!extractedDob) {
         const match = text.match(/\b(19|20)\d{2}\b/);
         if (match) extractedDob = match[0];
@@ -161,106 +349,71 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
 
       if (!extractedDob) return null;
 
-      // Normalize to YYYY-MM-DD if it's full date
+      // Normalize to YYYY-MM-DD format
       if (extractedDob.includes("/") || extractedDob.includes("-")) {
         const [d, m, y] = extractedDob.split(/[-/]/);
         return `${y.length === 2 ? '20' + y : y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
       }
 
-      return extractedDob; // Only year (e.g., "1998")
+      return null;
     } catch (error) {
       console.error('Error extracting DOB from Aadhaar:', error);
-      throw new Error('Failed to extract DOB from Aadhaar');
+      return null;
     }
   };
-  const handleDocumentUpload = async (file) => {
-    console.log("file1111111111",file);
-    try {
-      setIsUploading(true);
-      const formData = new FormData();
-      formData.append('docFile', file);
-      formData.append('candidateId', candidateId);
+  
 
-      const uploadResponse = await fetch('https://bobbe.sentrifugo.com/api/uploaddoc/uploaddoc', {
-        method: 'POST',
-        body: formData,
-      });
-    console.log("uploadResponse",uploadResponse);
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload resume');
-      }
-
-      const uploadResult = await uploadResponse.json();
-      console.log('Resume upload successful:', uploadResult);
-     // toast.success('Document uploaded successfully!');
-     setDocumentUrl(uploadResult.public_url);
-      }
-     catch (error) {
-      console.error('Error uploading document:', error);
-      toast.error('Failed to upload document. Please try again.');
-      throw error;
-    } finally {
-      setIsUploading(false);
-    }
-  };
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-  
+
     setIsUploading(true);
     setDobError("");
-    setIdProofFile(file); // <-- set file immediately here (not at the end)
-  
+    setIdProofFile(file);
+
     try {
       const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
       if (!validTypes.includes(file.type)) {
-        toast.error('Please upload a valid file (PDF, JPG, or PNG)');
+        setDobError('Please upload a valid file (PDF, JPG, or PNG)');
         setIdProofFile(null);
         return;
       }
-  
+
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size should be less than 5MB');
+        setDobError('File size should be less than 5MB');
         setIdProofFile(null);
         return;
       }
-      await handleDocumentUpload(file);
-      if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
-      //  toast.info('Processing Aadhaar card...');
-      
+
+
+      // If it's an Aadhar card, validate DOB
+      if (selectedIdProof === 'Aadhar') {
         const extractedDOB = await extractDOBFromAadhar(file);
-  
+
         if (extractedDOB) {
           setAadharDob(extractedDOB);
-          
-          if (!formData.dob) {
-            setFormData(prev => ({ ...prev, dob: extractedDOB }));
-            toast.success(`DOB auto-filled from Aadhaar: ${extractedDOB.split('-').reverse().join('/')}`);
-          } else {
+
+          if (formData.dob) {
             const formDob = new Date(formData.dob).toISOString().split('T')[0];
             if (extractedDOB !== formDob) {
               setDobError(`DOB mismatch! Aadhaar shows: ${extractedDOB.split('-').reverse().join('/')}`);
               return;
             }
-           // toast.success('Aadhaar verified successfully!');
-           
-
+          } else {
+            // Auto-fill DOB from Aadhaar if not set
+            setFormData(prev => ({ ...prev, dob: extractedDOB }));
           }
-         
         } else {
-          toast.error("Could not extract DOB from Aadhaar. Please upload a clear image.");
+          setDobError('Could not extract DOB from Aadhaar. Please ensure it is clearly visible.');
+          return;
         }
       }
-      
-
     } catch (error) {
       console.error('Error handling file upload:', error);
-      toast.error('Error processing file: ' + error.message);
-    } finally {
-      setIsUploading(false);
+      setDobError('Error processing file: ' + (error.message || 'Please try again'));
     }
   };
-  
+
 
   if (!formData) {
     return <p>Loading details...</p>;
@@ -321,7 +474,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           </select>
         </div>
 
-        
+
         <div className="col-md-3">
           <label htmlFor="phone" className="form-label">Phone <span className="text-danger">*</span></label>
           <input
@@ -344,7 +497,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             required
           />
         </div>
-        
+
 
         <div className="col-md-3">
           <label htmlFor="totalExperience" className="form-label">Total Experience</label>
@@ -378,8 +531,8 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             onChange={handleChange}
           />
         </div>
-        
-      <div className="col-md-3">
+
+        <div className="col-md-3">
           <label htmlFor="skills" className="form-label">Skills</label>
           <textarea
             className="form-control"
@@ -416,58 +569,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             ))}
           </select>
         </div>
-        <div className="col-md-3">
-          <label htmlFor="id_proof" className="form-label">ID Proof <span className="text-danger">*</span></label>
-          <select className="form-select mb-2" id="id_proof" value={selectedIdProof} onChange={handleIdProofChange} required>
-            <option value="">Select ID Proof</option>
-            <option value="Aadhar">Aadhar</option>
-            <option value="PAN">PAN</option>
-          </select>
 
-          
-        </div>
-
-
-        <div className="col-md-3">
-  
-
-          {selectedIdProof && (
-            <div className="mt-2">
-              <label htmlFor="id_proof_file" className="form-label">
-                Upload {selectedIdProof} Card {isUploading && <span className="spinner-border spinner-border-sm ms-2"></span>}
-                <span className="text-danger">*</span>
-              </label>
-              <input
-                type="file"
-                className={`form-control ${isUploading ? 'opacity-50' : ''}`}
-                id="id_proof_file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
-                required={!idProofFile && !documentUrl}  // <-- updated condition
-                disabled={isUploading}
-              />
-
-              {idProofFile ? (
-                <div className="mt-2 text-success">
-                  <i className="bi bi-check-circle-fill me-1"></i>
-                  {idProofFile.name} ({(idProofFile.size / 1024).toFixed(2)} KB)
-                </div>
-              ) : documentUrl ? ( // <-- if document already exists
-                <div className="mt-2">
-                  <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="btn btn-link p-0">
-                    <i className="bi bi-download me-2"></i> Download Document
-                  </a>
-                </div>
-              ) : (
-                <div className="form-text">
-                  {selectedIdProof === 'Aadhar'
-                    ? 'Upload a clear image of your Aadhaar card (Front side with DOB visible)'
-                    : 'Upload your PAN card (PDF, JPG, or PNG, max 5MB)'}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
         {/* Special Category Dropdown */}
         {/* <div className="col-md-4">
           <label htmlFor="special_category_id" className="form-label">Special Category</label>
@@ -501,19 +603,276 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             ))}
           </select>
         </div> */}
+        {/* ✅ Caste Dropdown */}
+        <div className="col-md-3">
+          <label htmlFor="reservation_category_id" className="form-label">Caste</label>
+          <select
+            className="form-select"
+            id="reservation_category_id"
+            value={formData.reservation_category_id || ''}
+            onChange={handleChange}
+          >
+            <option value="">Select Caste</option>
+            
+            {casteList.map((item) => (
+              <option key={item.reservation_categories_id} value={item.reservation_categories_id}>
+                {item.category_name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-md-3">
+          <label htmlFor="special_category_id" className="form-label">Special Category</label>
+          <select
+            className="form-select"
+            id="special_category_id"
+            value={formData.special_category_id || ''}
+            onChange={handleChange}
+          >
+            <option value="">Select Special Category</option>
+            {specialList.map((item) => (
+              <option key={item.special_category_id} value={item.special_category_id}>
+                {item.special_category_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="col-12 mt-4 adddoc">
+          <h5> Documents</h5>
+
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th style={{ width: "30%" }}>Document Type</th>
+                <th style={{ width: "30%" }}>Document Name</th>
+                <th style={{ width: "40%" }}>Upload File</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Existing documents from server */}
+              {existingDocuments.map((doc, index) => (
+                <tr key={`existing-${index}`}>
+                  <td>{doc.document_type || 'N/A'}</td>
+                  <td>{doc.file_name || 'Document'}</td>
+                  <td className="d-flex align-items-center gap-2">
+                    {/* View Button */}
+<a
+  href={doc.file_url}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="btn btn-sm viewdoc"
+>
+  <FontAwesomeIcon icon={faEye} />
+</a>
+
+
+
+{/* Delete Button */}
+<button
+  type="button"
+  className="btn btn-sm btn-outline-danger"
+  onClick={async () => {
+    if (!doc.document_store_id) return toast.error("Cannot delete unsaved document");
+    if (window.confirm("Are you sure you want to delete this document?")) {
+      try {
+        await apiService.deleteCandidateDocument(doc.document_store_id);
+        setExistingDocuments(prev =>
+          prev.filter(d => d.document_store_id !== doc.document_store_id)
+        );
+        toast.success("Document deleted successfully");
+      } catch (err) {
+        console.error("Failed to delete document:", err);
+        toast.error("Failed to delete document");
+      }
+    }
+  }}
+>
+  <FontAwesomeIcon icon={faTrash} className="me-1" />
+</button>
+{/* ✅ Re-upload Button */}
+<>
+  <input
+    type="file"
+    accept=".pdf,.jpg,.jpeg,.png"
+    style={{ display: "none" }}
+    id={`reupload-${doc.document_store_id}`}
+    onChange={async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+
+        await apiService.addCandidateDocument(
+          candidateId,
+          doc.document_id,      // existing document type
+          "",                    // others if needed
+          fd
+        );
+
+        // Update the UI to show the new file
+        setExistingDocuments(prev =>
+          prev.map(d =>
+            d.document_store_id === doc.document_store_id
+              ? { ...d, file_name: file.name, file_url: URL.createObjectURL(file) }
+              : d
+          )
+        );
+
+        toast.success("Document re-uploaded successfully!");
+      } catch (err) {
+        console.error("Re-upload failed:", err);
+        toast.error("Failed to re-upload document");
+      }
+    }}
+  />
+  <button
+    type="button"
+    className="btn btn-sm btn-outline-primary"
+    onClick={() =>
+      document.getElementById(`reupload-${doc.document_store_id}`).click()
+    }
+  >
+    <FontAwesomeIcon icon={faUpload} className="me-1" />
+  </button>
+</>
+
+                    
+                  </td>
+                </tr>
+              ))}
+
+              {/* Additional documents being added */}
+              {additionalDocs.map((doc, index) => (
+                <tr key={index}>
+                  <td>
+                  <select
+  className="form-select"
+  value={doc.docId}
+  onChange={(e) => {
+    const selectedId = e.target.value;
+    const selected = documentTypes.find(dt => String(dt.document_id) === selectedId);
+    handleAdditionalDocChange(index, "docId", selectedId);
+    handleAdditionalDocChange(index, "docName", selected ? selected.document_name : "");
+  }}
+>
+  <option value="">Select Document</option>
+  {documentTypes
+    .filter((dt) => {
+      // ✅ Always allow "Others"
+      if (dt.document_name === "Others") return true;
+
+      // ✅ Get IDs already selected in the UI (excluding this row)
+      const selectedIds = additionalDocs
+        .filter((_, i) => i !== index)
+        .map(d => String(d.docId));
+
+      // ✅ Get IDs already present in API response (existing documents)
+      const existingIds = existingDocuments.map(d => String(d.docId || d.document_id));
+
+      // ✅ Hide if selected in another row OR already saved in DB
+      return !selectedIds.includes(String(dt.document_id)) &&
+             !existingIds.includes(String(dt.document_id));
+    })
+    .map((dt) => (
+      <option key={dt.document_id} value={dt.document_id}>
+        {dt.document_name}
+      </option>
+    ))
+  }
+</select>
+
+
+                  </td>
+                  <td>
+                  <input
+  type="text"
+  className="form-control"
+  placeholder="Enter document name"
+  value={doc.freeText || ""}
+  disabled={doc.docName !== "Others"}   // ✅ Disable unless "Others" is selected
+  onChange={(e) => handleAdditionalDocChange(index, "freeText", e.target.value)}
+/>
+
+                  </td>
+                  <td className="d-flex align-items-center gap-2">
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleAdditionalDocFile(index, e.target.files?.[0])}
+                      disabled={!doc.docId || doc.uploading}
+                    />
+                    {doc.uploading && (
+                      <div className="spinner-border spinner-border-sm" role="status">
+                        <span className="visually-hidden">Uploading...</span>
+                      </div>
+                    )}
+                    {doc.url && !doc.uploading && (
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-link p-0"
+                      >
+                        View
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => {
+                        const updated = [...additionalDocs];
+                        updated.splice(index, 1); // remove this row
+                        setAdditionalDocs(updated);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="me-1" />
+                    </button>
+                    {index === additionalDocs.length - 1 && (
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm ms-2"
+                        onClick={() =>
+                          setAdditionalDocs([
+                            ...additionalDocs,
+                            { docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false }
+                          ])
+                        }
+                      >
+                        +
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+          {documentError && (
+            <div className="text-danger mt-2">
+              {documentError}
+            </div>
+          )}
+        </div>
+
+
+
+
         <div className="col-12">
           <button type="submit" className="btn btn-primary" style={{
-              backgroundColor: 'rgb(255, 112, 67)',
-              color: 'white',
-              border: 'none',
-              padding: '8px 20px',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}>
+            backgroundColor: 'rgb(255, 112, 67)',
+            color: 'white',
+            border: 'none',
+            padding: '8px 20px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}>
             Submit
           </button>
         </div>
-        
+
       </form>
     </div>
   );

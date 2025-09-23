@@ -6,7 +6,25 @@
     font-size: 14px;
   color: #656565;
 }
-.formfields input, .formfields textarea{
+.formfields input, .formfields textarea, .formfields select{
     font-size: 14px;
   color: #000;
+}
+.adddoc h5{
+    font-size: 16px;
+    color: #162b75;;
+    margin-bottom: 15px;
+}
+.adddoc table th{
+    background-color: #fff;
+    font-size: 14px;
+    color: rgb(255, 112, 67);
+    font-size: 14px;
+}
+.adddoc td{
+    font-size: 14px;
+}
+.viewdoc{
+    color: #162b75 !important;
+
 }

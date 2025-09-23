@@ -67,6 +67,8 @@ function App() {
           {/* Public routes (accessible without login) */}
           <Route path="/careers-portal" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* All other routes require auth */}
           <Route element={<PrivateRoute />}>

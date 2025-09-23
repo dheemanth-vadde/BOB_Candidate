@@ -160,7 +160,22 @@ export const apiService = {
   applyJobs: (data) => api.post('candidates/apply/job', data),
   appliedpositions: (candidate_id) => api.get(`candidates/get-applied-positions/${candidate_id}`),
   getActiveJobs: () => jobcreationapis.get(`job-positions/get-active`),
-   
+   // Get all categories (e.g., caste list)
+getAllCategories: () => apis.get('/categories/all'),
+  getAllSpecialCategories: () => apis.get('/special-categories/all'),
+    getAllDocuments: () => apis.get("/document-types/all"),
+    // addCandidateDocument: (candidateId, documentId, data) =>
+    //   api.post(`/candidate-document-store/upload/${candidateId}/${documentId}`, data),
+    addCandidateDocument: (candidateId, documentId, others, data) =>
+      api.post(`/candidate-document-store/upload/${candidateId}/${documentId}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        params: others ? { others } : {}  // append ?others=<value> only if exists
+      }),
+    
+    
+    getCandidateDocuments: (candidateId) => api.get(`/candidate-document-store/documents/${candidateId}`),
+    deleteCandidateDocument: (documentStoreId) =>
+      api.delete(`/candidate-document-store/delete/${documentStoreId}`),
 };
 
 export default apiService;
