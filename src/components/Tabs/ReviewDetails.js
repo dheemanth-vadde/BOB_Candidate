@@ -23,6 +23,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   });
   const [dobError, setDobError] = useState("");
   const [documentError, setDocumentError] = useState("");
+  const [hasAttemptedUpload, setHasAttemptedUpload] = useState(false);
   const [aadharDob, setAadharDob] = useState(""); // extracted DOB from Aadhaar
   const [casteList, setCasteList] = useState([]);
   const [selectedCaste, setSelectedCaste] = useState("");
@@ -34,7 +35,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
 
   useEffect(() => {
     apiService.getAllCategories()
-   
+
       .then((res) => {
         console.log("Categories response:", res);
         // API already returns response.data from the interceptor
@@ -109,36 +110,100 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   const handleAdditionalDocFile = async (index, file) => {
     if (!file) return;
 
+    const validTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+    ];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Only PDF, JPG, or PNG files are allowed.");
+      return;
+    }
+  
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB.");
+      return;
+    }
+    
+    // Clear any previous document error when user attempts to upload a new file
+    setDocumentError('');
+    setDobError('');
+    
     const updated = [...additionalDocs];
-    updated[index].file = file;
-    updated[index].fileName = file.name;
-    updated[index].uploading = true;
+    updated[index] = {
+      ...updated[index],
+      file: file,
+      fileName: file.name,
+      uploading: true,
+      url: '' // Clear any previous URL
+    };
     setAdditionalDocs(updated);
-
+  
     try {
-      // Prepare FormData
-      const fd = new FormData();
-      fd.append("file", file);
-
+      // ✅ Aadhaar Validation
+      if (updated[index].docName === "Aadhar Card") {
+        const extractedDob = await extractDOBFromAadhar(file);
+        if (extractedDob) {
+          setAadharDob(extractedDob); // Store the extracted DOB
+  
+          const formDob = formData.dob
+            ? new Date(formData.dob).toISOString().split("T")[0]
+            : null;
+  
+          if (formDob && formDob !== extractedDob) {
+            const formattedAadharDob = extractedDob.split("-").reverse().join("/");
+            setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+            toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+            
+            // Keep the document but mark it as having a DOB mismatch
+            updated[index] = {
+              ...updated[index],
+              hasDobMismatch: true,
+              uploading: false
+            };
+            setAdditionalDocs(updated);
+            return; // ❌ Stop upload if mismatch
+          } else if (!formDob) {
+            // If user hasn't filled DOB, auto-fill from Aadhaar
+            setFormData(prev => ({ ...prev, dob: extractedDob }));
+          }
+        } else {
+          setDobError("Could not extract DOB from Aadhaar. Please upload a clear file.");
+          updated[index].uploading = false;
+          setAdditionalDocs([...updated]);
+          return;
+        }
+      }
+  
+      // ✅ Upload Document (if Aadhaar validation passed or not Aadhaar)
       const doc = updated[index];
       let othersValue = "";
-
-      // If 'Others' is selected, use the freeText as 'others'
+  
       if (doc.docName === "Others" && doc.freeText) {
         othersValue = doc.freeText;
       }
-
-      // Call API
+  
+      const fd = new FormData();
+      fd.append("file", file);
+  
       await apiService.addCandidateDocument(candidateId, doc.docId, othersValue, fd);
-
+  
       updated[index].uploading = false;
       updated[index].url = URL.createObjectURL(file);
-
-      // Add new empty row if last
-      if (index === updated.length - 1 && doc.docId && doc.url) {
-        updated.push({ docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false });
+  
+      // Add a new empty row if this is the last one
+      if (index === updated.length - 1 && doc.docId && updated[index].url) {
+        updated.push({
+          docId: "",
+          docName: "",
+          freeText: "",
+          fileName: "",
+          file: null,
+          url: "",
+          uploading: false,
+        });
       }
-
+  
       setAdditionalDocs([...updated]);
     } catch (err) {
       console.error("Upload failed:", err);
@@ -147,6 +212,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       toast.error("Failed to upload document");
     }
   };
+  
 
 
 
@@ -185,8 +251,14 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       const formDob = new Date(formData.dob).toISOString().split('T')[0];
       if (formDob === aadharDob) {
         setDobError("");
+        // Clear the DOB mismatch flag from any Aadhaar documents
+        setAdditionalDocs(prev => 
+          prev.map(doc => ({
+            ...doc,
+            hasDobMismatch: doc.docName === 'Aadhar Card' ? false : doc.hasDobMismatch
+          }))
+        );
       } else if (dobError && dobError.includes("Aadhaar shows")) {
-        // Only update the error if there's an existing Aadhar DOB mismatch error
         const formattedAadharDob = aadharDob.split('-').reverse().join('/');
         setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
       }
@@ -198,109 +270,148 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     const { id, value } = e.target;
     console.log('id', id)
     console.log('value', value)
-    
+
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-   // ✅ Check if either Aadhar or PAN is uploaded
-  const hasValidIdProof =
-  existingDocuments.some(doc =>
-    doc.document_type === 'Aadhar Card' || doc.document_type === 'Pan Card'
-  ) ||
-  additionalDocs.some(doc =>
-    (doc.docName === 'Aadhar Card' || doc.docName === 'Pan Card') && doc.url
-  );
+    setHasAttemptedUpload(true);
+    setDobError('');
+    setDocumentError('');
+    
+    // Filter out any empty document entries
+    const validAdditionalDocs = additionalDocs.filter(doc => doc.docId && (doc.url || doc.file));
 
-if (!hasValidIdProof) {
-  setDocumentError("Please upload either Aadhar Card or Pan Card (mandatory)");
-  return;
-}
+    // Check for any Aadhaar documents with DOB mismatch
+    const hasDobMismatch = validAdditionalDocs.some(doc => 
+      doc.docName === 'Aadhar Card' && doc.hasDobMismatch
+    );
 
-// ✅ DOB validation for Aadhar/PAN
-if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
-  if (!idProofFile || !aadharDob) {
-    setDobError("DOB verification incomplete. Please upload a valid Id Proof.");
-    toast.error("Please correct your Date of Birth before submitting.");
-    return;
-  }
-
-  if (formData.dob) {
-    const formDob = new Date(formData.dob).toISOString().split('T')[0];
-    if (formDob !== aadharDob) {
-      setDobError(`DOB mismatch! Aadhaar shows: ${aadharDob.split('-').reverse().join('/')}`);
-      toast.error(`DOB mismatch! Aadhaar shows: ${aadharDob.split('-').reverse().join('/')}`);
+    if (hasDobMismatch) {
+      setDobError("Please correct the DOB to match your Aadhaar card.");
       return;
     }
-  }
-}
-    try {
-      console.log("formData.reservation_category_id", formData.reservation_category_id);
-      const candidatePayload = {
-        candidate_id: candidateId,
-        file_url: resumePublicUrl,
-        document_url: documentUrl,
-        full_name: formData.name || '',
-        email: formData.email || '',
-        gender: formData.gender || 'Male',
-        id_proof: formData.id_proof || '',
-        phone: formData.phone || '',
-        date_of_birth: formData.dob || '',
-        skills: formData.skills || '',
-        total_experience: formData.totalExperience || 0,
-        current_designation: formData.currentDesignation || '',
-        current_employer: formData.currentEmployer || '',
-        address: formData.address || '',
-        nationality_id: formData.nationality_id || '',
-        education_qualification: formData.education_qualification || '',
-        extra_documents: additionalDocs.map(d => ({
-          type_id: d.docId,
-          type: d.docName,
-          url: d.url
-        })),
-        candidate_other_details: {},
-        reservation_category_id: formData.reservation_category_id || '',
-        special_category_id: formData.special_category_id || '',
-     
 
+    // Centralized validation for Aadhar/PAN
+    const hasAadharDoc = existingDocuments.some(doc => doc.document_type === 'Aadhar Card') || 
+                        validAdditionalDocs.some(doc => doc.docName === 'Aadhar Card');
+    const hasPanDoc = existingDocuments.some(doc => doc.document_type === 'Pan Card') || 
+                     validAdditionalDocs.some(doc => doc.docName === 'Pan Card');
 
-      };
-
-      console.log("candidatePayload", candidatePayload);
-      
-
-      const response = await apiService.updateCandidates(candidatePayload);
-      toast.success('Candidate data updated successfully!');
-
-      const docsPayload = additionalDocs
-        .filter(d => d.docId && d.file)
-        .map(d => ({
-          docId: d.docId,
-          file: d.file,       // actual File
-          fileName: d.fileName
-        }));
-
-      for (const doc of additionalDocs.filter(d => d.docId && d.file)) {
-        const formData = new FormData();
-        formData.append('file', doc.file);       // actual File object
-        formData.append('file_name', doc.fileName);
-
-        // If user typed something in freeText, send it as "others" query param
-        const others = doc.freeText || '';
-
-        await apiService.addCandidateDocument(candidateId, doc.docId, others, formData);
-      }
-
-      toast.success("All additional documents saved successfully!");
-      onSubmit(formData);
-      goNext();
-    } catch (error) {
-      console.error('Error submitting candidate data:', error);
-      alert('Failed to submit candidate data: ' + error.message);
+    if (!hasAadharDoc && !hasPanDoc) {
+        setDocumentError("Please upload either an Aadhaar Card or a PAN Card (mandatory).");
+        toast.error("Please upload either Aadhaar or PAN card.");
+        return;
     }
-  };
+
+    // Perform DOB validation if an Aadhaar card is present.
+    if (hasAadharDoc) {
+        // Find the Aadhar document, whether it's an existing one or a new upload
+        const aadharDoc = existingDocuments.find(doc => doc.document_type === 'Aadhar Card') || 
+                         additionalDocs.find(doc => doc.docName === 'Aadhar Card' && (doc.url || doc.file));
+      console.log("aadharDoc", aadharDoc)
+      console.log("existingDocuments", existingDocuments)
+        if (aadharDoc) {
+            try {
+                let extractedDob = null;
+                
+                // If we already have a DOB from the initial upload, use that
+                if (aadharDob) {
+                    extractedDob = aadharDob;
+                } 
+                // Otherwise, try to extract DOB from the file
+                else if (aadharDoc.file_url) {
+                  console.log("aadharDoc.file_url", aadharDoc.file_url)
+                    extractedDob = await extractDOBFromAadhar(aadharDoc.file_url);
+                    if (extractedDob) {
+                        setAadharDob(extractedDob);
+                    }
+                }
+
+                const formDob = formData.dob ? new Date(formData.dob).toISOString().split('T')[0] : null;
+                console.log("formDob", formDob)
+                console.log("extractedDob", extractedDob)
+                if (extractedDob) {
+                    // Check for DOB mismatch
+                    if (formDob && formDob !== extractedDob) {
+                        const formattedAadharDob = extractedDob.split('-').reverse().join('/');
+                        setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+                        toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+                        return; // Stop execution
+                    } else if (!formDob) {
+                        // If there's no form DOB, just show the extracted DOB as a message
+                        const formattedAadharDob = extractedDob.split('-').reverse().join('/');
+                        setDobError(`Aadhaar DOB: ${formattedAadharDob}. Please update your DOB to match.`);
+                        toast.info(`Aadhaar DOB found. Please ensure your form DOB matches.`);
+                        return; // Stop execution to let user update DOB
+                    }
+                } else if (aadharDoc.file_url) {
+                    // If we couldn't extract DOB but have a file, it's likely an invalid Aadhaar
+                    setDobError("Could not verify DOB from Aadhaar. Please ensure it's a valid Aadhaar document.");
+                    toast.error("Invalid Aadhaar document. Could not extract DOB.");
+                    return;
+                }
+                // If we get here and don't have extractedDob but have aadharDoc.url, it's an existing valid document
+            } catch (error) {
+                console.error("Error validating Aadhaar:", error);
+                setDobError("An error occurred while validating Aadhaar. Please try again.");
+                toast.error("Failed to validate Aadhaar. Please try again.");
+                return;
+            }
+        }
+    }
+
+    // If all validations pass, proceed with the submission
+    try {
+        // ... rest of your form submission logic
+        const candidatePayload = {
+            candidate_id: candidateId,
+            file_url: resumePublicUrl,
+            document_url: documentUrl,
+            full_name: formData.name || '',
+            email: formData.email || '',
+            gender: formData.gender || 'Male',
+            id_proof: formData.id_proof || '',
+            phone: formData.phone || '',
+            date_of_birth: formData.dob || '',
+            skills: formData.skills || '',
+            total_experience: formData.totalExperience || 0,
+            current_designation: formData.currentDesignation || '',
+            current_employer: formData.currentEmployer || '',
+            address: formData.address || '',
+            nationality_id: formData.nationality_id || '',
+            education_qualification: formData.education_qualification || '',
+            extra_documents: additionalDocs.map(d => ({
+                type_id: d.docId,
+                type: d.docName,
+                url: d.url
+            })),
+            candidate_other_details: {},
+            reservation_category_id: formData.reservation_category_id || '',
+            special_category_id: formData.special_category_id || '',
+        };
+
+        await apiService.updateCandidates(candidatePayload);
+        toast.success('Candidate data updated successfully!');
+
+        for (const doc of additionalDocs.filter(d => d.docId && d.file)) {
+            const formData = new FormData();
+            formData.append('file', doc.file);
+            formData.append('file_name', doc.fileName);
+            const others = doc.freeText || '';
+            await apiService.addCandidateDocument(candidateId, doc.docId, others, formData);
+        }
+
+        toast.success("All additional documents saved successfully!");
+        onSubmit(formData);
+        goNext();
+    } catch (error) {
+        console.error('Error submitting candidate data:', error);
+        toast.error('Failed to submit candidate data: ' + error.message);
+    }
+};
 
   const handleInvalid = (e) => {
     e.target.setCustomValidity("This is mandatory");
@@ -318,6 +429,7 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
   };
 
   const extractDOBFromAadhar = async (file) => {
+    console.log("file", file)
     try {
       const { data: { text } } = await Tesseract.recognize(file, 'eng', {
         logger: (m) => console.log(m),
@@ -361,7 +473,7 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
       return null;
     }
   };
-  
+
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -386,6 +498,7 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
       }
 
 
+      // If it's an Aadhar card, validate DOB
       // If it's an Aadhar card, validate DOB
       if (selectedIdProof === 'Aadhar') {
         const extractedDOB = await extractDOBFromAadhar(file);
@@ -613,7 +726,7 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
             onChange={handleChange}
           >
             <option value="">Select Caste</option>
-            
+
             {casteList.map((item) => (
               <option key={item.reservation_categories_id} value={item.reservation_categories_id}>
                 {item.category_name}
@@ -644,9 +757,9 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
           <table className="table table-bordered">
             <thead>
               <tr>
-                <th style={{ width: "30%" }}>Document Type</th>
-                <th style={{ width: "30%" }}>Document Name</th>
-                <th style={{ width: "40%" }}>Upload File</th>
+                <th style={{ width: "25%" }}>Document Type</th>
+                <th style={{ width: "50%" }}>Document Name</th>
+                <th style={{ width: "25%" }}>Upload File</th>
               </tr>
             </thead>
             <tbody>
@@ -657,88 +770,88 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
                   <td>{doc.file_name || 'Document'}</td>
                   <td className="d-flex align-items-center gap-2">
                     {/* View Button */}
-<a
-  href={doc.file_url}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="btn btn-sm viewdoc"
->
-  <FontAwesomeIcon icon={faEye} />
-</a>
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm viewdoc"
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </a>
 
 
 
-{/* Delete Button */}
-<button
-  type="button"
-  className="btn btn-sm btn-outline-danger"
-  onClick={async () => {
-    if (!doc.document_store_id) return toast.error("Cannot delete unsaved document");
-    if (window.confirm("Are you sure you want to delete this document?")) {
-      try {
-        await apiService.deleteCandidateDocument(doc.document_store_id);
-        setExistingDocuments(prev =>
-          prev.filter(d => d.document_store_id !== doc.document_store_id)
-        );
-        toast.success("Document deleted successfully");
-      } catch (err) {
-        console.error("Failed to delete document:", err);
-        toast.error("Failed to delete document");
-      }
-    }
-  }}
->
-  <FontAwesomeIcon icon={faTrash} className="me-1" />
-</button>
-{/* ✅ Re-upload Button */}
-<>
-  <input
-    type="file"
-    accept=".pdf,.jpg,.jpeg,.png"
-    style={{ display: "none" }}
-    id={`reupload-${doc.document_store_id}`}
-    onChange={async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
+                    {/* Delete Button */}
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger dangbtn"
+                      onClick={async () => {
+                        if (!doc.document_store_id) return toast.error("Cannot delete unsaved document");
+                        if (window.confirm("Are you sure you want to delete this document?")) {
+                          try {
+                            await apiService.deleteCandidateDocument(doc.document_store_id);
+                            setExistingDocuments(prev =>
+                              prev.filter(d => d.document_store_id !== doc.document_store_id)
+                            );
+                            toast.success("Document deleted successfully");
+                          } catch (err) {
+                            console.error("Failed to delete document:", err);
+                            toast.error("Failed to delete document");
+                          }
+                        }
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="me-1" />
+                    </button>
+                    {/* ✅ Re-upload Button */}
+                    <>
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        style={{ display: "none" }}
+                        id={`reupload-${doc.document_store_id}`}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            const fd = new FormData();
+                            fd.append("file", file);
 
-        await apiService.addCandidateDocument(
-          candidateId,
-          doc.document_id,      // existing document type
-          "",                    // others if needed
-          fd
-        );
+                            await apiService.addCandidateDocument(
+                              candidateId,
+                              doc.document_id,      // existing document type
+                              "",                    // others if needed
+                              fd
+                            );
 
-        // Update the UI to show the new file
-        setExistingDocuments(prev =>
-          prev.map(d =>
-            d.document_store_id === doc.document_store_id
-              ? { ...d, file_name: file.name, file_url: URL.createObjectURL(file) }
-              : d
-          )
-        );
+                            // Update the UI to show the new file
+                            setExistingDocuments(prev =>
+                              prev.map(d =>
+                                d.document_store_id === doc.document_store_id
+                                  ? { ...d, file_name: file.name, file_url: URL.createObjectURL(file) }
+                                  : d
+                              )
+                            );
 
-        toast.success("Document re-uploaded successfully!");
-      } catch (err) {
-        console.error("Re-upload failed:", err);
-        toast.error("Failed to re-upload document");
-      }
-    }}
-  />
-  <button
-    type="button"
-    className="btn btn-sm btn-outline-primary"
-    onClick={() =>
-      document.getElementById(`reupload-${doc.document_store_id}`).click()
-    }
-  >
-    <FontAwesomeIcon icon={faUpload} className="me-1" />
-  </button>
-</>
+                            toast.success("Document re-uploaded successfully!");
+                          } catch (err) {
+                            console.error("Re-upload failed:", err);
+                            toast.error("Failed to re-upload document");
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary printn"
+                        onClick={() =>
+                          document.getElementById(`reupload-${doc.document_store_id}`).click()
+                        }
+                      >
+                        <FontAwesomeIcon icon={faUpload} className="me-1" />
+                      </button>
+                    </>
 
-                    
+
                   </td>
                 </tr>
               ))}
@@ -747,56 +860,56 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
               {additionalDocs.map((doc, index) => (
                 <tr key={index}>
                   <td>
-                  <select
-  className="form-select"
-  value={doc.docId}
-  onChange={(e) => {
-    const selectedId = e.target.value;
-    const selected = documentTypes.find(dt => String(dt.document_id) === selectedId);
-    handleAdditionalDocChange(index, "docId", selectedId);
-    handleAdditionalDocChange(index, "docName", selected ? selected.document_name : "");
-  }}
->
-  <option value="">Select Document</option>
-  {documentTypes
-    .filter((dt) => {
-      // ✅ Always allow "Others"
-      if (dt.document_name === "Others") return true;
+                    <select
+                      className="form-select"
+                      value={doc.docId}
+                      onChange={(e) => {
+                        const selectedId = e.target.value;
+                        const selected = documentTypes.find(dt => String(dt.document_id) === selectedId);
+                        handleAdditionalDocChange(index, "docId", selectedId);
+                        handleAdditionalDocChange(index, "docName", selected ? selected.document_name : "");
+                      }}
+                    >
+                      <option value="">Select Document</option>
+                      {documentTypes
+                        .filter((dt) => {
+                          // ✅ Always allow "Others"
+                          if (dt.document_name === "Others") return true;
 
-      // ✅ Get IDs already selected in the UI (excluding this row)
-      const selectedIds = additionalDocs
-        .filter((_, i) => i !== index)
-        .map(d => String(d.docId));
+                          // ✅ Get IDs already selected in the UI (excluding this row)
+                          const selectedIds = additionalDocs
+                            .filter((_, i) => i !== index)
+                            .map(d => String(d.docId));
 
-      // ✅ Get IDs already present in API response (existing documents)
-      const existingIds = existingDocuments.map(d => String(d.docId || d.document_id));
+                          // ✅ Get IDs already present in API response (existing documents)
+                          const existingIds = existingDocuments.map(d => String(d.docId || d.document_id));
 
-      // ✅ Hide if selected in another row OR already saved in DB
-      return !selectedIds.includes(String(dt.document_id)) &&
-             !existingIds.includes(String(dt.document_id));
-    })
-    .map((dt) => (
-      <option key={dt.document_id} value={dt.document_id}>
-        {dt.document_name}
-      </option>
-    ))
-  }
-</select>
+                          // ✅ Hide if selected in another row OR already saved in DB
+                          return !selectedIds.includes(String(dt.document_id)) &&
+                            !existingIds.includes(String(dt.document_id));
+                        })
+                        .map((dt) => (
+                          <option key={dt.document_id} value={dt.document_id}>
+                            {dt.document_name}
+                          </option>
+                        ))
+                      }
+                    </select>
 
 
                   </td>
                   <td>
-                  <input
-  type="text"
-  className="form-control"
-  placeholder="Enter document name"
-  value={doc.freeText || ""}
-  disabled={doc.docName !== "Others"}   // ✅ Disable unless "Others" is selected
-  onChange={(e) => handleAdditionalDocChange(index, "freeText", e.target.value)}
-/>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Enter document name"
+                      value={doc.freeText || ""}
+                      disabled={doc.docName !== "Others"}   // ✅ Disable unless "Others" is selected
+                      onChange={(e) => handleAdditionalDocChange(index, "freeText", e.target.value)}
+                    />
 
                   </td>
-                  <td className="d-flex align-items-center gap-2">
+                  <td className="d-flex align-items-center justify-content-end gap-2">
                     <input
                       type="file"
                       className="form-control"
@@ -816,12 +929,12 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
                         rel="noopener noreferrer"
                         className="btn btn-link p-0"
                       >
-                        View
+                      <FontAwesomeIcon icon={faEye} />
                       </a>
                     )}
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-danger"
+                      className="btn btn-sm btn-outline-danger dangbtn"
                       onClick={() => {
                         const updated = [...additionalDocs];
                         updated.splice(index, 1); // remove this row
@@ -833,7 +946,7 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
                     {index === additionalDocs.length - 1 && (
                       <button
                         type="button"
-                        className="btn btn-outline-primary btn-sm ms-2"
+                        className="btn btn-outline-primary btn-sm printn"
                         onClick={() =>
                           setAdditionalDocs([
                             ...additionalDocs,
@@ -879,3 +992,4 @@ if (selectedIdProof === 'Aadhar' || selectedIdProof === 'PAN') {
 };
 
 export default ReviewDetails;
+
