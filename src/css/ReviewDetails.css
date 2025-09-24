@@ -11,7 +11,7 @@
   color: #000;
 }
 .adddoc h5{
-    font-size: 16px;
+    font-size: 18px;
     color: #162b75;;
     margin-bottom: 15px;
 }
@@ -26,6 +26,7 @@
 }
 .viewdoc{
     color: #162b75 !important;
+    padding: 0 !important;
 
 }
 .dangbtn{
@@ -35,4 +36,22 @@
 .printn{
     border: none !important;
     padding: 0 !important;
+}
+.md-title{
+    color: #162b75 !important;
+    font-size: 16px;
+}
+.mddialog .modal-header, .mddialog .modal-footer, .mddialog .modal-content{
+  border: none;
+}
+.mdbody p{
+    font-size: 14px !important;
+    margin-bottom: 0px !important;
+}
+.modal-footer button{
+    background-color: #fff !important;
+  border-color: red  !important;
+  color:red !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
 }

@@ -1,12 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { apiService } from '../../services/apiService';
-import { faTrash, faEye, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEye, faUpload, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast } from 'react-toastify';
 import { useSelector } from "react-redux";
 import '../../css/ReviewDetails.css';
 import Tesseract from 'tesseract.js';
+
+// Confirmation Modal Component
+const ConfirmationModal = ({ show, onConfirm, onCancel, message }) => {
+  if (!show) return null;
+
+  return (
+    <div className="modal" style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      zIndex: 1050
+    }}>
+      <div className="modal-dialog mddialog" style={{
+        margin: '1.75rem auto',
+        width: 'auto',
+        maxWidth: '500px',
+        transform: 'none',
+        transition: 'transform .3s ease-out',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        pointerEvents: 'auto',
+        backgroundColor: '#fff',
+        backgroundClip: 'padding-box',
+        border: '1px solid rgba(0,0,0,.2)',
+        borderRadius: '0.3rem',
+        outline: 0
+      }}>
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title md-title">Confirm Deletion</h5>
+            <button type="button" className="btn-close" onClick={onCancel}></button>
+          </div>
+          <div className="modal-body mdbody">
+            <p>{message || 'Are you sure you want to delete this document?'}</p>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>
+              Cancel
+            </button>
+            <button type="button" className="btn btn-danger danbtn" onClick={onConfirm}>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) => {
   const [formData, setFormData] = useState(initialData);
@@ -31,7 +87,12 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   const [documentTypes, setDocumentTypes] = useState([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [existingDocuments, setExistingDocuments] = useState([]);
-
+  const [additionalDocs, setAdditionalDocs] = useState([
+    { docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false, required: true }
+  ]);
+  // State for confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [docToDelete, setDocToDelete] = useState(null);
 
   useEffect(() => {
     apiService.getAllCategories()
@@ -68,10 +129,20 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
 
         // Map existing documents with their type names
         if (docsRes.data) {
-          const docsWithTypeNames = docsRes.data.map(doc => ({
-            ...doc,
-            document_type: types.find(t => t.document_id === doc.document_id)?.document_name || 'Unknown'
-          }));
+          const docsWithTypeNames = docsRes.data.map(doc => {
+            // Extract document name after UUID
+            let documentName = doc.file_name;
+            if (doc.file_name.includes('_')) {
+              documentName = doc.file_name.split('_').slice(1).join('_');
+            }
+            console.log("Document name:", documentName);
+
+            return {
+              ...doc,
+              document_type: types.find(t => t.document_id === doc.document_id)?.document_name || 'Unknown',
+              file_name: documentName // replace file_name with extracted name
+            };
+          });
           setExistingDocuments(docsWithTypeNames);
         }
       } catch (err) {
@@ -84,12 +155,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
 
     fetchDocumentTypes();
   }, [candidateId]);
-
-
-  const [additionalDocs, setAdditionalDocs] = useState([
-    { docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false, required: true }
-  ]);
-
 
   const handleAdditionalDocChange = (index, field, value) => {
     const updated = [...additionalDocs];
@@ -106,7 +171,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     setAdditionalDocs(updated);
   };
 
-
   const handleAdditionalDocFile = async (index, file) => {
     if (!file) return;
 
@@ -119,16 +183,16 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       toast.error("Only PDF, JPG, or PNG files are allowed.");
       return;
     }
-  
+
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File size must be less than 5MB.");
       return;
     }
-    
+
     // Clear any previous document error when user attempts to upload a new file
     setDocumentError('');
     setDobError('');
-    
+
     const updated = [...additionalDocs];
     updated[index] = {
       ...updated[index],
@@ -138,23 +202,23 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       url: '' // Clear any previous URL
     };
     setAdditionalDocs(updated);
-  
+
     try {
-      // ✅ Aadhaar Validation
+      // Aadhaar Validation
       if (updated[index].docName === "Aadhar Card") {
         const extractedDob = await extractDOBFromAadhar(file);
         if (extractedDob) {
           setAadharDob(extractedDob); // Store the extracted DOB
-  
+
           const formDob = formData.dob
             ? new Date(formData.dob).toISOString().split("T")[0]
             : null;
-  
+
           if (formDob && formDob !== extractedDob) {
             const formattedAadharDob = extractedDob.split("-").reverse().join("/");
             setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
             toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
-            
+
             // Keep the document but mark it as having a DOB mismatch
             updated[index] = {
               ...updated[index],
@@ -162,7 +226,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
               uploading: false
             };
             setAdditionalDocs(updated);
-            return; // ❌ Stop upload if mismatch
+            return; // Stop upload if mismatch
           } else if (!formDob) {
             // If user hasn't filled DOB, auto-fill from Aadhaar
             setFormData(prev => ({ ...prev, dob: extractedDob }));
@@ -174,23 +238,23 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           return;
         }
       }
-  
-      // ✅ Upload Document (if Aadhaar validation passed or not Aadhaar)
+
+      // Upload Document (if Aadhaar validation passed or not Aadhaar)
       const doc = updated[index];
       let othersValue = "";
-  
+
       if (doc.docName === "Others" && doc.freeText) {
         othersValue = doc.freeText;
       }
-  
+
       const fd = new FormData();
       fd.append("file", file);
-  
+
       await apiService.addCandidateDocument(candidateId, doc.docId, othersValue, fd);
-  
+
       updated[index].uploading = false;
       updated[index].url = URL.createObjectURL(file);
-  
+
       // Add a new empty row if this is the last one
       if (index === updated.length - 1 && doc.docId && updated[index].url) {
         updated.push({
@@ -203,7 +267,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           uploading: false,
         });
       }
-  
+
       setAdditionalDocs([...updated]);
     } catch (err) {
       console.error("Upload failed:", err);
@@ -212,11 +276,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       toast.error("Failed to upload document");
     }
   };
-  
-
-
-
-
 
   // Sync formData and selectedIdProof with initialData
   useEffect(() => {
@@ -244,7 +303,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     fetchMasterData();
   }, []);
 
-
   // Revalidate Aadhar DOB when formData.dob changes
   useEffect(() => {
     if (aadharDob && formData.dob) {
@@ -252,7 +310,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       if (formDob === aadharDob) {
         setDobError("");
         // Clear the DOB mismatch flag from any Aadhaar documents
-        setAdditionalDocs(prev => 
+        setAdditionalDocs(prev =>
           prev.map(doc => ({
             ...doc,
             hasDobMismatch: doc.docName === 'Aadhar Card' ? false : doc.hasDobMismatch
@@ -280,12 +338,12 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     setHasAttemptedUpload(true);
     setDobError('');
     setDocumentError('');
-    
+
     // Filter out any empty document entries
     const validAdditionalDocs = additionalDocs.filter(doc => doc.docId && (doc.url || doc.file));
 
     // Check for any Aadhaar documents with DOB mismatch
-    const hasDobMismatch = validAdditionalDocs.some(doc => 
+    const hasDobMismatch = validAdditionalDocs.some(doc =>
       doc.docName === 'Aadhar Card' && doc.hasDobMismatch
     );
 
@@ -295,9 +353,9 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     }
 
     // Centralized validation for Aadhar/PAN
-    const hasAadharDoc = existingDocuments.some(doc => doc.document_type === 'Aadhar Card') || 
+    const hasAadharDoc = existingDocuments.some(doc => doc.document_type === 'Aadhar Card') ||
                         validAdditionalDocs.some(doc => doc.docName === 'Aadhar Card');
-    const hasPanDoc = existingDocuments.some(doc => doc.document_type === 'Pan Card') || 
+    const hasPanDoc = existingDocuments.some(doc => doc.document_type === 'Pan Card') ||
                      validAdditionalDocs.some(doc => doc.docName === 'Pan Card');
 
     if (!hasAadharDoc && !hasPanDoc) {
@@ -309,18 +367,18 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     // Perform DOB validation if an Aadhaar card is present.
     if (hasAadharDoc) {
         // Find the Aadhar document, whether it's an existing one or a new upload
-        const aadharDoc = existingDocuments.find(doc => doc.document_type === 'Aadhar Card') || 
+        const aadharDoc = existingDocuments.find(doc => doc.document_type === 'Aadhar Card') ||
                          additionalDocs.find(doc => doc.docName === 'Aadhar Card' && (doc.url || doc.file));
       console.log("aadharDoc", aadharDoc)
       console.log("existingDocuments", existingDocuments)
         if (aadharDoc) {
             try {
                 let extractedDob = null;
-                
+
                 // If we already have a DOB from the initial upload, use that
                 if (aadharDob) {
                     extractedDob = aadharDob;
-                } 
+                }
                 // Otherwise, try to extract DOB from the file
                 else if (aadharDoc.file_url) {
                   console.log("aadharDoc.file_url", aadharDoc.file_url)
@@ -411,7 +469,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         console.error('Error submitting candidate data:', error);
         toast.error('Failed to submit candidate data: ' + error.message);
     }
-};
+  };
 
   const handleInvalid = (e) => {
     e.target.setCustomValidity("This is mandatory");
@@ -474,7 +532,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     }
   };
 
-
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -497,8 +554,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         return;
       }
 
-
-      // If it's an Aadhar card, validate DOB
       // If it's an Aadhar card, validate DOB
       if (selectedIdProof === 'Aadhar') {
         const extractedDOB = await extractDOBFromAadhar(file);
@@ -527,6 +582,33 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     }
   };
 
+  // Handle document deletion
+  const handleDeleteDocument = async () => {
+    if (!docToDelete) return;
+
+    // If it's a temporary document (not yet saved to server)
+    if (docToDelete.id.startsWith('temp-')) {
+      if (docToDelete.onConfirm) {
+        docToDelete.onConfirm();
+      }
+      return;
+    }
+
+    // For existing documents in the database
+    try {
+      await apiService.deleteCandidateDocument(docToDelete.id);
+      setExistingDocuments(prev =>
+        prev.filter(d => d.document_store_id !== docToDelete.id)
+      );
+      toast.success("Document deleted successfully");
+    } catch (err) {
+      console.error("Failed to delete document:", err);
+      toast.error("Failed to delete document");
+    } finally {
+      setShowDeleteModal(false);
+      setDocToDelete(null);
+    }
+  };
 
   if (!formData) {
     return <p>Loading details...</p>;
@@ -587,7 +669,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           </select>
         </div>
 
-
         <div className="col-md-3">
           <label htmlFor="phone" className="form-label">Phone <span className="text-danger">*</span></label>
           <input
@@ -610,7 +691,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             required
           />
         </div>
-
 
         <div className="col-md-3">
           <label htmlFor="totalExperience" className="form-label">Total Experience</label>
@@ -716,7 +796,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             ))}
           </select>
         </div> */}
-        {/* ✅ Caste Dropdown */}
+        {/* Caste Dropdown */}
         <div className="col-md-3">
           <label htmlFor="reservation_category_id" className="form-label">Caste</label>
           <select
@@ -757,9 +837,9 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           <table className="table table-bordered">
             <thead>
               <tr>
-                <th style={{ width: "25%" }}>Document Type</th>
-                <th style={{ width: "50%" }}>Document Name</th>
-                <th style={{ width: "25%" }}>Upload File</th>
+                <th style={{ width: "30%" }}>Document Type</th>
+                <th style={{ width: "40%" }}>Document Name</th>
+                <th style={{ width: "30%" }}>Upload File</th>
               </tr>
             </thead>
             <tbody>
@@ -779,31 +859,24 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       <FontAwesomeIcon icon={faEye} />
                     </a>
 
-
-
                     {/* Delete Button */}
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-danger dangbtn"
-                      onClick={async () => {
-                        if (!doc.document_store_id) return toast.error("Cannot delete unsaved document");
-                        if (window.confirm("Are you sure you want to delete this document?")) {
-                          try {
-                            await apiService.deleteCandidateDocument(doc.document_store_id);
-                            setExistingDocuments(prev =>
-                              prev.filter(d => d.document_store_id !== doc.document_store_id)
-                            );
-                            toast.success("Document deleted successfully");
-                          } catch (err) {
-                            console.error("Failed to delete document:", err);
-                            toast.error("Failed to delete document");
-                          }
+                      onClick={() => {
+                        if (!doc.document_store_id) {
+                          return toast.error("Cannot delete unsaved document");
                         }
+                        setDocToDelete({
+                          id: doc.document_store_id,
+                          name: doc.file_name || 'this document'
+                        });
+                        setShowDeleteModal(true);
                       }}
                     >
-                      <FontAwesomeIcon icon={faTrash} className="me-1" />
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
-                    {/* ✅ Re-upload Button */}
+                    {/* Re-upload Button */}
                     <>
                       <input
                         type="file"
@@ -851,7 +924,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       </button>
                     </>
 
-
                   </td>
                 </tr>
               ))}
@@ -873,18 +945,18 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       <option value="">Select Document</option>
                       {documentTypes
                         .filter((dt) => {
-                          // ✅ Always allow "Others"
+                          // Always allow "Others"
                           if (dt.document_name === "Others") return true;
 
-                          // ✅ Get IDs already selected in the UI (excluding this row)
+                          // Get IDs already selected in the UI (excluding this row)
                           const selectedIds = additionalDocs
                             .filter((_, i) => i !== index)
                             .map(d => String(d.docId));
 
-                          // ✅ Get IDs already present in API response (existing documents)
+                          // Get IDs already present in API response (existing documents)
                           const existingIds = existingDocuments.map(d => String(d.docId || d.document_id));
 
-                          // ✅ Hide if selected in another row OR already saved in DB
+                          // Hide if selected in another row OR already saved in DB
                           return !selectedIds.includes(String(dt.document_id)) &&
                             !existingIds.includes(String(dt.document_id));
                         })
@@ -896,7 +968,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       }
                     </select>
 
-
                   </td>
                   <td>
                     <input
@@ -904,7 +975,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       className="form-control"
                       placeholder="Enter document name"
                       value={doc.freeText || ""}
-                      disabled={doc.docName !== "Others"}   // ✅ Disable unless "Others" is selected
+                      disabled={doc.docName !== "Others"}   // Disable unless "Others" is selected
                       onChange={(e) => handleAdditionalDocChange(index, "freeText", e.target.value)}
                     />
 
@@ -929,19 +1000,28 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                         rel="noopener noreferrer"
                         className="btn btn-link p-0"
                       >
-                      <FontAwesomeIcon icon={faEye} />
+                        <FontAwesomeIcon icon={faEye} />
                       </a>
                     )}
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-danger dangbtn"
                       onClick={() => {
-                        const updated = [...additionalDocs];
-                        updated.splice(index, 1); // remove this row
-                        setAdditionalDocs(updated);
+                        setDocToDelete({
+                          id: `temp-${index}`,
+                          name: doc.fileName || 'this document',
+                          onConfirm: () => {
+                            const updated = [...additionalDocs];
+                            updated.splice(index, 1);
+                            setAdditionalDocs(updated);
+                            setShowDeleteModal(false);
+                            setDocToDelete(null);
+                          }
+                        });
+                        setShowDeleteModal(true);
                       }}
                     >
-                      <FontAwesomeIcon icon={faTrash} className="me-1" />
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
                     {index === additionalDocs.length - 1 && (
                       <button
@@ -954,7 +1034,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                           ])
                         }
                       >
-                        +
+                         <FontAwesomeIcon icon={faPlus} />
                       </button>
                     )}
                   </td>
@@ -970,9 +1050,6 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           )}
         </div>
 
-
-
-
         <div className="col-12">
           <button type="submit" className="btn btn-primary" style={{
             backgroundColor: 'rgb(255, 112, 67)',
@@ -987,9 +1064,19 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         </div>
 
       </form>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        show={showDeleteModal}
+        onConfirm={handleDeleteDocument}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setDocToDelete(null);
+        }}
+        message={docToDelete ? `Are you sure you want to delete ${docToDelete.name}?` : 'Are you sure you want to delete this document?'}
+      />
     </div>
   );
 };
 
 export default ReviewDetails;
-
