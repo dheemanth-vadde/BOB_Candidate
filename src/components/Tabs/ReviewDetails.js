@@ -339,6 +339,18 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     setDobError('');
     setDocumentError('');
 
+    // Check for DOB mismatch first
+    if (aadharDob && formData.dob) {
+      const formDob = new Date(formData.dob).toISOString().split('T')[0];
+      if (formDob !== aadharDob) {
+        const formattedAadharDob = aadharDob.split('-').reverse().join('/');
+        const errorMessage = `DOB mismatch! Aadhaar shows: ${formattedAadharDob}`;
+        setDobError(errorMessage);
+        toast.error(errorMessage);
+        return; // Prevent form submission
+      }
+    }
+
     // Filter out any empty document entries
     const validAdditionalDocs = additionalDocs.filter(doc => doc.docId && (doc.url || doc.file));
 
@@ -367,8 +379,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     // Perform DOB validation if an Aadhaar card is present.
     if (hasAadharDoc) {
         // Find the Aadhar document, whether it's an existing one or a new upload
-        const aadharDoc = existingDocuments.find(doc => doc.document_type === 'Aadhar Card') ||
-                         additionalDocs.find(doc => doc.docName === 'Aadhar Card' && (doc.url || doc.file));
+      const aadharDoc = additionalDocs.find(doc => doc.docName === 'Aadhar Card' && doc.file);
       console.log("aadharDoc", aadharDoc)
       console.log("existingDocuments", existingDocuments)
         if (aadharDoc) {
