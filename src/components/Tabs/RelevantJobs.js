@@ -18,7 +18,7 @@ import apiService from "../../services/apiService";
 import { useSelector } from "react-redux";
 import Razorpay from "../Razorpay";
 
-const RelevantJobs = () => {
+const RelevantJobs = ({ candidateData = {} }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -33,16 +33,97 @@ const RelevantJobs = () => {
   const [showRedirectModal, setShowRedirectModal] = useState(false);
 const [redirectUrl, setRedirectUrl] = useState("");
 const [candidateExperience, setCandidateExperience] = useState(0);
-
-
+const [relaxationPolicies, setRelaxationPolicies] = useState([]);
+const [isLoading, setIsLoading] = useState(false);
+ // const [candidateDetails, setCandidateDetails] = useState(candidateData);
  // New state variables for filters
  const [departments, setDepartments] = useState([]);
  const [locations, setLocations] = useState([]);
  const [selectedDepartments, setSelectedDepartments] = useState([]);
  const [selectedLocations, setSelectedLocations] = useState([]);
  const [showFilters, setShowFilters] = useState(false);
+
+  // New state variables for category details
+  // const [specialCategoryDetails, setSpecialCategoryDetails] = useState(null);
+  // const [reservationCategoryDetails, setReservationCategoryDetails] = useState(null);
+  // console.log(candidateData,"candidateDetails")
+  // const [candidateReservationCategory, setCandidateReservationCategory] = useState(
+  //   candidateData?.reservation_category_id || null
+  // );
+  // const [candidateSpecialCategory, setCandidateSpecialCategory] = useState(
+  //   candidateData?.special_category_id || null
+  // );
+
+ 
+//  console.log("candidateReservationCategory",candidateReservationCategory);
+//  console.log("candidateSpecialCategory",candidateSpecialCategory);
+const [reservationCategory, setReservationCategory] = useState(null);
+const [specialCategory, setSpecialCategory] = useState(null);
+const [foundSpecialCategory, setFoundSpecialCategory] = useState(null);
+const [foundReservationCategory, setFoundReservationCategory] = useState(null);
+ useEffect(() => {
+  if (candidateData) {
+    if (candidateData.reservation_category_id) {
+      setReservationCategory(candidateData.reservation_category_id);
+    }
+    if (candidateData.special_category_id) {
+      setSpecialCategory(candidateData.special_category_id);
+    }
+  }
+}, [candidateData]);
+ 
+  // Add this function to fetch category details
+  const fetchCategoryDetails = async () => {
+    try {
+      console.log("fetchCategoryDetails");
+      // Fetch all special categories and find the matching one
+      const specialCategories = await apiService.getAllSpecialCategories();
+      console.log("specialCategories", specialCategories);
+      console.log("specialCategory", specialCategory);
+      
+      if (specialCategories?.data && specialCategory) {
+        const found = specialCategories.data.find(
+          cat => cat.special_category_id === specialCategory
+        );
+        setFoundSpecialCategory(found);
+        console.log("foundSpecialCategory", found);
+      } else {
+        setFoundSpecialCategory(null);
+      }
+  
+      // Fetch all reservation categories and find the matching one
+      const reservationCategories = await apiService.getAllReservationCategories();
+      console.log("reservationCategories", reservationCategories);
+      console.log("reservationCategory", reservationCategory);
+      
+      if (reservationCategories?.data && reservationCategory) {
+        const found = reservationCategories.data.find(
+          cat => cat.reservation_categories_id === reservationCategory
+        );
+        setFoundReservationCategory(found);
+        console.log("foundReservationCategory", found);
+      } else {
+        setFoundReservationCategory(null);
+      }
+    } catch (error) {
+      console.error("Error fetching category details:", error);
+      setFoundSpecialCategory(null);
+      setFoundReservationCategory(null);
+    }
+  };
+
+// Add this to your useEffect that depends on candidateData
+useEffect(() => {
+  console.log("specialCategory", specialCategory);
+  console.log("reservationCategory", reservationCategory);
+  fetchCategoryDetails();
+}, [specialCategory, reservationCategory]);
+
+
+
   const fetchAppliedJobs = async () => {
   if (!candidateId) return; // wait until candidateId exists
+
 
   try {
     console.log("Fetching applied jobs for candidateId:", candidateId);
@@ -110,6 +191,9 @@ useEffect(() => {
   
   fetchCandidateDetails();
 }, [candidateId]);
+
+
+
   const fetchJobs = async () => {
   try {
     await fetchAppliedJobs();
@@ -163,36 +247,244 @@ useEffect(() => {
     );
   };
 
-  const handleApplyClick = (job) => {
-    if (isJobApplied(job.position_id)) return;
+  // const handleApplyClick = async (job) => {
+  //   console.log("job",job);
+  //   //if (isJobApplied(job.position_id)) return;
+
+  //   if(job.job_relaxation_policy_id){
+  //     try {
+  //       const res = await apiService.getRelaxations();
+  //       console.log("res", res);
+      
+  //       // Normalize response into array
+  //       const policies = Array.isArray(res) ? res : (res?.data && Array.isArray(res.data)) ? res.data : [];
+      
+  //       // ✅ Filter for the selected policy
+  //       const selectedPolicy = policies.find(
+  //         (p) => p.job_relaxation_policy_id === job.job_relaxation_policy_id
+  //       );
+      
+  //       console.log("selectedPolicy", selectedPolicy);
+      
+  //       if (selectedPolicy) {
+  //         // If only the selected one is needed
+  //         setRelaxationPolicies([selectedPolicy]);
+  //       } else {
+  //         // If you want empty if not found
+  //         setRelaxationPolicies([]);
+  //       }
+      
+  //     } catch (error) {
+  //       console.error("Error fetching relaxations:", error);
+  //       toast.error("Failed to load relaxation policies.");
+  //       setRelaxationPolicies([]);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+      
+  //   }
   
+  //   if (!candidateId) {
+  //     toast.error("Please complete your profile before applying");
+  //     return;
+  //   }
+  //   console.log("candidateExperience",candidateExperience);
+  //    if (job.mandatory_experience && candidateExperience < parseFloat(job.mandatory_experience)) {
+  //     toast.error(`This position requires at least ${job.mandatory_experience} years of experience`);
+  //     return;
+  //   }
+  
+  //   if (job.eligibility_age_min || job.eligibility_age_max) {
+  //     if (!candidateDob) {
+  //       toast.error("Please update your date of birth in your profile");
+  //       return;
+  //     }
+  
+  //     if (!meetsAgeRequirement(candidateDob, job.eligibility_age_min, job.eligibility_age_max)) {
+  //       const minAge = job.eligibility_age_min || 0;
+  //       const maxAge = job.eligibility_age_max || "No Limit";
+  //       toast.error(`Age must be between ${minAge} - ${maxAge} years.`);
+  //       return;
+  //     }
+  //   }
+  
+  //   // If all validations pass, trigger Razorpay
+  //   setJobToApply(job); 
+  // };
+
+  const handleApplyClick = async (job) => {
+    // console.log("specialCategoryDetails",specialCategoryDetails);
+     
+    console.log("job",job);
+    console.log("Found Special Category:", foundSpecialCategory);
+    console.log("Found Reservation Category:", foundReservationCategory);
+    const candidateSpecialCategory = foundSpecialCategory?.special_category_name;
+    const candidateReservationCategory = foundReservationCategory?.category_code;
+    console.log("candidateSpecialCategory",candidateSpecialCategory);
+    console.log("candidateReservationCategory",candidateReservationCategory);
+    let selectedPolicy = null;
+  
+    if (job.job_relaxation_policy_id) {
+      setIsLoading(true);
+      try {
+        const res = await apiService.getRelaxations();
+        console.log("res", res);
+  
+        const policies = Array.isArray(res)
+          ? res
+          : res?.data && Array.isArray(res.data)
+          ? res.data
+          : [];
+        
+        selectedPolicy = policies.find(
+          (p) => p.job_relaxation_policy_id === job.job_relaxation_policy_id
+        );
+  
+        console.log("selectedPolicy", selectedPolicy);
+  
+        if (selectedPolicy) {
+          setRelaxationPolicies([selectedPolicy]);
+        } else {
+          setRelaxationPolicies([]);
+        }
+      } catch (error) {
+        console.error("Error fetching relaxations:", error);
+        toast.error("Failed to load relaxation policies.");
+        setRelaxationPolicies([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  
+    // ---------- Candidate checks ----------
     if (!candidateId) {
       toast.error("Please complete your profile before applying");
       return;
     }
-    console.log("candidateExperience",candidateExperience);
-     if (job.mandatory_experience && candidateExperience < parseFloat(job.mandatory_experience)) {
-      toast.error(`This position requires at least ${job.mandatory_experience} years of experience`);
-      return;
-    }
   
+    // if (
+    //   job.mandatory_experience &&
+    //   candidateExperience < parseFloat(job.mandatory_experience)
+    // ) {
+    //   toast.error(
+    //     `This position requires at least ${job.mandatory_experience} years of experience`
+    //   );
+    //   return;
+    // }
+  
+    // ---------- Age validation with category relaxation ----------
     if (job.eligibility_age_min || job.eligibility_age_max) {
+      console.log("candidatechecking");
       if (!candidateDob) {
         toast.error("Please update your date of birth in your profile");
         return;
       }
-  
-      if (!meetsAgeRequirement(candidateDob, job.eligibility_age_min, job.eligibility_age_max)) {
-        const minAge = job.eligibility_age_min || 0;
-        const maxAge = job.eligibility_age_max || "No Limit";
-        toast.error(`Age must be between ${minAge} - ${maxAge} years.`);
+    
+      let minAge = job.eligibility_age_min || 0;
+      let maxAge = job.eligibility_age_max || null;
+    
+      let reservationRelaxation = 0;
+      let specialRelaxation = 0;
+    
+      console.log("candidateReservationCategory", candidateReservationCategory);
+    
+      // --- Reservation Category Relaxation ---
+      if (selectedPolicy && candidateReservationCategory) {
+        const ageRelaxations = selectedPolicy.relaxation?.main?.["Age Relaxation"] || {};
+        reservationRelaxation = ageRelaxations[candidateReservationCategory] || 0;
+        console.log("reservationRelaxation", reservationRelaxation);
+      }
+    
+      // --- Special Category Relaxation ---
+      if (selectedPolicy && candidateSpecialCategory) {
+        const specialCategories =
+          selectedPolicy.relaxation?.specialsByType?.["Age Relaxation"] || [];
+        console.log("specialCategories111", specialCategories);
+    
+        const matchedSpecial = specialCategories.find(
+          (sc) => sc.special_category_name === candidateSpecialCategory
+        );
+    
+        if (matchedSpecial) {
+          // Pick relaxation based on candidate's reservation category
+          specialRelaxation =
+            matchedSpecial.relaxation?.[candidateReservationCategory] || 0;
+          console.log("specialRelaxation", specialRelaxation);
+        }
+      }
+    
+      // --- Apply the higher relaxation ---
+      const finalRelaxation = Math.max(reservationRelaxation, specialRelaxation);
+      console.log("finalRelaxationToApply", finalRelaxation);
+    
+      if (maxAge) {
+        maxAge = maxAge + finalRelaxation;
+      }
+    
+      console.log("Final Relaxed Age Limit", { minAge, maxAge });
+    
+      if (!meetsAgeRequirement(candidateDob, minAge, maxAge)) {
+        toast.error(
+          `Age must be between ${minAge} - ${
+            maxAge ? maxAge : "No Limit"
+          } years (after relaxation).`
+        );
         return;
       }
     }
+    // ---------- Experience validation with category relaxation ----------
+    if (job.mandatory_experience) {
+      let requiredExperience = parseFloat(job.mandatory_experience) || 0;
+
+      let reservationRelaxation = 0;
+      let specialRelaxation = 0;
+
+      // --- Reservation Category Relaxation ---
+      if (selectedPolicy && candidateReservationCategory) {
+        const expRelaxations = selectedPolicy.relaxation?.main?.["Experience Relaxation"] || {};
+        console.log("expRelaxations", expRelaxations);
+        reservationRelaxation = expRelaxations[candidateReservationCategory] || 0;
+        console.log("reservationExperienceRelaxation", reservationRelaxation);
+      }
+
+      // --- Special Category Relaxation ---
+      if (selectedPolicy && candidateSpecialCategory) {
+        const specialCategories =
+          selectedPolicy.relaxation?.specialsByType?.["Experience Relaxation"] || [];
+        console.log("specialExperienceCategories", specialCategories);
+
+        const matchedSpecial = specialCategories.find(
+          (sc) => sc.special_category_name === candidateSpecialCategory
+        );
+
+        if (matchedSpecial) {
+          specialRelaxation =
+            matchedSpecial.relaxation?.[candidateReservationCategory] || 0;
+          console.log("specialExperienceRelaxation", specialRelaxation);
+        }
+      }
+
+      // --- Apply the higher relaxation ---
+      const finalRelaxation = Math.max(reservationRelaxation, specialRelaxation);
+      console.log("finalExperienceRelaxation", finalRelaxation);
+
+      // Adjust required experience
+      const effectiveExperienceRequired = Math.max(0, requiredExperience - finalRelaxation);
+console.log("cadidateExperience",candidateExperience)
+console.log("effectiveExperienceRequired",effectiveExperienceRequired)
+      if (candidateExperience < effectiveExperienceRequired) {
+        toast.error(
+          `This position requires at least ${effectiveExperienceRequired} years of experience (after relaxation).`
+        );
+        return;
+      }
+    }
+
   
-    // If all validations pass, trigger Razorpay
-    setJobToApply(job); 
+    // ---------- All validations passed ----------
+    setJobToApply(job);
   };
+  
   
 
   const handleConfirmApply = async () => {

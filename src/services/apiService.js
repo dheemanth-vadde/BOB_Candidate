@@ -176,6 +176,11 @@ getAllCategories: () => apis.get('/categories/all'),
     getCandidateDocuments: (candidateId) => api.get(`/candidate-document-store/documents/${candidateId}`),
     deleteCandidateDocument: (documentStoreId) =>
       api.delete(`/candidate-document-store/delete/${documentStoreId}`),
+
+    //relaxation
+    getRelaxations: () => jobcreationapis.get('/job-relaxation-policy/all'),
+    getAllSpecialCategories: () => apis.get('/special-categories/all'),
+    getAllReservationCategories: () => apis.get('/categories/all'),
 };
 
 export default apiService;
