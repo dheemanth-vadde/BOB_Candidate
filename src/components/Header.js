@@ -109,7 +109,7 @@ const Header = ({ hideIcons }) => {
               }}
             >
               <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-                <h6 className="fw-bold mb-0">Notifications</h6>
+                <h6 className="fw-bold mb-0 notification_heading">Notifications</h6>
               </Card.Header>
               <Card.Body className="p-0" style={{ overflowY: 'auto', maxHeight: '350px' }}>
                 {notifications.length === 0 ? (

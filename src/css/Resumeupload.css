@@ -2,8 +2,11 @@
     margin-bottom: 1.5rem;
     padding: 1rem;
     background-color: #f8f9fa;
-    border-radius: 4px;
-    border-left: 4px solid #28a745;
+    border-radius: 10px;
+    width: 42%;
+  text-align: center;
+  margin: 0 auto;
+    /* border-left: 4px solid #28a745; */
   }
   
   .existing-resume .btn-link {
@@ -12,7 +15,9 @@
     padding: 0.25rem 0.5rem;
     
   }
-  
+  .filename{
+    font-size:14px;
+  }
   .existing-resume .btn-link:hover {
     text-decoration: underline;
     color: #162b75;

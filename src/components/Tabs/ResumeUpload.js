@@ -125,7 +125,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       />
      
     </div>
- {fileName && <div className="mt-2">{fileName}</div>}
+ {fileName && <div className="mt-2 filename">{fileName}</div>}
     <div className="mt-4">
       <button
         className="btn btn-primary"

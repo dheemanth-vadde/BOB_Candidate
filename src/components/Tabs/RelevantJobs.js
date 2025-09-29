@@ -893,11 +893,11 @@ const clearFilters = () => {
               <p className="mb-4">
                 {selectedJob.description || "No description available"}
               </p>
-
+              <hr></hr>
               <div className="row">
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <h6 className="section-header">Key Details</h6>
-                  <ul className="list-unstyled fontweight">
+                  <ul className="list-unstyled fontweight overul">
                     <li>
                       <span>Employment Type:</span>{" "}
                       {selectedJob.employment_type || "N/A"}
@@ -918,7 +918,7 @@ const clearFilters = () => {
                   </ul>
                 </div>
 
-                <div className="col-md-8">
+                <div className="col-md-6">
                   <h6 className="section-header">Requirements</h6>
                   <ul className="list-unstyled overul">
                     <li>
@@ -940,7 +940,7 @@ const clearFilters = () => {
                   </ul>
                 </div>
               </div>
-
+<hr></hr>
               {selectedJob.roles_responsibilities && (
                 <div className="mt-2">
                   <h6 className="section-header">Roles & Responsibilities</h6>

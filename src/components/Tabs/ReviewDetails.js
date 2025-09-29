@@ -865,15 +865,16 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn btn-sm viewdoc"
+                      className="btn btn-sm viewdoc iconhover"
                     >
-                      <FontAwesomeIcon icon={faEye} />
+                      <FontAwesomeIcon icon={faEye}
+                      />
                     </a>
 
                     {/* Delete Button */}
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-danger dangbtn"
+                      className="btn btn-sm btn-outline-danger dangbtn iconhover"
                       onClick={() => {
                         if (!doc.document_store_id) {
                           return toast.error("Cannot delete unsaved document");
@@ -885,7 +886,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                         setShowDeleteModal(true);
                       }}
                     >
-                      <FontAwesomeIcon icon={faTrash} />
+                      <FontAwesomeIcon icon={faTrash} className='' />
                     </button>
                     {/* Re-upload Button */}
                     <>
@@ -926,12 +927,12 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       />
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-primary printn"
+                        className="btn btn-sm btn-outline-primary printn iconhover"
                         onClick={() =>
                           document.getElementById(`reupload-${doc.document_store_id}`).click()
                         }
                       >
-                        <FontAwesomeIcon icon={faUpload} className="me-1" />
+                        <FontAwesomeIcon icon={faUpload} className="me-1"  />
                       </button>
                     </>
 

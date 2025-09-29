@@ -52,7 +52,7 @@ const Notifications = () => {
               >
                 ←
               </Button>
-              <h2 className="mb-4 fw-bold" style={{ color: "#000" }}>Notifications</h2>
+              <h2 className="mb-4 fw-bold notification_heading">Notifications</h2>
             </div>
 
             {notifications.length === 0 ? (
@@ -70,7 +70,7 @@ const Notifications = () => {
                     }}
                   >
                     <Card.Body>
-                      <Card.Text className="mb-1">{note.message}</Card.Text>
+                      <Card.Text className="mb-1" style={{ color: '#333',fontSize: '14px', fontWeight: '500' }} >{note.message}</Card.Text>
                       <small className="text-muted">{note.time}</small>
                     </Card.Body>
                   </Card>

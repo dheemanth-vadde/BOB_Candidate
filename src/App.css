@@ -9,7 +9,7 @@
         }
 
         body {
-            font-family: poppins !important;
+font-family: 'Noto Sans';
             background-color: #333;
         }
 
@@ -172,6 +172,7 @@
             margin-top: 1rem;
             font-weight: 500;
             color: var(--text-dark);
+            font-size: 14px;
         }
         
         .dropzone-text span {
@@ -364,7 +365,7 @@ body {
   padding: 0;
 }
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Noto Sans';
 }
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -549,7 +550,7 @@ body {
 .job-form input,
 .job-form select,
 .job-form textarea {
-  font-family: 'Poppins', Arial, sans-serif !important;;
+font-family: 'Noto Sans';
   font-size: 13px !important;
   font-weight: 400 !important;;
 }
@@ -645,4 +646,11 @@ body {
 .bgbtn{
   background: rgb(255, 112, 67) !important;
   color: #fff !important;
+}
+
+.notification_heading{
+  color:#162b75 !important;
+  font-size:16px  !important;
+  font-weight:500 !important;
+  padding:10px 0 !important
 }

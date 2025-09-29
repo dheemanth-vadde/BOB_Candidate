@@ -4,30 +4,38 @@
 }
 .formfields label{
     font-size: 14px;
-  color: #656565;
+  color: #162b75;
+  font-weight:500;
 }
 .formfields input, .formfields textarea, .formfields select{
     font-size: 14px;
   color: #000;
 }
 .adddoc h5{
-    font-size: 18px;
+    font-size: 16px;
     color: #162b75;;
     margin-bottom: 15px;
+    font-weight:600;
 }
 .adddoc table th{
     background-color: #fff;
-    font-size: 14px;
+    font-size: 13px;
     color: rgb(255, 112, 67);
-    font-size: 14px;
+    
 }
 .adddoc td{
     font-size: 14px;
 }
-.viewdoc{
-    color: #162b75 !important;
-    padding: 0 !important;
+.iconhover{
+   color: rgb(255, 112, 67) !important;
+}
+.iconhover:hover{
+   color: rgb(255, 112, 67) !important;
+   background:none !important;
+}
 
+.adddoc .btn{
+   padding: 0 5px !important;
 }
 .dangbtn{
     border: none !important;
@@ -49,9 +57,14 @@
     margin-bottom: 0px !important;
 }
 .modal-footer button{
-    background-color: #fff !important;
-  border-color: red  !important;
-  color:red !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
+   background-color: rgb(255, 112, 67);
+  border-color: rgb(255, 112, 67);
+  color:#fff;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+.modal-footer button:hover{
+ background-color: rgb(255, 112, 67);
+  border-color: rgb(255, 112, 67);
+  color:#fff;
 }

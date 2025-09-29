@@ -12,22 +12,23 @@
 .modalwidth .modal-header-custom .modal-title {
 	color: rgb(255, 112, 67) !important;
 	font-size: 16px;
+  font-weight: 600;
 }
 .section-header {
 	color: #162b75 !important;
-	font-weight: 500;
-	margin-bottom: 15px;
+	font-weight: 600;
+	/* margin-bottom: 15px;
 	padding-bottom: 5px;
-	border-bottom: 1px solid rgba(22, 43, 117, 0.2);
+	border-bottom: 1px solid rgba(22, 43, 117, 0.2); */
 	font-size: 14px;
 }
   .job-title{
     color: #162A75;
-  font-size: 16px;
+  font-size: 15px;
   width: 75%;
   float: left;
     margin-bottom: 10px;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
   }
   .qualification{
     color: #1a2c71 !important;
@@ -36,7 +37,7 @@
   }
   .subtitle{
     font-weight:500;
-    color:#414141;
+    color:#717178;
   }
    
   .size30{
@@ -52,14 +53,15 @@
   font-size: 14px;
   }
   .left_content{
-    width:90%;
+    width:85%;
     float:left;
   }
   .apply_btn{
     display: block !important;
   float: right;
    margin-bottom: 5px;
-   width:10%;
+   width:15%;
+   padding-left: 5%;
   }
   .apply_btn .btn{
     padding: 8px 15px;
@@ -93,16 +95,18 @@
 }
 
 .modalwidth .modal-dialog{
- height: 660px;
-width: 80% !important;
-  max-width: 80%;
+height: 660px;
+  width: 50% !important;
+  max-width: 50%;
 }
 .overul{
- height: 215px;
+ max-height: 250px;
   overflow-y: auto;
+  font-size: 14px;
+  line-height: 26px;
 }
 .overres {
-	height: 100px;
+	max-height: 100px;
 	overflow-y: auto;
 	font-size: 14px;
 	color: #414141;
@@ -115,6 +119,8 @@ width: 80% !important;
 }
 .overul li{
   padding-right: 10px;
+  color: #333;
+  font-weight: 600;
 }
 .fontweight span{
   font-weight: 500 !important;
@@ -122,7 +128,7 @@ width: 80% !important;
 }
 .overul span{
    font-weight: 500 !important;
-  color: #162b75;
+  color: #717178;
 }
 .externalfont {
 	font-size: 14px !important;
