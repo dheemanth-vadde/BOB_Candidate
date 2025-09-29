@@ -93,6 +93,9 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   // State for confirmation modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
+  const [isDobValidated, setIsDobValidated] = useState(false);
+
+
 
   useEffect(() => {
     apiService.getAllCategories()
@@ -136,6 +139,11 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
               documentName = doc.file_name.split('_').slice(1).join('_');
             }
             console.log("Document name:", documentName);
+            if (documentName === "Aadhar_Card.jpg") {
+              const file=doc.file_url;
+        const extractedDob =  extractDOBFromAadhar(file);
+        
+      }
 
             return {
               ...doc,
@@ -209,6 +217,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         const extractedDob = await extractDOBFromAadhar(file);
         if (extractedDob) {
           setAadharDob(extractedDob); // Store the extracted DOB
+          console.log("Extracted DOB from Aadhaar:", extractedDob);
 
           const formDob = formData.dob
             ? new Date(formData.dob).toISOString().split("T")[0]
@@ -283,6 +292,10 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     setFormData(initialData);
     setSelectedIdProof(initialData.id_proof || '');
     setDocumentUrl(initialData.document_url || '');
+    // Set DOB disabled if previously validated
+  if (initialData.dob_validated) {
+    setIsDobValidated(true);
+  }
   }, [initialData]);
 
   // Fetch master data on mount
@@ -302,6 +315,20 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     };
     fetchMasterData();
   }, []);
+  useEffect(() => {
+    const fetchExistingAadharDob = async () => {
+      const aadharDoc = existingDocuments.find(doc => doc.document_type === 'Aadhar Card');
+      if (aadharDoc && !aadharDob) {
+        try {
+          const extracted = await extractDOBFromAadhar(aadharDoc.file_url);
+          if (extracted) setAadharDob(extracted);
+        } catch (err) {
+          console.error('Failed to extract DOB from existing Aadhaar:', err);
+        }
+      }
+    };
+    fetchExistingAadharDob();
+  }, [existingDocuments]);
 
   // Revalidate Aadhar DOB when formData.dob changes
   useEffect(() => {
@@ -339,17 +366,17 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     setDobError('');
     setDocumentError('');
 
-    // Check for DOB mismatch first
-    if (aadharDob && formData.dob) {
-      const formDob = new Date(formData.dob).toISOString().split('T')[0];
-      if (formDob !== aadharDob) {
-        const formattedAadharDob = aadharDob.split('-').reverse().join('/');
-        const errorMessage = `DOB mismatch! Aadhaar shows: ${formattedAadharDob}`;
-        setDobError(errorMessage);
-        toast.error(errorMessage);
-        return; // Prevent form submission
-      }
+    
+   // --- NEW: Always check DOB mismatch before submission ---
+   if (aadharDob && formData.dob) {
+    const formDob = new Date(formData.dob).toISOString().split('T')[0];
+    if (formDob !== aadharDob) {
+      const formattedAadharDob = aadharDob.split('-').reverse().join('/');
+      setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+      toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+      return; // Prevent form submission
     }
+  }
 
     // Filter out any empty document entries
     const validAdditionalDocs = additionalDocs.filter(doc => doc.docId && (doc.url || doc.file));
@@ -463,6 +490,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         };
 
         await apiService.updateCandidates(candidatePayload);
+       
         toast.success('Candidate data updated successfully!');
 
         for (const doc of additionalDocs.filter(d => d.docId && d.file)) {
@@ -474,6 +502,9 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         }
 
         toast.success("All additional documents saved successfully!");
+        // After successful submission
+setIsDobValidated(true);
+
         onSubmit(formData);
         goNext();
     } catch (error) {
@@ -481,6 +512,10 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         toast.error('Failed to submit candidate data: ' + error.message);
     }
   };
+
+  
+
+
 
   const handleInvalid = (e) => {
     e.target.setCustomValidity("This is mandatory");
@@ -499,6 +534,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
 
   const extractDOBFromAadhar = async (file) => {
     console.log("file", file)
+    console.log("ASdasd")
     try {
       const { data: { text } } = await Tesseract.recognize(file, 'eng', {
         logger: (m) => console.log(m),
@@ -635,17 +671,19 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
 
         <div className="col-md-3">
           <label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
-          <input
-            type="date"
-            className={`form-control ${dobError ? 'is-invalid' : ''}`}
-            id="dob"
-            value={formData.dob || ''}
-            onChange={(e) => {
-              handleChange(e);
-              if (dobError) setDobError(""); // Clear error when user edits DOB
-            }}
-            required
-          />
+         <input
+  type="date"
+  className={`form-control ${dobError ? 'is-invalid' : ''}`}
+  id="dob"
+  value={formData.dob || ''}
+  onChange={(e) => {
+    handleChange(e);
+    if (dobError) setDobError("");
+  }}
+  required
+  disabled={isDobValidated}  // <-- disable if DOB validated
+/>
+
           {dobError && (
             <div className="text-danger mt-1">
               {dobError}
@@ -757,7 +795,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
           />
         </div>
         <div className="col-md-3 nationality">
-          <label htmlFor="nationality_id" className="form-label">Nationality *</label>
+          <label htmlFor="nationality_id" className="form-label">Nationality <span className="text-danger">*</span></label>
           <select
             className="form-select"
             id="nationality_id"
@@ -773,40 +811,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             ))}
           </select>
         </div>
-
-        {/* Special Category Dropdown */}
-        {/* <div className="col-md-4">
-          <label htmlFor="special_category_id" className="form-label">Special Category</label>
-          <select
-            className="form-select"
-            id="special_category_id"
-            value={formData.special_category_id || ''}
-            onChange={handleChange}
-          >
-            <option value="">Select Special Category</option>
-            {masterData.specialCategories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="col-md-4">
-          <label htmlFor="reservation_category_id" className="form-label">Reservation Category</label>
-          <select
-            className="form-select"
-            id="reservation_category_id"
-            value={formData.reservation_category_id || ''}
-            onChange={handleChange}
-          >
-            <option value="">Select Reservation Category</option>
-            {masterData.reservationCategories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div> */}
+        
         {/* Caste Dropdown */}
         <div className="col-md-3">
           <label htmlFor="reservation_category_id" className="form-label">Caste</label>
@@ -843,7 +848,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         </div>
 
         <div className="col-12 mt-4 adddoc">
-          <h5> Documents</h5>
+          <h5> Documents <span className="text-danger">*</span></h5>
 
           <table className="table table-bordered">
             <thead>
@@ -865,16 +870,15 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn btn-sm viewdoc iconhover"
+                      className="btn btn-sm viewdoc"
                     >
-                      <FontAwesomeIcon icon={faEye}
-                      />
+                      <FontAwesomeIcon icon={faEye} />
                     </a>
 
                     {/* Delete Button */}
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-danger dangbtn iconhover"
+                      className="btn btn-sm btn-outline-danger dangbtn"
                       onClick={() => {
                         if (!doc.document_store_id) {
                           return toast.error("Cannot delete unsaved document");
@@ -886,7 +890,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                         setShowDeleteModal(true);
                       }}
                     >
-                      <FontAwesomeIcon icon={faTrash} className='' />
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
                     {/* Re-upload Button */}
                     <>
@@ -927,12 +931,12 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                       />
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-primary printn iconhover"
+                        className="btn btn-sm btn-outline-primary printn"
                         onClick={() =>
                           document.getElementById(`reupload-${doc.document_store_id}`).click()
                         }
                       >
-                        <FontAwesomeIcon icon={faUpload} className="me-1"  />
+                        <FontAwesomeIcon icon={faUpload} className="me-1" />
                       </button>
                     </>
 
@@ -1015,40 +1019,8 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
                         <FontAwesomeIcon icon={faEye} />
                       </a>
                     )}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-danger dangbtn"
-                      onClick={() => {
-                        setDocToDelete({
-                          id: `temp-${index}`,
-                          name: doc.fileName || 'this document',
-                          onConfirm: () => {
-                            const updated = [...additionalDocs];
-                            updated.splice(index, 1);
-                            setAdditionalDocs(updated);
-                            setShowDeleteModal(false);
-                            setDocToDelete(null);
-                          }
-                        });
-                        setShowDeleteModal(true);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                    {index === additionalDocs.length - 1 && (
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary btn-sm printn"
-                        onClick={() =>
-                          setAdditionalDocs([
-                            ...additionalDocs,
-                            { docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false }
-                          ])
-                        }
-                      >
-                         <FontAwesomeIcon icon={faPlus} />
-                      </button>
-                    )}
+                    
+                    
                   </td>
                 </tr>
               ))}
