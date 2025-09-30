@@ -62,15 +62,37 @@ const [specialCategory, setSpecialCategory] = useState(null);
 const [foundSpecialCategory, setFoundSpecialCategory] = useState(null);
 const [foundReservationCategory, setFoundReservationCategory] = useState(null);
  useEffect(() => {
-  if (candidateData) {
-    if (candidateData.reservation_category_id) {
-      setReservationCategory(candidateData.reservation_category_id);
+
+ const fetchCandidateData = async () => {
+    if (!user?.candidate_id) return; // Add a guard clause
+    const candidateId = user?.candidate_id;
+    try {
+      const response = await apiService.getCandidateDetails(candidateId);
+      console.log(response,"response");
+      if (response.data) {
+        if (candidateData.reservation_category_id) {
+          setReservationCategory(candidateData.reservation_category_id);
+        }
+        if (candidateData.special_category_id) {
+          setSpecialCategory(candidateData.special_category_id);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching candidate details:', error);
     }
-    if (candidateData.special_category_id) {
-      setSpecialCategory(candidateData.special_category_id);
-    }
-  }
-}, [candidateData]);
+  };
+
+  fetchCandidateData();
+
+  // if (response.data) {
+  //   if (candidateData.reservation_category_id) {
+  //     setReservationCategory(candidateData.reservation_category_id);
+  //   }
+  //   if (candidateData.special_category_id) {
+  //     setSpecialCategory(candidateData.special_category_id);
+  //   }
+  // }
+}, []);
  
   // Add this function to fetch category details
   const fetchCategoryDetails = async () => {
@@ -99,7 +121,7 @@ const [foundReservationCategory, setFoundReservationCategory] = useState(null);
       
       if (reservationCategories?.data && reservationCategory) {
         const found = reservationCategories.data.find(
-          cat => (cat.reservation_categories_id) === (reservationCategory)
+          cat => String(cat.reservation_categories_id) === String(reservationCategory)
         );
         setFoundReservationCategory(found);
         console.log("foundReservationCategory", found);
