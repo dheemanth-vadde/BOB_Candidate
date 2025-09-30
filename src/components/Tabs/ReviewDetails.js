@@ -873,7 +873,7 @@ setIsDobValidated(true);
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn btn-sm viewdoc"
+                      className="btn btn-sm viewdoc iconhover"
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </a>
@@ -881,7 +881,7 @@ setIsDobValidated(true);
                     {/* Delete Button */}
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-danger dangbtn"
+                      className="btn btn-sm btn-outline-danger dangbtn iconhover"
                       onClick={() => {
                         if (!doc.document_store_id) {
                           return toast.error("Cannot delete unsaved document");
@@ -934,7 +934,7 @@ setIsDobValidated(true);
                       />
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-primary printn"
+                        className="btn btn-sm btn-outline-primary printn iconhover"
                         onClick={() =>
                           document.getElementById(`reupload-${doc.document_store_id}`).click()
                         }
@@ -1017,7 +1017,7 @@ setIsDobValidated(true);
                     {index === additionalDocs.length - 1 && (
                       <button
                         type="button"
-                        className="btn btn-outline-primary btn-sm printn"
+                        className="btn btn-outline-primary btn-sm printn iconhover"
                         onClick={() =>
                           setAdditionalDocs([
                             ...additionalDocs,
