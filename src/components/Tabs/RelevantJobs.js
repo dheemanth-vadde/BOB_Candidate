@@ -74,16 +74,18 @@ const [foundReservationCategory, setFoundReservationCategory] = useState(null);
  
   // Add this function to fetch category details
   const fetchCategoryDetails = async () => {
+    console.log("ravalissss");
     try {
       console.log("fetchCategoryDetails");
+      console.log("specialCategory", specialCategory);
+      console.log("reservationCategory", reservationCategory);
       // Fetch all special categories and find the matching one
       const specialCategories = await apiService.getAllSpecialCategories();
       console.log("specialCategories", specialCategories);
-      console.log("specialCategory", specialCategory);
       
       if (specialCategories?.data && specialCategory) {
         const found = specialCategories.data.find(
-          cat => cat.special_category_id === specialCategory
+          cat => String(cat.special_category_id) === String(specialCategory)
         );
         setFoundSpecialCategory(found);
         console.log("foundSpecialCategory", found);
@@ -94,11 +96,10 @@ const [foundReservationCategory, setFoundReservationCategory] = useState(null);
       // Fetch all reservation categories and find the matching one
       const reservationCategories = await apiService.getAllReservationCategories();
       console.log("reservationCategories", reservationCategories);
-      console.log("reservationCategory", reservationCategory);
       
       if (reservationCategories?.data && reservationCategory) {
         const found = reservationCategories.data.find(
-          cat => cat.reservation_categories_id === reservationCategory
+          cat => (cat.reservation_categories_id) === (reservationCategory)
         );
         setFoundReservationCategory(found);
         console.log("foundReservationCategory", found);
@@ -112,7 +113,7 @@ const [foundReservationCategory, setFoundReservationCategory] = useState(null);
     }
   };
 
-// Add this to your useEffect that depends on candidateData
+//Add this to your useEffect that depends on candidateData
 useEffect(() => {
   console.log("specialCategory", specialCategory);
   console.log("reservationCategory", reservationCategory);
@@ -386,7 +387,6 @@ useEffect(() => {
       let reservationRelaxation = 0;
       let specialRelaxation = 0;
     
-      console.log("candidateReservationCategory", candidateReservationCategory);
     
       // --- Reservation Category Relaxation ---
       if (selectedPolicy && candidateReservationCategory) {
@@ -394,21 +394,29 @@ useEffect(() => {
         reservationRelaxation = ageRelaxations[candidateReservationCategory] || 0;
         console.log("reservationRelaxation", reservationRelaxation);
       }
-    
       // --- Special Category Relaxation ---
       if (selectedPolicy && candidateSpecialCategory) {
         const specialCategories =
           selectedPolicy.relaxation?.specialsByType?.["Age Relaxation"] || [];
         console.log("specialCategories111", specialCategories);
-    
+      
         const matchedSpecial = specialCategories.find(
-          (sc) => sc.special_category_name === candidateSpecialCategory
+          (sc) => String(sc.name) === String(candidateSpecialCategory)
         );
-    
+      
         if (matchedSpecial) {
-          // Pick relaxation based on candidate's reservation category
-          specialRelaxation =
-            matchedSpecial.relaxation?.[candidateReservationCategory] || 0;
+          console.log("matchedSpecial", matchedSpecial);
+          console.log("candidateReservationCategory", candidateReservationCategory);
+      
+          // Check the mode
+          if (matchedSpecial.mode === "category") {
+            // Use the reservation category value
+            specialRelaxation = matchedSpecial.values?.[candidateReservationCategory] || 0;
+          } else if (matchedSpecial.mode === "flat") {
+            // Use the flat value directly
+            specialRelaxation = matchedSpecial.flat || 0;
+          }
+      
           console.log("specialRelaxation", specialRelaxation);
         }
       }
@@ -438,7 +446,7 @@ useEffect(() => {
 
       let reservationRelaxation = 0;
       let specialRelaxation = 0;
-
+  
       // --- Reservation Category Relaxation ---
       if (selectedPolicy && candidateReservationCategory) {
         const expRelaxations = selectedPolicy.relaxation?.main?.["Experience Relaxation"] || {};
@@ -446,35 +454,40 @@ useEffect(() => {
         reservationRelaxation = expRelaxations[candidateReservationCategory] || 0;
         console.log("reservationExperienceRelaxation", reservationRelaxation);
       }
-
       // --- Special Category Relaxation ---
       if (selectedPolicy && candidateSpecialCategory) {
         const specialCategories =
-          selectedPolicy.relaxation?.specialsByType?.["Experience Relaxation"] || [];
-        console.log("specialExperienceCategories", specialCategories);
+            selectedPolicy.relaxation?.specialsByType?.["Experience Relaxation"] || [];
 
-        const matchedSpecial = specialCategories.find(
-          (sc) => sc.special_category_name === candidateSpecialCategory
-        );
+          const matchedSpecial = specialCategories.find(
+            (sc) => sc.name === candidateSpecialCategory
+          );
 
-        if (matchedSpecial) {
-          specialRelaxation =
-            matchedSpecial.relaxation?.[candidateReservationCategory] || 0;
-          console.log("specialExperienceRelaxation", specialRelaxation);
-        }
+          if (matchedSpecial) {
+            if (matchedSpecial.mode === "category") {
+              // Use the reservation category value
+              specialRelaxation = matchedSpecial.values?.[candidateReservationCategory] || 0;
+            } else if (matchedSpecial.mode === "flat") {
+              // Use the flat value directly
+              specialRelaxation = matchedSpecial.flat || 0;
+            }
+
+            console.log("specialExperienceRelaxation", specialRelaxation);
+          }
       }
 
       // --- Apply the higher relaxation ---
+    
+
       const finalRelaxation = Math.max(reservationRelaxation, specialRelaxation);
-      console.log("finalExperienceRelaxation", finalRelaxation);
 
       // Adjust required experience
       const effectiveExperienceRequired = Math.max(0, requiredExperience - finalRelaxation);
-console.log("cadidateExperience",candidateExperience)
-console.log("effectiveExperienceRequired",effectiveExperienceRequired)
+      console.log("cadidateExperience",candidateExperience)
+      console.log("effectiveExperienceRequired",effectiveExperienceRequired)
       if (candidateExperience < effectiveExperienceRequired) {
         toast.error(
-          `This position requires at least ${effectiveExperienceRequired} years of experience (after relaxation).`
+          `This position requires at least ${effectiveExperienceRequired} years of experience.`
         );
         return;
       }
