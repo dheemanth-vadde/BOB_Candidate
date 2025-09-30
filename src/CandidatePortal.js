@@ -54,7 +54,8 @@ useEffect(() => {
             currentEmployer: data.current_employer || '',
             address: data.address || '',
             skills: data.skills || '',
-            document_url: data.documentUrl || ''
+            document_url: data.documentUrl || '',
+            is_dob_validated: data.is_dob_validated || ''
           });
           
           // Set resume URL if exists

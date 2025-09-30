@@ -93,7 +93,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   // State for confirmation modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
-  const [isDobValidated, setIsDobValidated] = useState(false);
+  const [isDobValidated, setIsDobValidated] = useState(initialData.is_dob_validated || false);
 
 
 
@@ -265,17 +265,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       updated[index].url = URL.createObjectURL(file);
 
       // Add a new empty row if this is the last one
-      if (index === updated.length - 1 && doc.docId && updated[index].url) {
-        updated.push({
-          docId: "",
-          docName: "",
-          freeText: "",
-          fileName: "",
-          file: null,
-          url: "",
-          uploading: false,
-        });
-      }
+      
 
       setAdditionalDocs([...updated]);
     } catch (err) {
@@ -286,17 +276,17 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     }
   };
 
-  // Sync formData and selectedIdProof with initialData
-  useEffect(() => {
-    console.log('initialData', initialData)
-    setFormData(initialData);
-    setSelectedIdProof(initialData.id_proof || '');
-    setDocumentUrl(initialData.document_url || '');
-    // Set DOB disabled if previously validated
-  if (initialData.dob_validated) {
+ 
+useEffect(() => {
+  console.log('initialData', initialData)
+  setFormData(initialData);
+  setSelectedIdProof(initialData.id_proof || '');
+  setDocumentUrl(initialData.document_url || '');
+  // Set DOB disabled if previously validated
+  if (initialData.is_dob_validated) { // <--- THIS CHECK IS CORRECT
     setIsDobValidated(true);
   }
-  }, [initialData]);
+}, [initialData]);
 
   // Fetch master data on mount
   useEffect(() => {
@@ -330,12 +320,13 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     fetchExistingAadharDob();
   }, [existingDocuments]);
 
-  // Revalidate Aadhar DOB when formData.dob changes
+  // Revalidate Aadhar DOB when formData.dob changes or when component mounts
   useEffect(() => {
     if (aadharDob && formData.dob) {
       const formDob = new Date(formData.dob).toISOString().split('T')[0];
       if (formDob === aadharDob) {
         setDobError("");
+        setIsDobValidated(true);
         // Clear the DOB mismatch flag from any Aadhaar documents
         setAdditionalDocs(prev =>
           prev.map(doc => ({
@@ -346,9 +337,20 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       } else if (dobError && dobError.includes("Aadhaar shows")) {
         const formattedAadharDob = aadharDob.split('-').reverse().join('/');
         setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+        setIsDobValidated(false);
       }
     }
   }, [formData.dob, aadharDob, dobError]);
+
+  // Update formData when isDobValidated changes to ensure it's included in the submission
+  useEffect(() => {
+    if (isDobValidated) {
+      setFormData(prev => ({
+        ...prev,
+        is_dob_validated: true
+      }));
+    }
+  }, [isDobValidated]);
 
   const handleChange = (e) => {
     console.log("ravali")
@@ -479,6 +481,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             address: formData.address || '',
             nationality_id: formData.nationality_id || '',
             education_qualification: formData.education_qualification || '',
+            is_dob_validated: isDobValidated,
             extra_documents: additionalDocs.map(d => ({
                 type_id: d.docId,
                 type: d.docName,
@@ -685,7 +688,7 @@ setIsDobValidated(true);
 />
 
           {dobError && (
-            <div className="text-danger mt-1">
+            <div className="text-danger mt-1 erordob">
               {dobError}
             </div>
           )}
@@ -1009,15 +1012,21 @@ setIsDobValidated(true);
                         <span className="visually-hidden">Uploading...</span>
                       </div>
                     )}
-                    {doc.url && !doc.uploading && (
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-link p-0"
+                    
+                   
+                    {index === additionalDocs.length - 1 && (
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm printn"
+                        onClick={() =>
+                          setAdditionalDocs([
+                            ...additionalDocs,
+                            { docId: "", docName: "", freeText: "", fileName: "", file: null, url: "", uploading: false }
+                          ])
+                        }
                       >
-                        <FontAwesomeIcon icon={faEye} />
-                      </a>
+                         <FontAwesomeIcon icon={faPlus} />
+                      </button>
                     )}
                     
                     
