@@ -55,7 +55,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       setResumePublicUrl(uploadResult.public_url);
       //parsing 
     
-      const response = await fetch('https://backend.sentrifugo.com/parse-resume2', {
+      const response = await fetch('https://bobbe.sentrifugo.com/api/parseresume', {
         method: 'POST',
         body: formData,
       });

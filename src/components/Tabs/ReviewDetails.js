@@ -727,7 +727,7 @@ setIsDobValidated(true);
             type="text"
             className="form-control"
             id="phone"
-            value={formData.phone || ''}
+            value={formData.phone || formData.Mobile || ''}
             onChange={handleChange}
             required
           />
