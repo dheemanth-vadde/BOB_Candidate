@@ -158,7 +158,7 @@ export const apiService = {
   updateCandidates: (data) => api.put('candidates/update_candidate', data),
   getCandidateDetails: (candidate_id) => api.get(`candidates/get-by-candidate/${candidate_id}`),
   applyJobs: (data) => api.post('candidates/apply/job', data),
-  appliedpositions: (candidate_id) => api.get(`candidates/get-applied-positions/${candidate_id}`),
+  appliedpositions: (candidate_id) => jobcreationapis.get(`candidates/get-applied-positions/${candidate_id}`),
   getActiveJobs: () => jobcreationapis.get(`job-positions/get-active`),
    // Get all categories (e.g., caste list)
 getAllCategories: () => apis.get('/categories/all'),
