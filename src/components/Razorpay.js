@@ -15,7 +15,7 @@ function loadRazorpay() {
 
 /** Backend calls */
 async function getRzpKey() {
-  const r = await fetch("https://bobbe.sentrifugo.com/api/payments/razorpay/config");
+  const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/config");
   if (!r.ok) throw new Error("Failed to load Razorpay key");
   const { keyId } = await r.json();
   if (!keyId) throw new Error("Invalid key from server");
@@ -23,7 +23,7 @@ async function getRzpKey() {
 }
 
 async function createOrder({ amountPaise, receipt, notes, candidate_id, position_id }) {
-  const r = await fetch("https://bobbe.sentrifugo.com/api/payments/razorpay/orders", {
+  const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -39,13 +39,13 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
     const txt = await r.text().catch(() => "");
     throw new Error(txt || "Failed to create order");
   }
-  const { order } = await r.json();
+  const order = await r.json();
   if (!order?.id) throw new Error("Invalid order from server");
   return order; // { id, amount, currency, ... }
 }
 
 async function verifyPayment(payload) {
-  const r = await fetch("https://bobbe.sentrifugo.com/api/payments/razorpay/verify", {
+  const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -63,7 +63,7 @@ export default function Razorpay({
   className = "btn btn-sm btn-outline-primary hovbtn",
   label = "Pay",
   onSuccess,
-    // 🔹 NEW: Called when user closes popup
+  // 🔹 NEW: Called when user closes popup
   position_id,
   onClose,
   autoTrigger = false, // 🔹 NEW: Auto-open Razorpay when mounted
@@ -120,10 +120,10 @@ export default function Razorpay({
         },
         modal: {
           ondismiss: () => {
-           // onClose?.(); // Call when user closes popup
-           if (typeof onClose === "function") {
-            onClose(); // Call a callback passed from parent
-          }
+            // onClose?.(); // Call when user closes popup
+            if (typeof onClose === "function") {
+              onClose(); // Call a callback passed from parent
+            }
           },
         },
       });

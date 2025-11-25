@@ -28,17 +28,22 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const encryptedPassword = encryptPassword(password);
-      const res = await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-login", {
-      // const res = await axios.post("http://localhost:5000/api/auth/candidate-login", {
-        email,
-        password: encryptedPassword,
+      // const encryptedPassword = encryptPassword(password);
+
+      const res = await axios.post("https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-login", {
+        // const res = await axios.post("http://localhost:5000/api/auth/candidate-login", {
+        username: email,
+        password: password,
+
       });
 
-      const dbRes = await axios.post("https://bobbe.sentrifugo.com/api/getdetails/candidates", {
-      // const dbRes = await axios.post("http://localhost:5000/api/getdetails/candidates", {
-        email,
-      });
+      const dbRes = await axios.post("https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/getdetails/candidates",
+        null,   // no request body
+        {
+          params: { email }
+        }
+      );
+
 
       if (res.data.mfa_required) {
         // localStorage.setItem("mfa_token", res.data.mfa_token);
@@ -106,7 +111,7 @@ const Login = () => {
           />
 
           <label>Password:</label>
-           <div className="" style={{ position: 'relative' }}>
+          <div className="" style={{ position: 'relative' }}>
             <input
               type={showPassword ? "text" : "password"}
               value={password}
@@ -136,7 +141,8 @@ const Login = () => {
               onClick={async () => {
                 try {
                   await axios.post(
-                    "https://bobbe.sentrifugo.com/api/auth/candidate-resend-verification",
+
+                    "https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-resend-verification",
                     // "http://localhost:5000/api/auth/candidate-resend-verification",
 
                     {

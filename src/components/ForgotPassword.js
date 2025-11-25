@@ -13,11 +13,14 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-forgot-password", {
-        // const res = await axios.post("http://localhost:5000/api/auth/candidate-forgot-password", {
+      const res = await axios.post("https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-forgot-password",
+        null,
+        {
+          params: { email }
+        }
+      );
 
-        email,
-    });
+
       alert("Password reset link sent. Check your email.");
       navigate("/login");
     } catch (error) {
@@ -27,7 +30,7 @@ const ForgotPassword = () => {
   };
 
   return (
-        <div className="login-container">
+    <div className="login-container">
       <div className="left-panel">
         <img src={pana} alt="Illustration" />
         <h2>बैंक ऑफ़ बड़ौदा</h2>

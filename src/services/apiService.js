@@ -39,11 +39,11 @@ function getToken() {
 
 // Use the environment variables with a fallback to the new URLs you provided.
 // This is the correct way to handle different API services.
-const API_BASE_URL = 'https://bobjava.sentrifugo.com:8443/candidate/api/v1';
+const API_BASE_URL = 'https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1';
 // const API_BASE_URL = 'http://192.168.20.111:8081/api';
-const API_BASE_URLS = 'https://bobjava.sentrifugo.com:8443/master/api';
-const NODE_API_URL = 'https://bobbe.sentrifugo.com/api';
-const JOBCREATION_API_URL = 'https://bobjava.sentrifugo.com:8443/jobcreation/api/v1';
+const API_BASE_URLS = 'https://bobjava.sentrifugo.com:8443/dev-master-app/api';
+// const NODE_API_URL = 'https://bobbe.sentrifugo.com/api';
+const JOBCREATION_API_URL = 'https://bobjava.sentrifugo.com:8443/dev-jobcreation-app/api/v1';
 // Create a primary axios instance for most API calls
 const api = axios.create({
   baseURL: API_BASE_URL,
