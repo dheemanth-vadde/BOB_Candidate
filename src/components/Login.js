@@ -31,7 +31,7 @@ const Login = () => {
     try {
       // Step 1: Login API
       const res = await axios.post(
-        "https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-login",
+        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-login",
         {
           username: email,
           password: password,
@@ -48,7 +48,7 @@ const Login = () => {
 
       // Step 2: Fetch Details API (REQUIRES BEARER TOKEN)
       const dbRes = await axios.post(
-        "https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/getdetails/candidates",
+        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/getdetails/candidates",
         null, // no body
         {
           params: { email },
@@ -142,7 +142,7 @@ const Login = () => {
               onClick={async () => {
                 try {
                   await axios.post(
-                    "https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-resend-verification",
+                    "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-resend-verification",
                     { user_id: unverifiedUserId }
                   );
                   alert("Verification email sent. Please check your inbox.");

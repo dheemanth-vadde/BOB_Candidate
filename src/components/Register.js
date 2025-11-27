@@ -45,7 +45,7 @@ const Register = () => {
   try {
    // const encryptedPassword = encryptPassword(password);
     // 1. Register user via your backend
-    await axios.post("https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-register", {
+    await axios.post("https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-register", {
     // await axios.post("http://localhost:5000/api/auth/candidate-register", {
       name,
       email,

@@ -41,7 +41,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
     try {
 
        // Upload resume to the server
-       const uploadResponse = await fetch('https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/resume/upload-resume', {
+       const uploadResponse = await fetch('https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/resume/upload-resume', {
         method: 'POST',
         body: uploadedformData,
         headers: {
@@ -60,7 +60,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       setResumePublicUrl(uploadResult.public_url);
       //parsing 
     
-      const response = await fetch('https://bobjava.sentrifugo.com:8443/dev-jobcreation-app/api/v1/parseresume', {
+      const response = await fetch('https://dev.bobjava.sentrifugo.com:8443/dev-jobcreation-app/api/v1/parseresume', {
         method: 'POST',
         body: formData,
         headers: {
