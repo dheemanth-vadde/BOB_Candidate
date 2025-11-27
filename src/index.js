@@ -1,19 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-// import CandidatePortal from './App';
 import App from './App';
+
+// Redux
 import { store, persistor } from './store';
 import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux';
 
+// Axios
+import axios from "axios";
+
+// 👉 GLOBAL DIGILOCKER SANDBOX INTERCEPTOR
+axios.interceptors.request.use((config) => {
+  const token = store.getState()?.digilocker?.sandboxToken;
+
+  if (token) {
+    config.headers["X-Digilocker-Token"] = token;
+  }
+
+  return config;
+});
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
+  <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
-      <Provider store={store}>
+      <BrowserRouter>
         <App />
-      </Provider>
+      </BrowserRouter>
     </PersistGate>
-  </BrowserRouter>
+  </Provider>
 );

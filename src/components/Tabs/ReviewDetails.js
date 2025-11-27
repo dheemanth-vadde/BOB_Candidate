@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { apiService } from '../../services/apiService';
-import { faTrash, faEye, faUpload, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEye, faUpload, faPlus, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast } from 'react-toastify';
-import { useSelector } from "react-redux";
 import '../../css/ReviewDetails.css';
 import Tesseract from 'tesseract.js';
+import { useDispatch, useSelector } from "react-redux";
+import { 
+  setDigiLockerConnected,
+  setDigiLockerAccessToken
+} from "../../store/digilockerSlice";
+import { store } from '../../store';
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ show, onConfirm, onCancel, message }) => {
@@ -94,8 +99,136 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
   const [isDobValidated, setIsDobValidated] = useState(initialData.is_dob_validated || false);
+  const [digiLockerDocs, setDigiLockerDocs] = useState([]);
 
+  // FINAL: start DigiLocker flow using /token API (no authorize, no PKCE)
+  const startDigiLockerFlow = async () => {
+    try {
+      toast.info("Verifying via DigiLocker…");
 
+      // Call backend
+      const res = await apiService.exchangeDigiLockerToken("ca82123a5476aa2f5e4638957c0ecc55c6ec07c1");
+
+      // Extract access token safely
+      const accessToken =
+        res?.access_token ||
+        res?.data?.access_token ||
+        (typeof res === "string" ? res : null);
+
+      if (!accessToken) {
+        toast.error("No DigiLocker access token received.");
+        return;
+      }
+
+      // Store token only
+      dispatch(setDigiLockerAccessToken(accessToken));
+      dispatch(setDigiLockerConnected(true));
+
+      toast.success("DigiLocker Verified Successfully!");
+
+      // Load issued docs / eaadhaar
+      await loadDigiLockerData();
+
+    } catch (err) {
+      console.error(err);
+      toast.error("DigiLocker Token API Failed");
+    }
+  };
+
+  // 🚀 After verification → fetch issued docs & Aadhaar
+  const loadDigiLockerData = async () => {
+    try {
+      const token = store.getState().digilocker.accessToken;
+
+      if (!token) {
+        toast.error("Missing DigiLocker token");
+        return;
+      }
+
+      // 1. Fetch Issued Docs
+      const issued = await apiService.getDigiLockerIssuedDocs(token);
+      console.log("Issued Docs:", issued);
+      setDigiLockerDocs(issued.items || []);
+
+      // 2. Fetch eAadhaar
+      const aadhaar = await apiService.getEAadhaar(token);
+      console.log("eAadhaar:", aadhaar);
+
+      toast.success("DigiLocker documents loaded successfully!");
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load DigiLocker documents");
+    }
+  };
+
+  const getMappedDocumentId = (docType) => {
+    if (!docType) return null;
+
+    const map = {
+      "ADHAR": 1,
+      "PANCR": 4,
+      "SSCER": 5
+      // add more if needed
+    };
+
+    return map[docType] || null;
+  };
+
+  const deleteDigiLockerDoc = (uri) => {
+    setDigiLockerDocs(prev => prev.filter(doc => doc.uri !== uri));
+    toast.success("Document removed");
+  };
+
+  const handleDigiLockerDirectUpload = async (doc) => {
+    try {
+      const token = store.getState().digilocker.accessToken;
+      const candidateId = store.getState().user.user?.candidate_id;
+      const backendDocId = getMappedDocumentId(doc.doctype);
+
+      setDigiLockerDocs(prev =>
+        prev.map(d => d.uri === doc.uri ? { ...d, uploading: true } : d)
+      );
+
+      const res = await apiService.getDigiLockerFile(
+        token,
+        doc.uri,
+        candidateId,
+        backendDocId
+      );
+
+      const fileUrl = res?.data?.data?.file_url;
+
+      setDigiLockerDocs(prev =>
+        prev.map(d =>
+          d.uri === doc.uri
+            ? { ...d, uploaded: true, uploading: false, file_url: fileUrl }
+            : d
+        )
+      );
+
+      toast.success(`${doc.name} uploaded successfully!`);
+
+    } catch (err) {
+      console.error("UPLOAD ERROR:", err);
+
+      setDigiLockerDocs(prev =>
+        prev.map(d =>
+          d.uri === doc.uri ? { ...d, uploading: false } : d
+        )
+      );
+
+      toast.error("Failed to upload DigiLocker document");
+    }
+  };
+
+  const viewDigiLockerDocument = (doc) => {
+    if (!doc.uploaded) {
+      toast.error("Please upload the DigiLocker document first.");
+      return;
+    }
+    window.open(doc.file_url, "_blank");
+  };
 
   useEffect(() => {
     apiService.getAllCategories()
@@ -164,6 +297,21 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     fetchDocumentTypes();
   }, [candidateId]);
 
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const checkIfUserReturned = () => {
+      const connected = localStorage.getItem("digilocker_verified");
+
+      if (connected === "yes") {
+        loadDigiLockerData();
+        localStorage.removeItem("digilocker_verified");
+      }
+    };
+
+    checkIfUserReturned();
+  }, []);
+
   const handleAdditionalDocChange = (index, field, value) => {
     const updated = [...additionalDocs];
     updated[index][field] = value;
@@ -214,7 +362,10 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     try {
       // Aadhaar Validation
       if (updated[index].docName === "Aadhar Card") {
+        // 1️⃣ OCR DOB extraction
         const extractedDob = await extractDOBFromAadhar(file);
+        // 2️⃣ SandBox DigiLocker call (ASYNC + NON-BLOCKING)
+        // getSandboxDigiLockerToken();
         if (extractedDob) {
           setAadharDob(extractedDob); // Store the extracted DOB
           console.log("Extracted DOB from Aadhaar:", extractedDob);
@@ -606,7 +757,10 @@ setIsDobValidated(true);
 
       // If it's an Aadhar card, validate DOB
       if (selectedIdProof === 'Aadhar') {
+        // 1️⃣ OCR DOB extraction
         const extractedDOB = await extractDOBFromAadhar(file);
+        // 2️⃣ SandBox DigiLocker call (ASYNC + NON-BLOCKING)
+        // getSandboxDigiLockerToken(); 
 
         if (extractedDOB) {
           setAadharDob(extractedDOB);
@@ -674,19 +828,18 @@ setIsDobValidated(true);
 
         <div className="col-md-3">
           <label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
-         <input
-  type="date"
-  className={`form-control ${dobError ? 'is-invalid' : ''}`}
-  id="dob"
-  value={formData.dob || ''}
-  onChange={(e) => {
-    handleChange(e);
-    if (dobError) setDobError("");
-  }}
-  required
-  disabled={isDobValidated}  // <-- disable if DOB validated
-/>
-
+          <input
+            type="date"
+            className={`form-control ${dobError ? 'is-invalid' : ''}`}
+            id="dob"
+            value={formData.dob || ''}
+            onChange={(e) => {
+              handleChange(e);
+              if (dobError) setDobError("");
+            }}
+            required
+            disabled={isDobValidated}  // <-- disable if DOB validated
+          />
           {dobError && (
             <div className="text-danger mt-1 erordob">
               {dobError}
@@ -851,7 +1004,17 @@ setIsDobValidated(true);
         </div>
 
         <div className="col-12 mt-4 adddoc">
-          <h5> Documents <span className="text-danger">*</span></h5>
+          <div className='d-flex mb-2 gap-2'>
+            <h5> Documents <span className="text-danger">*</span></h5>
+            <button 
+              type="button"
+              className="btn btn-outline-primary"
+              onClick={startDigiLockerFlow}
+              style={{ fontSize: "12px" }}
+            >
+              Upload from DigiLocker
+            </button>
+          </div>
 
           <table className="table table-bordered">
             <thead>
@@ -863,86 +1026,50 @@ setIsDobValidated(true);
             </thead>
             <tbody>
               {/* Existing documents from server */}
-              {existingDocuments.map((doc, index) => (
-                <tr key={`existing-${index}`}>
-                  <td>{doc.document_type || 'N/A'}</td>
-                  <td>{doc.file_name || 'Document'}</td>
+              {digiLockerDocs.length > 0 && digiLockerDocs.map((doc, index) => (
+                <tr key={`digi-${index}`}>
+                  <td>{doc.name}</td>
+                  <td>{doc.issuer}</td>
                   <td className="d-flex align-items-center gap-2">
-                    {/* View Button */}
-                    <a
-                      href={doc.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-sm viewdoc iconhover"
-                    >
-                      <FontAwesomeIcon icon={faEye} />
-                    </a>
-
-                    {/* Delete Button */}
+                    {/* Button to fetch file */}
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-danger dangbtn iconhover"
-                      onClick={() => {
-                        if (!doc.document_store_id) {
-                          return toast.error("Cannot delete unsaved document");
-                        }
-                        setDocToDelete({
-                          id: doc.document_store_id,
-                          name: doc.file_name || 'this document'
-                        });
-                        setShowDeleteModal(true);
-                      }}
+                      className="btn btn-sm viewdoc iconhover"
+                      onClick={() => viewDigiLockerDocument(doc)}
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm viewdoc iconhover"
+                      onClick={() => deleteDigiLockerDoc(doc.uri)}
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
-                    {/* Re-upload Button */}
-                    <>
-                      <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        style={{ display: "none" }}
-                        id={`reupload-${doc.document_store_id}`}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          try {
-                            const fd = new FormData();
-                            fd.append("file", file);
+                    {/* Upload or Verified */}
+                    {!doc.uploaded ? (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-sm viewdoc iconhover"
+                          onClick={() => handleDigiLockerDirectUpload(doc)}
+                        >
+                          <FontAwesomeIcon icon={faUpload} />
+                        </button>
 
-                            await apiService.addCandidateDocument(
-                              candidateId,
-                              doc.document_id,      // existing document type
-                              "",                    // others if needed
-                              fd
-                            );
-
-                            // Update the UI to show the new file
-                            setExistingDocuments(prev =>
-                              prev.map(d =>
-                                d.document_store_id === doc.document_store_id
-                                  ? { ...d, file_name: file.name, file_url: URL.createObjectURL(file) }
-                                  : d
-                              )
-                            );
-
-                            toast.success("Document re-uploaded successfully!");
-                          } catch (err) {
-                            console.error("Re-upload failed:", err);
-                            toast.error("Failed to re-upload document");
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-primary printn iconhover"
-                        onClick={() =>
-                          document.getElementById(`reupload-${doc.document_store_id}`).click()
-                        }
-                      >
-                        <FontAwesomeIcon icon={faUpload} className="me-1" />
-                      </button>
-                    </>
-
+                        {doc.uploading && (
+                          <div className="spinner-border spinner-border-sm"></div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon
+                          icon={faCheckCircle}
+                          style={{ color: "#22bb33", marginLeft: "6px" }}
+                        />
+                        Uploaded
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}

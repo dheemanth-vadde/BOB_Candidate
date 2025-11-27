@@ -15,6 +15,7 @@ import Tokenexp from './components/Tokenexp';
 import PrivateRoute from './components/PrivateRoute';
 import { useEffect, useState } from 'react';
 import CustomChatbot from './components/CustomChatbot';
+import DigiLockerCallback from './components/DigiLocker';
 
 function App() {
   const location = useLocation(); // Get current path
@@ -45,6 +46,7 @@ function App() {
             <Route element={<Tokenexp />}>
               <Route path="/candidate-portal" element={<CandidatePortal />} />
               <Route path="/notifications" element={<Notifications />} />
+              <Route path="/digilocker/callback" element={<DigiLockerCallback />} />
             </Route>
           </Route>
 

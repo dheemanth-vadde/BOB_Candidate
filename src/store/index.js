@@ -1,18 +1,22 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice';
-import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage
+import digilockerReducer from './digilockerSlice';
 
-const persistConfig = {
-  key: 'root',
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+
+// Persist ONLY the user slice
+const userPersistConfig = {
+  key: 'user',
   storage,
 };
 
-const persistedUserReducer = persistReducer(persistConfig, userReducer);
+const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
 
 export const store = configureStore({
   reducer: {
-    user: persistedUserReducer,
+    user: persistedUserReducer,     // persisted ✔
+    digilocker: digilockerReducer,  // NOT persisted ❌ (good)
   },
 });
 

@@ -45,9 +45,17 @@ const API_BASE_URL = 'https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/
 const API_BASE_URLS = 'https://bobjava.sentrifugo.com:8443/dev-master-app/api';
 // const NODE_API_URL = 'https://bobbe.sentrifugo.com/api';
 const JOBCREATION_API_URL = 'https://bobjava.sentrifugo.com:8443/dev-jobcreation-app/api/v1';
+const DIGILOCKER_API_URL = 'https://bobjava.sentrifugo.com:8443/digiLockerTestCandidatePortal/api/v1';
 // Create a primary axios instance for most API calls
 const api = axios.create({
   baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const digiLockerApi = axios.create({
+  baseURL: DIGILOCKER_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -82,6 +90,31 @@ api.interceptors.request.use(
 
 // Response interceptor for error handling on the primary API
 api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response?.status === 401) {
+      store.dispatch(clearUser());
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+digiLockerApi.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for error handling on the primary API
+digiLockerApi.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
@@ -185,7 +218,38 @@ getAllCategories: () => apis.get('/categories/all'),
 
     getConfig: () => api.get('/razorpay/config'),
     getRazorOrder: (data) => api.post('/razorpay/orders', data),
-    getRazorVerify: (data) => api.post('/razorpay/verify', data)
+    getRazorVerify: (data) => api.post('/razorpay/verify', data),
+
+    // ==================== DIGILOCKER API CALLS ====================
+
+    // 1. Start Authorization
+    getDigiLockerAuthUrl: (params) => digiLockerApi.get('/digilocker/authorize', { params }),
+
+    // 2. Exchange Token (if backend expects code/state)
+    exchangeDigiLockerToken: (code) =>
+      digiLockerApi.post('/digilocker/token', null, {
+        params: { code }
+      }),
+
+    getDigiLockerIssuedDocs: (token) =>
+      digiLockerApi.get("/digilocker/issued-documents", {
+        params: { authorizationHeader: `${token}` }
+      }),
+
+    getDigiLockerFile: (accessToken, fileUri, candidateId, documentId) =>
+      digiLockerApi.post("/digilocker/uploadDigilockerFile", {
+        accessToken,
+        fileUri,
+        candidateId,
+        documentId,
+        others: ""
+      }),
+
+    getEAadhaar: (token) =>
+      digiLockerApi.get("/digilocker/eaadhaar", {
+        params: { authorizationHeader: `${token}` }
+      }),
+
 };
 
 export default apiService;
