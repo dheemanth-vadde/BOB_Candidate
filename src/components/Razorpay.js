@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import apiService from "../services/apiService";
 
 /** Load Razorpay SDK once */
 function loadRazorpay() {
@@ -15,46 +16,65 @@ function loadRazorpay() {
 
 /** Backend calls */
 async function getRzpKey() {
-  const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/config");
-  if (!r.ok) throw new Error("Failed to load Razorpay key");
-  const { keyId } = await r.json();
+  //const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/config");
+   const r = await apiService.getConfig();
+   console.log ("test", r);
+  // if (!r.ok) throw new Error("Failed to load Razorpay key");
+  const keyId  =r.keyId;
+  console.log( "keys",  keyId)
   if (!keyId) throw new Error("Invalid key from server");
   return keyId;
 }
-
 async function createOrder({ amountPaise, receipt, notes, candidate_id, position_id }) {
-  const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/orders", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  try {
+    const data = { 
       amount: amountPaise,
       currency: "INR",
-      receipt,
-      notes,
-      candidate_id,
-      position_id,
-    }),
-  });
-  if (!r.ok) {
-    const txt = await r.text().catch(() => "");
-    throw new Error(txt || "Failed to create order");
+      receipt, 
+      notes, 
+      candidate_id, 
+      position_id 
+    };
+
+    const r = await apiService.getRazorOrder(data);
+
+    const order = r;
+    console.log("ORDER:", order);
+
+    // Correct validation
+    if (!order?.id) {
+      throw new Error("Invalid order from server");
+    }
+
+    return order;
+
+  } catch (err) {
+
+    const msg =
+      err?.response?.data?.error ||
+      err?.response?.data?.message ||
+      "Failed to create order";
+
+    throw new Error(msg);
   }
-  const order = await r.json();
-  if (!order?.id) throw new Error("Invalid order from server");
-  return order; // { id, amount, currency, ... }
 }
 
+
 async function verifyPayment(payload) {
-  const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!r.ok) {
-    const txt = await r.text().catch(() => "");
-    throw new Error(txt || "Server verification failed");
+  try {
+    const r = await apiService.getRazorVerify(payload);
+
+    // Axios returns data directly
+    return r; // { success: true, message: "Payment verified" }
+
+  } catch (err) {
+    const msg =
+      err.response?.data?.message ||
+      err.response?.data ||
+      "Server verification failed";
+
+    throw new Error(msg);
   }
-  return r.json(); // { success: true, message: "Payment verified" }
 }
 
 export default function Razorpay({

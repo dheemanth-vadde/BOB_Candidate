@@ -6,6 +6,8 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
   const user = useSelector((state) => state.user.user);
+  const auth = useSelector((state) => state.user.authUser);
+  const token = auth?.access_token;
   const candidateId = user?.candidate_id;
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -42,6 +44,9 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
        const uploadResponse = await fetch('https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/resume/upload-resume', {
         method: 'POST',
         body: uploadedformData,
+        headers: {
+            Authorization: `Bearer ${token}`, 
+          },
       });
 
       if (!uploadResponse.ok) {
@@ -58,6 +63,9 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       const response = await fetch('https://bobjava.sentrifugo.com:8443/dev-jobcreation-app/api/v1/parseresume', {
         method: 'POST',
         body: formData,
+        headers: {
+            Authorization: `Bearer ${token}`, 
+          },
       });
 
       if (!response.ok) throw new Error('Failed to parse resume');

@@ -27,50 +27,52 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
-      // const encryptedPassword = encryptPassword(password);
-
-      const res = await axios.post("https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-login", {
-        // const res = await axios.post("http://localhost:5000/api/auth/candidate-login", {
-        username: email,
-        password: password,
-
-      });
-
-      const dbRes = await axios.post("https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/getdetails/candidates",
-        null,   // no request body
+      // Step 1: Login API
+      const res = await axios.post(
+        "https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-login",
         {
-          params: { email }
+          username: email,
+          password: password,
         }
       );
 
+      const token = res.data?.access_token;
 
-      if (res.data.mfa_required) {
-        // localStorage.setItem("mfa_token", res.data.mfa_token);
-        dispatch(setAuthUser({ mfaToken: res.mfa_token, mfaRequired: true }));
-        alert("MFA required. Please verify your Mail.");
-        navigate("/verify-otp"); // ⬅️ You must build this page to complete OTP
-      } else {
-        // const token = res.data.access_token;
-        // localStorage.setItem("access_token", token);
-        dispatch(setAuthUser(res.data));
-        dispatch(setUser(dbRes.data));
-        navigate("/candidate-portal");
-        setAuthUser(res.data);
-        setUser(dbRes.data); // Store user details from DB in context
-        // console.log("User details:", dbRes.data);
-
-        // // 🔍 Decode token to get roles
-        // const decoded = jwtDecode(token);
-        // const roles = decoded["https://your-app.com/claims/roles"] || []; // Change namespace if different
-
-        // if (roles.includes("user")) {
-        //   navigate("/dashboard");
-        // } else {
-        //   alert("You are not authorized to access this app.");
-        //   localStorage.removeItem("access_token");
-        // }
+      // (401 Fix) → If no token, do not call next API
+      if (!token) {
+        alert("Login failed: No token returned");
+        return;
       }
+
+      // Step 2: Fetch Details API (REQUIRES BEARER TOKEN)
+      const dbRes = await axios.post(
+        "https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/getdetails/candidates",
+        null, // no body
+        {
+          params: { email },
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
+      );
+
+      // Step 3: MFA Logic
+      if (res.data.mfa_required) {
+        dispatch(setAuthUser({ mfaToken: res.data.mfa_token, mfaRequired: true }));
+        alert("MFA required. Please verify your Mail.");
+        navigate("/verify-otp");
+        return;
+      }
+
+      // Step 4: Save Details in Redux
+      dispatch(setAuthUser(res.data));
+      dispatch(setUser(dbRes.data));
+
+      // Step 5: Navigate
+      navigate("/candidate-portal");
+
     } catch (err) {
       const errorData = err.response?.data;
 
@@ -79,7 +81,7 @@ const Login = () => {
         "Email not verified. Please verify your email before login."
       ) {
         alert("Email not verified. Click below to resend verification email.");
-        setUnverifiedUserId(errorData.user_id); // Send user_id from backend
+        setUnverifiedUserId(errorData.user_id);
       } else {
         alert(errorData?.error_description || "Login failed");
       }
@@ -90,8 +92,6 @@ const Login = () => {
     <div className="login-container">
       <div className="left-panel">
         <img src={pana} alt="Illustration" />
-        {/* <h2>बैंक ऑफ़ बड़ौदा</h2>
-        <h3>Bank of Baroda</h3> */}
       </div>
 
       <div className="right-panel">
@@ -111,7 +111,7 @@ const Login = () => {
           />
 
           <label>Password:</label>
-          <div className="" style={{ position: 'relative' }}>
+          <div style={{ position: 'relative' }}>
             <input
               type={showPassword ? "text" : "password"}
               value={password}
@@ -134,6 +134,7 @@ const Login = () => {
               title={showPassword ? 'Hide password' : 'Show password'}
             />
           </div>
+
           {unverifiedUserId && (
             <button
               className="resend-btn my-2 mb-3"
@@ -141,13 +142,8 @@ const Login = () => {
               onClick={async () => {
                 try {
                   await axios.post(
-
                     "https://bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-resend-verification",
-                    // "http://localhost:5000/api/auth/candidate-resend-verification",
-
-                    {
-                      user_id: unverifiedUserId,
-                    }
+                    { user_id: unverifiedUserId }
                   );
                   alert("Verification email sent. Please check your inbox.");
                 } catch (err) {
@@ -159,20 +155,10 @@ const Login = () => {
             </button>
           )}
 
-          {/* <div className="actions">
-            <span className="forgot-link">Forgot password?</span>
-          </div> */}
-
           <button className="login-button" type="submit">
             LOGIN
           </button>
 
-          {/* <div className="divider">OR</div>
-
-          <button type="button" className="google-button">
-            <img src="/images/google-icon.png" alt="Google" />
-            Sign up with Google
-          </button> */}
           <p className="register-link">
             Forgot Password? <Link to="/forgot-password">Click here</Link>
           </p>

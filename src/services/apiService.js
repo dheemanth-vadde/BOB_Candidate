@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { store } from "../store"; // adjust path if needed
 import { clearUser } from "../store/userSlice";
+import { getConfig } from '@testing-library/dom';
 
 // --- JWT Decoder helper ---
 function decodeJWT(token) {
@@ -181,6 +182,10 @@ getAllCategories: () => apis.get('/categories/all'),
     getRelaxations: () => jobcreationapis.get('/job-relaxation-policy/all'),
     getAllSpecialCategories: () => apis.get('/special-categories/all'),
     getAllReservationCategories: () => apis.get('/categories/all'),
+
+    getConfig: () => api.get('/razorpay/config'),
+    getRazorOrder: (data) => api.post('/razorpay/orders', data),
+    getRazorVerify: (data) => api.post('/razorpay/verify', data)
 };
 
 export default apiService;

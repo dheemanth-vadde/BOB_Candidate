@@ -13,49 +13,19 @@ import Notifications from './components/Notifications';
 import Home from './components/Tabs/Home';
 import Tokenexp from './components/Tokenexp';
 import PrivateRoute from './components/PrivateRoute';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import CustomChatbot from './components/CustomChatbot';
 
 function App() {
   const location = useLocation(); // Get current path
-  const chatbot = ['/careers-portal', '/forgot-password', '/register', '/login', '/'].includes(location.pathname);
-  // console.log("location",chatbot)
-    
-  useEffect(() => {
-    // Helper to remove Botpress iframe(s)
-    const removeBotpressIframe = () => {
-      const iframes = document.getElementsByClassName('bpFab');
-      while (iframes.length > 0) {
-        iframes[0].parentNode.removeChild(iframes[0]);
-      }
-    };
-  
-    const script1 = document.createElement('script');
-    const script2 = document.createElement('script');
-  
-    if (!chatbot) {
-      script1.src = 'https://cdn.botpress.cloud/webchat/v2.2/inject.js';
-      script1.async = true;
-      document.head.appendChild(script1);
-  
-      script2.src = 'https://files.bpcontent.cloud/2025/01/29/06/20250129063017-S8K7HVZH.js';
-      script2.async = true;
-      document.head.appendChild(script2);
-  
-      // Clean up scripts and widget when the component is unmounted or path changes
-      return () => {
-        if (document.head.contains(script1)) {
-          document.head.removeChild(script1);
-        }
-        if (document.head.contains(script2)) {
-          document.head.removeChild(script2);
-        }
-        removeBotpressIframe();
-      };
-    } else {
-      // Remove the chatbot iframe immediately if not allowed
-      removeBotpressIframe();
-    }
-  }, [chatbot]);
+  // Only show chat on specific routes
+  const showChat = !['/careers-portal', '/forgot-password', '/register', '/login', '/'].includes(location.pathname);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  // Handle chat toggle
+  const toggleChat = () => {
+    setChatOpen(!chatOpen);
+  };
 
   return (
     // <Router>
@@ -82,6 +52,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
         <ToastContainer position="top-right" autoClose={3000} />
+        {showChat && <CustomChatbot isOpen={chatOpen} onToggle={toggleChat} />}
       </div>
     // </Router>
   );
