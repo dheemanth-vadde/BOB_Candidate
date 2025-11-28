@@ -12,12 +12,12 @@ export const initialMessages = [
     options: [
       {
         text: 'What is the status of job application',
-        type: 'action',
+        type: 'applicationStatus',
         isHighlighted: true
       },
       {
         text: 'Current job opportunities',
-        type: 'action',
+        type: 'jobOpportunities',
         isHighlighted: false
       },
       {
@@ -38,37 +38,22 @@ export const options = {
   main: {
     text: 'What would you like to know?',
     options: [
-      { text: 'What is the status of job application', type: 'action' },
-      { text: 'Current job opportunities', type: 'action' },
+      { text: 'What is the status of job application', type: 'applicationStatus' },
+      { text: 'Current job opportunities', type: 'jobOpportunities' },
       { text: 'FAQ', type: 'faq' },
       { text: 'Other', type: 'other' }
     ]
   },
-  faq: {
-    text: 'Please select an FAQ option:',
-    options: [
-      { text: 'Application process', type: 'response' },
-      { text: 'Interview process', type: 'response' },
-      { text: 'Required documents', type: 'response' },
-      { text: 'Job benefits', type: 'response' },
-      { text: 'Contact HR', type: 'response' },
-      { text: 'Back to main menu', type: 'back' }
-    ]
-  },
+  
   applicationStatus: {
     text: 'Let me help you check your application status. How would you like to proceed?',
     options: [
-      { text: 'Check by Application ID', type: 'input', placeholder: 'Enter your Application ID' },
-      { text: 'Check by Email', type: 'input', placeholder: 'Enter your registered email' },
-      { text: 'Back to main menu', type: 'back' }
     ]
   },
   jobOpportunities: {
     text: 'Here are options for job opportunities:',
     options: [
-      { text: 'View all open positions', type: 'response' },
-      { text: 'Filter by department', type: 'response' },
-      { text: 'Back to main menu', type: 'back' }
+      
     ]
   }
 };

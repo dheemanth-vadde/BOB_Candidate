@@ -68,7 +68,7 @@ const apis = axios.create({
     'Content-Type': 'application/json',
   },
 });
-const jobcreationapis  = axios.create({
+const jobcreationapis = axios.create({
   baseURL: JOBCREATION_API_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ jobcreationapis.interceptors.response.use(
 );
 
 export const apiService = {
-  
+
 
   // uploadJobExcel: (data) => api.post('/create_Bulk_positions', data), // Dummy POST endpoint
   // postJobRequisitions :(payload) => api.post("/requisitionpost", payload),
@@ -194,27 +194,43 @@ export const apiService = {
   applyJobs: (data) => api.post('candidates/apply/job', data),
   appliedpositions: (candidate_id) => jobcreationapis.get(`candidates/get-applied-positions/${candidate_id}`),
   getActiveJobs: () => jobcreationapis.get(`job-positions/get-active`),
-   // Get all categories (e.g., caste list)
-getAllCategories: () => apis.get('/categories/all'),
+  // Get all categories (e.g., caste list)
+  getAllCategories: () => apis.get('/categories/all'),
   getAllSpecialCategories: () => apis.get('/special-categories/all'),
-    getAllDocuments: () => apis.get("/document-types/all"),
-    // addCandidateDocument: (candidateId, documentId, data) =>
-    //   api.post(`/candidate-document-store/upload/${candidateId}/${documentId}`, data),
-    addCandidateDocument: (candidateId, documentId, others, data) =>
-      api.post(`/candidate-document-store/upload/${candidateId}/${documentId}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        params: others ? { others } : {}  // append ?others=<value> only if exists
-      }),
-    
-    
-    getCandidateDocuments: (candidateId) => api.get(`/candidate-document-store/documents/${candidateId}`),
-    deleteCandidateDocument: (documentStoreId) =>
-      api.delete(`/candidate-document-store/delete/${documentStoreId}`),
+  getAllDocuments: () => apis.get("/document-types/all"),
+  // addCandidateDocument: (candidateId, documentId, data) =>
+  //   api.post(`/candidate-document-store/upload/${candidateId}/${documentId}`, data),
+  addCandidateDocument: (candidateId, documentId, others, data) =>
+    api.post(`/candidate-document-store/upload/${candidateId}/${documentId}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: others ? { others } : {}  // append ?others=<value> only if exists
+    }),
 
-    //relaxation
-    getRelaxations: () => jobcreationapis.get('/job-relaxation-policy/all'),
-    getAllSpecialCategories: () => apis.get('/special-categories/all'),
-    getAllReservationCategories: () => apis.get('/categories/all'),
+
+  getCandidateDocuments: (candidateId) => api.get(`/candidate-document-store/documents/${candidateId}`),
+  deleteCandidateDocument: (documentStoreId) =>
+    api.delete(`/candidate-document-store/delete/${documentStoreId}`),
+
+  //relaxation
+  getRelaxations: () => jobcreationapis.get('/job-relaxation-policy/all'),
+  getAllSpecialCategories: () => apis.get('/special-categories/all'),
+  getAllReservationCategories: () => apis.get('/categories/all'),
+
+  getConfig: () => api.get('/razorpay/config'),
+  getRazorOrder: (data) => api.post('/razorpay/orders', data),
+  getRazorVerify: (data) => api.post('/razorpay/verify', data),
+  getChatFAQReply: (question) =>
+    apis.get(`/v1/chatbot/getChatFAQReply`, {
+      params: { question }
+    }),
+    getChatQueryReply: (question, candidateId) =>
+  apis.get(`/v1/chatbot/getChatQueryReply`, {
+    params: { question, candidateId }
+  }),
+
+
+
+
 
     getConfig: () => api.get('/razorpay/config'),
     getRazorOrder: (data) => api.post('/razorpay/orders', data),

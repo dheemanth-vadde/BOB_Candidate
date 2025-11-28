@@ -124,6 +124,20 @@ useEffect(() => {
     }
   };
 
+  // Listen for chatbot navigation events (open specific tab)
+  useEffect(() => {
+    const handler = (e) => {
+      const tab = e?.detail?.tab;
+      if (tab) {
+        setActiveTab(tab);
+        // scroll to top of portal so user sees tab content
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('navigate-to-tab', handler);
+    return () => window.removeEventListener('navigate-to-tab', handler);
+  }, []);
+
   return (
     <div>
       <Header />

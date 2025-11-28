@@ -1,19 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initialMessages, options, responses } from '../data/chatbotData';
+import apiService from '../services/apiService';
 import '../css/Chatbot.css';
+import { useSelector } from 'react-redux';
 
 const CustomChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
-  const [expectedInputType, setExpectedInputType] = useState(null); // <-- new state
-  const startNewChat = () => {
-    setMessages(initialMessages);
-  };
+  const [expectedInputType, setExpectedInputType] = useState(null);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
 
-  // Add a new message with options
-  const addOptionsMessage = (text, options) => {
+  const user = useSelector((state) => state.user.user);
+  const candidateId = user?.candidate_id;
+  console.log("id:", candidateId)
+
+  const startNewChat = () => {
+    setMessages(initialMessages);
+    setExpectedInputType(null);
+  };
+
+  // Auto-scroll messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const addOptionsMessage = (text, optionsArray) => {
     setMessages(prev => [
       ...prev,
       {
@@ -21,7 +33,7 @@ const CustomChatbot = () => {
         text,
         sender: 'bot',
         type: 'options',
-        options: options.map((option, index) => ({
+        options: optionsArray.map((option, index) => ({
           ...option,
           isHighlighted: index === 0
         }))
@@ -29,132 +41,368 @@ const CustomChatbot = () => {
     ]);
   };
 
-  // Auto-scroll to bottom of messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const fetchChatbotReply = async (question) => {
+    try {
+      const res = await apiService.getChatFAQReply(question);
+      if (res.success) {
+        return JSON.parse(res.data);
+      }
+      return [];
+    } catch (err) {
+      console.error("Chatbot API Error:", err);
+      return [];
+    }
+  };
+  const fetchApplicationStatus = async (question, candidateId) => {
+    try {
+      const res = await apiService.getChatQueryReply(question, candidateId);
 
-  const handleOptionClick = (option) => {
-    // Add user's selection to messages
-    setMessages(prev => [...prev, {
-      id: Date.now(),
-      text: option.text,
-      sender: 'user'
-    }]);
+      if (res.success) {
+        try {
+          return JSON.parse(res.data);   // API returns stringified JSON
+        } catch (err) {
+          console.error("JSON parse error:", err);
+          return [];
+        }
+      }
 
-    // Reset any previous expected input
+      return [];
+    } catch (err) {
+      console.error("Application Status API Error:", err);
+      return [];
+    }
+  };
+
+  function formatStatus(list) {
+    if (!Array.isArray(list) || list.length === 0) {
+      return "No application data found.";
+    }
+
+    return list
+      .map(item =>
+        ` Position: ${item.positionTitle}\n Status: ${item.applicationStatus}`
+      )
+      .join("\n\n");
+  }
+  function formatJobOpportunities(list) {
+    if (!Array.isArray(list) || list.length === 0) {
+      return "No job opportunities available.";
+    }
+
+    return list
+      .map(item =>
+        `Position: ${item.positionTitle}\nExperience Required: ${item.mandatoryExperience} Years\nQualification: ${item.mandatoryQualification}`
+      )
+      .join("\n\n");
+  }
+
+  const addSilentOptions = (optionsArray) => {
+    setMessages(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        sender: "bot",
+        type: "options",
+        options: optionsArray
+      }
+    ]);
+  };
+
+
+
+  const handleOptionClick = async (option) => {
+    setMessages(prev => [
+      ...prev,
+      { id: Date.now(), text: option.text, sender: 'user' }
+    ]);
+
     setExpectedInputType(null);
 
-    // Handle different option types
+    // ⭐ GLOBAL BACK HANDLER (Version 2 feature)
+    if (option.type === 'back' || option.text === 'Back to Main Menu') {
+      addOptionsMessage(options.main.text, options.main.options);
+      return;
+    }
+
+    // handle "link" option actions (e.g. open Applied Jobs tab)
+    if (option.type === 'link') {
+      if (option.action === 'appliedJobs') {
+        // dispatch custom event that CandidatePortal listens to
+        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: 'applied-jobs' } }));
+        setMessages(prev => [
+          ...prev,
+          { id: Date.now(), text: 'Opening Applied Jobs...', sender: 'bot' }
+        ]);
+        setIsOpen(false);
+        return;
+      }
+      if (option.action === 'currentOpportunities') {
+        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: 'jobs' } }));
+        setMessages(prev => [
+          ...prev,
+          { id: Date.now(), text: 'Opening Current Opportunities...', sender: 'bot' }
+        ]);
+        setIsOpen(false);
+        return;
+      }
+    }
+
     switch (option.type) {
+
       case 'faq':
-        addOptionsMessage('Please select an FAQ option:', options.faq.options);
+        const faqList = await fetchChatbotReply();
+
+        if (faqList && faqList.length > 0) {
+          const formattedFaq = faqList.map(item => ({
+            text: item,
+            type: "response"
+          }));
+
+          // ⭐ ADD BACK OPTION
+          formattedFaq.push({ text: 'Back to Main Menu', type: 'back' });
+
+          addOptionsMessage("Please select an FAQ option:", formattedFaq);
+        }
+        else {
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: "No data found. Try again.", sender: "bot" }
+          ]);
+
+          // ⭐ FALLBACK STILL SHOWS BACK OPTION
+          addOptionsMessage("What would you like to do next?", [
+            { text: "Back to Main Menu", type: "back" }
+          ]);
+        }
         break;
 
-      case 'back':
-        addOptionsMessage('What would you like to know?', options.main.options);
+      case 'response':
+        const apiList = await fetchChatbotReply(option.text);
+
+        // if (apiList && apiList.length > 0) {
+        //   const formattedRes = apiList.map(item => ({
+        //     text: item,
+        //     type: "response"
+        //   }));
+
+        //   //  ADD BACK OPTION
+        //   formattedRes.push({ text: 'Back to Main Menu', type: 'back' });
+
+        //   addOptionsMessage("Here are the relevant responses:", formattedRes);
+        // }
+        if (apiList && apiList.length > 0) {
+          const combinedText = apiList.join("\n");
+
+          // Show final answer as plain bot message
+          setMessages(prev => [
+            ...prev,
+            {
+              id: Date.now(),
+              text: combinedText,
+              sender: "bot"
+            }
+          ]);
+          addSilentOptions([{ text: "Back to Main Menu", type: "back" }]);
+
+        }
+        else {
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: "No data found. Try again.", sender: "bot" }
+          ]);
+
+
+          addSilentOptions([{ text: "Back to Main Menu", type: "back" }]);
+
+        }
         break;
 
       case 'input':
-        const inputType = option.text.toLowerCase().includes('application') ? 'applicationStatus' : 'jobOpportunities';
+        let inputType = "";
+
+        if (option.text.toLowerCase().includes("application")) {
+          inputType = "applicationStatus";
+        } else if (option.text.toLowerCase().includes("opportunities")) {
+          inputType = "jobOpportunities";
+        }
+
         setMessages(prev => [
           ...prev,
           {
-            id: Date.now() + 1,
+            id: Date.now(),
             text: option.placeholder || 'Please enter the required information:',
             sender: 'bot'
           }
         ]);
-        // mark that next typed input is for this 'input' flow (if you need special handling)
+
         setExpectedInputType(inputType);
+
         setTimeout(() => {
-          addOptionsMessage(options[inputType].text, options[inputType].options);
+          addSilentOptions([
+            ...options[inputType].options,
+            { text: "Back to Main Menu", type: "back" }
+          ]);
         }, 300);
+
         break;
 
-      case 'response':
+
+      case "applicationStatus":
         setMessages(prev => [
           ...prev,
-          {
-            id: Date.now() + 1,
-            text: responses[option.text] || 'I\'m sorry, I don\'t have that information right now.',
-            sender: 'bot'
-          }
+          { id: Date.now(), text: "Below are the Application Status…", sender: "bot" }
         ]);
 
-        // Add main options after a short delay
-        setTimeout(() => {
-          addOptionsMessage('Is there anything else I can help you with?', options.main.options);
-        }, 300);
-        break;
+        if (!candidateId) {
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: "Candidate ID missing. Please login again.", sender: "bot" }
+          ]);
+
+          addSilentOptions([{ text: "Back to Main Menu", type: "back" }]);
+          return;
+        }
+
+        const statusList = await fetchApplicationStatus(
+          "What is the status of job application",
+          candidateId
+        );
+
+        if (statusList.length > 0) {
+          const formatted = formatStatus(statusList);
+
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: formatted, sender: "bot" }
+          ]);
+
+          // show "Know more" link (opens Applied Jobs tab) and Back
+          addSilentOptions([
+            { text: "Know more", type: "link", action: "appliedJobs" },
+            { text: "Back to Main Menu", type: "back" }
+          ]);
+        }
+        else {
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: "No application status found.", sender: "bot" }
+          ]);
+
+          // still allow user to go to Applied Jobs to check details
+          addSilentOptions([
+            { text: "Know more", type: "link", action: "appliedJobs" },
+            { text: "Back to Main Menu", type: "back" }
+          ]);
+        }
+
+        return;
+
+
+      case "jobOpportunities":
+        setMessages(prev => [
+          ...prev,
+          { id: Date.now(), text: "Below are the job opportunities…", sender: "bot" }
+        ]);
+
+        const jobsList = await fetchApplicationStatus(
+          "Current job opportunities",
+          candidateId
+        );
+
+        if (jobsList.length > 0) {
+          const formattedJobs = formatJobOpportunities(jobsList);
+
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: formattedJobs, sender: "bot" }
+          ]);
+
+          // Show "Know more" link that opens Current Opportunities tab + Back
+          addSilentOptions([
+            { text: "Know more", type: "link", action: "currentOpportunities" },
+            { text: "Back to Main Menu", type: "back" }
+          ]);
+        } else {
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: "No job opportunities found.", sender: "bot" }
+          ]);
+
+          addSilentOptions([
+            { text: "Know more", type: "link", action: "currentOpportunities" },
+            { text: "Back to Main Menu", type: "back" }
+          ]);
+        }
+
+        return;
+
+
 
       case 'other':
-        // Prompt user to enter details for "Other"
         setMessages(prev => [
           ...prev,
-          {
-            id: Date.now() + 1,
-            text: 'Please describe your query or request. Provide as much detail as possible:',
-            sender: 'bot'
-          }
+          { id: Date.now(), text: 'Please describe your query in detail:', sender: 'bot' }
         ]);
-        // Expect a free-text input and handle it in handleSendMessage
         setExpectedInputType('other');
         break;
 
       default:
-        // Handle main menu options
+        console.log("Unhandled option:", option);
         if (option.text.includes('status')) {
-          addOptionsMessage(
-            'Let me help you check your application status. How would you like to proceed?',
-            options.applicationStatus.options
-          );
-        } else if (option.text.includes('opportunities')) {
-          addOptionsMessage(
-            'Here are options for job opportunities:',
-            options.jobOpportunities.options
-          );
-        } else {
-          addOptionsMessage('Please select an option:', options.main.options);
+          addOptionsMessage('Check your application status:', [
+            ...options.applicationStatus.options,
+            { text: 'Back to Main Menu', type: 'back' }
+          ]);
         }
+        else if (option.text.includes('opportunities')) {
+          addOptionsMessage('Job opportunities options:', [
+            ...options.jobOpportunities.options,
+            { text: 'Back to Main Menu', type: 'back' }
+          ]);
+        }
+        else {
+          addOptionsMessage('Please select an option:', [
+            ...options.main.options,
+            { text: 'Back to Main Menu', type: 'back' }
+          ]);
+        }
+        break;
     }
   };
 
-  const handleSendMessage = (e) => {
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    // If we are expecting "other" free-text, handle relevance check
     if (expectedInputType === 'other') {
       const userText = inputValue.trim();
-      // Add user's message
-      setMessages(prev => [
-        ...prev,
-        { id: Date.now(), text: userText, sender: 'user' }
-      ]);
+      setMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
 
-      // Simple relevance check: look for any response key words inside user input
+      const apiList = await fetchChatbotReply(userText);
+      if (apiList.length > 0) {
+        const formatted = apiList.map(item => ({ text: item, type: "response" }));
+        addOptionsMessage("Here are the related results:", formatted);
+        setExpectedInputType(null);
+        setInputValue("");
+        return;
+      }
+
       const lower = userText.toLowerCase();
       const matchedKey = Object.keys(responses).find(key => {
         const keyLower = key.toLowerCase();
-        // match full phrase or any keyword from the key
         if (lower.includes(keyLower)) return true;
         return keyLower.split(/\s+/).some(word => word && lower.includes(word));
       });
 
       const botReply = matchedKey
         ? responses[matchedKey]
-        : "Sorry, the information is not available. Please contact HR at hr@company.com for further assistance.";
+        : "Sorry, the information is not available. Please contact HR at hr@company.com.";
 
-      // Add bot reply
       setTimeout(() => {
-        setMessages(prev => [
-          ...prev,
-          { id: Date.now() + 1, text: botReply, sender: 'bot' }
-        ]);
+        setMessages(prev => [...prev, { id: Date.now(), text: botReply, sender: 'bot' }]);
       }, 150);
 
-      // After reply, show main options again and reset expected input
       setTimeout(() => {
         addOptionsMessage('Is there anything else I can help you with?', options.main.options);
       }, 400);
@@ -164,12 +412,38 @@ const CustomChatbot = () => {
       return;
     }
 
-    // Default behavior (no special expectation) - existing echo behavior
-    setMessages(prev => [...prev,
+    setMessages(prev => [
+      ...prev,
       { id: Date.now(), text: inputValue, sender: 'user' },
       { id: Date.now() + 1, text: `You asked: ${inputValue}. A response would be generated here.`, sender: 'bot' }
     ]);
     setInputValue('');
+  };
+
+  // inside CustomChatbot component, before return(...)
+  const renderFormattedText = (text) => {
+    if (typeof text !== 'string') return text;
+
+    // split by newline and render each line
+    return text.split('\n').map((line, idx) => {
+      const trimmed = line.trim();
+
+      // match a label at start of line (case-insensitive)
+      const match = trimmed.match(/^(Position:|Status:|Experience Required:|Qualification:)\s*(.*)$/i);
+
+      if (match) {
+        const label = match[1];           // e.g. "Position:"
+        const rest = match[2] || '';     // the value after label
+        return (
+          <div key={idx} className="message-line">
+            <strong>{label}</strong> {rest}
+          </div>
+        );
+      }
+
+      // fallback: normal line
+      return <div key={idx} className="message-line">{line}</div>;
+    });
   };
 
   return (
@@ -198,9 +472,13 @@ const CustomChatbot = () => {
           <div className="chatbot-messages">
             {messages.map((message) => (
               <React.Fragment key={message.id}>
-                <div className={`message ${message.sender}`}>
-                  {message.text}
-                </div>
+                {message.text && (
+                  <div className={`message ${message.sender}`}>
+                    {renderFormattedText(message.text)}
+                  </div>
+                )}
+
+
                 {message.type === 'options' && (
                   <div className="message-options">
                     {message.options.map((option, index) => (
@@ -208,8 +486,17 @@ const CustomChatbot = () => {
                         key={index}
                         className="option-item"
                         onClick={() => handleOptionClick(option)}
+                        role="button"
+                        tabIndex={0}
                       >
-                        {option.text}
+                        {option.type === 'link' ? (
+                          <>
+                            <span style={{ marginRight: 8 }} aria-hidden>🔗</span>
+                            <span>{option.text}</span>
+                          </>
+                        ) : (
+                          <span>{option.text}</span>
+                        )}
                       </div>
                     ))}
                   </div>
