@@ -166,7 +166,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     if (!docType) return null;
 
     const map = {
-      "ADHAR": 1,
+      "ADHAR": 3,
       "PANCR": 4,
       "SSCER": 5
       // add more if needed
@@ -197,7 +197,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         backendDocId
       );
 
-      const fileUrl = res?.data?.data?.file_url;
+      const fileUrl = res?.data?.file_url;
 
       setDigiLockerDocs(prev =>
         prev.map(d =>
@@ -223,6 +223,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   };
 
   const viewDigiLockerDocument = (doc) => {
+    console.log(doc)
     if (!doc.uploaded) {
       toast.error("Please upload the DigiLocker document first.");
       return;

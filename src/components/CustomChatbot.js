@@ -3,6 +3,7 @@ import { initialMessages, options, responses } from '../data/chatbotData';
 import apiService from '../services/apiService';
 import '../css/Chatbot.css';
 import { useSelector } from 'react-redux';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const CustomChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -150,7 +151,7 @@ const CustomChatbot = () => {
     switch (option.type) {
 
       case 'faq':
-        const faqList = await fetchChatbotReply();
+        const faqList = await fetchChatbotReply("FAQ");
 
         if (faqList && faqList.length > 0) {
           const formattedFaq = faqList.map(item => ({
@@ -456,17 +457,35 @@ const CustomChatbot = () => {
               <p>Get help 24/7</p>
             </div>
             <div className="header-actions">
-              <button className="new-chat-btn" onClick={startNewChat} title="Start aNew Chat">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-              </button>
-              <button className="minimize-btn" onClick={() => setIsOpen(false)} title="Minimize">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-              </button>
+              <OverlayTrigger
+                placement="bottom"
+                overlay={
+                  <Tooltip id="tooltip-new-chat">
+                      New Chat
+                  </Tooltip>
+                }
+              >
+                <button className="new-chat-btn" onClick={startNewChat}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              </OverlayTrigger>
+              <OverlayTrigger
+                placement="bottom"
+                overlay={
+                  <Tooltip id="tooltip-minimize">
+                      Minimize
+                  </Tooltip>
+                }
+              >
+                <button className="minimize-btn" onClick={() => setIsOpen(false)}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              </OverlayTrigger>
             </div>
           </div>
           <div className="chatbot-messages">

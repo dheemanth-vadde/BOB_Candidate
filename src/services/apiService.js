@@ -45,7 +45,7 @@ const API_BASE_URL = 'https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/
 const API_BASE_URLS = 'https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api';
 // const NODE_API_URL = 'https://bobbe.sentrifugo.com/api';
 const JOBCREATION_API_URL = 'https://dev.bobjava.sentrifugo.com:8443/dev-jobcreation-app/api/v1';
-const DIGILOCKER_API_URL = 'https://bobjava.sentrifugo.com:8443/digiLockerTestCandidatePortal/api/v1';
+const DIGILOCKER_API_URL = 'https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1';
 // Create a primary axios instance for most API calls
 const api = axios.create({
   baseURL: API_BASE_URL,
