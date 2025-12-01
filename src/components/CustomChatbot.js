@@ -81,9 +81,10 @@ const CustomChatbot = () => {
 
     return list
       .map(item =>
-        ` Position: ${item.positionTitle}\n Status: ${item.applicationStatus}`
+        `\n Position: ${item.positionTitle}\n Status: ${item.applicationStatus}
+        ---`
       )
-      .join("\n\n");
+      .join("\n");
   }
   function formatJobOpportunities(list) {
     if (!Array.isArray(list) || list.length === 0) {
@@ -91,11 +92,16 @@ const CustomChatbot = () => {
     }
 
     return list
-      .map(item =>
-        `Position: ${item.positionTitle}\nExperience Required: ${item.mandatoryExperience} Years\nQualification: ${item.mandatoryQualification}`
+      .map((item, index) =>
+        `${index + 1}. Position: ${item.positionTitle}
+          Experience Required: ${item.mandatoryExperience} Years
+          Qualification: ${item.mandatoryQualification}
+          ---`
       )
-      .join("\n\n");
+      .join("\n");
   }
+
+
 
   const addSilentOptions = (optionsArray) => {
     setMessages(prev => [
@@ -125,7 +131,7 @@ const CustomChatbot = () => {
       return;
     }
 
-        // handle "link" option actions (e.g. open Applied Jobs tab)
+    // handle "link" option actions (e.g. open Applied Jobs tab)
     if (option.type === 'link') {
       if (option.action === 'appliedJobs') {
         // dispatch custom event that CandidatePortal listens to
@@ -436,16 +442,15 @@ const CustomChatbot = () => {
   const renderFormattedText = (text) => {
     if (typeof text !== 'string') return text;
 
-    // split by newline and render each line
     return text.split('\n').map((line, idx) => {
       const trimmed = line.trim();
 
-      // match a label at start of line (case-insensitive)
-      const match = trimmed.match(/^(Position:|Status:|Experience Required:|Qualification:)\s*(.*)$/i);
+      // detect label even with numbering (1. Position:)
+      const match = trimmed.match(/^\d*\.*\s*(Position:|Status:|Experience Required:|Qualification:)\s*(.*)$/i);
 
       if (match) {
-        const label = match[1];           // e.g. "Position:"
-        const rest = match[2] || '';     // the value after label
+        const label = match[1];
+        const rest = match[2] || '';
         return (
           <div key={idx} className="message-line">
             <strong>{label}</strong> {rest}
@@ -453,10 +458,15 @@ const CustomChatbot = () => {
         );
       }
 
-      // fallback: normal line
+      // if the line is "---" => show spacing
+      if (trimmed === '---') {
+        return <div key={idx} className="message-line" style={{ marginBottom: '12px' }} />;
+      }
+
       return <div key={idx} className="message-line">{line}</div>;
     });
   };
+
 
   return (
     <div className={`chatbot-container ${isOpen ? 'open' : ''}`}>
@@ -472,7 +482,7 @@ const CustomChatbot = () => {
                 placement="bottom"
                 overlay={
                   <Tooltip id="tooltip-new-chat">
-                      New Chat
+                    New Chat
                   </Tooltip>
                 }
               >
@@ -487,7 +497,7 @@ const CustomChatbot = () => {
                 placement="bottom"
                 overlay={
                   <Tooltip id="tooltip-minimize">
-                      Minimize
+                    Minimize
                   </Tooltip>
                 }
               >
