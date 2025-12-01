@@ -125,28 +125,39 @@ const CustomChatbot = () => {
       return;
     }
 
-    // handle "link" option actions (e.g. open Applied Jobs tab)
+        // handle "link" option actions (e.g. open Applied Jobs tab)
     if (option.type === 'link') {
       if (option.action === 'appliedJobs') {
         // dispatch custom event that CandidatePortal listens to
         window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: 'applied-jobs' } }));
+
+        // notify user and show Back option (keep chat open so user can click)
         setMessages(prev => [
           ...prev,
           { id: Date.now(), text: 'Opening Applied Jobs...', sender: 'bot' }
         ]);
-        setIsOpen(false);
+
+        // show Back to Main Menu so user can return
+        addSilentOptions([{ text: "Back to Main Menu", type: "back" }]);
+
+        // do NOT close the chat here (so Back button is clickable)
         return;
       }
       if (option.action === 'currentOpportunities') {
         window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: 'jobs' } }));
+
         setMessages(prev => [
           ...prev,
           { id: Date.now(), text: 'Opening Current Opportunities...', sender: 'bot' }
         ]);
-        setIsOpen(false);
+
+        addSilentOptions([{ text: "Back to Main Menu", type: "back" }]);
+
+        // keep chat open so user can return
         return;
       }
     }
+
 
     switch (option.type) {
 

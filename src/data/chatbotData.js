@@ -63,7 +63,5 @@ export const responses = {
   'Interview process': 'Our interview process typically includes a phone screening, followed by one or more interviews with the hiring team. Some positions may require technical assessments or case studies.',
   'Required documents': 'You will need to submit your updated resume, a cover letter, and any relevant certifications. Some positions may require additional documents like a portfolio or writing samples.',
   'Job benefits': 'We offer competitive salaries, health insurance, retirement plans, paid time off, professional development opportunities, and a flexible work environment.',
-  'Contact HR': 'You can reach our HR team at hr@company.com or call us at (555) 123-4567 during business hours (9 AM - 5 PM, Monday to Friday).',
-  'View all open positions': 'Here are our current open positions: [List of positions will be displayed here]',
-  'Filter by department': 'Please select a department: [Department list will be shown here]'
+  'Contact HR': 'You can reach our HR team at hr@company.com or call us at (555) 123-4567 during business hours (9:30 AM - 6:30 PM, Monday to Friday).',
 };
