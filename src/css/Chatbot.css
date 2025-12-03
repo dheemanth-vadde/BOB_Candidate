@@ -9,24 +9,24 @@
 
 /* Chat toggle button */
 .chatbot-toggle {
-  position: relative;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
-  transition: all 0.3s ease;
-  color: white;
+	position: relative;
+	background: rgb(255, 112, 67);
+	border: none;
+	border-radius: 50%;
+	width: 60px;
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: 0 4px 20px rgba(255, 112, 67, 0.3);
+	transition: all 0.3s ease;
+	color: white;
 }
 
 .chatbot-toggle:hover {
   transform: scale(1.05) translateY(-3px);
-  box-shadow: 0 6px 25px rgba(79, 70, 229, 0.4);
+	box-shadow: 0 4px 20px rgba(255, 112, 67, 0.3);
 }
 
 /* Chat window */
@@ -44,16 +44,16 @@
 
 /* Header */
 .chatbot-header {
-  background-color: #3b82f6;
-  color: white;
-  padding: 12px 16px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  min-height: 60px;
+	background-color: rgb(255, 112, 67);
+	color: white;
+	padding: 12px 16px;
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: relative;
+	min-height: 60px;
 }
 
 .header-content {
@@ -238,7 +238,7 @@
 
 /* Send button */
 .send-btn {
-  background: #4f46e5;
+  background: rgb(255, 112, 67);
   color: white;
   border: none;
   border-radius: 50%;
@@ -253,7 +253,7 @@
 }
 
 .send-btn:hover {
-  background: #4338ca;
+  background: rgb(255, 112, 67);
   transform: scale(1.05);
 }
 
