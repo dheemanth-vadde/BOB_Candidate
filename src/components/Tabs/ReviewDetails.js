@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import '../../css/ReviewDetails.css';
 import Tesseract from 'tesseract.js';
 import { useDispatch, useSelector } from "react-redux";
-import { 
+import {
   setDigiLockerConnected,
   setDigiLockerAccessToken
 } from "../../store/digilockerSlice";
@@ -101,7 +101,39 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
   const [isDobValidated, setIsDobValidated] = useState(initialData.is_dob_validated || false);
   const [digiLockerDocs, setDigiLockerDocs] = useState([]);
 
-  // FINAL: start DigiLocker flow using /token API (no authorize, no PKCE)
+  const dispatch = useDispatch();
+
+  // Helper: refresh server's document list and document types and normalize shape
+  const refreshDocuments = async () => {
+    try {
+      setLoadingDocs(true);
+      const docsRes = candidateId ? await apiService.getCandidateDocuments(candidateId) : { data: [] };
+      const typesRes = await apiService.getAllDocuments();
+
+      const types = typesRes?.data || [];
+      setDocumentTypes(types);
+
+      const docs = (docsRes?.data || []).map(doc => {
+        const rawName = doc.file_name || '';
+        const file_name = rawName && rawName.includes('_') ? rawName.split('_').slice(1).join('_') : rawName;
+        return {
+          ...doc,
+          document_type: types.find(t => t.document_id === doc.document_id)?.document_name || doc.document_type || 'Unknown',
+          file_name,
+          file_url: doc.file_url || doc.url || ''
+        };
+      });
+
+      setExistingDocuments(docs);
+    } catch (err) {
+      console.error('refreshDocuments error', err);
+      toast.error('Failed to load documents');
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
+
+  // DigiLocker start flow
   const startDigiLockerFlow = async () => {
     try {
       toast.info("Verifying via DigiLocker…");
@@ -135,7 +167,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     }
   };
 
-  // 🚀 After verification → fetch issued docs & Aadhaar
+  // Load DigiLocker items
   const loadDigiLockerData = async () => {
     try {
       const token = store.getState().digilocker.accessToken;
@@ -180,6 +212,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     toast.success("Document removed");
   };
 
+  // Handle DigiLocker -> backend save & then add to existingDocuments
   const handleDigiLockerDirectUpload = async (doc) => {
     try {
       const token = store.getState().digilocker.accessToken;
@@ -197,7 +230,9 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
         backendDocId
       );
 
-      const fileUrl = res?.data?.file_url;
+      const returned = res?.data || res || {};
+      const fileUrl = returned.file_url || returned.url || null;
+      const returnedId = returned.document_store_id || returned.id || returned.document_id || null;
 
       setDigiLockerDocs(prev =>
         prev.map(d =>
@@ -206,6 +241,21 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
             : d
         )
       );
+
+      // Add to existingDocuments normalized
+      if (returnedId || fileUrl) {
+        const savedDoc = {
+          document_store_id: returnedId || Math.random().toString(36).slice(2),
+          document_id: returned.document_id || backendDocId,
+          document_type: doc.name || documentTypes.find(t => t.document_id == backendDocId)?.document_name || 'DigiLocker Doc',
+          file_name: doc.name || returned.file_name || 'DigiLocker-file',
+          file_url: fileUrl || ''
+        };
+        setExistingDocuments(prev => [...prev, savedDoc]);
+      } else {
+        // fallback refresh
+        await refreshDocuments();
+      }
 
       toast.success(`${doc.name} uploaded successfully!`);
 
@@ -233,72 +283,22 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
 
   useEffect(() => {
     apiService.getAllCategories()
-
       .then((res) => {
-        console.log("Categories response:", res);
-        // API already returns response.data from the interceptor
         setCasteList(res.data || []);
       })
       .catch((err) => {
         console.error("Failed to fetch categories:", err);
       });
+
     apiService.getAllSpecialCategories()
       .then((res) => setSpecialList(res.data || []))
       .catch((err) => console.error("Failed to fetch special categories:", err));
-
   }, []);
 
+  // fetch document types + existing documents via helper
   useEffect(() => {
-    const fetchDocumentTypes = async () => {
-      try {
-        setLoadingDocs(true);
-        const [docsRes, typesRes] = await Promise.all([
-          candidateId ? apiService.getCandidateDocuments(candidateId) : Promise.resolve({ data: [] }),
-          apiService.getAllDocuments()
-        ]);
-
-        console.log("Documents response:", docsRes);
-        console.log("Document types response:", typesRes);
-
-        // Map document types with their names
-        const types = typesRes.data || [];
-        setDocumentTypes(types);
-
-        // Map existing documents with their type names
-        if (docsRes.data) {
-          const docsWithTypeNames = docsRes.data.map(doc => {
-            // Extract document name after UUID
-            let documentName = doc.file_name;
-            if (doc.file_name.includes('_')) {
-              documentName = doc.file_name.split('_').slice(1).join('_');
-            }
-            console.log("Document name:", documentName);
-            if (documentName === "Aadhar_Card.jpg") {
-              const file=doc.file_url;
-        const extractedDob =  extractDOBFromAadhar(file);
-        
-      }
-
-            return {
-              ...doc,
-              document_type: types.find(t => t.document_id === doc.document_id)?.document_name || 'Unknown',
-              file_name: documentName // replace file_name with extracted name
-            };
-          });
-          setExistingDocuments(docsWithTypeNames);
-        }
-      } catch (err) {
-        console.error("Failed to fetch documents:", err);
-        toast.error("Failed to load documents");
-      } finally {
-        setLoadingDocs(false);
-      }
-    };
-
-    fetchDocumentTypes();
+    refreshDocuments();
   }, [candidateId]);
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const checkIfUserReturned = () => {
@@ -328,6 +328,7 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     setAdditionalDocs(updated);
   };
 
+  // Upload and push normalized result into existingDocuments (or refresh as fallback)
   const handleAdditionalDocFile = async (index, file) => {
     if (!file) return;
 
@@ -365,11 +366,8 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       if (updated[index].docName === "Aadhar Card") {
         // 1️⃣ OCR DOB extraction
         const extractedDob = await extractDOBFromAadhar(file);
-        // 2️⃣ SandBox DigiLocker call (ASYNC + NON-BLOCKING)
-        // getSandboxDigiLockerToken();
         if (extractedDob) {
           setAadharDob(extractedDob); // Store the extracted DOB
-          console.log("Extracted DOB from Aadhaar:", extractedDob);
 
           const formDob = formData.dob
             ? new Date(formData.dob).toISOString().split("T")[0]
@@ -411,15 +409,36 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
       const fd = new FormData();
       fd.append("file", file);
 
-      await apiService.addCandidateDocument(candidateId, doc.docId, othersValue, fd);
+      const addRes = await apiService.addCandidateDocument(candidateId, doc.docId, othersValue, fd);
+      console.log('addCandidateDocument response:', addRes);
+
+      const returned = addRes?.data || addRes || {};
+      const serverFileUrl = returned.file_url || returned.url || returned.file_url || null;
+      const returnedId = returned.document_store_id || returned.id || returned.document_store_id || returned.document_id || null;
 
       updated[index].uploading = false;
-      updated[index].url = URL.createObjectURL(file);
-
-      // Add a new empty row if this is the last one
-      
-
+      updated[index].uploaded = true;
+      updated[index].fileName = file.name;
+      updated[index].url = serverFileUrl || URL.createObjectURL(file);
       setAdditionalDocs([...updated]);
+
+      // If server returned info, append normalized doc to existingDocuments
+      if (returnedId || serverFileUrl) {
+        const savedDoc = {
+          document_store_id: returnedId || Math.random().toString(36).slice(2),
+          document_id: returned.document_id || doc.docId,
+          document_type: documentTypes.find(t => t.document_id == (returned.document_id || doc.docId))?.document_name || updated[index].docName || 'Unknown',
+          file_name: returned.file_name || updated[index].fileName,
+          file_url: serverFileUrl || updated[index].url
+        };
+
+        setExistingDocuments(prev => [...prev, savedDoc]);
+      } else {
+        // fallback: refresh server list
+        await refreshDocuments();
+      }
+
+      toast.success(`${updated[index].docName || 'Document'} uploaded successfully!`);
     } catch (err) {
       console.error("Upload failed:", err);
       updated[index].uploading = false;
@@ -428,20 +447,18 @@ const ReviewDetails = ({ initialData = {}, onSubmit, resumePublicUrl, goNext }) 
     }
   };
 
- 
-useEffect(() => {
-  console.log('initialData', initialData)
-  setFormData(initialData);
-  setSelectedIdProof(initialData.id_proof || '');
-  setDocumentUrl(initialData.document_url || '');
-  // Set DOB disabled if previously validated
-  if (initialData.is_dob_validated) { // <--- THIS CHECK IS CORRECT
-    setIsDobValidated(true);
-  }
-}, [initialData]);
-
-  // Fetch master data on mount
   useEffect(() => {
+    console.log('initialData', initialData)
+    setFormData(initialData);
+    setSelectedIdProof(initialData.id_proof || '');
+    setDocumentUrl(initialData.document_url || '');
+    if (initialData.is_dob_validated) {
+      setIsDobValidated(true);
+    }
+  }, [initialData]);
+
+  // Extract DOB from existing Aadhaar (if present in server docs)
+useEffect(() => {
     const fetchMasterData = async () => {
       try {
         const response = await apiService.getMasterData();
@@ -456,8 +473,7 @@ useEffect(() => {
       }
     };
     fetchMasterData();
-  }, []);
-  useEffect(() => {
+  }, []);  useEffect(() => {
     const fetchExistingAadharDob = async () => {
       const aadharDoc = existingDocuments.find(doc => doc.document_type === 'Aadhar Card');
       if (aadharDoc && !aadharDob) {
@@ -505,11 +521,7 @@ useEffect(() => {
   }, [isDobValidated]);
 
   const handleChange = (e) => {
-    console.log("ravali")
     const { id, value } = e.target;
-    console.log('id', id)
-    console.log('value', value)
-
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
@@ -520,17 +532,16 @@ useEffect(() => {
     setDobError('');
     setDocumentError('');
 
-    
-   // --- NEW: Always check DOB mismatch before submission ---
-   if (aadharDob && formData.dob) {
-    const formDob = new Date(formData.dob).toISOString().split('T')[0];
-    if (formDob !== aadharDob) {
-      const formattedAadharDob = aadharDob.split('-').reverse().join('/');
-      setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
-      toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
-      return; // Prevent form submission
+    // --- DOB mismatch check ---
+    if (aadharDob && formData.dob) {
+      const formDob = new Date(formData.dob).toISOString().split('T')[0];
+      if (formDob !== aadharDob) {
+        const formattedAadharDob = aadharDob.split('-').reverse().join('/');
+        setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+        toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+        return;
+      }
     }
-  }
 
     // Filter out any empty document entries
     const validAdditionalDocs = additionalDocs.filter(doc => doc.docId && (doc.url || doc.file));
@@ -547,130 +558,138 @@ useEffect(() => {
 
     // Centralized validation for Aadhar/PAN
     const hasAadharDoc = existingDocuments.some(doc => doc.document_type === 'Aadhar Card') ||
-                        validAdditionalDocs.some(doc => doc.docName === 'Aadhar Card');
+      validAdditionalDocs.some(doc => doc.docName === 'Aadhar Card');
     const hasPanDoc = existingDocuments.some(doc => doc.document_type === 'Pan Card') ||
-                     validAdditionalDocs.some(doc => doc.docName === 'Pan Card');
+      validAdditionalDocs.some(doc => doc.docName === 'Pan Card');
 
     if (!hasAadharDoc && !hasPanDoc) {
-        setDocumentError("Please upload either an Aadhaar Card or a PAN Card (mandatory).");
-        toast.error("Please upload either Aadhaar or PAN card.");
-        return;
+      setDocumentError("Please upload either an Aadhaar Card or a PAN Card (mandatory).");
+      toast.error("Please upload either Aadhaar or PAN card.");
+      return;
     }
 
     // Perform DOB validation if an Aadhaar card is present.
     if (hasAadharDoc) {
-        // Find the Aadhar document, whether it's an existing one or a new upload
       const aadharDoc = additionalDocs.find(doc => doc.docName === 'Aadhar Card' && doc.file);
-      console.log("aadharDoc", aadharDoc)
-      console.log("existingDocuments", existingDocuments)
-        if (aadharDoc) {
-            try {
-                let extractedDob = null;
+      if (aadharDoc) {
+        try {
+          let extractedDob = null;
 
-                // If we already have a DOB from the initial upload, use that
-                if (aadharDob) {
-                    extractedDob = aadharDob;
-                }
-                // Otherwise, try to extract DOB from the file
-                else if (aadharDoc.file_url) {
-                  console.log("aadharDoc.file_url", aadharDoc.file_url)
-                    extractedDob = await extractDOBFromAadhar(aadharDoc.file_url);
-                    if (extractedDob) {
-                        setAadharDob(extractedDob);
-                    }
-                }
-
-                const formDob = formData.dob ? new Date(formData.dob).toISOString().split('T')[0] : null;
-                console.log("formDob", formDob)
-                console.log("extractedDob", extractedDob)
-                if (extractedDob) {
-                    // Check for DOB mismatch
-                    if (formDob && formDob !== extractedDob) {
-                        const formattedAadharDob = extractedDob.split('-').reverse().join('/');
-                        setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
-                        toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
-                        return; // Stop execution
-                    } else if (!formDob) {
-                        // If there's no form DOB, just show the extracted DOB as a message
-                        const formattedAadharDob = extractedDob.split('-').reverse().join('/');
-                        setDobError(`Aadhaar DOB: ${formattedAadharDob}. Please update your DOB to match.`);
-                        toast.info(`Aadhaar DOB found. Please ensure your form DOB matches.`);
-                        return; // Stop execution to let user update DOB
-                    }
-                } else if (aadharDoc.file_url) {
-                    // If we couldn't extract DOB but have a file, it's likely an invalid Aadhaar
-                    setDobError("Could not verify DOB from Aadhaar. Please ensure it's a valid Aadhaar document.");
-                    toast.error("Invalid Aadhaar document. Could not extract DOB.");
-                    return;
-                }
-                // If we get here and don't have extractedDob but have aadharDoc.url, it's an existing valid document
-            } catch (error) {
-                console.error("Error validating Aadhaar:", error);
-                setDobError("An error occurred while validating Aadhaar. Please try again.");
-                toast.error("Failed to validate Aadhaar. Please try again.");
-                return;
+          if (aadharDob) {
+            extractedDob = aadharDob;
+          } else if (aadharDoc.file_url) {
+            extractedDob = await extractDOBFromAadhar(aadharDoc.file_url);
+            if (extractedDob) {
+              setAadharDob(extractedDob);
             }
+          }
+
+          const formDob = formData.dob ? new Date(formData.dob).toISOString().split('T')[0] : null;
+          if (extractedDob) {
+            if (formDob && formDob !== extractedDob) {
+              const formattedAadharDob = extractedDob.split('-').reverse().join('/');
+              setDobError(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+              toast.error(`DOB mismatch! Aadhaar shows: ${formattedAadharDob}`);
+              return;
+            } else if (!formDob) {
+              const formattedAadharDob = extractedDob.split('-').reverse().join('/');
+              setDobError(`Aadhaar DOB: ${formattedAadharDob}. Please update your DOB to match.`);
+              toast.info(`Aadhaar DOB found. Please ensure your form DOB matches.`);
+              return;
+            }
+          } else if (aadharDoc.file_url) {
+            setDobError("Could not verify DOB from Aadhaar. Please ensure it's a valid Aadhaar document.");
+            toast.error("Invalid Aadhaar document. Could not extract DOB.");
+            return;
+          }
+        } catch (error) {
+          console.error("Error validating Aadhaar:", error);
+          setDobError("An error occurred while validating Aadhaar. Please try again.");
+          toast.error("Failed to validate Aadhaar. Please try again.");
+          return;
         }
+      }
     }
 
     // If all validations pass, proceed with the submission
     try {
-        // ... rest of your form submission logic
-        const candidatePayload = {
-            candidate_id: candidateId,
-            file_url: resumePublicUrl,
-            document_url: documentUrl,
-            full_name: formData.name || '',
-            email: formData.email || '',
-            gender: formData.gender || 'Male',
-            id_proof: formData.id_proof || '',
-            phone: formData.phone || '',
-            date_of_birth: formData.dob || '',
-            skills: formData.skills || '',
-            total_experience: formData.totalExperience || 0,
-            current_designation: formData.currentDesignation || '',
-            current_employer: formData.currentEmployer || '',
-            address: formData.address || '',
-            nationality_id: formData.nationality_id || '',
-            education_qualification: formData.education_qualification || '',
-            is_dob_validated: isDobValidated,
-            extra_documents: additionalDocs.map(d => ({
-                type_id: d.docId,
-                type: d.docName,
-                url: d.url
-            })),
-            candidate_other_details: {},
-            reservation_category_id: formData.reservation_category_id || '',
-            special_category_id: formData.special_category_id || '',
-        };
+      const candidatePayload = {
+        candidate_id: candidateId,
+        file_url: resumePublicUrl,
+        document_url: documentUrl,
+        full_name: formData.name || '',
+        email: formData.email || '',
+        gender: formData.gender || 'Male',
+        id_proof: formData.id_proof || '',
+        phone: formData.phone || '',
+        date_of_birth: formData.dob || '',
+        skills: formData.skills || '',
+        total_experience: formData.totalExperience || 0,
+        current_designation: formData.currentDesignation || '',
+        current_employer: formData.currentEmployer || '',
+        address: formData.address || '',
+        nationality_id: formData.nationality_id || '',
+        education_qualification: formData.education_qualification || '',
+        is_dob_validated: isDobValidated,
+        extra_documents: additionalDocs.map(d => ({
+          type_id: d.docId,
+          type: d.docName,
+          url: d.url
+        })),
+        candidate_other_details: {},
+        reservation_category_id: formData.reservation_category_id || '',
+        special_category_id: formData.special_category_id || '',
+      };
 
-        await apiService.updateCandidates(candidatePayload);
-       
-        toast.success('Candidate data updated successfully!');
+      await apiService.updateCandidates(candidatePayload);
 
-        for (const doc of additionalDocs.filter(d => d.docId && d.file)) {
-            const formData = new FormData();
-            formData.append('file', doc.file);
-            formData.append('file_name', doc.fileName);
-            const others = doc.freeText || '';
-            await apiService.addCandidateDocument(candidateId, doc.docId, others, formData);
+      toast.success('Candidate data updated successfully!');
+
+      // Upload any additional docs that are not already uploaded to server
+      for (const doc of additionalDocs.filter(d => d.docId && (d.file || d.url))) {
+        const isBlob = doc.url && doc.url.startsWith && doc.url.startsWith('blob:');
+        const alreadySaved = doc.uploaded || (doc.url && !isBlob);
+        if (alreadySaved) continue;
+
+        const fd = new FormData();
+        fd.append('file', doc.file);
+        fd.append('file_name', doc.fileName);
+        const others = doc.freeText || '';
+        const res = await apiService.addCandidateDocument(candidateId, doc.docId, others, fd);
+
+        // normalize and append to existingDocuments if returned
+        const returned = res?.data || res || {};
+        const serverFileUrl = returned.file_url || returned.url || null;
+        const returnedId = returned.document_store_id || returned.id || returned.document_store_id || returned.document_id || null;
+
+        if (returnedId || serverFileUrl) {
+          const savedDoc = {
+            document_store_id: returnedId || Math.random().toString(36).slice(2),
+            document_id: returned.document_id || doc.docId,
+            document_type: documentTypes.find(t => t.document_id == (returned.document_id || doc.docId))?.document_name || doc.docName || 'Unknown',
+            file_name: returned.file_name || doc.fileName,
+            file_url: serverFileUrl || doc.url
+          };
+          setExistingDocuments(prev => [...prev, savedDoc]);
+        } else {
+          // fallback: refresh server list after each upload
+          await refreshDocuments();
         }
+      }
 
-        toast.success("All additional documents saved successfully!");
-        // After successful submission
-setIsDobValidated(true);
+      toast.success("All additional documents saved successfully!");
+      setIsDobValidated(true);
 
-        onSubmit(formData);
-        goNext();
+      // refresh to ensure server state is current before navigation
+      await refreshDocuments();
+
+      onSubmit(formData);
+      goNext();
     } catch (error) {
-        console.error('Error submitting candidate data:', error);
-        toast.error('Failed to submit candidate data: ' + error.message);
+      console.error('Error submitting candidate data:', error);
+      toast.error('Failed to submit candidate data: ' + (error.message || ''));
     }
   };
-
-  
-
-
 
   const handleInvalid = (e) => {
     e.target.setCustomValidity("This is mandatory");
@@ -688,14 +707,10 @@ setIsDobValidated(true);
   };
 
   const extractDOBFromAadhar = async (file) => {
-    console.log("file", file)
-    console.log("ASdasd")
     try {
       const { data: { text } } = await Tesseract.recognize(file, 'eng', {
         logger: (m) => console.log(m),
       });
-
-      console.log("Extracted text from Aadhar:", text);
 
       // Look for DOB in various formats
       let extractedDob = "";
@@ -756,16 +771,10 @@ setIsDobValidated(true);
         return;
       }
 
-      // If it's an Aadhar card, validate DOB
       if (selectedIdProof === 'Aadhar') {
-        // 1️⃣ OCR DOB extraction
         const extractedDOB = await extractDOBFromAadhar(file);
-        // 2️⃣ SandBox DigiLocker call (ASYNC + NON-BLOCKING)
-        // getSandboxDigiLockerToken(); 
-
         if (extractedDOB) {
           setAadharDob(extractedDOB);
-
           if (formData.dob) {
             const formDob = new Date(formData.dob).toISOString().split('T')[0];
             if (extractedDOB !== formDob) {
@@ -773,7 +782,6 @@ setIsDobValidated(true);
               return;
             }
           } else {
-            // Auto-fill DOB from Aadhaar if not set
             setFormData(prev => ({ ...prev, dob: extractedDOB }));
           }
         } else {
@@ -784,6 +792,8 @@ setIsDobValidated(true);
     } catch (error) {
       console.error('Error handling file upload:', error);
       setDobError('Error processing file: ' + (error.message || 'Please try again'));
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -792,14 +802,15 @@ setIsDobValidated(true);
     if (!docToDelete) return;
 
     // If it's a temporary document (not yet saved to server)
-    if (docToDelete.id.startsWith('temp-')) {
+    if ((docToDelete.id || '').toString().startsWith('temp-')) {
       if (docToDelete.onConfirm) {
         docToDelete.onConfirm();
       }
+      setShowDeleteModal(false);
+      setDocToDelete(null);
       return;
     }
 
-    // For existing documents in the database
     try {
       await apiService.deleteCandidateDocument(docToDelete.id);
       setExistingDocuments(prev =>
@@ -822,12 +833,12 @@ setIsDobValidated(true);
   return (
     <div className="form-content-section text-start p-4 spaceform">
       <form className="row g-4 formfields" onSubmit={handleSubmit} onInvalid={handleInvalid} onInput={handleInput}>
+        {/* Basic fields omitted for brevity in this fragment — keep your existing fields */}
         <div className="col-md-3">
           <label htmlFor="name" className="form-label">Name <span className="text-danger">*</span></label>
           <input type="text" className="form-control" id="name" value={formData.name || ''} onChange={handleChange} required />
         </div>
-
-        <div className="col-md-3">
+<div className="col-md-3">
           <label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
           <input
             type="date"
@@ -1003,11 +1014,10 @@ setIsDobValidated(true);
             ))}
           </select>
         </div>
-
         <div className="col-12 mt-4 adddoc">
           <div className='d-flex mb-2 gap-2'>
             <h5> Documents <span className="text-danger">*</span></h5>
-            <button 
+            <button
               type="button"
               className="btn btn-outline-primary"
               onClick={startDigiLockerFlow}
@@ -1026,13 +1036,97 @@ setIsDobValidated(true);
               </tr>
             </thead>
             <tbody>
-              {/* Existing documents from server */}
+              {/* Render saved documents from server first */}
+              {existingDocuments.map((doc, index) => (
+                <tr key={`existing-${index}`}>
+                  <td>{doc.document_type || 'N/A'}</td>
+                  <td>{doc.file_name || 'Document'}</td>
+                  <td className="d-flex align-items-center gap-2">
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm viewdoc iconhover"
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </a>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger dangbtn iconhover"
+                      onClick={() => {
+                        if (!doc.document_store_id) {
+                          return toast.error("Cannot delete unsaved document");
+                        }
+                        setDocToDelete({
+                          id: doc.document_store_id,
+                          name: doc.file_name || 'this document'
+                        });
+                        setShowDeleteModal(true);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+
+                    {/* Re-upload control */}
+                    <>
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        style={{ display: "none" }}
+                        id={`reupload-${doc.document_store_id}`}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            const fd = new FormData();
+                            fd.append("file", file);
+
+                            const res = await apiService.addCandidateDocument(
+                              candidateId,
+                              doc.document_id,      // existing document type
+                              "",                    // others if needed
+                              fd
+                            );
+
+                            const returned = res?.data || res || {};
+                            const serverFileUrl = returned.file_url || returned.url || null;
+
+                            setExistingDocuments(prev =>
+                              prev.map(d =>
+                                d.document_store_id === doc.document_store_id
+                                  ? { ...d, file_name: file.name, file_url: serverFileUrl || URL.createObjectURL(file) }
+                                  : d
+                              )
+                            );
+
+                            toast.success("Document re-uploaded successfully!");
+                          } catch (err) {
+                            console.error("Re-upload failed:", err);
+                            toast.error("Failed to re-upload document");
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary printn iconhover"
+                        onClick={() =>
+                          document.getElementById(`reupload-${doc.document_store_id}`).click()
+                        }
+                      >
+                        <FontAwesomeIcon icon={faUpload} className="me-1" />
+                      </button>
+                    </>
+                  </td>
+                </tr>
+              ))}
+
+              {/* DigiLocker docs (if any) */}
               {digiLockerDocs.length > 0 && digiLockerDocs.map((doc, index) => (
                 <tr key={`digi-${index}`}>
                   <td>{doc.name}</td>
                   <td>{doc.issuer}</td>
                   <td className="d-flex align-items-center gap-2">
-                    {/* Button to fetch file */}
                     <button
                       type="button"
                       className="btn btn-sm viewdoc iconhover"
@@ -1047,7 +1141,7 @@ setIsDobValidated(true);
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
-                    {/* Upload or Verified */}
+
                     {!doc.uploaded ? (
                       <>
                         <button
@@ -1140,8 +1234,7 @@ setIsDobValidated(true);
                         <span className="visually-hidden">Uploading...</span>
                       </div>
                     )}
-                    
-                   
+
                     {index === additionalDocs.length - 1 && (
                       <button
                         type="button"
@@ -1153,16 +1246,13 @@ setIsDobValidated(true);
                           ])
                         }
                       >
-                         <FontAwesomeIcon icon={faPlus} />
+                        <FontAwesomeIcon icon={faPlus} />
                       </button>
                     )}
-                    
-                    
                   </td>
                 </tr>
               ))}
             </tbody>
-
           </table>
           {documentError && (
             <div className="text-danger mt-2">
