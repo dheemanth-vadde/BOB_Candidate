@@ -13,7 +13,7 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-forgot-password",
+      const res = await axios.post("https://dev.bobjava.sentrifugo.com:8443/test-auth-app/api/v1/candidate-auth/candidate-forgot-password",
         null,
         {
           params: { email }
