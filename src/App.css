@@ -261,7 +261,7 @@ font-family: 'Noto Sans';
         }
         
         .tab-content {
-            padding: 2rem 1rem;
+          padding: 0;
         }
         
         /* My Details Section */
@@ -418,7 +418,7 @@ body {
 	border: none;
 	border-radius: 0.5rem;
 	/* box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); */
-	background: none !important;
+	background: white !important;
   max-height: 445px;
   overflow-y: auto;
   padding-right: 10px;
@@ -653,4 +653,9 @@ font-family: 'Noto Sans';
   font-size:16px  !important;
   font-weight:500 !important;
   padding:10px 0 !important
+}
+
+.App {
+  background-color: #efefef;
+  min-height: 100vh;
 }

@@ -1,188 +1,208 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Navbar, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faUser } from '@fortawesome/free-solid-svg-icons';
 import logo_Bob from '../assets/logo_Bob.png';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from "../store/userSlice";
 
-const Header = ({ hideIcons }) => {
+const Header = ({ hideIcons, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.user?.user);
+  console.log("Header User:", user);
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
-  const [notifications, setNotifications] = useState([
-{ id: 1, message: "📢 Bank of Baroda has posted a new opening for Probationary Officer (PO).", time: "1h ago", read: true },
-      { id: 2, message: "✅ Your application for Relationship Manager has been successfully submitted.", time: "3h ago", read: true },
-      { id: 3, message: "🔎 Application for Assistant Manager is currently under review by HR.", time: "1d ago", read: true },
-      { id: 4, message: "📅 Online assessment for Clerk role scheduled on 15 Sept, 11:00 AM.", time: "2d ago",  read: true},
-      { id: 5, message: "⭐ Congratulations! You are shortlisted for the final interview round (Senior Analyst).", time: "3d ago" ,  read: true},
-      { id: 6, message: "🎓 New campus recruitment drive announced for Graduate Trainee positions.", time: "5d ago",  read: true },
-      { id: 7, message: "📢 BoB HR team has published the final results for Assistant Manager recruitment.", time: "1w ago",  read: true },
-      { id: 8, message: "⚡ Reminder: Please update your KYC details before applying for new roles.", time: "2w ago" ,  read: true},
-      { id: 9, message: "📢 New job alert: Wealth Manager positions open across multiple cities.", time: "3w ago" ,  read: true},
-      { id: 10, message: "📅 Technical interview scheduled for IT Officer role on 25 Sept, 2:00 PM.", time: "1mo ago" ,  read: true},
-      { id: 11, message: "✅ Application for Marketing Associate has been successfully submitted.", time: "1mo ago",  read: true },
-      { id: 12, message: "⭐ You have been selected in the merit list for Clerk recruitment 2025.", time: "1mo ago",  read: true }
 
-  ]);
+  const notifications = [
+    { id: 1, message: "📢 Bank of Baroda posted a new opening.", time: "1h ago", read: true },
+    { id: 2, message: "✅ Application submitted successfully.", time: "3h ago", read: true },
+  ];
 
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  // Close dropdown & notification when clicked outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setShowDropdown(false);
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) setShowNotification(false);
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowDropdown(false);
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) setShowNotification(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
-
   return (
-    <Navbar sticky="top" bg="warning" variant="light" expand="lg" className="py-2" style={{ zIndex: 1030, height: "64px" }}>      <div className="container-fluid">
-      <Navbar.Brand className="fw-bold logobob">
-        <img src={logo_Bob} alt="BobApp Logo" className="me-2" />
-      </Navbar.Brand>
+    <>
+      {/* TOP HEADER BAR */}
+      <Navbar
+        sticky="top"
+        bg="warning"
+        variant="light"
+        expand="lg"
+        className="py-2"
+        style={{ zIndex: 1030, height: "64px" }}
+      >
+        <div className="container-fluid">
+          <Navbar.Brand className="fw-bold logobob">
+            <img src={logo_Bob} alt="BobApp Logo" className="me-2" />
+          </Navbar.Brand>
 
-      {!hideIcons && (
-        <div className="d-flex align-items-center">
-          {/* Notification Bell */}
-          <Button
-            variant="link"
-            className="me-2 position-relative"
-            style={{
-              backgroundColor: "white",
-              borderRadius: "50%",
-              width: "35px",
-              height: "35px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-            }}
-            onClick={() => setShowNotification((prev) => !prev)}
-          >
-            <FontAwesomeIcon icon={faBell} size="lg" style={{ color: "orangered" }} />
-           
-               <span
-              style={{
-                position: "absolute",
-                top: "8px",
-                right: "8px",
-                width: "8px",
-                height: "8px",
-                backgroundColor: "red",
-                borderRadius: "50%",
-                border: "2px solid white",   // neat border
-              }}
-            ></span>
-            
-          </Button>
+          {!hideIcons && (
+            <div className="d-flex align-items-center">
 
-          {/* Notification Popup */}
-          {showNotification && (
-            <Card
-              ref={notificationRef}
-              className="position-absolute backgroundcol"
-              style={{
-                top: "60px",
-                right: "80px",
-                width: "350px",
-                maxHeight: "400px",
-                borderRadius: "10px",
-                boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
-                overflow: "hidden",
-                backgroundColor: "#fff",
-              }}
-            >
-              <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-                <h6 className="fw-bold mb-0 notification_heading">Notifications</h6>
-              </Card.Header>
-              <Card.Body className="p-0" style={{ overflowY: 'auto', maxHeight: '350px' }}>
-                {notifications.length === 0 ? (
-                  <p className="text-muted text-center py-3">No notifications</p>
-                ) : (
-                  notifications.map((note) => (
-                    <div
-                      key={note.id}
-                      className="p-3 border-bottom"
-                      style={{
-                        cursor: 'pointer',
-                        backgroundColor: note.read ? 'white' : '#fff9e6'
-                      }}
+              {/* Notifications */}
+              <Button
+                variant="link"
+                className="me-2 position-relative"
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "20%",
+                  width: "30px",
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onClick={() => setShowNotification((prev) => !prev)}
+              >
+                <FontAwesomeIcon icon={faBell} size="lg" style={{ color: "orangered" }} />
+              </Button>
+
+              {/* Notification Popup */}
+              {showNotification && (
+                <Card
+                  ref={notificationRef}
+                  className="position-absolute"
+                  style={{
+                    top: "60px",
+                    right: "80px",
+                    width: "350px",
+                    maxHeight: "400px",
+                    borderRadius: "10px",
+                    boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Card.Header className="bg-white">
+                    <h6 className="fw-bold mb-0">Notifications</h6>
+                  </Card.Header>
+                  <Card.Body className="p-0" style={{ maxHeight: "350px", overflowY: "auto" }}>
+                    {notifications.map((note) => (
+                      <div key={note.id} className="p-3 border-bottom">
+                        <p className="mb-1">{note.message}</p>
+                        <small className="text-muted">{note.time}</small>
+                      </div>
+                    ))}
+                  </Card.Body>
+                </Card>
+              )}
+
+              {/* USER ICON */}
+              <div className="position-relative" ref={dropdownRef}>
+                <div className='d-flex align-items-center gap-2'>
+                  <div
+                    onClick={() => setShowDropdown((prev) => !prev)}
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: "20%",
+                      width: "30px",
+                      height: "30px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faUser} size="lg" style={{ color: "orangered" }} />
+                  </div>
+                  <div>
+                    <p style={{ color: '#fff', marginTop: '10px' }}>{user.full_name}</p>
+                  </div>
+                </div>
+
+                {showDropdown && (
+                  <div className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow" style={{ minWidth: "200px" }}>
+                    <p className="mb-1">{user?.full_name}</p>
+                    <p className="mb-0 text-muted">{user?.role}</p>
+                    <hr />
+                    <p
+                      style={{ cursor: "pointer" }}
                       onClick={() => {
-                        markAsRead(note.id);
-                        navigate('/notifications');
-                        setShowNotification(false);
+                        dispatch(clearUser());
+                        navigate("/login");
                       }}
                     >
-                      <p className="mb-1" style={{ fontSize: '0.9rem' }}>{note.message}</p>
-                      <small className="text-muted">{note.time}</small>
-                    </div>
-                  ))
+                      Logout
+                    </p>
+                  </div>
                 )}
-                <div className="text-center p-2">
-                  <Button
-                    variant="outline-warning bgbtn"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => {
-                      setShowNotification(false);
-                      navigate('/notifications');
-                    }}
-                    style={{  border: '1px solid orangered' }}
-                  >
-                    View All
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          )}
-
-          {/* User Profile Dropdown */}
-          <div className="position-relative" ref={dropdownRef}>
-            <FontAwesomeIcon
-              icon={faUserCircle}
-              size="2x"
-              style={{ color: '#fff', cursor: "pointer" }}
-              onClick={() => setShowDropdown(prev => !prev)}
-            />
-            {showDropdown && (
-              <div className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow" style={{ minWidth: "200px" }}>
-                <p className="mb-1">{user?.full_name}</p>
-                <p className="mb-0 text-muted">
-                  {user?.role === "L1" || user?.role === "L2" ? `${user.role} Approver` : user?.role}
-                </p>
-                <hr className="my-2" />
-                <p onClick={() => {dispatch(clearUser()); navigate("/login");}} style={{ cursor: 'pointer', margin: 0 }}>Logout</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-      )}
+      </Navbar>
 
-      {hideIcons && (
-        <div>
-          <button className="register-here-btn shadow-sm" onClick={() => navigate('/login')}>
-            Register here
-          </button>
+      {/* 👇 STICKY MENU BELOW HEADER */}
+      {!hideIcons && (
+        <div
+          className="bg-white border-bottom"
+          style={{
+            position: "sticky",
+            top: "64px",
+            zIndex: 1029,
+          }}
+        >
+          <ul className="nav nav-tabs navbarupload container-fluid px-3">
+            {/* <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === 'career' ? 'active' : ''}`}
+                onClick={() => setActiveTab('career')}
+              >
+                Home
+              </button>
+            </li> */}
+
+            {/* <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === 'resume' ? 'active border-0' : ''}`}
+                onClick={() => setActiveTab('resume')}
+              >
+                Upload Resume
+              </button>
+            </li> */}
+
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === 'info' ? 'active border-0' : ''}`}
+                onClick={() => setActiveTab('info')}
+              >
+                My Profile
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === 'jobs' ? 'active border-0' : ''}`}
+                onClick={() => setActiveTab('jobs')}
+              >
+                Current Opportunities
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === 'applied-jobs' ? 'active border-0' : ''}`}
+                onClick={() => setActiveTab('applied-jobs')}
+              >
+                Applied Jobs
+              </button>
+            </li>
+          </ul>
         </div>
       )}
-    </div>
-    </Navbar>
+    </>
   );
 };
 

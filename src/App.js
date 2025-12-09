@@ -33,10 +33,10 @@ function App() {
       <div className="App">
         <Routes>
           {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/careers-portal" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
           {/* Public routes (accessible without login) */}
-          <Route path="/careers-portal" element={<Home />} />
+          {/* <Route path="/careers-portal" element={<Home />} /> */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

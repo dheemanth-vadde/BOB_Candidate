@@ -578,7 +578,7 @@ const clearFilters = () => {
 };
 
   return (
-    <div>
+    <div className="mx-4 my-3">
       {/* 🔹 Search Bar */}
       <div className="d-flex justify-content-end mb-3 row">
         <div className="input-group searchinput" style={{ maxWidth: "350px"}}>

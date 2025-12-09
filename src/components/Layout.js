@@ -31,7 +31,7 @@ export default function Layout() {
         </Container>
       </Navbar>
 
-      <Container className="py-4">
+      <Container className="">
         <Outlet />
       </Container>
     </>
