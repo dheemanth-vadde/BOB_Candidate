@@ -80,7 +80,7 @@
     padding:0px !important;
   }
   .form-check-label{
-    font-size:14px;
+    font-size:12px;
   }
   .searchinput {
   position: relative;
@@ -153,3 +153,4 @@ padding: 25px 0;
 	font-size: 12px !important;
 	font-weight: 500 !important;
 }
+
