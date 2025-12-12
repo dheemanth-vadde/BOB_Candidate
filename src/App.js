@@ -16,6 +16,7 @@ import PrivateRoute from './components/PrivateRoute';
 import { useEffect, useState } from 'react';
 import CustomChatbot from './components/CustomChatbot';
 import DigiLockerCallback from './components/DigiLocker';
+import OtpVerification from './components/OtpVerification';
 
 function App() {
   const location = useLocation(); // Get current path
@@ -33,22 +34,23 @@ function App() {
       <div className="App">
         <Routes>
           {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to="/candidate-portal" replace />} />
 
           {/* Public routes (accessible without login) */}
           {/* <Route path="/careers-portal" element={<Home />} /> */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/otp-verification" element={<OtpVerification />} />
 
           {/* All other routes require auth */}
-          <Route element={<PrivateRoute />}>
-            <Route element={<Tokenexp />}>
+          {/* <Route element={<PrivateRoute />}> */}
+            {/* <Route element={<Tokenexp />}> */}
               <Route path="/candidate-portal" element={<CandidatePortal />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/digilocker/callback" element={<DigiLockerCallback />} />
-            </Route>
-          </Route>
+            {/* </Route> */}
+          {/* </Route> */}
 
           {/* Catch-all for non-allowed public routes */}
           <Route path="*" element={<Navigate to="/login" replace />} />

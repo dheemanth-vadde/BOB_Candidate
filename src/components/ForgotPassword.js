@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import "../css/Login.css";
 import pana from "../assets/pana.png";
-import boblogo from "../assets/bob-logo.png";
-import { useNavigate } from "react-router-dom";
+import boblogo from "../assets/bob-logo1.jpg";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -13,15 +14,15 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://dev.bobjava.sentrifugo.com:8443/test-auth-app/api/v1/candidate-auth/candidate-forgot-password",
-        null,
+      const res = await axios.post("https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/forgot-password",
         {
-          params: { email }
-        }
-      );
+        params: { email },
+        headers: {
+          "X-Client": "candidate",
+        },
+      });
 
-
-      alert("Password reset link sent. Check your email.");
+      toast.success("Reset link sent to your email.");
       navigate("/login");
     } catch (error) {
       console.error(error);
@@ -40,18 +41,18 @@ const ForgotPassword = () => {
       <div className="right-panel">
         <div className="logo" style={{ marginBottom: '20px' }}>
           <img src={boblogo} alt="Logo" />
-          <h4>Forgot Password</h4>
+          <h4>Forgot your Password?</h4>
         </div>
 
-        <form className="login_form" onSubmit={handleSubmit}>
-          <button
+        <form className="login_form mt-3" onSubmit={handleSubmit}>
+          {/* <button
             className="back-button"
             onClick={() => navigate("/login")}
           >
             ← Login
-          </button>
+          </button> */}
 
-          <label>Enter your registered email:</label>
+          <label>Email Id:</label>
           <input
             type="email"
             value={email}
@@ -62,10 +63,14 @@ const ForgotPassword = () => {
           />
 
           <button className="login-button" type="submit">
-            SEND RESET LINK
+            Send Reset Link
           </button>
+
+          <p className="register-link mb-0">
+            ← Back to <Link to="/login">Login</Link>
+          </p>
         </form>
-        {message && <p>{message}</p>}
+        {/* {message && <p>{message}</p>} */}
       </div>
     </div>
   );

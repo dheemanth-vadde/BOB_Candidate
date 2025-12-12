@@ -1,7 +1,7 @@
 import React from "react";
 import "./../css/Stepper.css";
 
-const Stepper = ({ steps, activeStep, onStepChange }) => {
+const Stepper = ({ steps, activeStep }) => {
   return (
     <div className="stepper-container">
       {steps.map((step, index) => {
@@ -14,7 +14,7 @@ const Stepper = ({ steps, activeStep, onStepChange }) => {
             className={`step-item ${isActive ? "active" : ""} ${
               isCompleted ? "completed" : ""
             }`}
-            onClick={() => onStepChange(index)}
+            style={{ cursor: "default" }}  // Not clickable
           >
             <div className="step-circle">
               {isCompleted ? "✓" : index + 1}

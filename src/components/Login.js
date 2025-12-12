@@ -1,90 +1,87 @@
 // src/pages/Login.jsx
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "../css/Login.css";
 import pana from "../assets/pana.png";
-import boblogo from "../assets/bob-logo.png";
 import BobLogo from "../assets/bob-logo1.jpg";
 import { useDispatch } from 'react-redux';
 import { setUser, setAuthUser } from '../store/userSlice';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import CryptoJS from "crypto-js";
+import JSEncrypt from "jsencrypt";
+import { toast } from "react-toastify";
 
 const Login = () => {
-  const SECRET_KEY = "fdf4-832b-b4fd-ccfb9258a6b3";
+  const [publicKey, setPublicKey] = useState("");
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [unverifiedUserId, setUnverifiedUserId] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const encryptPassword = (password) => {
-    return CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
+  useEffect(() => {
+    fetch("/public_key.pem")
+      .then(res => res.text())
+      .then(key => setPublicKey(key))
+      .catch(err => console.error("Failed to load public key:", err));
+  }, []);
+
+  const hashPassword = (password) => {
+    return CryptoJS.SHA256(password).toString(); // hex string
+  };
+
+  const encryptCredentials = (email, password, publicKey) => {
+    const encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+
+    const data = `${email}|${password}`;
+    const encrypted = encrypt.encrypt(data);
+
+    return encrypted; // base64 encrypted string
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!publicKey) {
+      alert("Public key not loaded yet!");
+      return;
+    }
+
+    setLoading(true);
+    const hashedPassword = hashPassword(password);
+    const encryptedCredentials = encryptCredentials(email, hashedPassword, publicKey);
+
     try {
       // Step 1: Login API
       const res = await axios.post(
-        "https://dev.bobjava.sentrifugo.com:8443/test-auth-app/api/v1/candidate-auth/candidate-login",
+        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/login",
         {
-          username: email,
-          password: password,
-        }
-      );
-
-      const token = res.data?.access_token;
-
-      // (401 Fix) → If no token, do not call next API
-      if (!token) {
-        alert("Login failed: No token returned");
-        return;
-      }
-
-      // Step 2: Fetch Details API (REQUIRES BEARER TOKEN)
-      const dbRes = await axios.post(
-        "https://dev.bobjava.sentrifugo.com:8443/test-auth-app/api/v1/getdetails/candidates",
-        null, // no body
+          credentials: encryptedCredentials
+        },
         {
-          params: { email },
           headers: {
-            Authorization: `Bearer ${token}`, 
-          },
+            "X-Client": "candidate",
+            "Content-Type": "application/json"
+          }
         }
       );
-
-      // Step 3: MFA Logic
-      if (res.data.mfa_required) {
-        dispatch(setAuthUser({ mfaToken: res.data.mfa_token, mfaRequired: true }));
-        alert("MFA required. Please verify your Mail.");
-        navigate("/verify-otp");
-        return;
-      }
-
-      // Step 4: Save Details in Redux
-      dispatch(setAuthUser(res.data));
-      dispatch(setUser(dbRes.data));
-
-      // Step 5: Navigate
-      navigate("/candidate-portal");
+      console.log("Login Success:", res.data);
+      navigate("/otp-verification", {
+        state: {
+          email: email  // send email for OTP validation
+        }
+      });
 
     } catch (err) {
-      const errorData = err.response?.data;
-
-      if (
-        errorData?.error ===
-        "Email not verified. Please verify your email before login."
-      ) {
-        alert("Email not verified. Click below to resend verification email.");
-        setUnverifiedUserId(errorData.user_id);
-      } else {
-        alert(errorData?.error_description || "Login failed");
-      }
+      console.log(err);
+      toast.error(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,7 +94,7 @@ const Login = () => {
       <div className="right-panel">
         <div className="logo">
           <img src={BobLogo} alt="Logo" />
-          <h4>Candidate Login</h4>
+          <h5 className="mt-1">Welcome to Candidate Login</h5>
         </div>
 
         <form className="login_form" onSubmit={handleLogin}>
@@ -108,6 +105,7 @@ const Login = () => {
             required
             placeholder="Enter email"
             onChange={(e) => setEmail(e.target.value)}
+            className="mb-4 text-muted"
           />
 
           <label>Password:</label>
@@ -118,7 +116,8 @@ const Login = () => {
               required
               placeholder="Enter password"
               onChange={(e) => setPassword(e.target.value)}
-              style={{ paddingRight: '40px' }}
+              className="text-muted"
+              style={{ paddingRight: '40px', marginBottom: '0.25rem' }}
             />
             <FontAwesomeIcon
               icon={showPassword ? faEye : faEyeSlash}
@@ -126,14 +125,19 @@ const Login = () => {
               style={{
                 position: 'absolute',
                 right: '15px',
-                top: '35%',
+                top: '45%',
                 transform: 'translateY(-50%)',
                 cursor: 'pointer',
                 color: '#666',
               }}
+              size="sm"
               title={showPassword ? 'Hide password' : 'Show password'}
             />
           </div>
+
+          <p className="forgot-link mb-4">
+            <Link className="" to="/forgot-password">Forgot Password?</Link>
+          </p>
 
           {unverifiedUserId && (
             <button
@@ -155,13 +159,9 @@ const Login = () => {
             </button>
           )}
 
-          <button className="login-button" type="submit">
-            LOGIN
+          <button className="login-button" type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
-
-          <p className="register-link">
-            Forgot Password? <Link to="/forgot-password">Click here</Link>
-          </p>
 
           <p className="register-link">
             New User? <Link to="/register">Register Here</Link>

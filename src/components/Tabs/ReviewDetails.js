@@ -562,11 +562,11 @@ useEffect(() => {
     const hasPanDoc = existingDocuments.some(doc => doc.document_type === 'Pan Card') ||
       validAdditionalDocs.some(doc => doc.docName === 'Pan Card');
 
-    if (!hasAadharDoc && !hasPanDoc) {
-      setDocumentError("Please upload either an Aadhaar Card or a PAN Card (mandatory).");
-      toast.error("Please upload either Aadhaar or PAN card.");
-      return;
-    }
+    // if (!hasAadharDoc && !hasPanDoc) {
+    //   setDocumentError("Please upload either an Aadhaar Card or a PAN Card (mandatory).");
+    //   toast.error("Please upload either Aadhaar or PAN card.");
+    //   return;
+    // }
 
     // Perform DOB validation if an Aadhaar card is present.
     if (hasAadharDoc) {
@@ -831,7 +831,7 @@ useEffect(() => {
   }
 
   return (
-    <div className="form-content-section text-start p-4 spaceform">
+    <div className="form-content-section text-start p-4">
       <form className="row g-4 formfields" onSubmit={handleSubmit} onInvalid={handleInvalid} onInput={handleInput}>
         {/* Basic fields omitted for brevity in this fragment — keep your existing fields */}
         <div className="col-md-3">

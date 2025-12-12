@@ -3,13 +3,13 @@
 
 }
 .formfields label{
-    font-size: 14px;
-  color: #162b75;
+    font-size: 12px;
+  color: #6e6e6e;
   font-weight:500;
 }
 .formfields input, .formfields textarea, .formfields select{
     font-size: 14px;
-  color: #000;
+  color: #6e6e6e;
 }
 .adddoc h5{
     font-size: 16px;

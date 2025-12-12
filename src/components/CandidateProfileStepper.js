@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ResumeUpload from "./Tabs/ResumeUpload";
 import ReviewDetails from "./Tabs/ReviewDetails";
 import Stepper from "./Stepper";
+import AddressDetails from "./Tabs/AddressDetails";
+import EducationDetails from "./Tabs/EducationDetails";
+import ExperienceDetails from "./Tabs/ExperienceDetails";
+import DocumentDetails from "./Tabs/DocumentDetails";
+import BasicDetails from "./Tabs/BasicDetails";
 
 const CandidateProfileStepper = ({
   resumeFile,
@@ -14,10 +19,21 @@ const CandidateProfileStepper = ({
 }) => {
 
   const steps = ["Upload Resume", "Basic Details", "Address", "Education", "Experience", "Document"];
-  const [activeStep, setActiveStep] = useState(0);
 
-  const goNext = () => setActiveStep(prev => prev + 1);
-  const goBack = () => setActiveStep(prev => prev - 1);
+  // Load existing step from localStorage
+  const [activeStep, setActiveStep] = useState(() => {
+    const saved = localStorage.getItem("activeStep");
+    return saved ? parseInt(saved) : 0;
+  });
+
+  // Save whenever activeStep changes
+  useEffect(() => {
+    localStorage.setItem("activeStep", activeStep);
+  }, [activeStep]);
+
+
+  const goNext = () => setActiveStep(prev => Math.min(prev + 1, steps.length - 1));
+  const goBack = () => setActiveStep(prev => Math.max(prev - 1, 0));
 
   const renderStepContent = () => {
     switch (activeStep) {
@@ -35,13 +51,26 @@ const CandidateProfileStepper = ({
 
       case 1:
         return (
-          <ReviewDetails
-            initialData={candidateData}
-            resumePublicUrl={resumePublicUrl}
-            onSubmit={onSubmit}
+          <BasicDetails
+            // initialData={candidateData}
+            // resumePublicUrl={resumePublicUrl}
+            // onSubmit={onSubmit}
             goNext={goNext}
+            goBack={goBack}
           />
         );
+
+      case 2:
+        return <AddressDetails goNext={goNext} goBack={goBack} />;
+
+      case 3:
+        return <EducationDetails goNext={goNext} goBack={goBack} />;
+
+      case 4:
+        return <ExperienceDetails goNext={goNext} goBack={goBack} />;
+
+      case 5:
+        return <DocumentDetails goNext={goNext} goBack={goBack} />;
 
       default:
         return <h3>Coming Soon…</h3>;
@@ -49,14 +78,10 @@ const CandidateProfileStepper = ({
   };
 
   return (
-    <div>
-      <Stepper
-        steps={steps}
-        activeStep={activeStep}
-        onStepChange={setActiveStep}
-      />
+    <div className="pb-3">
+      <Stepper steps={steps} activeStep={activeStep} />
 
-      <div className="my-3 mx-4 p-3 border rounded bg-white">
+      <div className="p-3" style={{ margin: '0 auto', width: '75%' }}>
         {renderStepContent()}
       </div>
     </div>

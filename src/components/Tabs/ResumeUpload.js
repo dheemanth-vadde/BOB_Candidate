@@ -2,6 +2,12 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import '../../css/Resumeupload.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faUpload } from "@fortawesome/free-solid-svg-icons";
+import deleteIcon from '../../assets/delete-icon.png';
+import editIcon from '../../assets/edit-icon.png';
+import viewIcon from '../../assets/view-icon.png';
+
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl,goNext,resumePublicUrl }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
@@ -9,6 +15,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
   const auth = useSelector((state) => state.user.authUser);
   const token = auth?.access_token;
   const candidateId = user?.candidate_id;
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -16,6 +23,8 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       setFileName(file.name);
     }
   };
+
+  const fileSizeInKB = resumeFile ? (resumeFile.size / 1024).toFixed(2) : null;
 
   const handleBrowseClick = () => {
     const fileInput = document.getElementById('resume-input');
@@ -79,78 +88,103 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       goNext();
     } catch (err) {
       alert('Error parsing resume: ' + err.message);
+      goNext();
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="form-content-section text-center">
-    <h2>Upload Resume</h2>
-    <p className="subtext">Resume/CV* (Supported format: .docx/.pdf; Max size: 4.5 MB)</p>
+    <div className="form-content-section px-4 py-3 border rounded bg-white w-50 mx-auto">
+    <p className="tab_headers" style={{ marginBottom: '0px', marginTop: '0rem' }}>Resume Upload</p>
 
-    {/* Show existing resume if available */}
-    {resumePublicUrl && (
-      <div className="existing-resume mb-4">
-        <p>You have already uploaded a resume:</p>
-        <a 
-          href={resumePublicUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="btn btn-link"
-        >
-          <i className="ph-light ph-file-text me-2"></i><b>View Current Resume</b>
-        </a>
+  {/* If resume already uploaded → show file preview UI */}
+  {(resumeFile || resumePublicUrl) ? (
+    <div className="uploaded-file-box p-3 mt-3 d-flex justify-content-between align-items-center"
+      style={{
+        border: "2px solid #bfc8e2",
+        borderRadius: "8px",
+        background: "#f7f9fc"
+      }}
+    >
+
+      {/* Left: Check icon + file info */}
+      <div className="d-flex align-items-center">
+        <FontAwesomeIcon
+          icon={faCheckCircle}
+          style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+        />
+
+        <div className='p-2'>
+          <div style={{ fontWeight: 600 }}>
+            {resumeFile ? resumeFile.name : "Uploaded Resume"}
+          </div>
+          <div className="text-muted" style={{ fontSize: "12px" }}>
+            {resumeFile ? `${fileSizeInKB} KB` : "Click eye icon to view"}
+          </div>
+        </div>
       </div>
-    )}
 
-    {/* Keep the existing upload UI as is */}
+      {/* Right: Action icons */}
+      <div className="d-flex gap-2">
+
+        <div onClick={() => window.open(resumePublicUrl, "_blank")}>
+          <img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
+        </div>
+
+        <div>
+          <img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} />
+        </div>
+
+        <div>
+          <img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} />
+        </div>
+      </div>
+    </div>
+
+  ) : (
+    /* Dropzone UI when NO resume uploaded */
     <div className="dropzone" onClick={handleBrowseClick}>
-      <i className="ph-light ph-upload-simple"></i>
-      <div className="dropzone-text">
-        {resumePublicUrl ? (
-          <>
-            Click here to upload your resume or{' '}
-            <span style={{ color: '#ff7043', cursor: 'pointer' }}>
-              browse to upload
-            </span>
-          </>
-        ) : (
-          <>
-            Click here to Upload your files here or{' '}
-            <span style={{ color: '#ff7043', cursor: 'pointer' }}>
-              browse to upload
-            </span>
-          </>
-        )}
+      <div className="d-flex flex-column align-items-center" style={{ lineHeight: "2rem" }}>
+        <FontAwesomeIcon icon={faUpload} className="text-secondary mb-2" size="2x" />
+
+        <div>Drag & drop your resume here, or</div>
+        <span style={{ color: "#42579f", cursor: "pointer" }}>Click to Upload</span>
+        <span className="text-muted mt-2" style={{ fontSize: "12px" }}>
+          Supported: PDF, DOC, DOCX (Max 2MB)
+        </span>
       </div>
+
       <input
         type="file"
         id="resume-input"
         accept=".pdf,.doc,.docx"
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         onChange={handleFileChange}
       />
-     
     </div>
- {fileName && <div className="mt-2 filename">{fileName}</div>}
-    <div className="mt-4">
-      <button
-        className="btn btn-primary"
-        style={{
-          backgroundColor: '#ff7043',
-          border: 'none',
-          padding: '8px 24px',
-          borderRadius: '4px',
-          color:"#fff"
-        }}
-        onClick={handleContinue}
-        disabled={!resumeFile && !resumePublicUrl}
-      >
-        {loading ? 'Processing...' : 'Continue'}
-      </button>
-    </div>
+  )}
+
+  {/* Next button */}
+  <div className="mt-4 d-flex justify-content-end">
+    <button
+      className="btn btn-primary"
+      style={{
+        backgroundColor: "#ff7043",
+        border: "none",
+        padding: "8px 24px",
+        borderRadius: "4px",
+        color: "#fff"
+      }}
+      onClick={handleContinue}
+      disabled={!resumeFile && !resumePublicUrl}
+    >
+      {loading ? "Processing..." : "Save & Next"}
+    </button>
   </div>
+
+</div>
+
   );
 };
 

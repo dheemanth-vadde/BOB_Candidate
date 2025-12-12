@@ -6,6 +6,7 @@ import logo_Bob from '../assets/logo_Bob.png';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from "../store/userSlice";
+import axios from 'axios';
 
 const Header = ({ hideIcons, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
@@ -23,6 +24,24 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
 
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
+
+  const handleLogout = async () => {
+    try {
+      const res = await axios.post(
+        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/logout",
+        {
+          headers: {
+            "X-Client": "candidate",
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      dispatch(clearUser());
+      navigate("/login");
+    } catch(e) {
+      console.error("Logout failed:", e);
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -118,7 +137,7 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
                     <FontAwesomeIcon icon={faUser} size="lg" style={{ color: "orangered" }} />
                   </div>
                   <div>
-                    <p style={{ color: '#fff', marginTop: '10px' }}>{user.full_name}</p>
+                    <p style={{ color: '#fff', marginTop: '10px' }}>{user?.full_name}</p>
                   </div>
                 </div>
 
@@ -129,10 +148,7 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
                     <hr />
                     <p
                       style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        dispatch(clearUser());
-                        navigate("/login");
-                      }}
+                      onClick={handleLogout}
                     >
                       Logout
                     </p>

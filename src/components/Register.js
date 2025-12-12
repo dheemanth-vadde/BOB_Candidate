@@ -1,15 +1,16 @@
 // src/pages/Register.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import panaImage from "../assets/pana.png";
-import logoImage from "../assets/bob-logo.png";
+import logoImage from "../assets/bob-logo1.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import CryptoJS from "crypto-js";
+import JSEncrypt from "jsencrypt";
 
 const Register = () => {
-  const SECRET_KEY = "fdf4-832b-b4fd-ccfb9258a6b3";
+  const [publicKey, setPublicKey] = useState("");
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -21,70 +22,75 @@ const Register = () => {
 //   const [otp, setOtp] = useState("");
 // const [mfaToken, setMfaToken] = useState("");
 // const [showOtpInput, setShowOtpInput] = useState(false);
- const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const encryptPassword = (password) => {
-    return CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
+  useEffect(() => {
+    fetch("/public_key.pem")
+      .then(res => res.text())
+      .then(key => setPublicKey(key))
+      .catch(err => console.error("Failed to load public key:", err));
+  }, []);
+  
+  const hashPassword = (password) => {
+    return CryptoJS.SHA256(password).toString(); // hex string
+  };
+
+  const encryptCredentials = (email, password, publicKey) => {
+    const encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+
+    const data = `${email}|${password}`;
+    const encrypted = encrypt.encrypt(data);
+
+    return encrypted; // base64 encrypted string
   };
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
- const handleRegister = async (e) => {
-  e.preventDefault();
-  const { name, email, phone, password, confirmPassword } = form;
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    const { name, email, phone, password, confirmPassword } = form;
 
-  if (!name || !email || !phone || !password || !confirmPassword) {
-    return alert("All fields are required");
-  }
-  if (password !== confirmPassword) {
-    return alert("Passwords do not match");
-  }
+    if (!name || !email || !phone || !password || !confirmPassword) {
+      return alert("All fields are required");
+    }
+    if (password !== confirmPassword) {
+      return alert("Passwords do not match");
+    }
 
-  try {
-   // const encryptedPassword = encryptPassword(password);
-    // 1. Register user via your backend
-    await axios.post("https://dev.bobjava.sentrifugo.com:8443/test-auth-app/api/v1/candidate-auth/candidate-register", {
-    // await axios.post("http://localhost:5000/api/auth/candidate-register", {
-      name,
-      email,
-      phone,
-      password: password,
-    });
+    if (!publicKey) {
+      alert("Public key not loaded yet!");
+      return;
+    }
 
-    // 2. Immediately try to log in (to trigger MFA)
-    // const loginRes = await axios.post("https://bobbe.sentrifugo.com/api/auth/candidate-login", {
-    //   email,
-    //   password,
-    // });
+    const hashedPassword = hashPassword(password);
+    const encryptedCredentials = encryptCredentials(email, hashedPassword, publicKey);
 
-    // // 3. If MFA is required, show OTP input
-    // if (loginRes.data.mfa_required) {
-    //   setMfaToken(loginRes.data.mfa_token);
-    //   setShowOtpInput(true);
-    // } else {
-    //   // No MFA required, login directly
-    //   localStorage.setItem("access_token", loginRes.data.access_token);
-    //   navigate("/dashboard");
-    // }
-    // localStorage.setItem("access_token",loginRes.data.access_token);
-    navigate("/login");
-  } catch (err) {
-    console.error(err);
+    try {
+      // 1. Register user via your backend
+      await axios.post("https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/register", {
+        fullName: name,
+        mobileNumber: Number(phone),
+        credentials: encryptedCredentials,
+      });
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
 
-    if (err.response) {
-      // Example: API returns 409 Conflict if user exists
-      if (err.response.status === 400) {
-        alert("User already exists. Please login instead.");
-      } else {
-        // Or check message returned by backend
-        const msg = err.response.data?.message || "Registration/Login failed";
-        alert(msg);
+      if (err.response) {
+        // Example: API returns 409 Conflict if user exists
+        if (err.response.status === 400) {
+          alert("User already exists. Please login instead.");
+        } else {
+          // Or check message returned by backend
+          const msg = err.response.data?.message || "Registration/Login failed";
+          alert(msg);
+        }
       }
     }
-  }
-};
+  };
 // const handleVerifyOtp = async () => {
 //   try {
 //     const res = await axios.post("https://dev-0rb6h2oznbwkonhz.us.auth0.com/oauth/token", {
@@ -102,23 +108,21 @@ const Register = () => {
 //   }
 // };
 
-
-
   return (
     <div className="login-container">
       <div className="left-panel">
         <img src={panaImage} alt="Illustration" />
-        <h2>बैंक ऑफ़ बड़ौदा</h2>
-        <h3>Bank of Baroda</h3>
+        {/* <h2>बैंक ऑफ़ बड़ौदा</h2>
+        <h3>Bank of Baroda</h3> */}
       </div>
 
       <div className="right-panel">
         <div className="logo" style={{ marginBottom: '15px' }}>
           <img src={logoImage} alt="Logo" />
-          <h4>Register</h4>
+          <h4 className="mt-1">Welcome to Candidate Login</h4>
         </div>
 
-        <form onSubmit={handleRegister} className="d-flex flex-column w-50 align-self-center">
+        <form onSubmit={handleRegister} className="login_form">
           {/* <button
             className="back-button"
             onClick={() => navigate("/login")}
@@ -126,30 +130,33 @@ const Register = () => {
             ← Login
           </button> */}
 
-          <label>Full Name</label>
-          <input name="name" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
+          <label>Full Name as per Aadhar <span className="text-danger">*</span></label>
+          <input name="name" onChange={handleChange} required/>
 
-          <label>Email</label>
-          <input type="email" name="email" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
+          <label>Date of Birth <span className="text-danger">*</span></label>
+          <input type="date" name="dob" onChange={handleChange} required/>
 
-          <label>Phone</label>
-          <input type="text" name="phone" onChange={handleChange} required style={{ borderRadius: "5px", backgroundColor: "#fff", border: "1px solid #ccc", padding: '8px' }}/>
+          <label>Mobile Number <span className="text-danger">*</span></label>
+          <input type="text" name="phone" onChange={handleChange} required/>
 
-          <label>Password</label>
+          <label>Email <span className="text-danger">*</span></label>
+          <input type="email" name="email" onChange={handleChange} required/>
+
+          <label>Password <span className="text-danger">*</span></label>
           <div style={{ position: "relative" }}>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               onChange={handleChange}
               required
-              style={{
-                borderRadius: "5px",
-                backgroundColor: "#fff",
-                border: "1px solid #ccc",
-                padding: "8px",
-                width: "100%",
-                paddingRight: "40px",
-              }}
+              // style={{
+              //   borderRadius: "5px",
+              //   backgroundColor: "#fff",
+              //   border: "1px solid #ccc",
+              //   padding: "8px",
+              //   width: "100%",
+              //   paddingRight: "40px",
+              // }}
             />
             <FontAwesomeIcon
               icon={showPassword ? faEye : faEyeSlash}
@@ -157,31 +164,32 @@ const Register = () => {
               style={{
                 position: "absolute",
                 right: "10px",
-                top: "50%",
+                top: "35%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
                 color: "#666",
               }}
+              size="sm"
               title={showPassword ? "Hide password" : "Show password"}
             />
           </div>
 
 
-          <label>Confirm Password</label>
+          <label>Confirm Password <span className="text-danger">*</span></label>
           <div style={{ position: "relative" }}>
             <input
               type={showConfirmPassword ? "text" : "password"}
               name="confirmPassword"
               onChange={handleChange}
               required
-              style={{
-                borderRadius: "5px",
-                backgroundColor: "#fff",
-                border: "1px solid #ccc",
-                padding: "8px",
-                width: "100%",
-                paddingRight: "40px",
-              }}
+              // style={{
+              //   borderRadius: "5px",
+              //   backgroundColor: "#fff",
+              //   border: "1px solid #ccc",
+              //   padding: "8px",
+              //   width: "100%",
+              //   paddingRight: "40px",
+              // }}
             />
             <FontAwesomeIcon
               icon={showConfirmPassword ? faEye : faEyeSlash}
@@ -189,18 +197,19 @@ const Register = () => {
               style={{
                 position: "absolute",
                 right: "10px",
-                top: "50%",
+                top: "35%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
                 color: "#666",
               }}
+              size="sm"
               title={
                 showConfirmPassword ? "Hide password" : "Show password"
               }
             />
           </div>
 
-          <button type="submit" className="login-button mt-4">REGISTER</button>
+          <button type="submit" className="login-button mt-2 mb-2">Register</button>
           {/* {showOtpInput && (
   <>
     <input
@@ -213,8 +222,8 @@ const Register = () => {
 )} */}
 
 
-          <p className="register-link">
-            Already a user? <Link to="/login">Login here</Link>
+          <p className="register-link mb-0">
+            Already registered? <Link to="/login">Login</Link>
           </p>
         </form>
       </div>

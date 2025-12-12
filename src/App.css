@@ -149,9 +149,9 @@ font-family: 'Noto Sans';
         }
         
         .dropzone {
-            border: 2px dashed #a0b3d1;
+            border: 2px solid #a0b3d1;
             border-radius: 0.75rem;
-            padding: 3rem;
+            padding: 2rem;
             background-color: #f7faff;
             cursor: pointer;
             transition: background-color 0.3s ease;
@@ -172,7 +172,7 @@ font-family: 'Noto Sans';
             margin-top: 1rem;
             font-weight: 500;
             color: var(--text-dark);
-            font-size: 14px;
+            font-size: 0.875rem;
         }
         
         .dropzone-text span {
@@ -540,7 +540,7 @@ body {
 
 .error {
   color: red;
-   font-size: 12px;
+   font-size: 0.75rem;
    margin-top: 4px;
    display: block;
  }
@@ -649,7 +649,7 @@ font-family: 'Noto Sans';
 }
 
 .notification_heading{
-  color:#162b75 !important;
+  color:#42579f !important;
   font-size:16px  !important;
   font-weight:500 !important;
   padding:10px 0 !important
@@ -658,4 +658,58 @@ font-family: 'Noto Sans';
 .App {
   background-color: #efefef;
   min-height: 100vh;
+}
+
+.tab_headers {
+  font-size: 16px;
+  color: #42579f !important;
+  font-weight: 500;
+  /* margin-bottom: 1rem; */
+}
+
+.blue-button {
+  border: 1px solid #42579f !important;
+  color: #42579f !important;
+}
+
+.profile_table_th {
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #42579f !important;
+  color: #fff !important;
+  padding: 0.5rem;
+}
+
+.profile_table_td {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.5rem;
+}
+
+.icon-circle {
+  width: 35px;
+  height: 35px;
+  border: 1px solid #8ba0d3;   /* Light blue-grey border */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #42579f;                 /* Icon color */
+  background: #f7f9fc;            /* Subtle light background */
+  transition: 0.2s ease-in-out;
+}
+
+.grey-label {
+  font-size: 0.875rem;
+  color: #6e6e6e;
+  font-weight: 500;
+}
+
+.styled-input {
+  font-size: 0.75rem !important;
+  color: #6e6e6e !important;
+  width: 250px !important;
+  padding: 0.4rem !important;
+  margin-top: 0.25rem !important;
 }
