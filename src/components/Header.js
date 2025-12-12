@@ -29,11 +29,13 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
     try {
       const res = await axios.post(
         "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/logout",
+        {},
         {
           headers: {
             "X-Client": "candidate",
             "Content-Type": "application/json"
-          }
+          },
+          withCredentials: true
         }
       );
       dispatch(clearUser());

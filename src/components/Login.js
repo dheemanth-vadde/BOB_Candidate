@@ -48,7 +48,7 @@ const Login = () => {
     e.preventDefault();
 
     if (!publicKey) {
-      alert("Public key not loaded yet!");
+      toast.error("Public key not loaded yet!");
       return;
     }
 

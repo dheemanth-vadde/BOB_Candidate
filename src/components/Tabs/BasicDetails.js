@@ -1,9 +1,41 @@
+import { faCheckCircle, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react'
+import deleteIcon from '../../assets/delete-icon.png';
+import editIcon from '../../assets/edit-icon.png';
+import viewIcon from '../../assets/view-icon.png';
 
 const BasicDetails = ({ goNext, goBack }) => {
 	const [isDisabledPerson, setIsDisabledPerson] = useState("No");
   const [isExService, setIsExService] = useState("No");
 	const [twinSibling, setTwinSibling] = useState("No");
+	const [disabilityCertificate, setDisabilityCertificate] = useState(null);
+	const [serviceCertificate, setServiceCertificate] = useState(null);
+
+	const handleDisabilityFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setDisabilityCertificate(file);
+  };
+
+	const handleDisabilityBrowse = () => {
+		document.getElementById("disabilityCertificate").click();
+	};
+
+	const handleServiceFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setServiceCertificate(file);
+  };
+
+	const handleServiceBrowse = () => {
+		document.getElementById("serviceCertificate").click();
+	};
+
+	const formatFileSize = (size) => {
+		if (!size) return "";
+		const kb = size / 1024;
+		if (kb < 1024) return kb.toFixed(1) + " KB";
+		return (kb / 1024).toFixed(1) + " MB";
+	};
 
 	const handleSubmit = (e) => {
     e.preventDefault();
@@ -37,6 +69,11 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="fullName" className="form-label">Full Name as per Aadhar Card <span className="text-danger">*</span></label>
+						<input type="text" className="form-control" id="fullName" />
+					</div>
+
+					<div className="col-md-3 col-sm-12 mt-2">
+						<label htmlFor="fullName" className="form-label">Full Name as per SSC/Birth certificate <span className="text-danger">*</span></label>
 						<input type="text" className="form-control" id="fullName" />
 					</div>
 
@@ -175,10 +212,10 @@ const BasicDetails = ({ goNext, goBack }) => {
 						<input type="text" className="form-control" id="altNumber" />
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					{/* <div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="currentCTC" className="form-label">Current CTC (in Lakhs) <span className="text-danger">*</span></label>
 						<input type="text" className="form-control" id="currentCTC" />
-					</div>
+					</div> */}
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="socailMediaLink" className="form-label">Socail Media Profile Link</label>
@@ -272,6 +309,117 @@ const BasicDetails = ({ goNext, goBack }) => {
 							<option value="50% - 100%">50% - 100%</option>
 						</select>
 					</div>
+
+					<div className="col-md-3 col-sm-12 mt-2">
+						<label htmlFor="scribeRequirement" className="form-label">Scribe Requirement</label>
+						<select
+							className="form-select"
+							id="scribeRequirement"
+							// value={formData.gender}
+							// onChange={handleChange}
+							disabled={isDisabledPerson === "No"}
+						>
+							<option value="Others 1">Others 1</option>
+							<option value="Other 2">Other 2</option>
+						</select>
+					</div>
+
+					<div className="col-md-6 col-sm-12 mt-2">
+						<label htmlFor="disabilityCertificate" className="form-label">Upload Certificate</label>
+						{!disabilityCertificate && (
+						<div
+							className="border rounded d-flex flex-column align-items-center justify-content-center"
+							style={{
+								minHeight: "100px",
+								cursor: isDisabledPerson === 'No' ? "not-allowed" : "pointer",
+								opacity: isDisabledPerson === 'No' ? 0.6 : 1
+							}}
+							onClick={isDisabledPerson === 'Yes' ? handleDisabilityBrowse : undefined}
+						>
+							{/* Upload Icon */}
+							<FontAwesomeIcon
+								icon={faUpload}
+								className="me-2 text-secondary"
+							/>
+
+							{/* Upload Text */}
+							<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
+							Click to upload or drag and drop
+							</div>
+
+							<div className="text-muted" style={{ fontSize: "12px" }}>
+							Max: 2MB picture
+							</div>
+
+							{/* Hidden File Input */}
+							<input
+								id="disabilityCertificate"
+								type="file"
+								accept=".jpg,.jpeg,.png,.pdf"
+								style={{ display: "none" }}
+								onChange={handleDisabilityFileChange}
+							/>
+						</div>
+						)}
+
+						{/* Show File Name */}
+						{disabilityCertificate && (
+							<div
+								className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
+								style={{
+									border: "2px solid #bfc8e2",
+									borderRadius: "8px",
+									background: "#f7f9fc"
+								}}
+							>
+								{/* LEFT SIDE: Check icon + File name + size */}
+								<div className="d-flex align-items-center">
+									<FontAwesomeIcon
+										icon={faCheckCircle}
+										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									/>
+
+									<div>
+										<div style={{ fontWeight: 600, color: "#42579f" }}>
+											{disabilityCertificate.name}
+										</div>
+										<div className="text-muted" style={{ fontSize: "12px" }}>
+											{formatFileSize(disabilityCertificate.size)}
+										</div>
+									</div>
+								</div>
+
+								{/* RIGHT SIDE: View / Edit / Delete */}
+								<div className="d-flex gap-2">
+
+									{/* View */}
+									<img
+										src={viewIcon}
+										alt="View"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => window.open(URL.createObjectURL(disabilityCertificate), "_blank")}
+									/>
+
+									{/* Edit → triggers file re-upload */}
+									<img
+										src={editIcon}
+										alt="Edit"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => document.getElementById("disabilityCertificate").click()}
+									/>
+
+									{/* Delete */}
+									<img
+										src={deleteIcon}
+										alt="Delete"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => setDisabilityCertificate(null)}
+									/>
+
+								</div>
+							</div>
+						)}
+						</div>
 					</div>
 
 					<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
@@ -306,37 +454,134 @@ const BasicDetails = ({ goNext, goBack }) => {
 						<label htmlFor="servicePeriod" className="form-label">Service Period (in Months)</label>
 						<input type="number" className="form-control" id="servicePeriod" disabled={isExService === "No"} />
 					</div>
+					<div className='col-md-6 d-flex flex-column'>
+						<div className="col-md-12 col-sm-12 d-grid">
+							<div>
+								<label className="form-label">
+									Have you already secured regular employment under the Central Govt. in a civil post?
+								</label>
+							</div>
 
-					<div className="col-md-6 col-sm-12 mt-3 d-grid">
-						<div>
-							<label className="form-label">
-								Have you already secured regular employment under the Central Govt. in a civil post?
-							</label>
+							<div>
+								<input type="radio" id="employmentSecuredYes" name="employmentSecured" value="Yes" />
+								<label htmlFor="employmentSecuredYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
+
+								<input type="radio" id="employmentSecuredNo" name="employmentSecured" value="No" style={{ marginLeft: '1rem' }} />
+								<label htmlFor="employmentSecuredNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+							</div>
 						</div>
 
-						<div>
-							<input type="radio" id="employmentSecuredYes" name="employmentSecured" value="Yes" />
-							<label htmlFor="employmentSecuredYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
+						<div className="col-md-12 col-sm-12 mt-3 d-grid">
+							<div>
+								<label className="form-label">
+									If Yes, then are you at present serving at a post lower than the one advertised?
+								</label>
+							</div>
 
-							<input type="radio" id="employmentSecuredNo" name="employmentSecured" value="No" style={{ marginLeft: '1rem' }} />
-							<label htmlFor="employmentSecuredNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+							<div>
+								<input type="radio" id="lowerPostYes" name="lowerPostStatus" value="Yes" />
+								<label htmlFor="lowerPostYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
+
+								<input type="radio" id="lowerPostNo" name="lowerPostStatus" value="No" style={{ marginLeft: '1rem' }} />
+								<label htmlFor="lowerPostNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+							</div>
 						</div>
 					</div>
+					<div className="col-md-6 col-sm-12 mt-2">
+						<label htmlFor="serviceCertificate" className="form-label">Upload Certificate</label>
+						{!serviceCertificate && (
+						<div
+							className="border rounded d-flex flex-column align-items-center justify-content-center"
+							style={{
+								minHeight: "100px",
+								cursor: isExService === 'No' ? "not-allowed" : "pointer",
+								opacity: isExService === 'No' ? 0.6 : 1
+							}}
+							onClick={isExService === 'Yes' ? handleServiceBrowse : undefined}
+						>
+							{/* Upload Icon */}
+							<FontAwesomeIcon
+								icon={faUpload}
+								className="me-2 text-secondary"
+							/>
 
-					<div className="col-md-6 col-sm-12 mt-3 d-grid">
-						<div>
-							<label className="form-label">
-								If Yes, then are you at present serving at a post lower than the one advertised?
-							</label>
+							{/* Upload Text */}
+							<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
+							Click to upload or drag and drop
+							</div>
+
+							<div className="text-muted" style={{ fontSize: "12px" }}>
+							Max: 2MB picture
+							</div>
+
+							{/* Hidden File Input */}
+							<input
+								id="serviceCertificate"
+								type="file"
+								accept=".jpg,.jpeg,.png,.pdf"
+								style={{ display: "none" }}
+								onChange={handleServiceFileChange}
+							/>
 						</div>
+						)}
 
-						<div>
-							<input type="radio" id="lowerPostYes" name="lowerPostStatus" value="Yes" />
-							<label htmlFor="lowerPostYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
+						{/* Show File Name */}
+						{serviceCertificate && (
+							<div
+								className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
+								style={{
+									border: "2px solid #bfc8e2",
+									borderRadius: "8px",
+									background: "#f7f9fc"
+								}}
+							>
+								{/* LEFT SIDE: Check icon + File name + size */}
+								<div className="d-flex align-items-center">
+									<FontAwesomeIcon
+										icon={faCheckCircle}
+										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									/>
 
-							<input type="radio" id="lowerPostNo" name="lowerPostStatus" value="No" style={{ marginLeft: '1rem' }} />
-							<label htmlFor="lowerPostNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
-						</div>
+									<div>
+										<div style={{ fontWeight: 600, color: "#42579f" }}>
+											{serviceCertificate.name}
+										</div>
+										<div className="text-muted" style={{ fontSize: "12px" }}>
+											{formatFileSize(serviceCertificate.size)}
+										</div>
+									</div>
+								</div>
+
+								{/* RIGHT SIDE: View / Edit / Delete */}
+								<div className="d-flex gap-2">
+
+									{/* View */}
+									<img
+										src={viewIcon}
+										alt="View"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => window.open(URL.createObjectURL(serviceCertificate), "_blank")}
+									/>
+
+									{/* Edit → triggers file re-upload */}
+									<img
+										src={editIcon}
+										alt="Edit"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => document.getElementById("serviceCertificate").click()}
+									/>
+
+									{/* Delete */}
+									<img
+										src={deleteIcon}
+										alt="Delete"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => setServiceCertificate(null)}
+									/>
+
+								</div>
+							</div>
+						)}
 					</div>
 					</div>
 

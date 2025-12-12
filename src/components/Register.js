@@ -8,12 +8,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import CryptoJS from "crypto-js";
 import JSEncrypt from "jsencrypt";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const [publicKey, setPublicKey] = useState("");
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
+    dob: "",
     email: "",
     phone: "",
     password: "",
@@ -24,6 +26,7 @@ const Register = () => {
 // const [showOtpInput, setShowOtpInput] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   useEffect(() => {
     fetch("/public_key.pem")
@@ -51,9 +54,9 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    const { name, email, phone, password, confirmPassword } = form;
+    const { name, email, phone, password, confirmPassword, dob } = form;
 
-    if (!name || !email || !phone || !password || !confirmPassword) {
+    if (!name || !email || !phone || !password || !confirmPassword || !dob) {
       return alert("All fields are required");
     }
     if (password !== confirmPassword) {
@@ -73,40 +76,26 @@ const Register = () => {
       await axios.post("https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/register", {
         fullName: name,
         mobileNumber: Number(phone),
+        dateOfBirth: dob,
         credentials: encryptedCredentials,
       });
-      navigate("/login");
+      setShowVerificationModal(true);
+      // navigate("/login");
     } catch (err) {
       console.error(err);
 
       if (err.response) {
         // Example: API returns 409 Conflict if user exists
         if (err.response.status === 400) {
-          alert("User already exists. Please login instead.");
+          toast.error("User already exists. Please login instead.");
         } else {
           // Or check message returned by backend
           const msg = err.response.data?.message || "Registration/Login failed";
-          alert(msg);
+          toast.error(msg);
         }
       }
     }
   };
-// const handleVerifyOtp = async () => {
-//   try {
-//     const res = await axios.post("https://dev-0rb6h2oznbwkonhz.us.auth0.com/oauth/token", {
-//       grant_type: "http://auth0.com/oauth/grant-type/mfa-otp",
-//       client_id: "YOUR_CLIENT_ID", // 🔁 replace with real ID
-//       mfa_token: mfaToken,
-//       otp,
-//     });
-
-//     localStorage.setItem("access_token", res.data.access_token);
-//     alert("Registration + OTP verified!");
-//     navigate("/dashboard");
-//   } catch (err) {
-//     alert("OTP verification failed.");
-//   }
-// };
 
   return (
     <div className="login-container">
@@ -210,23 +199,31 @@ const Register = () => {
           </div>
 
           <button type="submit" className="login-button mt-2 mb-2">Register</button>
-          {/* {showOtpInput && (
-  <>
-    <input
-      placeholder="Enter OTP"
-      value={otp}
-      onChange={(e) => setOtp(e.target.value)}
-    />
-    <button onClick={handleVerifyOtp}>Verify OTP</button>
-  </>
-)} */}
-
 
           <p className="register-link mb-0">
             Already registered? <Link to="/login">Login</Link>
           </p>
         </form>
       </div>
+
+      {showVerificationModal && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal">
+            <p style={{ fontSize: '1rem', fontWeight: 500 }}>We've sent a verification link to your Email.<br />
+              Please check your inbox and verify to continue.</p>
+
+            <button 
+              onClick={() => {
+                setShowVerificationModal(false);
+                navigate("/login");   // redirect ONLY after closing modal
+              }}
+              className="ok-btn"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

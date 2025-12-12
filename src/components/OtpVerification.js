@@ -60,7 +60,8 @@ const OtpVerification = () => {
           headers: {
             "X-Client": "candidate",
             "Content-Type": "application/json"
-          }
+          },
+					withCredentials: true
         }
       );
 

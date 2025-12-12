@@ -119,15 +119,18 @@ const [sameAsCorrespondence, setSameAsCorrespondence] = useState(false);
 				</div>
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="pincode" className="form-label">Pin <span className="text-danger">*</span></label>
-					<input
-						type="text"
-						className="form-control"
+					<select
+						className="form-select"
 						id="pincode"
-						// value={formData.education_qualification || ''}
+						// value={formData.gender}
 						// onChange={handleChange}
 						value={corrAddress.pincode}
 						onChange={handleCorrChange}
-					/>
+					>
+						<option value="500033">500033</option>
+						<option value="500034">500034</option>
+						<option value="500080">500080</option>
+					</select>
 				</div>
 
 				<div className="col-md-12 col-sm-12 mt-3 d-flex align-items-center gap-2 pb-3 border-bottom">
@@ -207,16 +210,19 @@ const [sameAsCorrespondence, setSameAsCorrespondence] = useState(false);
 				</div>
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="pincode" className="form-label">Pin <span className="text-danger">*</span></label>
-					<input
-						type="text"
-						className="form-control"
+					<select
+						className="form-select"
 						id="pincode"
-						// value={formData.education_qualification || ''}
+						// value={formData.gender}
 						// onChange={handleChange}
 						value={permAddress.pincode}
 						onChange={handlePermChange}
 						disabled={sameAsCorrespondence}
-					/>
+					>
+						<option value="500033">500033</option>
+						<option value="500034">500034</option>
+						<option value="500080">500080</option>
+					</select>
 				</div>
 
 				<div className="d-flex justify-content-between">
