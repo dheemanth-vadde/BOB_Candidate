@@ -268,6 +268,34 @@
   font-weight: 500;
 }
 
+
+/* Accordion styling */
+.bob-accordion .accordion-item {
+  border: 1px solid #ddd !important;
+  margin-bottom: 10px;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.bob-accordion .accordion-header button {
+  background: #f8f9fa !important;
+  color: #004e9a !important;
+  font-weight: 600;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: none;
+  box-shadow: none !important;
+}
+
+.bob-accordion .accordion-header button:not(.collapsed) {
+  /* background: #004e9a !important; */
+  color: #004e9a !important ;
+}
+
+.bob-accordion .accordion-body {
+  background: #fff;
+  padding: 15px;
+}
 /* === Responsive === */
 @media (max-width: 991px) {
   .bob-photo-box,

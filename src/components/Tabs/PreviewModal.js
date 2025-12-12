@@ -1,16 +1,16 @@
-import React from 'react';
-import { Modal, Placeholder } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from "react";
+import { Modal, Accordion } from "react-bootstrap";
 import "../../css/PreviewModal.css";
 import logo_Bob from "../../assets/bob-logo.png";
 import sign from "../../assets/download.png";
-const PreviewModal = ({ 
-  show, 
-  onHide, 
-  previewData, 
-  onBack, 
+
+const PreviewModal = ({
+  show,
+  onHide,
+  previewData,
+  onBack,
   onEditProfile,
-  onProceedToPayment 
+  onProceedToPayment,
 }) => {
   return (
     <Modal
@@ -24,20 +24,24 @@ const PreviewModal = ({
         {/* ===== HEADER ===== */}
         <div className="bob-header">
           <div className="fw-semibold text-dark small mb-1">
-            Advt. No:- <span className="fw-bold">BOB/HRM/REC/ADVT/2025/17</span>
+            Advt. No:-{" "}
+            <span className="fw-bold">BOB/HRM/REC/ADVT/2025/17</span>
           </div>
           <div className="fw-semibold bob-header-title">
-            Position for Application:- Deputy Manager: Product - ONDC (Open Network for Digital Commerce)
+            Position for Application:- Deputy Manager: Product - ONDC (Open
+            Network for Digital Commerce)
           </div>
         </div>
 
-        {/* ===== PERSONAL DETAILS ===== */}
-        <div className="bob-section p-2">
-  <h6 className="bob-section-title">Personal Details</h6>
-
-  <div className="personal-details-wrapper">
-    <table className="table table-bordered bob-table w-100 mb-0">
-      <tbody>
+        {/* ===== ACCORDION ===== */}
+        <Accordion defaultActiveKey="0" className="bob-accordion">
+          {/* === PERSONAL DETAILS === */}
+          <Accordion.Item eventKey="0">
+            <Accordion.Header>Personal Details</Accordion.Header>
+            <Accordion.Body>
+              <div className="personal-details-wrapper">
+                <table className="table table-bordered bob-table w-100 mb-0">
+                 <tbody>
         <tr>
           <td className="fw-bold" style={{ width: "20%" }}>Full Name</td>
           <td colSpan={4} style={{ width: "60%" }}>
@@ -158,153 +162,163 @@ const PreviewModal = ({
           <td colSpan={5}>{previewData.personalDetails.location3}</td>
         </tr>
       </tbody>
-    </table>
-  </div>
-</div>
+                </table>
+              </div>
+            </Accordion.Body>
+          </Accordion.Item>
 
-        {/* ===== EDUCATION DETAILS ===== */}
-        <div className="bob-section p-2">
-          <h6 className="bob-section-title">Education Details</h6>
-          <div className="table-responsive">
-            <table className="table table-bordered bob-table">
-              <thead className="table-header">
-                <tr>
-                  <th>S. No</th>
-                  <th>Onboard/University</th>
-                  <th>School/College</th>
-                  <th>Degree</th>
-                  <th>Specialization</th>
-                  <th>From Date</th>
-                  <th>To Date</th>
-                  <th>Percentage</th>
-                </tr>
-              </thead>
-              <tbody>
-                {previewData.education.map((edu, idx) => (
-                  <tr key={idx}>
-                    <td>{idx + 1}</td>
-                    <td>{edu.board}</td>
-                    <td>{edu.school}</td>
-                    <td>{edu.degree}</td>
-                    <td>{edu.subject}</td>
-                    <td>{edu.from}</td>
-                    <td>{edu.to}</td>
-                    <td>{edu.marks}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          {/* === EDUCATION DETAILS === */}
+          <Accordion.Item eventKey="1">
+            <Accordion.Header>Education Details</Accordion.Header>
+            <Accordion.Body>
+              <div className="table-responsive">
+                <table className="table table-bordered bob-table">
+                  <thead className="table-header">
+                    <tr>
+                      <th>S. No</th>
+                      <th>Onboard/University</th>
+                      <th>School/College</th>
+                      <th>Degree</th>
+                      <th>Specialization</th>
+                      <th>From Date</th>
+                      <th>To Date</th>
+                      <th>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.education.map((edu, idx) => (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{edu.board}</td>
+                        <td>{edu.school}</td>
+                        <td>{edu.degree}</td>
+                        <td>{edu.subject}</td>
+                        <td>{edu.from}</td>
+                        <td>{edu.to}</td>
+                        <td>{edu.marks}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Accordion.Body>
+          </Accordion.Item>
 
-        {/* ===== EXPERIENCE DETAILS ===== */}
-        <div className="bob-section p-2">
-          <h6 className="bob-section-title">Experience Details</h6>
-
-          {/* Experience Summary Cards */}
-          <div className="row g-3 mb-4">
-            <div className="col-md-4">
-              <div className="exp-card text-center">
-                <div className="text-muted small">Total Experience</div>
-                <div className="fw-semibold text-bob-blue fs-6">
-                  {previewData.experienceSummary?.total || 'N/A'}
+          {/* === EXPERIENCE DETAILS === */}
+          <Accordion.Item eventKey="2">
+            <Accordion.Header>Experience Details</Accordion.Header>
+            <Accordion.Body>
+              {/* Experience Summary Cards */}
+              <div className="row g-3 mb-4">
+                <div className="col-md-4">
+                  <div className="exp-card text-center">
+                    <div className="text-muted small">Total Experience</div>
+                    <div className="fw-semibold text-bob-blue fs-6">
+                      {previewData.experienceSummary?.total || "N/A"}
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div className="exp-card text-center">
+                    <div className="text-muted small">
+                      Relevant Experience
+                    </div>
+                    <div className="fw-semibold text-bob-blue fs-6">
+                      {previewData.experienceSummary?.relevant || "N/A"}
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div className="exp-card text-center">
+                    <div className="text-muted small">
+                      Current Designation
+                    </div>
+                    <div className="fw-semibold text-bob-blue fs-6">
+                      {previewData.experienceSummary?.designation || "N/A"}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="col-md-4">
-              <div className="exp-card text-center">
-                <div className="text-muted small">Relevant Experience</div>
-                <div className="fw-semibold text-bob-blue fs-6">
-                  {previewData.experienceSummary?.relevant || 'N/A'}
-                </div>
+
+              {/* Experience Table */}
+              <div className="table-responsive">
+                <table className="table table-bordered bob-table">
+                  <thead className="table-header">
+                    <tr>
+                      <th>S. No</th>
+                      <th>Organization</th>
+                      <th>Post</th>
+                      <th>Role</th>
+                      <th>From Date</th>
+                      <th>To Date</th>
+                      <th>Duration</th>
+                      <th>Brief Description of Work</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.experience?.map((exp, idx) => (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{exp.org}</td>
+                        <td>{exp.designation}</td>
+                        <td>{exp.department}</td>
+                        <td>{exp.from}</td>
+                        <td>{exp.to}</td>
+                        <td>{exp.duration}</td>
+                        <td>{exp.nature}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </Accordion.Body>
+          </Accordion.Item>
+        </Accordion>
+
+        {/* ===== DECLARATION + BUTTONS ===== */}
+        <div className="mt-4 text-center">
+          <div className="captcha-box mb-3">
+            <span className="captcha-text">X A Y 2 U</span>
+            <input type="text" className="captcha-input" />
+          </div>
+
+          <div className="declaration-box text-start">
+            <div className="form-check mb-2">
+              <input type="checkbox" className="form-check-input" id="decl1" />
+              <label htmlFor="decl1" className="form-check-label">
+                I acknowledge that any misrepresentation, omission, or
+                furnishing of incorrect information may render my application
+                liable for rejection at any stage of the recruitment process.
+              </label>
             </div>
-            <div className="col-md-4">
-              <div className="exp-card text-center">
-                <div className="text-muted small">Current Designation</div>
-                <div className="fw-semibold text-bob-blue fs-6">
-                  {previewData.experienceSummary?.designation || 'N/A'}
-                </div>
-              </div>
+            <div className="form-check">
+              <input type="checkbox" className="form-check-input" id="decl2" />
+              <label htmlFor="decl2" className="form-check-label">
+                I further confirm that all documents uploaded in this
+                application have been provided voluntarily and as per my own
+                understanding.
+              </label>
             </div>
           </div>
 
-          {/* Experience Table */}
-          <div className="table-responsive">
-            <table className="table table-bordered bob-table">
-              <thead className="table-header">
-                <tr>
-                  <th>S. No</th>
-                  <th>Organization</th>
-                  <th>Post</th>
-                  <th>Role</th>
-                  <th>From Date</th>
-                  <th>To Date</th>
-                  <th>Duration</th>
-                  <th>Brief Description of Work</th>
-                </tr>
-              </thead>
-              <tbody>
-                {previewData.experience?.map((exp, idx) => (
-                  <tr key={idx}>
-                    <td>{idx + 1}</td>
-                    <td>{exp.org}</td>
-                    <td>{exp.designation}</td>
-                    <td>{exp.department}</td>
-                    <td>{exp.from}</td>
-                    <td>{exp.to}</td>
-                    <td>{exp.duration}</td>
-                    <td>{exp.nature}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Captcha + Declaration */}
-          <div className="mt-4 text-center">
-            <div className="captcha-box mb-3">
-              <span className="captcha-text">X A Y 2 U</span>
-              <input type="text" className="captcha-input" />
-            </div>
-
-            <div className="declaration-box text-start">
-              <div className="form-check mb-2">
-                <input type="checkbox" className="form-check-input" id="decl1" />
-                <label htmlFor="decl1" className="form-check-label">
-                 I acknowledge that any misrepresentation, omission, or furnishing of incorrect information may render my application liable for rejection at any stage of the recruitment process.
-                </label>
-              </div>
-              <div className="form-check">
-                <input type="checkbox" className="form-check-input" id="decl2" />
-                <label htmlFor="decl2" className="form-check-label">
-                 I further confirm that all documents uploaded in this application have been provided voluntarily and as per my own interest and understanding.
-                </label>
-              </div>
-            </div>
-
-            {/* Buttons */}
-            <div className="d-flex justify-content-between align-items-center mt-4">
-              <button 
-                className="btn btn-outline-secondary"
-                onClick={onBack}
+          {/* Footer Buttons */}
+          <div className="d-flex justify-content-between align-items-center mt-4">
+            <button className="btn btn-outline-secondary" onClick={onBack}>
+              ← Back
+            </button>
+            <div className="d-flex gap-3">
+              <button
+                className="btn btn-outline-primary"
+                onClick={onEditProfile}
               >
-                ← Back
+                Edit Profile Details
               </button>
-              <div className="d-flex gap-3">
-                <button 
-                  className="btn btn-outline-primary"
-                  onClick={onEditProfile}
-                >
-                  Edit Profile Details
-                </button>
-                <button 
-                  className="btn btn-bob-orange"
-                  onClick={onProceedToPayment}
-                >
-                  Proceed for Payment
-                </button>
-              </div>
+              <button
+                className="btn btn-bob-orange"
+                onClick={onProceedToPayment}
+              >
+                Proceed for Payment
+              </button>
             </div>
           </div>
         </div>
