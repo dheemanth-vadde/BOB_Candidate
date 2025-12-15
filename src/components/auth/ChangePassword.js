@@ -1,27 +1,32 @@
 // src/pages/Login.jsx
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import axios from "axios";
-import "../css/Login.css";
-import pana from "../assets/pana.png";
-import BobLogo from "../assets/bob-logo1.jpg";
+import "../../css/Login.css";
+import pana from "../../assets/pana.png";
+import BobLogo from "../../assets/bob-logo1.jpg";
 import { useDispatch } from 'react-redux';
-import { setUser, setAuthUser } from '../store/userSlice';
+// import { setUser, setAuthUser } from '../../store/userSlice';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import CryptoJS from "crypto-js";
 import JSEncrypt from "jsencrypt";
 import { toast } from "react-toastify";
 
-const Login = () => {
+const ChangePassword = () => {
   const [publicKey, setPublicKey] = useState("");
   const dispatch = useDispatch();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
   const [unverifiedUserId, setUnverifiedUserId] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+	const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+	const location = useLocation();
+
+	const email = location.state?.email;
+	const otp = location.state?.otp;
 
   useEffect(() => {
     fetch("/public_key.pem")
@@ -59,9 +64,10 @@ const Login = () => {
     try {
       // Step 1: Login API
       const res = await axios.post(
-        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/login",
+        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/reset-password",
         {
-          credentials: encryptedCredentials
+          credentials: encryptedCredentials,
+					otp: otp
         },
         {
           headers: {
@@ -70,13 +76,9 @@ const Login = () => {
           }
         }
       );
-      console.log("Login Success:", res.data);
-      navigate("/otp-verification", {
-        state: {
-          email: email  // send email for OTP validation
-        }
-      });
-
+      console.log("Password Change Success:", res.data);
+			toast.success("Password changed successfully. Please login with your new password.");
+      navigate("/login");
     } catch (err) {
       console.log(err);
       toast.error(err.response?.data?.message || "Login failed. Please try again.");
@@ -98,78 +100,71 @@ const Login = () => {
         </div>
 
         <form className="login_form" onSubmit={handleLogin}>
-          <label>Email Id:</label>
-          <input
-            type="email"
-            value={email}
-            required
-            placeholder="Enter email"
-            onChange={(e) => setEmail(e.target.value)}
-            className="mb-4 text-muted"
-          />
-
-          <label>Password:</label>
-          <div style={{ position: 'relative' }}>
+          {/* PASSWORD */}
+          <label>New Password:</label>
+          <div style={{ position: "relative" }}>
             <input
               type={showPassword ? "text" : "password"}
+              placeholder="Enter new password"
               value={password}
               required
-              placeholder="Enter password"
               onChange={(e) => setPassword(e.target.value)}
-              className="text-muted"
-              style={{ paddingRight: '40px', marginBottom: '0.25rem' }}
+              style={{ paddingRight: "40px", marginBottom: "0.25rem" }}
             />
             <FontAwesomeIcon
               icon={showPassword ? faEye : faEyeSlash}
               onClick={() => setShowPassword(!showPassword)}
               style={{
-                position: 'absolute',
-                right: '15px',
-                top: '45%',
-                transform: 'translateY(-50%)',
-                cursor: 'pointer',
-                color: '#666',
+                position: "absolute",
+                right: "15px",
+                top: "45%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#666",
               }}
-              size="sm"
-              title={showPassword ? 'Hide password' : 'Show password'}
             />
           </div>
 
-          <p className="forgot-link mb-4">
-            <Link className="" to="/forgot-password">Forgot Password?</Link>
-          </p>
-
-          {unverifiedUserId && (
-            <button
-              className="resend-btn my-2 mb-3"
-              style={{ borderRadius: "20px", backgroundColor: "#fff", border: "1px solid #ff6b00", padding: '4px 12px', color: "#ff6b00" }}
-              onClick={async () => {
-                try {
-                  await axios.post(
-                    "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/candidate-resend-verification",
-                    { user_id: unverifiedUserId }
-                  );
-                  alert("Verification email sent. Please check your inbox.");
-                } catch (err) {
-                  alert("Failed to resend verification email.");
-                }
+          {/* CONFIRM PASSWORD */}
+          <label className="mt-3">Confirm Password:</label>
+          <div style={{ position: "relative" }}>
+            <input
+              type={showConfirm ? "text" : "password"}
+              placeholder="Re-enter password"
+              value={confirmPassword}
+              required
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              style={{ paddingRight: "40px" }}
+            />
+            <FontAwesomeIcon
+              icon={showConfirm ? faEye : faEyeSlash}
+              onClick={() => setShowConfirm(!showConfirm)}
+              style={{
+                position: "absolute",
+                right: "15px",
+                top: "35%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#666"
               }}
-            >
-              Resend Verification Email
-            </button>
-          )}
+            />
+          </div>
+
+          {/* <p className="forgot-link mb-4">
+            <Link className="" to="/forgot-password">Forgot Password?</Link>
+          </p> */}
 
           <button className="login-button" type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Updating..." : "Update Password"}
           </button>
 
-          <p className="register-link">
+          {/* <p className="register-link">
             New User? <Link to="/register">Register Here</Link>
-          </p>
+          </p> */}
         </form>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default ChangePassword;

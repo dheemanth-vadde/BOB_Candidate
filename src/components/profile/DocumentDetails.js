@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import UploadField from '../UploadField';
+import UploadField from './UploadField';
 
 const uploadFieldsConfig = [
   { key: "photo", label: "Photo", required: true },

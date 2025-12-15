@@ -1,5 +1,5 @@
 import React from "react";
-import "./../css/Stepper.css";
+import "./../../css/Stepper.css";
 
 const Stepper = ({ steps, activeStep }) => {
   return (

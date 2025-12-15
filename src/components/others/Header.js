@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Navbar, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUser } from '@fortawesome/free-solid-svg-icons';
-import logo_Bob from '../assets/logo_Bob.png';
+import { faBell, faChevronDown, faChevronUp, faUser } from '@fortawesome/free-solid-svg-icons';
+// import logo_Bob from '../../assets/logo_Bob.png';
+import bob_logo_2 from '../../assets/new_bob_logo.png'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearUser } from "../store/userSlice";
+import { clearUser } from "../../store/userSlice";
 import axios from 'axios';
 
 const Header = ({ hideIcons, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state?.user?.user);
+  const user = useSelector((state) => state?.user?.user?.data);
   console.log("Header User:", user);
 
   const [showDropdown, setShowDropdown] = useState(false);
@@ -21,6 +22,16 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
     { id: 1, message: "📢 Bank of Baroda posted a new opening.", time: "1h ago", read: true },
     { id: 2, message: "✅ Application submitted successfully.", time: "3h ago", read: true },
   ];
+
+  const getInitials = (fullName = "") => {
+    if (!fullName.trim()) return "";
+    const parts = fullName.trim().split(" ").filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();   // Single word → first letter
+    }
+    // More than one word → take first letter of first two words
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
 
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
@@ -65,9 +76,10 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
         className="py-2"
         style={{ zIndex: 1030, height: "64px" }}
       >
-        <div className="container-fluid">
+        <div className="container-fluid px-4">
           <Navbar.Brand className="fw-bold logobob">
-            <img src={logo_Bob} alt="BobApp Logo" className="me-2" />
+            {/* <img src={logo_Bob} alt="BobApp Logo" className="me-2" /> */}
+            <img src={bob_logo_2} style={{ width: '155px', height: '40px' }} />
           </Navbar.Brand>
 
           {!hideIcons && (
@@ -80,15 +92,15 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
                 style={{
                   backgroundColor: "white",
                   borderRadius: "20%",
-                  width: "30px",
-                  height: "30px",
+                  width: "35px",
+                  height: "35px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
                 onClick={() => setShowNotification((prev) => !prev)}
               >
-                <FontAwesomeIcon icon={faBell} size="lg" style={{ color: "orangered" }} />
+                <FontAwesomeIcon icon={faBell} size="1x" style={{ color: "#42579f" }} />
               </Button>
 
               {/* Notification Popup */}
@@ -122,35 +134,42 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
 
               {/* USER ICON */}
               <div className="position-relative" ref={dropdownRef}>
-                <div className='d-flex align-items-center gap-2'>
+                <div className='d-flex align-items-center gap-2' onClick={() => setShowDropdown((prev) => !prev)} style={{ cursor: 'pointer' }}>
                   <div
-                    onClick={() => setShowDropdown((prev) => !prev)}
                     style={{
                       backgroundColor: "white",
                       borderRadius: "20%",
-                      width: "30px",
-                      height: "30px",
+                      width: "35px",
+                      height: "35px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
                     }}
                   >
-                    <FontAwesomeIcon icon={faUser} size="lg" style={{ color: "orangered" }} />
+                    {/* <FontAwesomeIcon icon={faUser} size="1x" style={{ color: "orangered" }} /> */}
+                    <p className='mb-0' style={{ fontSize: '0.875rem', fontWeight: 600, color: '#42579f' }}>{getInitials(user?.user?.name)}</p>
                   </div>
-                  <div>
-                    <p style={{ color: '#fff', marginTop: '10px' }}>{user?.full_name}</p>
-                  </div>
+                  {showDropdown ? (
+                    <div>
+                      <p style={{ color: '#fff', marginTop: '0.75rem', fontWeight: 500, paddingLeft: '0.5rem' }}>{user?.user?.name} <FontAwesomeIcon icon={faChevronUp} style={{ paddingLeft: '0.5rem' }} /></p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p style={{ color: '#fff', marginTop: '0.75rem', fontWeight: 500, paddingLeft: '0.5rem' }}>{user?.user?.name} <FontAwesomeIcon icon={faChevronDown} style={{ paddingLeft: '0.5rem' }} /></p>
+                    </div>
+                  )}
                 </div>
 
                 {showDropdown && (
                   <div className="position-absolute end-0 mt-2 p-2 bg-white border rounded shadow" style={{ minWidth: "200px" }}>
-                    <p className="mb-1">{user?.full_name}</p>
-                    <p className="mb-0 text-muted">{user?.role}</p>
-                    <hr />
+                    <p className="mb-1">{user?.user?.name}</p>
+                    <p className="my-2 border-bottom text-muted">{user?.role}</p>
+                    {/* <hr /> */}
                     <p
                       style={{ cursor: "pointer" }}
                       onClick={handleLogout}
+                      className='mb-1'
                     >
                       Logout
                     </p>

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import ResumeUpload from "./Tabs/ResumeUpload";
-import ReviewDetails from "./Tabs/ReviewDetails";
-import Stepper from "./Stepper";
-import AddressDetails from "./Tabs/AddressDetails";
-import EducationDetails from "./Tabs/EducationDetails";
-import ExperienceDetails from "./Tabs/ExperienceDetails";
-import DocumentDetails from "./Tabs/DocumentDetails";
-import BasicDetails from "./Tabs/BasicDetails";
+import ResumeUpload from "./ResumeUpload";
+import ReviewDetails from "../Tabs/ReviewDetails";
+import Stepper from "../others/Stepper";
+import AddressDetails from "./AddressDetails";
+import EducationDetails from "./EducationDetails";
+import ExperienceDetails from "./ExperienceDetails";
+import DocumentDetails from "./DocumentDetails";
+import BasicDetails from "./BasicDetails";
 
 const CandidateProfileStepper = ({
   resumeFile,

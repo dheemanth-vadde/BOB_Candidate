@@ -1,14 +1,14 @@
-import pana from "../assets/pana.png";
-import BobLogo from "../assets/bob-logo1.jpg";
+import pana from "../../assets/pana.png";
+import BobLogo from "../../assets/bob-logo1.jpg";
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import '../css/OtpVerification.css';
-import { setUser } from '../store/userSlice';
+import '../../css/OtpVerification.css';
+// import { setUser } from '../../store/userSlice';
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
-const OtpVerification = () => {
+const ChangePasswordVerification = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
 
@@ -49,25 +49,27 @@ const OtpVerification = () => {
 
     try {
       setLoading(true);
-
-      const res = await axios.post(
-        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/verify-otp",
+      const res = await axios.get(
+        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/password-otp-verify",
         {
-          email: email,
-          otp: otpValue
-        },
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          },
+					params: {
+						email: email,
+						otp: otpValue
+					},
+					headers: {
+						"X-Client": "candidate"
+					},
 					withCredentials: true
-        }
+				}
       );
-
       console.log("OTP Verified:", res.data);
-			dispatch(setUser(res.data));
-      navigate("/candidate-portal"); // SUCCESS
+      // dispatch(setUser(res.data));
+      navigate("/change-password", {
+        state: {
+          email: email,  // send email for OTP validation
+					otp: otpValue
+        }
+      }); // SUCCESS
     } catch (err) {
       console.log(err);
       toast.error(err.response?.data?.message || "OTP verification failed. Please try again.");
@@ -75,6 +77,33 @@ const OtpVerification = () => {
       setLoading(false);
     }
   };
+
+    const resendOtp = async () => {
+        if (!email) {
+            toast.error("Email not found!");
+            return;
+        }
+        try {
+            setLoading(true);
+            const res = await axios.get(
+                `https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/resend-otp`,
+                {
+                    params: { email: email },
+                    headers: {
+                        "X-Client": "candidate"
+                    },
+                    withCredentials: true
+                }
+            );
+            toast.success("OTP resent successfully!");
+            console.log("Resend OTP Response:", res.data);
+        } catch (err) {
+            console.log(err);
+            toast.error(err.response?.data?.message || "Failed to resend OTP");
+        } finally {
+            setLoading(false);
+        }
+    };
 
   return (
     <div className="login-container">
@@ -111,7 +140,7 @@ const OtpVerification = () => {
             ))}
           </div>
 
-          <p className="forgot-link mb-4">Resend OTP</p>
+          <p className="forgot-link mb-4" onClick={resendOtp}>Resend OTP</p>
 
           <button className="login-button" type="submit" disabled={loading}>
             {loading ? "Verifying..." : "Verify OTP"}
@@ -122,4 +151,4 @@ const OtpVerification = () => {
   );
 };
 
-export default OtpVerification;
+export default ChangePasswordVerification;

@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import panaImage from "../assets/pana.png";
-import logoImage from "../assets/bob-logo1.jpg";
+import panaImage from "../../assets/pana.png";
+import logoImage from "../../assets/bob-logo1.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import CryptoJS from "crypto-js";
