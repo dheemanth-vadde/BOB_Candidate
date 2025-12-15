@@ -1,9 +1,9 @@
 import { faCheckCircle, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react'
-import deleteIcon from '../../assets/delete-icon.png';
-import editIcon from '../../assets/edit-icon.png';
-import viewIcon from '../../assets/view-icon.png';
+import deleteIcon from '../../../assets/delete-icon.png';
+import editIcon from '../../../assets/edit-icon.png';
+import viewIcon from '../../../assets/view-icon.png';
 
 const BasicDetails = ({ goNext, goBack }) => {
 	const [isDisabledPerson, setIsDisabledPerson] = useState("No");

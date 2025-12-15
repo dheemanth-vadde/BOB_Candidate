@@ -1,16 +1,16 @@
 // CandidatePortal.js
 import React, { useState, useEffect } from 'react';
-import Header from './components/others/Header';
-import ResumeUpload from './components/profile/ResumeUpload';
-import MyDetailsForm from './components/Tabs/MyDetailsForm';
-import ReviewDetails from './components/Tabs/ReviewDetails';
-import RelevantJobs from './components/Tabs/RelevantJobs';
-import AppliedJobs from './components/Tabs/AppliedJobs';
-import Career from './components/Tabs/Career';
-import './css/custom-bootstrap-overrides.css';
-import { apiService } from './services/apiService';
+import Header from './Header';
+import ResumeUpload from '../../components/profile/components/ResumeUpload';
+import MyDetailsForm from '../../components/Tabs/MyDetailsForm';
+import ReviewDetails from '../../components/Tabs/ReviewDetails';
+import RelevantJobs from '../../components/Tabs/RelevantJobs';
+import AppliedJobs from '../../components/Tabs/AppliedJobs';
+import Career from '../../components/Tabs/Career';
+import './../../css/custom-bootstrap-overrides.css';
+import { apiService } from '../../services/apiService';
 import { useSelector } from 'react-redux';
-import CandidateProfileStepper from './components/profile/CandidateProfileStepper';
+import CandidateProfileStepper from '../../components/profile/pages/CandidateProfileStepper';
 import { useLocation } from 'react-router-dom';
 
 const CandidatePortal = () => {

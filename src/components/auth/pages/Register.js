@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import panaImage from "../../assets/pana.png";
-import logoImage from "../../assets/bob-logo1.jpg";
+import panaImage from "../../../assets/pana.png";
+import logoImage from "../../../assets/bob-logo1.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import CryptoJS from "crypto-js";
 import JSEncrypt from "jsencrypt";
 import { toast } from "react-toastify";
+import authApi from "../services/auth.api";
 
 const Register = () => {
   const [publicKey, setPublicKey] = useState("");
@@ -73,7 +74,7 @@ const Register = () => {
 
     try {
       // 1. Register user via your backend
-      await axios.post("https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/register", {
+      await authApi.registerCandidate({
         fullName: name,
         mobileNumber: Number(phone),
         dateOfBirth: dob,

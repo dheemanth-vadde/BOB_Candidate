@@ -1,9 +1,9 @@
 import { faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react'
-import deleteIcon from '../../assets/delete-icon.png';
-import editIcon from '../../assets/edit-icon.png';
-import viewIcon from '../../assets/view-icon.png';
+import deleteIcon from '../../../assets/delete-icon.png';
+import editIcon from '../../../assets/edit-icon.png';
+import viewIcon from '../../../assets/view-icon.png';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons/faCheckCircle';
 
 const ExperienceDetails = ({ goNext, goBack }) => {

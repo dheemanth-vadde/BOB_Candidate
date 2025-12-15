@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, Container, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import Header from "./Header";
+import Header from "../../app/layouts/Header";
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);

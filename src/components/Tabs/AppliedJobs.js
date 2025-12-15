@@ -16,7 +16,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import apiService from "../../services/apiService";
 import { useSelector } from "react-redux";
-import Razorpay from "../others/Razorpay";
+import Razorpay from "../integrations/payments/Razorpay";
 
 const AppliedJobs = () => {
   const [jobs, setJobs] = useState([]);

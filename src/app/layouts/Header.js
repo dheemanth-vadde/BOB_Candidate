@@ -6,8 +6,9 @@ import { faBell, faChevronDown, faChevronUp, faUser } from '@fortawesome/free-so
 import bob_logo_2 from '../../assets/new_bob_logo.png'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearUser } from "../../store/userSlice";
+import { clearUser } from "../../components/auth/store/userSlice";
 import axios from 'axios';
+import authApi from '../../components/auth/services/auth.api';
 
 const Header = ({ hideIcons, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
@@ -38,17 +39,7 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
 
   const handleLogout = async () => {
     try {
-      const res = await axios.post(
-        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/logout",
-        {},
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          },
-          withCredentials: true
-        }
-      );
+      const res = await authApi.logout();
       dispatch(clearUser());
       navigate("/login");
     } catch(e) {

@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './userSlice';
-import digilockerReducer from './digilockerSlice';
+import userReducer from '../components/auth/store/userSlice';
+import digilockerReducer from '../components/integrations/digilocker/digilockerSlice';
 
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';

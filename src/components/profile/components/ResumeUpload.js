@@ -1,12 +1,12 @@
 // components/Tabs/ResumeUpload.jsx
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import '../../css/Resumeupload.css';
+import '../../../css/Resumeupload.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faUpload } from "@fortawesome/free-solid-svg-icons";
-import deleteIcon from '../../assets/delete-icon.png';
-import editIcon from '../../assets/edit-icon.png';
-import viewIcon from '../../assets/view-icon.png';
+import deleteIcon from '../../../assets/delete-icon.png';
+import editIcon from '../../../assets/edit-icon.png';
+import viewIcon from '../../../assets/view-icon.png';
 
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl,goNext,resumePublicUrl }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');

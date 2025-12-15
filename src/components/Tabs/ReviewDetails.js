@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   setDigiLockerConnected,
   setDigiLockerAccessToken
-} from "../../store/digilockerSlice";
+} from "../integrations/digilocker/digilockerSlice";
 import { store } from '../../store';
 
 // Confirmation Modal Component
