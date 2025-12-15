@@ -14,6 +14,7 @@ import apiService from "../../services/apiService";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import KnowMoreModal from "./KnowMoreModal";
+import { mapJobsApiToList } from "../../mappers/jobMapper";
 const RelevantJobs = ({ candidateData = {} }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [departments, setDepartments] = useState([]);
   const [locations, setLocations] = useState([]);
-   const [states, setStates] = useState([]);
+  const [states, setStates] = useState([]);
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [requisitions, setRequisitions] = useState([]);
@@ -137,50 +138,60 @@ const RelevantJobs = ({ candidateData = {} }) => {
   const fetchJobs = async () => {
     try {
       //const jobsResponse = await apiService.getActiveJobs();
-      const jobsResponse = await axios.get('http://192.168.20.115:8082/api/v1/candidate/currentopportunitiescontroller/get-active/jobs',
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      // const jobsResponse = await axios.get('http://192.168.20.115:8082/api/v1/candidate/currentopportunitiescontroller/get-job-positions/active',
+      //   {
+      //     headers: {
+      //       "X-Client": "candidate",
+      //       "Content-Type": "application/json"
+      //     }
+      //   }
+      // );
       //  console.log("jobsResponse",jobsResponse)
       //const jobsData = jobsResponse?.data || [];
-      const jobsData = jobsResponse?.data.data || [];
+      //const jobsData = jobsResponse?.data.data || [];
       // const masterDataResponse = await apiService.getMasterData();
-      const masterDataResponse = await axios.get('http://192.168.20.115:8080/api/all',
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        }
-      )
-      console.log("masterDataResponse", masterDataResponse)
+      // const masterDataResponse = await axios.get('http://192.168.20.115:8080/api/all',
+      //   {
+      //     headers: {
+      //       "X-Client": "candidate",
+      //       "Content-Type": "application/json"
+      //     }
+      //   }
+      // )
+
+      const [jobsRes, masterRes] = await Promise.all([
+        axios.get("http://192.168.20.115:8082/api/v1/candidate/currentopportunitiescontroller/get-job-positions/active", {
+          headers: { "X-Client": "candidate", "Content-Type": "application/json" },
+        }),
+        axios.get("http://192.168.20.115:8080/api/all", {
+          headers: { "X-Client": "candidate", "Content-Type": "application/json" },
+        }),
+      ]);
+
       //const jobsData = jobsResponse || [];
       // const departments = masterDataResponse.departments || [];
       // const locations = masterDataResponse.locations || [];
-      const departments = masterDataResponse.data.departments || [];
-      const locations = masterDataResponse.data.cities || [];
-      const states = masterDataResponse.data.states || [];
+
+
+
+      const jobsData = jobsRes?.data?.data || [];
+
+
+      const departments = masterRes.data.departments || [];
+      const states = masterRes.data.states || [];
+      const locations = masterRes?.data?.cities || [];
       setDepartments(departments);
-      setLocations(locations);
       setStates(states);
+      setLocations(locations);
+      console.log("✅ locations before mapper:", locations);
 
 
-      const mappedJobs = jobsData.map((job) => {
-        const department = departments.find((d) => d.department_id === job.dept_id);
-        const location = locations.find((l) => l.city_id === job.city_id);
-
-        return {
-          ...job,
-          department_name: department ? department.department_name : "Unknown",
-          city_name: location ? location.city_name : "Unknown",
-        };
-      });
-
-      setJobs(mappedJobs);
+      // ✅ Convert new nested structure to old flat model
+      console.log("jobsdata", jobsData)
+      console.log("locationddds", locations)
+      const mappedJobs = mapJobsApiToList(jobsData, locations);
+      console.log(mappedJobs)
+      setJobs(mappedJobs); // use the mapped flat array
     } catch (err) {
       console.error("Error fetching jobs:", err);
     } finally {
@@ -423,7 +434,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
                     </p>
                     <p className="mb-1 text-muted small size35">
                       <span className="subtitle">Department:</span>{" "}
-                      {job.department_name}
+                      {job.dept_name}
                     </p>
                     <p className="mb-1 text-muted small size35">
                       <span className="subtitle">Location:</span>{" "}
@@ -463,10 +474,10 @@ const RelevantJobs = ({ candidateData = {} }) => {
         show={showPreferenceModal}
         onHide={handleClosePreferenceModal}
         selectedJob={selectedJob}
-          applyForm={applyForm}
-         onApplyFormChange={(name, value) =>
-            setApplyForm((prev) => ({ ...prev, [name]: value }))
-          }
+        applyForm={applyForm}
+        onApplyFormChange={(name, value) =>
+          setApplyForm((prev) => ({ ...prev, [name]: value }))
+        }
         states={states}
         locations={locations}
         onPreview={() => {
