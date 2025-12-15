@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "../css/Login.css";
-import pana from "../assets/pana.png";
-import boblogo from "../assets/bob-logo1.jpg";
+import "../../css/Login.css";
+import pana from "../../assets/pana.png";
+import boblogo from "../../assets/bob-logo1.jpg";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -13,20 +13,27 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const res = await axios.post("https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/forgot-password",
+      const res = await axios.get(
+        "https://dev.bobjava.sentrifugo.com:8443/dev-auth-app/api/v1/candidate-auth/forgot-password",
         {
-        params: { email },
-        headers: {
-          "X-Client": "candidate",
-        },
-      });
+          params: { email },   // query param
+          headers: {
+            "X-Client": "candidate",  // required header
+          },
+        }
+      );
 
       toast.success("Reset link sent to your email.");
-      navigate("/login");
+      navigate("/change-password-verification", {
+        state: {
+          email: email  // send email for OTP validation
+        }
+      });
     } catch (error) {
       console.error(error);
-      setMessage("Failed to send reset link. Try again.");
+      toast.error(error.response?.data?.message || "Failed to send reset link. Try again.");
     }
   };
 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { initialMessages, options, responses } from '../data/chatbotData';
-import apiService from '../services/apiService';
-import '../css/Chatbot.css';
+import { initialMessages, options, responses } from '../../data/chatbotData';
+import apiService from '../../services/apiService';
+import '../../css/Chatbot.css';
 import { useSelector } from 'react-redux';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import chatBot from '../../assets/chat-bot-new.png';
 
 const CustomChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -560,11 +561,12 @@ const CustomChatbot = () => {
           </form>
         </div>
       ) : (
-        <button className="chatbot-toggle" onClick={() => setIsOpen(true)}>
-          <svg viewBox="0 0 24 24" width="24" height="24">
-            <path fill="white" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
-          </svg>
-        </button>
+        // <button className="chatbot-toggle" onClick={() => setIsOpen(true)}>
+        //   <svg viewBox="0 0 24 24" width="24" height="24">
+        //     <path fill="white" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
+        //   </svg>
+        // </button>
+        <img src={chatBot} style={{ width: '90px', height: '80px', cursor: 'pointer' }} onClick={() => setIsOpen(true)} />
       )}
     </div>
   );

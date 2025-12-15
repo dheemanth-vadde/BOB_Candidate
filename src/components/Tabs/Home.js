@@ -6,7 +6,7 @@ import careers from "../../assets/opportunities.png";
 import whybob from "../../assets/whybob.png";
 import isbob from "../../assets/isbob.png";
 import "../../css/Career.css";
-import Header from "../Header";
+import Header from "../others/Header";
 import { useNavigate } from "react-router-dom";
  
 const Home = () => {

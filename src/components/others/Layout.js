@@ -2,7 +2,7 @@ import React from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { clearUser } from "../store/userSlice";
+import { clearUser } from "../../store/userSlice";
 
 export default function Layout() {
   const navigate = useNavigate();

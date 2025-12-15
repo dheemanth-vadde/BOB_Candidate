@@ -9,8 +9,8 @@
         }
 
         body {
-font-family: 'Noto Sans';
-            background-color: #333;
+          font-family: 'poppins';
+          background-color: #333;
         }
 
         /* Header */
@@ -365,7 +365,7 @@ body {
   padding: 0;
 }
 body {
-  font-family: 'Noto Sans';
+  font-family: 'poppins';
 }
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -550,7 +550,7 @@ body {
 .job-form input,
 .job-form select,
 .job-form textarea {
-font-family: 'Noto Sans';
+font-family: 'poppins';
   font-size: 13px !important;
   font-weight: 400 !important;;
 }
@@ -715,12 +715,12 @@ font-family: 'Noto Sans';
 }
 
 .accordion_div .accordion-button:not(.collapsed) {
-  background-color: #fff7ed !important;
+  background-color: #FFF7ED !important;
   color: #6e6e6e !important;
 }
 
 .accordion_div .accordion-button:not(.collapsed) {
-  background-color: #fff7ed !important;
+  background-color: #FFF7ED !important;
   color: #6e6e6e !important;
   box-shadow: none !important;
   outline: none !important;
@@ -728,7 +728,7 @@ font-family: 'Noto Sans';
 }
 
 .accordion_div .accordion-button {
-  background-color: #fff7ed !important;
+  background-color: #FFF7ED !important;
   color: #6e6e6e !important;
   box-shadow: none !important;
   outline: none !important;
