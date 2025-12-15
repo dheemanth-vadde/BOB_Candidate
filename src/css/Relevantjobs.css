@@ -14,12 +14,21 @@
 	font-size: 16px;
   font-weight: 600;
 }
-.section-header {
+/* .section-header {
 	color: #162b75 !important;
 	font-weight: 600;
+
+	font-size: 14px;
+} */
 	/* margin-bottom: 15px;
 	padding-bottom: 5px;
 	border-bottom: 1px solid rgba(22, 43, 117, 0.2); */
+.modalwidth .section-header {
+	color: #162b75 !important;
+	font-weight: 600;
+	margin-bottom: 15px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid rgba(22, 43, 117, 0.2);
 	font-size: 14px;
 }
   .job-title{
