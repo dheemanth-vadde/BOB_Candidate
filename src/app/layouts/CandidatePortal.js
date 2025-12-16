@@ -1,12 +1,9 @@
 // CandidatePortal.js
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
-import ResumeUpload from '../../components/profile/components/ResumeUpload';
-import MyDetailsForm from '../../components/Tabs/MyDetailsForm';
-import ReviewDetails from '../../components/Tabs/ReviewDetails';
-import RelevantJobs from '../../components/Tabs/RelevantJobs';
-import AppliedJobs from '../../components/Tabs/AppliedJobs';
-import Career from '../../components/Tabs/Career';
+import RelevantJobs from '../../components/jobs/pages/RelevantJobs';
+import AppliedJobs from '../../components/jobs/pages/AppliedJobs';
+// import Career from '../../components/Tabs/Career';
 import './../../css/custom-bootstrap-overrides.css';
 import { apiService } from '../../services/apiService';
 import { useSelector } from 'react-redux';
@@ -84,8 +81,8 @@ const CandidatePortal = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'career':
-        return <Career candidateData={candidateData} setActiveTab={setActiveTab} />;
+      // case 'career':
+      //   return <Career candidateData={candidateData} setActiveTab={setActiveTab} />;
 
       // case 'resume':
       //   return (

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import ResumeUpload from "../components/ResumeUpload";
-import ReviewDetails from "../../Tabs/ReviewDetails";
 import Stepper from "../../../shared/components/Stepper";
 import AddressDetails from "../components/AddressDetails";
 import EducationDetails from "../components/EducationDetails";

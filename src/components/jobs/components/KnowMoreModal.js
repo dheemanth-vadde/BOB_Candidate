@@ -2,7 +2,7 @@ import React from "react";
 import { Modal } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faCalendar, faUser, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
-import "../../css/Relevantjobs.css";
+import "../../../css/Relevantjobs.css";
 
 const KnowMoreModal = ({ show, onHide, selectedJob }) => {
   if (!selectedJob) return null;

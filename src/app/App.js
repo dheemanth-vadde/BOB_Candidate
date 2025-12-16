@@ -10,7 +10,7 @@ import ForgotPassword from '../components/auth/pages/ForgotPassword';
 import '@fontsource/poppins'; // Defaults to weight 400
 import '@fontsource/poppins/600.css'; // Specific weight
 import Notifications from '../components/others/Notifications';
-import Home from '../components/Tabs/Home';
+// import Home from '../components/Tabs/Home';
 import Tokenexp from '../components/auth/pages/Tokenexp';
 import PrivateRoute from '../components/auth/pages/PrivateRoute';
 import { useEffect, useState } from 'react';

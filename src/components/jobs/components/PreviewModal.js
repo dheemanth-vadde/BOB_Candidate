@@ -1,8 +1,8 @@
 import React from "react";
 import { Modal, Accordion } from "react-bootstrap";
-import "../../css/PreviewModal.css";
-import logo_Bob from "../../assets/bob-logo.png";
-import sign from "../../assets/download.png";
+import "../../../css/PreviewModal.css";
+import logo_Bob from "../../../assets/bob-logo.png";
+import sign from "../../../assets/download.png";
 
 const PreviewModal = ({
   show,

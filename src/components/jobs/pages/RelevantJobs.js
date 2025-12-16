@@ -6,15 +6,16 @@ import {
   faLightbulb
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "react-bootstrap";
-import "../../css/Relevantjobs.css";
+import "../../../css/Relevantjobs.css";
 import { toast } from "react-toastify";
-import PreviewModal from "./PreviewModal";
-import PreferenceModal from "./PreferenceModal";
-import apiService from "../../services/apiService";
+import PreviewModal from "../components/PreviewModal";
+import PreferenceModal from "../components/PreferenceModal";
+import apiService from "../../../services/apiService";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import KnowMoreModal from "./KnowMoreModal";
-import { mapJobsApiToList } from "../../mappers/jobMapper";
+import KnowMoreModal from "../components/KnowMoreModal";
+import { mapJobsApiToList } from "../../jobs/mappers/jobMapper";
+import { mapRequisitionsApiToList } from "../../jobs/mappers/requisitionMapper";
 const RelevantJobs = ({ candidateData = {} }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +116,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
     try {
 
       // const response = await apiService.getReqData();
-      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/currentopportunitiescontroller/get-job-requisition/active',
+      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/current-opportunities/get-job-requisition/active',
         {
           headers: {
             "X-Client": "candidate",
@@ -123,11 +124,11 @@ const RelevantJobs = ({ candidateData = {} }) => {
           }
         }
       );
-      // console.log( "requisitions",response.data.data)
-      if (response) {
-        //setRequisitions(response.data);
-        setRequisitions(response.data.data);
-      }
+      const apiData = response?.data?.data || [];
+      const mappedRequisitions = mapRequisitionsApiToList(apiData);
+
+      console.log("✅ mapped requisitions:", mappedRequisitions);
+      setRequisitions(mappedRequisitions);
     } catch (error) {
       console.error("Error fetching requisitions:", error);
       toast.error("Failed to load requisitions");
@@ -160,7 +161,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
       // )
 
       const [jobsRes, masterRes] = await Promise.all([
-        axios.get("http://192.168.20.115:8082/api/v1/candidate/currentopportunitiescontroller/get-job-positions/active", {
+        axios.get("http://192.168.20.115:8082/api/v1/candidate/current-opportunities/get-job-positions/active", {
           headers: { "X-Client": "candidate", "Content-Type": "application/json" },
         }),
         axios.get("http://192.168.20.115:8080/api/all", {

@@ -2,7 +2,7 @@ import React from "react";
 import { Modal } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLightbulb } from "@fortawesome/free-solid-svg-icons";
-import "../../css/PreferenceModal.css";
+import "../../../css/PreferenceModal.css";
 import { toast } from "react-toastify";
 
 const PreferenceModal = ({

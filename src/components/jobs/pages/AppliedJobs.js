@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
-import Razorpay from "../integrations/payments/Razorpay";
+import Razorpay from "../../integrations/payments/Razorpay";
 
-import "../../css/Relevantjobs.css";
-import apiService from "../../services/apiService";
-import KnowMoreModal from "./KnowMoreModal";
+import "../../../css/Relevantjobs.css";
+import apiService from "../../../services/apiService";
+import KnowMoreModal from "../../jobs/components/KnowMoreModal";
 import axios from "axios";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
