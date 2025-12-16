@@ -304,3 +304,91 @@
   font-size: 11px;
   color: #999;
 }
+/* ==============================
+   SUBMIT REQUEST – BANK STYLE
+================================ */
+.query-section.bank-style {
+  background: #f9fafb;
+  border: 1px solid #e3e7ee;
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+
+.query-section.bank-style .section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f3c88;
+  margin-bottom: 10px;
+}
+
+.query-section.bank-style .form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.query-section.bank-style .form-control,
+.query-section.bank-style .form-select {
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #dfe3ea;
+}
+
+/* ==============================
+   UPLOAD CARD
+================================ */
+.upload-card {
+  height: 110px;
+  border: 1px dashed #cfd4dc;
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.upload-icon {
+  font-size: 18px;
+  color: #1f3c88;
+  margin-bottom: 6px;
+}
+
+.upload-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f3c88;
+}
+
+.upload-subtext {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+/* ==============================
+   ACTION BUTTONS
+================================ */
+.query-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.query-actions .btn {
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 14px;
+}
+
+.query-actions .btn-primary {
+  background: #1f3c88;
+  border-color: #1f3c88;
+}
+
+.query-actions .btn-primary:hover {
+  background: #162d66;
+  border-color: #162d66;
+}
