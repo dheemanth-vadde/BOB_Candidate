@@ -91,14 +91,7 @@
   .form-check-label{
     font-size:12px;
   }
-  .searchinput {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  width: 50% !important;
-  float: right;
-}
+
 .title{
   font-size:12px !important;
 }
@@ -162,4 +155,35 @@ padding: 25px 0;
 	font-size: 12px !important;
 	font-weight: 500 !important;
 }
+/* =========================================================
+ ####SEARCH BAR
+========================================================= */
+.relevant .applied-search {
+display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  width: 280px !important;
+}
 
+.relevant .search-icon {
+  color: rgb(255, 112, 67);
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relevant .search-input {
+  border: none;
+  outline: none;
+  padding: 9px 12px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.relevant .search-input::placeholder {
+  color: #999;
+}

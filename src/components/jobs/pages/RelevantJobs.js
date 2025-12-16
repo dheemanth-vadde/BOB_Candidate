@@ -296,7 +296,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
   };
 
   return (
-    <div className="mx-4 my-3">
+    <div className="mx-4 my-3 relevant">
       {/* 🔹 Search and Requisition Dropdown */}
       <div className="d-flex justify-content-end mb-3 row">
         <div className="d-flex justify-content-center" style={{ flex: 1 }}>
@@ -318,21 +318,19 @@ const RelevantJobs = ({ candidateData = {} }) => {
           </div>
         </div>
 
-        <div className="input-group searchinput" style={{ maxWidth: "350px" }}>
-          <span
-            className="input-group-text"
-            style={{ backgroundColor: "rgb(255, 112, 67)" }}
-          >
-            <FontAwesomeIcon icon={faSearch} style={{ color: "#fff" }} />
-          </span>
-          <input
-            type="text"
-            className="form-control title"
-            placeholder="Search by Job title or Req code..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+         <div className="applied-search">
+               
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by Job title or Req code..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                 <span className="search-icon">
+                  <FontAwesomeIcon icon={faSearch} />
+                </span>
+              </div>
       </div>
 
       {/* Filters + Job Cards */}

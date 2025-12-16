@@ -1,0 +1,306 @@
+/* ==============================
+   HEADER
+================================ */
+.modal-title {
+  color: #1f3c88 !important;
+}
+
+.job-subtitle {
+  font-size: 13px;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+/* ==============================
+   STATUS STEPPER
+================================ */
+.status-stepper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 24px 0 32px;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+
+/* Connector line */
+.step::after {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #dcdcdc;
+  z-index: -1;
+}
+
+.step.completed::after {
+  background: #28a745;
+}
+
+.step.current::after {
+  background: #1f3c88;
+}
+
+.step:last-child::after {
+  display: none;
+}
+
+/* ==============================
+   CIRCLE
+================================ */
+.circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  margin: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Completed */
+.circle.completed {
+  background: #28a745;
+  color: #fff;
+}
+
+/* Current (BLUE RING + WHITE DOT) */
+.circle.current {
+  border: 3px solid #1f3c88;
+  background: #1f3c88;
+}
+
+.circle.current::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+}
+
+/* Pending */
+.circle.pending {
+  border: 2px solid #d0d0d0;
+  background: #f5f5f5;
+}
+
+.circle.pending::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: #d0d0d0;
+  border-radius: 50%;
+  position: absolute;
+}
+
+/* ==============================
+   LABELS
+================================ */
+.step-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+  color: #6c757d;
+}
+
+.step.current .step-label {
+  color: #1f3c88;
+}
+
+/* Status text */
+.step-status {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.step-status.completed {
+  color: #28a745;
+}
+
+.step-status.current {
+  color: #1f3c88;
+}
+
+.step-status.pending {
+  color: #999;
+}
+
+/* ==============================
+   QUERY SECTION
+================================ */
+.query-section {
+  background: #f9fafb;
+  border: 1px solid #e6e9ef;
+  padding: 18px 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.query-section h6 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f3c88;
+  margin-bottom: 16px;
+}
+
+.query-section .form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.query-section .form-control,
+.query-section .form-select {
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #dfe3ea;
+}
+
+.query-section textarea {
+  min-height: 80px !important;      /* Bank UI height */
+  resize: none !important;
+}
+
+/* Upload box */
+.upload-box {
+  /* height: 120px; */
+  border: 1px  solid #cfd4dc;
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.upload-box small {
+   font-size: 11px;
+  color: #1f3c88;   /* Bank blue */
+  font-weight: 500;
+}
+
+/* ==============================
+   BUTTONS
+================================ */
+.modal-actions {
+	display: inline;
+	/* justify-content: flex-end; */
+	gap: 10px;
+	margin-top: 13px !important;
+	/* width: 10px !important; */
+	/* float: right; */
+}
+.modal-actions .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 14px;
+}
+
+.modal-actions .btn-primary {
+  background: #1f3c88;
+  border-color: #1f3c88;
+  border-radius: 8px;
+  padding: 6px 20px;
+  font-size: 14px;
+}
+
+.modal-actions .btn-primary:hover {
+  background: #162d66;
+  border-color: #162d66;
+}
+
+/* ==============================
+   REQUEST HISTORY
+================================ */
+.request-history {
+  margin-top: 24px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f3c88;
+  margin-bottom: 12px;
+}
+
+/* Table */
+.history-table th {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.history-table td {
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+/* Status colors */
+.status.approved {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status.pending {
+  color: #f0ad4e;
+  font-weight: 600;
+}
+
+/* ==============================
+   HISTORY THREAD
+================================ */
+.history-thread {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.thread-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.thread-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Avatar */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.thread-item.recruiter .avatar {
+  background: #ff7043;
+}
+
+.thread-item.candidate .avatar {
+  background: #1f3c88;
+}
+
+.thread-item p {
+  font-size: 13px;
+  margin: 4px 0;
+}
+
+.thread-item .time {
+  font-size: 11px;
+  color: #999;
+}
