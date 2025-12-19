@@ -187,3 +187,26 @@ display: flex;
 .relevant .search-input::placeholder {
   color: #999;
 }
+
+.relevant .pagination .page-link {
+  border-radius: 4px;
+  margin: 0 8px;
+  color: #1a2c71;
+}
+
+.relevant .pagination .page-item.active .page-link {
+  background-color: #ff6a00;
+  border-color: #ff6a00;
+  color: #fff;
+}
+
+.relevant .pagination .page-link:hover {
+  background-color: #ffe5d1;
+}
+
+.filter-icon{
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  margin-left: 5px;
+}

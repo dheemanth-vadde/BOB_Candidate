@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLightbulb } from "@fortawesome/free-solid-svg-icons";
 import "../../../css/PreferenceModal.css";
 import { toast } from "react-toastify";
-
+import bulb from "../../../assets/bulb-icon.png";
 const PreferenceModal = ({
   show,
   onHide,
@@ -17,12 +17,17 @@ const PreferenceModal = ({
 }) => {
 
   console.log("selectedjob",selectedJob)
-  // ✅ Helper: Get cities based on selected state
-  const getCitiesByState = (stateName) => {
-    const stateObj = states.find((s) => s.state_name === stateName);
-    if (!stateObj) return [];
-    return locations.filter((l) => l.state_id === stateObj.state_id);
+  // ✅ Helper: Get cities based on selected state ID
+  const getCitiesByState = (stateId) => {
+    if (!stateId) return [];
+    return locations.filter((l) => l.state_id === stateId);
   };
+
+  // // Helper: Get state name by ID
+  // const getStateNameById = (stateId) => {
+  //   const state = states.find(s => s.state_id === stateId);
+  //   return state ? state.state_name : '';
+  // };
 
   // ✅ Handle state/location change
   const handleInputChange = (e) => {
@@ -69,30 +74,17 @@ const PreferenceModal = ({
 
       {/* ===== HEADER ===== */}
       <Modal.Header className="border-0 p-0">
-        <div className="bob-pref-header">
-          <div>
-            <div className="bob-pref-header-top">
-              <span>Advt. No:-</span>
-              <span>
-                {selectedJob?.requisition_code || "BOB/HRM/REC/ADVT/2025/17"}
-              </span>
-            </div>
-            <div className="bob-pref-header-title">
-              <span>Position for Application:-</span>
-              <span>
-                {selectedJob?.position_title || "Deputy Manager: Product - ONDC"}
-              </span>
-            </div>
-          </div>
-          <div className="bob-pref-info">
-            <FontAwesomeIcon icon={faLightbulb} />
-            <span style={{ color: "#ff6f00" }}>
-              All profile-related data will be dynamically sourced from the candidate's
-              profile records
-            </span>
-          </div>
+      <div className="bob-pref-header">
+        <div className="bob-pref-advt">
+          <span>Digital Contractual 2025</span>
         </div>
-      </Modal.Header>
+
+        <div className="bob-pref-position">
+          {selectedJob?.position_title ||
+            "Deputy Manager : Product - ONDC (Open Network for Digital Commerce)"}
+        </div>
+      </div>
+    </Modal.Header>
 
       {/* ===== BODY ===== */}
       <Modal.Body className="bob-pref-body">
@@ -110,7 +102,7 @@ const PreferenceModal = ({
             >
               <option value="">Select State</option>
               {states.map((s) => (
-                <option key={s.state_id} value={s.state_name}>
+                <option key={s.state_id} value={s.state_id}>
                   {s.state_name}
                 </option>
               ))}
@@ -128,7 +120,7 @@ const PreferenceModal = ({
             >
               <option value="">Select Location</option>
               {getCitiesByState(applyForm.state1).map((loc) => (
-                <option key={loc.city_id} value={loc.city_name}>
+                <option key={loc.city_id} value={loc.city_id}>
                   {loc.city_name}
                 </option>
               ))}
@@ -145,7 +137,7 @@ const PreferenceModal = ({
             >
               <option value="">Select State</option>
               {states.map((s) => (
-                <option key={s.state_id} value={s.state_name}>
+                <option key={s.state_id} value={s.state_id}>
                   {s.state_name}
                 </option>
               ))}
@@ -163,7 +155,7 @@ const PreferenceModal = ({
             >
               <option value="">Select Location</option>
               {getCitiesByState(applyForm.state2).map((loc) => (
-                <option key={loc.city_id} value={loc.city_name}>
+                <option key={loc.city_id} value={loc.city_id}>
                   {loc.city_name}
                 </option>
               ))}
@@ -181,7 +173,7 @@ const PreferenceModal = ({
             >
               <option value="">Select State</option>
               {states.map((s) => (
-                <option key={s.state_id} value={s.state_name}>
+                <option key={s.state_id} value={s.state_id}>
                   {s.state_name}
                 </option>
               ))}
@@ -199,7 +191,7 @@ const PreferenceModal = ({
             >
               <option value="">Select Location</option>
               {getCitiesByState(applyForm.state3).map((loc) => (
-                <option key={loc.city_id} value={loc.city_name}>
+                <option key={loc.city_id} value={loc.city_id}>
                   {loc.city_name}
                 </option>
               ))}
@@ -208,7 +200,7 @@ const PreferenceModal = ({
 
           <div className="col-md-3">
             <label className="form-label">
-              Expected CTC(in Lakhs) <span className="text-danger">*</span>
+              Expected CTC(in Lakhs) 
             </label>
             <input
               type="text"
@@ -221,22 +213,29 @@ const PreferenceModal = ({
           </div>
 
           <div className="col-md-3">
-            <label className="form-label">
-              Exam/ Interview Center <span className="text-danger">*</span>
-            </label>
-            <select
-              className="form-control"
-              name="examCenter"
-              value={applyForm.examCenter}
-              onChange={handleInputChange}
-            >
-              <option value="">Select Center</option>
-              {locations.map((loc) => (
-                <option key={loc.city_id} value={loc.city_name}>
-                  {loc.city_name}
-                </option>
-              ))}
-            </select>
+    <label className="form-label">
+      Exam/ Interview Center <span className="text-danger">*</span>
+    </label>
+    <input
+      type="text"
+      className="form-control"
+      name="examCenter"
+      value={applyForm.examCenter}
+      onChange={handleInputChange}
+      placeholder="Enter exam center"
+    />
+  </div>
+
+          {/* ✅ INFO TEXT HERE */}
+          <div className="bob-pref-info-bottom">
+            <img 
+    src={bulb}
+    alt="Info" 
+    style={{ width: '18px', height: '18px' }} 
+  />
+            <span>
+              All personal information will be automatically retrieved from the candidate's profile.
+            </span>
           </div>
         </div>
       </Modal.Body>

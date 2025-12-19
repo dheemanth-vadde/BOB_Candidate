@@ -3,7 +3,7 @@ import { Modal, Accordion } from "react-bootstrap";
 import "../../../css/PreviewModal.css";
 import logo_Bob from "../../../assets/bob-logo.png";
 import sign from "../../../assets/download.png";
-
+import { useSelector } from "react-redux";
 const PreviewModal = ({
   show,
   onHide,
@@ -12,6 +12,19 @@ const PreviewModal = ({
   onEditProfile,
   onProceedToPayment,
 }) => {
+
+
+  
+  const preferenceData = useSelector(
+    (state) => state.preference.preferenceData
+  );
+  
+if (!previewData) {
+    return null;
+  }
+
+  console.log("Stored preference:", preferenceData);
+
   return (
     <Modal
       show={show}
@@ -41,127 +54,162 @@ const PreviewModal = ({
             <Accordion.Body>
               <div className="personal-details-wrapper">
                 <table className="table table-bordered bob-table w-100 mb-0">
-                 <tbody>
-        <tr>
-          <td className="fw-bold" style={{ width: "20%" }}>Full Name</td>
-          <td colSpan={4} style={{ width: "60%" }}>
-            {previewData.personalDetails.fullName}
-          </td>
+                  <tbody>
+                    <tr>
+                      <td className="fw-bold" style={{ width: "20%" }}>Full Name</td>
+                      <td colSpan={4} style={{ width: "60%" }}>
+                        {previewData.personalDetails.fullName}
+                      </td>
 
-          {/* ✅ Make photo span the full height of the table */}
-           <td
-            rowSpan="3"
-            className="bob-photo-cell align-top text-center"
-            style={{ width: "20%", verticalAlign: "top" }}
-          >
-           <div className="bob-photo-box">
-    <img
-      src={logo_Bob}
-      alt="Applicant"
-      className="img-fluid img1"
-    />
-  <img
-      src={sign}
-      alt="Applicant"
-      className="img-fluid img2"
-    />
-  </div>
-  {/* <div className="bob-photo-box1">
+                      {/* ✅ Make photo span the full height of the table */}
+                      <td
+                        rowSpan="3"
+                        className="bob-photo-cell align-top text-center"
+                        style={{ width: "20%", verticalAlign: "top" }}
+                      >
+                        <div className="bob-photo-box">
+                          <img
+                            src={logo_Bob}
+                            alt="Applicant"
+                            className="img-fluid img1"
+                          />
+                          <img
+                            src={sign}
+                            alt="Applicant"
+                            className="img-fluid img2"
+                          />
+                        </div>
+                        {/* <div className="bob-photo-box1">
    
    
   </div> */}
 
 
-          </td> 
-        
-         
-        </tr>
+                      </td>
 
-        <tr>
-          <td className="fw-bold">Address</td>
-          <td colSpan={4}>{previewData.personalDetails.address}</td>
-        </tr>
 
-        <tr>
-          <td className="fw-bold">Permanent Address</td>
-          <td colSpan={4}>{previewData.personalDetails.permanentAddress}</td>
-        </tr>
+                    </tr>
 
-        <tr >
-          <td className="fw-bold" >Mobile</td>
-          <td colSpan={2}>{previewData.personalDetails.mobile}</td>
-          <td className="fw-bold">Email</td>
-          <td colSpan={2}>{previewData.personalDetails.email}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Address</td>
+                      <td colSpan={4}>{previewData.personalDetails.address}</td>
+                    </tr>
 
-        <tr >
-          <td className="fw-bold">Mother’s Name</td>
-          <td  colSpan={2}>{previewData.personalDetails.motherName || "-"}</td>
-          <td className="fw-bold">Father’s Name</td>
-          <td  colSpan={2}>{previewData.personalDetails.fatherName}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Permanent Address</td>
+                      <td colSpan={4}>{previewData.personalDetails.permanentAddress}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Gender</td>
-          <td colSpan={2}>{previewData.personalDetails.gender || "M"}</td>
-          <td className="fw-bold">Religion</td>
-          <td colSpan={2}>{previewData.personalDetails.religion}</td>
-        </tr>
+                    <tr >
+                      <td className="fw-bold" >Mobile</td>
+                      <td colSpan={2}>{previewData.personalDetails.mobile}</td>
+                      <td className="fw-bold">Email</td>
+                      <td colSpan={2}>{previewData.personalDetails.email}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Category</td>
-          <td colSpan={2}  >{previewData.personalDetails.category || "General"}</td>
-          <td className="fw-bold">Caste/Community</td>
-          <td colSpan={2}>{previewData.personalDetails.caste || "Brahmin"}</td>
-        </tr>
+                    <tr >
+                      <td className="fw-bold">Mother’s Name</td>
+                      <td colSpan={2}>{previewData.personalDetails.motherName || "-"}</td>
+                      <td className="fw-bold">Father’s Name</td>
+                      <td colSpan={2}>{previewData.personalDetails.fatherName}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Date of Birth</td>
-          <td colSpan={2}>{previewData.personalDetails.dob}</td>
-          <td className="fw-bold">Age (as on cut-off date)</td>
-          <td colSpan={2}>{previewData.personalDetails.age || "30 years 11 months 1 day"}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Gender</td>
+                      <td colSpan={2}>{previewData.personalDetails.gender || "M"}</td>
+                      <td className="fw-bold">Religion</td>
+                      <td colSpan={2}>{previewData.personalDetails.religion}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Ex-serviceman</td>
-          <td colSpan={2}>{previewData.personalDetails.exService || "N/A"}</td>
-          <td className="fw-bold">Physical Disability</td>
-          <td colSpan={2}>{previewData.personalDetails.physicalDisability || "N"}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Category</td>
+                      <td colSpan={2}  >{previewData.personalDetails.category || "General"}</td>
+                      <td className="fw-bold">Caste/Community</td>
+                      <td colSpan={2}>{previewData.personalDetails.caste || "Brahmin"}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Exam Center</td>
-          <td colSpan={2}>{previewData.personalDetails.examCenter || "Hyderabad"}</td>
-          <td className="fw-bold">Nationality</td>
-          <td colSpan={2}>{previewData.personalDetails.nationality}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Date of Birth</td>
+                      <td colSpan={2}>{previewData.personalDetails.dob}</td>
+                      <td className="fw-bold">Age (as on cut-off date)</td>
+                      <td colSpan={2}>{previewData.personalDetails.age || "30 years 11 months 1 day"}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Marital Status</td>
-          <td colSpan={2}>{previewData.personalDetails.maritalStatus}</td>
-          <td className="fw-bold">Name of Spouse</td>
-          <td colSpan={2}>{previewData.personalDetails.spouseName || "-"}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Ex-serviceman</td>
+                      <td colSpan={2}>{previewData.personalDetails.exService || "N/A"}</td>
+                      <td className="fw-bold">Physical Disability</td>
+                      <td colSpan={2}>{previewData.personalDetails.physicalDisability || "N"}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Current CTC</td>
-          <td colSpan={2}>{previewData.personalDetails.currentCTC || "11"}</td>
-          <td className="fw-bold">Expected CTC</td>
-          <td colSpan={2}>{previewData.personalDetails.expectedCTC}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Exam Center</td>
+                      <td colSpan={2}>{previewData.personalDetails.examCenter || "Hyderabad"}</td>
+                      <td className="fw-bold">Nationality</td>
+                      <td colSpan={2}>{previewData.personalDetails.nationality}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Location Preference 1</td>
-          <td colSpan={2}>{previewData.personalDetails.location1}</td>
-          <td className="fw-bold">Location Preference 2</td>
-          <td colSpan={2}>{previewData.personalDetails.location2}</td>
-        </tr>
+                    <tr>
+                      <td className="fw-bold">Marital Status</td>
+                      <td colSpan={2}>{previewData.personalDetails.maritalStatus}</td>
+                      <td className="fw-bold">Name of Spouse</td>
+                      <td colSpan={2}>{previewData.personalDetails.spouseName || "-"}</td>
+                    </tr>
+                    <tr>
+                      <td className="fw-bold">Twin Sibling</td>
+                      <td colSpan={2}></td>
+                      <td className="fw-bold">Details</td>
+                      <td colSpan={2}></td>
+                    </tr>
+                    <tr>
+                      <td className="fw-bold">Current CTC</td>
+                      <td colSpan={2}>{previewData.personalDetails.currentCTC || "11"}</td>
+                      <td className="fw-bold">Expected CTC</td>
+                      <td colSpan={2}>{previewData.personalDetails.expectedCTC}</td>
+                    </tr>
 
-        <tr>
-          <td className="fw-bold">Location Preference 3</td>
-          <td colSpan={5}>{previewData.personalDetails.location3}</td>
-        </tr>
-      </tbody>
+                    <tr>
+                      <td className="fw-bold">Location Preference 1</td>
+                      <td colSpan={2}>{previewData.personalDetails.location1}</td>
+                      <td className="fw-bold">Location Preference 2</td>
+                      <td colSpan={2}>{previewData.personalDetails.location2}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="fw-bold">Location Preference 3</td>
+                      <td colSpan={2}>{previewData.personalDetails.location3}</td>
+                      <td className="fw-bold">Social Media Profile links</td>
+                      <td colSpan={2}>{previewData.personalDetails.location3}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="fw-bold">Already secured regular employment under the Central Govt. in civil post?</td>
+                      <td colSpan={2}>{previewData.personalDetails.centralGovtEmployment || "No"}</td>
+                      <td className="fw-bold">Serving at a post lower than the one advertised?</td>
+                      <td colSpan={2}>{previewData.personalDetails.servingLowerPost || "No"}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="fw-bold">Family member of those who died in 1984 riots?</td>
+                      <td colSpan={2}>{previewData.personalDetails.familyMember1984 || "No"}</td>
+                      <td className="fw-bold">Belong to Religious Minority Community?</td>
+                      <td colSpan={2}>{previewData.personalDetails.religiousMinority || "No"}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="fw-bold">Whether serving in Govt./ quasi Govt./ Public Sector Undertaking?</td>
+                      <td colSpan={2}>{previewData.personalDetails.servingInGovt || "No"}</td>
+                      <td className="fw-bold">Disciplinary action in any of your previous/ Current Employment?</td>
+                      <td colSpan={2}>{previewData.personalDetails.disciplinaryAction || "No"}</td>
+                    </tr>
+
+                    {previewData.personalDetails.disciplinaryAction === "Yes" && (
+                      <tr>
+                        <td className="fw-bold">Details of disciplinary proceedings, if Any</td>
+                        <td colSpan={5}>{previewData.personalDetails.disciplinaryDetails || "N/A"}</td>
+                      </tr>
+                    )}
+                  </tbody>
                 </table>
               </div>
             </Accordion.Body>

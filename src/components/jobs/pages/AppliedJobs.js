@@ -8,6 +8,7 @@ import "../../../css/Appliedjobs.css";
 import apiService from "../../../services/apiService";
 import TrackApplicationModal from "../../jobs/components/TrackApplicationModal";
 import axios from "axios";
+import OfferLetterModal from "../../jobs/components/OfferLetterModal";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -18,6 +19,7 @@ const AppliedJobs = () => {
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showTrackModal, setShowTrackModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
   console.log("user111",userData)
@@ -35,7 +37,7 @@ const AppliedJobs = () => {
       // : [];
 
 
-      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/62394083-ded6-4861-9ccb-39e36024a98d',
+      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/70721aa9-0b00-4f34-bea2-3bf268f1c212',
         {
           headers: {
             "X-Client": "candidate",
@@ -126,7 +128,7 @@ const AppliedJobs = () => {
     {/* ===== PAGE HEADER ===== */}
     <div className="d-flex justify-content-between align-items-center mb-4">
       <h5 className="mb-0 fw-semibold">Job Applications</h5>
-
+     
       {/* Search Bar */}
       <div className="applied-search">
        
@@ -191,20 +193,28 @@ const AppliedJobs = () => {
 
         {/* Footer */}
         <div className="job-footer">
-          <a
-  href="#"
-  className="link"
-  onClick={(e) => {
-    e.preventDefault();
-    setSelectedJob(job);
-    setShowTrackModal(true);
-  }}
->
-  Track Application
-</a>
-          {job.application_status === "Offered" && (
-            <a href="#" className="link">View Offer</a>
-          )}
+          {/* {job.application_status === "Offered" && ( */}
+            <>
+              <button
+                className="footer-link"
+                onClick={() => setShowOfferModal(true)}
+              >
+                View Offer
+              </button>
+
+              <span className="footer-separator">|</span>
+            </>
+          {/* )} */}
+
+          <button
+            className="footer-link"
+            onClick={() => {
+              setSelectedJob(job);
+              setShowTrackModal(true);
+            }}
+          >
+            Track Application
+          </button>
         </div>
       </div>
     ))}
@@ -212,6 +222,11 @@ const AppliedJobs = () => {
   show={showTrackModal}
   onHide={() => setShowTrackModal(false)}
   job={selectedJob}
+/>
+<OfferLetterModal
+  show={showOfferModal}
+  onHide={() => setShowOfferModal(false)}
+  pdfUrl="/offers/offer_letter_123.pdf" // from API
 />
   </div>
   );

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon  } from "@fortawesome/react-fontawesome";
+
 import {
   faCheckCircle,
   faSearch,
@@ -16,6 +17,12 @@ import axios from "axios";
 import KnowMoreModal from "../components/KnowMoreModal";
 import { mapJobsApiToList } from "../../jobs/mappers/jobMapper";
 import { mapRequisitionsApiToList } from "../../jobs/mappers/requisitionMapper";
+import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
+import { useDispatch } from "react-redux";
+import { savePreference } from "../store/preferenceSlice";
+import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
+import filtericon from "../../../assets/filter-icon.png";
+import PaymentModal from "../components/PaymentModal";
 const RelevantJobs = ({ candidateData = {} }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +39,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
   const [selectedRequisition, setSelectedRequisition] = useState("");
   const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [applyForm, setApplyForm] = useState({
     state1: "",
     location1: "",
@@ -43,71 +51,32 @@ const RelevantJobs = ({ candidateData = {} }) => {
     examCenter: "",
   });
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedExperience, setSelectedExperience] = useState([]);
+  const experienceOptions = [
+    { label: "1-2 years", min: 1, max: 2 },
+    { label: "3-4 years", min: 3, max: 4 },
+    { label: "5-6 years", min: 5, max: 6 },
+    { label: "7-8 years", min: 7, max: 8 },
+    { label: "9-10 years", min: 9, max: 10 },
+    { label: "11+ years", min: 11, max: Infinity },
+  ];
+  const ITEMS_PER_PAGE = 5; // change if needed
+const [currentPage, setCurrentPage] = useState(1);
 
-  const [previewData, setPreviewData] = useState({
-    personalDetails: {
-      fullName: "Jagadeesh",
-      address: "Flat 25/123-A, Jagadgirigutta, Kukatpally, Hyderabad, Andhra Pradesh, 500090",
-      permanentAddress: "Flat 25/123-A, Jagadgirigutta, Kukatpally, Hyderabad, Andhra Pradesh, 500090",
-      mobile: "9998887777",
-      email: "jagadeesh.karthik@gmail.com",
-      fatherName: "Karthik Name",
-      dob: "01-01-1994",
-      maritalStatus: "Married",
-      religion: "Hindu",
-      nationality: "Indian",
-      expectedCTC: "22 LPA",
-      location1: "Andhra Pradesh - Guntur",
-      location2: "Maharashtra - Mumbai",
-      location3: "Telangana - Hyderabad",
-    },
-    education: [
-      {
-        degree: "B.Tech (Information Technology)",
-        board: "Jawaharlal Nehru Technological University",
-        subject: "Computer Science and Engineering",
-        passingMonth: "June 2016",
-        division: "First Class",
-        marks: "8.09 GPA",
-      },
-      {
-        degree: "Master of Business Administration (MBA)",
-        board: "Indian Institute of Management",
-        subject: "Finance & Marketing",
-        passingMonth: "April 2020",
-        division: "First Class",
-        marks: "7.9 GPA",
-      },
-    ],
-    experience: [
-      {
-        org: "Tech Solutions Pvt Ltd",
-        designation: "Software Engineer",
-        department: "IT Development",
-        from: "July 2016",
-        to: "March 2019",
-        duration: "2 Years 9 Months",
-        nature: "Full-stack development, UI design, database management",
-      },
-      {
-        org: "PayTech Innovations",
-        designation: "Senior Product Manager",
-        department: "Digital Commerce",
-        from: "April 2021",
-        to: "Present",
-        duration: "3 Years 8 Months",
-        nature: "Leading ONDC integration, digital product solutions, cross-functional team leadership",
-      },
-    ],
-    // ✅ Add this summary block
-    experienceSummary: {
-      total: "6 Years 8 Months",
-      relevant: "5 Years 2 Months",
-      designation: "Senior Product Manager",
-    },
-  });
+  const dispatch = useDispatch();
+
+  const [previewData, setPreviewData] = useState();
 
 
+useEffect(() => {
+  setCurrentPage(1);
+}, [
+  searchTerm,
+  selectedDepartments,
+  selectedLocations,
+  selectedExperience,
+  selectedRequisition,
+]);
   const user = useSelector((state) => state.user.user);
   const candidateId = user?.candidate_id;
 
@@ -164,32 +133,30 @@ const RelevantJobs = ({ candidateData = {} }) => {
         axios.get("http://192.168.20.115:8082/api/v1/candidate/current-opportunities/get-job-positions/active", {
           headers: { "X-Client": "candidate", "Content-Type": "application/json" },
         }),
-        axios.get("http://192.168.20.115:8080/api/all", {
+        axios.get("http://192.168.20.111:8080/api/all", {
           headers: { "X-Client": "candidate", "Content-Type": "application/json" },
         }),
       ]);
 
-      //const jobsData = jobsResponse || [];
-      // const departments = masterDataResponse.departments || [];
-      // const locations = masterDataResponse.locations || [];
-
-
-
       const jobsData = jobsRes?.data?.data || [];
 
 
-      const departments = masterRes.data.departments || [];
-      const states = masterRes.data.states || [];
-      const locations = masterRes?.data?.cities || [];
-      setDepartments(departments);
-      setStates(states);
-      setLocations(locations);
-      console.log("✅ locations before mapper:", locations);
+      const mappedMasterData = mapMasterDataApi(masterRes.data);
+      console.log("mappedMasterData", mappedMasterData);
+
+      setDepartments(mappedMasterData.departments);
+      setStates(mappedMasterData.states);
+      setLocations(mappedMasterData.cities);
+
+
+      const locations = mappedMasterData.cities || [];
 
 
       // ✅ Convert new nested structure to old flat model
       console.log("jobsdata", jobsData)
-      console.log("locationddds", locations)
+      console.log("locationddds", locations);
+      console.log("departments", departments);
+      console.log("states", states);
       const mappedJobs = mapJobsApiToList(jobsData, locations);
       console.log(mappedJobs)
       setJobs(mappedJobs); // use the mapped flat array
@@ -205,10 +172,41 @@ const RelevantJobs = ({ candidateData = {} }) => {
     fetchJobs();
   }, []);
 
+  const handleConfirmApply = async () => {
+    if (!jobs) return;
 
+    try {
+      await apiService.applyJobs({
+        position_id: jobs.position_id,
+        candidate_id: candidateId,
+      });
+      setAppliedJobs((prev) => [
+        ...prev,
+        { position_id: jobs.position_id },
+      ]);
+      toast.success("Application submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast.error("Failed to submit application. Please try again.");
+    } finally {
+      setShowPaymentModal(false);
+      setJobs(null);
+    }
+  };
   // ✅ Open Add Preference modal instead of Razorpay
   const handleApplyClick = (job) => {
     setSelectedJob(job);
+    // Reset the form data
+    setApplyForm({
+      state1: "",
+      location1: "",
+      state2: "",
+      location2: "",
+      state3: "",
+      location3: "",
+      ctc: "",
+      examCenter: "",
+    });
     setShowPreferenceModal(true);
   };
 
@@ -259,6 +257,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
   //     )
   // );
 
+
   const filteredJobs = jobs.filter((job) => {
     const matchesDepartment =
       selectedDepartments.length === 0 || selectedDepartments.includes(job.dept_id);
@@ -270,9 +269,22 @@ const RelevantJobs = ({ candidateData = {} }) => {
     const matchesRequisition =
       !selectedRequisition || String(job.requisition_id) === String(selectedRequisition);
 
-    return matchesDepartment && matchesLocation && matchesSearch && matchesRequisition;
-  });
+    const matchesExperience =
+      selectedExperience.length === 0 ||
+      selectedExperience.some((range) => {
+        const exp = Number(job.mandatory_experience || 0);
+        return exp >= range.min && exp <= range.max;
+      });
 
+    return matchesDepartment && matchesLocation && matchesSearch && matchesRequisition &&
+      matchesExperience;
+  });
+const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+
+const paginatedJobs = filteredJobs.slice(
+  (currentPage - 1) * ITEMS_PER_PAGE,
+  currentPage * ITEMS_PER_PAGE
+);
   const handleDepartmentChange = (deptId) => {
     setSelectedDepartments((prev) =>
       prev.includes(deptId)
@@ -288,13 +300,56 @@ const RelevantJobs = ({ candidateData = {} }) => {
         : [...prev, locationId]
     );
   };
-
+  const handleExperienceChange = (range) => {
+    setSelectedExperience((prev) =>
+      prev.some((r) => r.label === range.label)
+        ? prev.filter((r) => r.label !== range.label)
+        : [...prev, range]
+    );
+  };
   const clearFilters = () => {
     setSelectedDepartments([]);
     setSelectedLocations([]);
+    setSelectedExperience([]);
     setSearchTerm("");
   };
+  const handlePreviewClick = async () => {
+    try {
+      // 1️⃣ Save preference data
+      dispatch(
+        savePreference({
+          jobId: selectedJob.position_id,
+          requisitionId: selectedJob.requisition_id,
+          preferences: applyForm,
+        })
+      );
 
+
+      // 3️⃣ Fetch candidate details
+      //const response = await apiService.getCandidateDetails(candidateId);
+      const response = await axios.get("http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/70721aa9-0b00-4f34-bea2-3bf268f1c212", {
+        headers: { "X-Client": "candidate", "Content-Type": "application/json" },
+      })
+      // console.log("response22",response.data.data)
+
+      // 4️⃣ Map backend → UI
+      const mappedPreviewData = mapCandidateToPreview(response.data.data);
+
+      // 5️⃣ Set preview data
+      setPreviewData(mappedPreviewData);
+
+      // 6️⃣ Switch modals
+      setShowPreferenceModal(false);
+      setShowPreviewModal(true);
+    } catch (error) {
+      console.error("Error loading preview", error);
+      toast.error("Unable to load preview");
+    }
+  };
+  const handleProceedToPayment = () => {
+    setShowPreviewModal(false);   // close preview
+    setShowPaymentModal(true);    // open payment modal
+  };
   return (
     <div className="mx-4 my-3 relevant">
       {/* 🔹 Search and Requisition Dropdown */}
@@ -318,19 +373,19 @@ const RelevantJobs = ({ candidateData = {} }) => {
           </div>
         </div>
 
-         <div className="applied-search">
-               
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search by Job title or Req code..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                 <span className="search-icon">
-                  <FontAwesomeIcon icon={faSearch} />
-                </span>
-              </div>
+        <div className="applied-search">
+
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by Job title or Req code..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <span className="search-icon">
+            <FontAwesomeIcon icon={faSearch} />
+          </span>
+        </div>
       </div>
 
       {/* Filters + Job Cards */}
@@ -341,6 +396,12 @@ const RelevantJobs = ({ candidateData = {} }) => {
           style={{ paddingBottom: "30px" }}
         >
           <div className="bob-left-filter-div">
+              <img 
+                className="filter-icon"
+                src={filtericon} 
+                alt="filter" 
+               
+              />
             <strong>Filters</strong>
           </div>
           <div
@@ -375,15 +436,34 @@ const RelevantJobs = ({ candidateData = {} }) => {
               <h6 className="mt-3">Locations</h6>
               <div style={{ maxHeight: "200px", overflowY: "auto" }}>
                 {locations.map((location) => (
-                  <div key={location.location_id} className="form-check">
+                  <div key={`location-${location.city_id}`} className="form-check">
                     <input
                       className="form-check-input"
                       type="checkbox"
                       checked={selectedLocations.includes(location.city_id)}
                       onChange={() => handleLocationChange(location.city_id)}
+                      id={`location-${location.city_id}`}
+                    />
+                    <label className="form-check-label" htmlFor={`location-${location.city_id}`}>
+                      {location.city_name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <h6 className="mt-3">Experience</h6>
+              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                {experienceOptions.map((exp) => (
+                  <div key={exp.label} className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={selectedExperience.some(
+                        (r) => r.label === exp.label
+                      )}
+                      onChange={() => handleExperienceChange(exp)}
                     />
                     <label className="form-check-label">
-                      {location.city_name}
+                      {exp.label}
                     </label>
                   </div>
                 ))}
@@ -403,7 +483,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
 
         {/* Right Job Cards (original style restored) */}
         <div className="col-md-9">
-          {filteredJobs.map((job) => (
+          {paginatedJobs.map((job) => (
             <div className="col-md-12 mb-4" key={job.position_id}>
               <div
                 className="card h-100"
@@ -479,10 +559,22 @@ const RelevantJobs = ({ candidateData = {} }) => {
         }
         states={states}
         locations={locations}
-        onPreview={() => {
-          setShowPreferenceModal(false);
-          setShowPreviewModal(true);
-        }}
+        // onPreview={() => {
+
+
+        //   // ✅ STORE preference data
+        //   dispatch(
+        //     savePreference({
+        //       jobId: selectedJob.position_id,
+        //       requisitionId: selectedJob.requisition_id,
+        //       preferences: applyForm,
+        //     })
+        //   );
+
+        //   setShowPreferenceModal(false);
+        //   setShowPreviewModal(true);
+        // }}
+        onPreview={handlePreviewClick}
       />
 
       {/* ✅ Original Know More Modal (unchanged) */}
@@ -508,13 +600,61 @@ const RelevantJobs = ({ candidateData = {} }) => {
           // You might want to navigate to profile page or open edit modal
           toast.info("Redirecting to profile editor...");
         }}
-        onProceedToPayment={() => {
-          // Handle proceed to payment action
-          toast.success("Proceeding to payment...");
-          // Add payment processing logic here
-        }}
+        onProceedToPayment={handleProceedToPayment}
+      />
+      <PaymentModal
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
+        selectedJob={selectedJob}
+        candidateId={candidateId}
+        user={user}
+        onPaymentSuccess={handleConfirmApply}
       />
 
+{totalPages > 1 && (
+  <div className="d-flex justify-content-center mt-4">
+    <ul className="pagination pagination-sm align-items-center">
+
+      {/* ◀ Prev */}
+      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+        <button
+          className="page-link"
+          onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+        >
+          ‹
+        </button>
+      </li>
+
+      {/* Page Numbers */}
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        <li
+          key={page}
+          className={`page-item ${currentPage === page ? "active" : ""}`}
+        >
+          <button
+            className="page-link"
+            onClick={() => setCurrentPage(page)}
+          >
+            {page}
+          </button>
+        </li>
+      ))}
+
+      {/* ▶ Next */}
+      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+        <button
+          className="page-link"
+          onClick={() =>
+            setCurrentPage((p) => Math.min(p + 1, totalPages))
+          }
+        >
+          ›
+        </button>
+      </li>
+
+    </ul>
+  </div>
+)}
     </div>
   );
 };

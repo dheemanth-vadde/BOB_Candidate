@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import "../../../css/TrackApplicationModal.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { Accordion, useAccordionButton } from "react-bootstrap";
 
 const TrackApplicationModal = ({ show, onHide, job }) => {
     const [activeKey, setActiveKey] = useState("0");
+    const [selectedFile, setSelectedFile] = useState(null);
+const fileInputRef = React.useRef();
+
+const handleFileSelect = (e) => {
+  setSelectedFile(e.target.files[0]);
+};
+
+const handleUploadClick = () => {
+  fileInputRef.current.click();
+};
     if (!job) return null;
 
     const steps = [
@@ -103,13 +115,31 @@ const AccordionRow = ({ eventKey, children }) => {
 
     {/* RIGHT SIDE */}
     <div className="col-md-5">
-      <label className="form-label">Attachment (Optional)</label>
-      <div className="upload-card">
-        <div className="upload-icon">⬆</div>
-        <div className="upload-text">Upload document</div>
-        <div className="upload-subtext">PDF, DOC, JPG, PNG</div>
-      </div>
-       {/* ACTIONS */}
+  <label className="form-label">Attachment (Optional)</label>
+
+  {/* Upload Card */}
+  <div
+    className="upload-card"
+    onClick={handleUploadClick}
+    style={{ cursor: "pointer" }}
+  >
+    <FontAwesomeIcon icon={faUpload} className="text-secondary mb-2" size="2x" />
+    <div className="upload-text">
+      {selectedFile ? selectedFile.name : "Upload document"}
+    </div>
+    <div className="upload-subtext">PDF, DOC, DOCX, JPG, PNG</div>
+  </div>
+
+  {/* Hidden File Input */}
+  <input
+    type="file"
+    ref={fileInputRef}
+    className="d-none"
+    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+    onChange={handleFileSelect}
+  />
+
+  {/* ACTIONS */}
   <div className="query-actions">
     <button
       className="btn btn-outline-secondary"
@@ -117,9 +147,11 @@ const AccordionRow = ({ eventKey, children }) => {
     >
       Cancel
     </button>
-    <button className="btn btn-primary">Submit</button>
+    <button className="btn btn-primary">
+      Submit
+    </button>
   </div>
-    </div>
+</div>
   </div>
 
  

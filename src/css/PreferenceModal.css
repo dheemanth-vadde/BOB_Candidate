@@ -17,12 +17,31 @@
   background: #fff8f3;
   border: 1px solid #ffd8b2;
   border-radius: 8px;
-  padding: 1.25rem 1.5rem;
+  /* padding: 1.25rem 1.5rem; */
   margin: 1.5rem;
   position: relative;
   width: 730px;
 }
+.bob-pref-header-new {
+  background: #fff4ee;
+  border: 1px solid #ffd3bf;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 20px 35px 10px;
+}
 
+.bob-pref-advt {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f37021;
+  margin-bottom: 4px;
+}
+
+.bob-pref-position {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2c71;
+}
 .bob-pref-header-top span:first-child {
   color: #666;
   margin-right: 0.5rem;
@@ -74,14 +93,14 @@
 /* === BODY === */
 .bob-pref-body {
   background: #fff;
-  padding: 10px 35px 25px;
+  padding: 5px  35px 25px !important;
 }
 
 .bob-pref-title {
   color: #1a2c71;
   font-weight: 600;
   font-size: 14px;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
 }
 
 /* === FORM === */
@@ -220,4 +239,21 @@ select.form-control::-ms-expand {
 /* Ensure the preview button stays on the right */
 .bob-pref-footer> :not(.footer-btn-group) {
   margin-left: auto !important;
+}
+/* =========================================================
+   INFO TEXT BELOW FORM (ORANGE NOTE)
+========================================================= */
+.bob-pref-info-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 13px;
+  color: #f37021; /* Bank orange */
+}
+
+.bob-pref-info-bottom svg {
+  font-size: 14px;
+  color: #f37021;
+  flex-shrink: 0;
 }

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import apiService from "../../../services/apiService";
-
+import axios from "axios";
 /** Load Razorpay SDK once */
 function loadRazorpay() {
   return new Promise((resolve, reject) => {
@@ -17,7 +17,15 @@ function loadRazorpay() {
 /** Backend calls */
 async function getRzpKey() {
   //const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/config");
-   const r = await apiService.getConfig();
+  // const r = await apiService.getConfig();
+   const r = await axios.get('http://192.168.20.115:8082/api/v1/razorpay/config',
+        {
+          headers: {
+            "X-Client": "candidate",
+            "Content-Type": "application/json"
+          }
+        }
+      );
    console.log ("test", r);
   // if (!r.ok) throw new Error("Failed to load Razorpay key");
   const keyId  =r.keyId;
@@ -36,7 +44,16 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
       position_id 
     };
 
-    const r = await apiService.getRazorOrder(data);
+    //const r = await apiService.getRazorOrder(data);
+   const r = await axios.post ('http://192.168.20.115:8082/api/v1/razorpay/orders',data,  
+        {
+          headers: {
+            "X-Client": "candidate",
+            "Content-Type": "application/json"
+          }
+        },
+        
+      );
 
     const order = r;
     console.log("ORDER:", order);
@@ -62,10 +79,18 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
 
 async function verifyPayment(payload) {
   try {
-    const r = await apiService.getRazorVerify(payload);
+    //const r = await apiService.getRazorVerify(payload);
+const r = await axios.post('http://192.168.20.115:8082/api/v1/razorpay/verify',payload,
+        {
+          headers: {
+            "X-Client": "candidate",
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
     // Axios returns data directly
-    return r; // { success: true, message: "Payment verified" }
+    return r.data; // { success: true, message: "Payment verified" }
 
   } catch (err) {
     const msg =
