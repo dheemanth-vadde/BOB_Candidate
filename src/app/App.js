@@ -1,14 +1,22 @@
-import '../App.css';
+
 import CandidatePortal from './layouts/CandidatePortal';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+import '../App.css';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Login from '../components/auth/pages/Login';
 import Register from '../components/auth/pages/Register';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import ForgotPassword from '../components/auth/pages/ForgotPassword';
-import '@fontsource/poppins'; // Defaults to weight 400
-import '@fontsource/poppins/600.css'; // Specific weight
+import '@fontsource/poppins'; // Defaults to weight 400 regular
+import '@fontsource/poppins/600.css'; // Specific weight Semi-Bold
+
+
+import "@fontsource/poppins/300.css"; //Light
+import "@fontsource/poppins/500.css"; // Medium
+import "@fontsource/poppins/700.css"; //Bold
+ 
 import Notifications from '../components/others/Notifications';
 // import Home from '../components/Tabs/Home';
 import Tokenexp from '../components/auth/pages/Tokenexp';
@@ -19,7 +27,6 @@ import DigiLockerCallback from '../components/integrations/digilocker/DigiLocker
 import OtpVerification from '../components/auth/pages/OtpVerification';
 import ChangePasswordVerification from '../components/auth/pages/ChangePasswordVerification';
 import ChangePassword from '../components/auth/pages/ChangePassword';
-
 function App() {
   const location = useLocation(); // Get current path
   // Only show chat on specific routes

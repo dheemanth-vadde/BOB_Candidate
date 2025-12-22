@@ -17,6 +17,8 @@ const PreferenceModal = ({
 }) => {
 
   console.log("selectedjob",selectedJob)
+ // const showPreferences = selectedJob?.preference === true;
+  const showPreferences = true;
   // ✅ Helper: Get cities based on selected state ID
   const getCitiesByState = (stateId) => {
     if (!stateId) return [];
@@ -76,7 +78,7 @@ const PreferenceModal = ({
       <Modal.Header className="border-0 p-0">
       <div className="bob-pref-header">
         <div className="bob-pref-advt">
-          <span>Digital Contractual 2025</span>
+          <span>{selectedJob?.requisition_code} - {selectedJob?.requisition_title}</span>
         </div>
 
         <div className="bob-pref-position">
@@ -88,131 +90,137 @@ const PreferenceModal = ({
 
       {/* ===== BODY ===== */}
       <Modal.Body className="bob-pref-body">
-        <h5 className="bob-pref-title">Add Preference</h5>
+        <span className="bob-pref-title">Add Preference</span>
 
-        <div className="row g-4">
-          {/* ---- Row 1 ---- */}
-          <div className="col-md-3">
-            <label className="form-label">State preference 1</label>
-            <select
-              className="form-control"
-              name="state1"
-              value={applyForm.state1}
-              onChange={handleInputChange}
-            >
-              <option value="">Select State</option>
-              {states.map((s) => (
-                <option key={s.state_id} value={s.state_id}>
-                  {s.state_name}
-                </option>
-              ))}
-            </select>
-          </div>
+    <div className="row g-4">
 
-          <div className="col-md-3">
-            <label className="form-label">Location preference 1</label>
-            <select
-              className="form-control"
-              name="location1"
-              value={applyForm.location1}
-              onChange={handleInputChange}
-              disabled={!applyForm.state1}
-            >
-              <option value="">Select Location</option>
-              {getCitiesByState(applyForm.state1).map((loc) => (
-                <option key={loc.city_id} value={loc.city_id}>
-                  {loc.city_name}
-                </option>
-              ))}
-            </select>
-          </div>
+  {/* ✅ SHOW ONLY IF JOB ALLOWS PREFERENCES */}
+  {showPreferences && (
+    <>
+      {/* ---- Row 1 ---- */}
+      <div className="col-md-3">
+        <label className="form-label">State preference 1</label>
+        <select
+          className="form-control"
+          name="state1"
+          value={applyForm.state1}
+          onChange={handleInputChange}
+        >
+          <option value="">Select State</option>
+          {states.map((s) => (
+            <option key={s.state_id} value={s.state_id}>
+              {s.state_name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <div className="col-md-3">
-            <label className="form-label">State preference 2</label>
-            <select
-              className="form-control"
-              name="state2"
-              value={applyForm.state2}
-              onChange={handleInputChange}
-            >
-              <option value="">Select State</option>
-              {states.map((s) => (
-                <option key={s.state_id} value={s.state_id}>
-                  {s.state_name}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className="col-md-3">
+        <label className="form-label">Location preference 1</label>
+        <select
+          className="form-control"
+          name="location1"
+          value={applyForm.location1}
+          onChange={handleInputChange}
+          disabled={!applyForm.state1}
+        >
+          <option value="">Select Location</option>
+          {getCitiesByState(applyForm.state1).map((loc) => (
+            <option key={loc.city_id} value={loc.city_id}>
+              {loc.city_name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <div className="col-md-3">
-            <label className="form-label">Location preference 2</label>
-            <select
-              className="form-control"
-              name="location2"
-              value={applyForm.location2}
-              onChange={handleInputChange}
-              disabled={!applyForm.state2}
-            >
-              <option value="">Select Location</option>
-              {getCitiesByState(applyForm.state2).map((loc) => (
-                <option key={loc.city_id} value={loc.city_id}>
-                  {loc.city_name}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* ---- Row 2 ---- */}
+      <div className="col-md-3">
+        <label className="form-label">State preference 2</label>
+        <select
+          className="form-control"
+          name="state2"
+          value={applyForm.state2}
+          onChange={handleInputChange}
+        >
+          <option value="">Select State</option>
+          {states.map((s) => (
+            <option key={s.state_id} value={s.state_id}>
+              {s.state_name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          {/* ---- Row 2 ---- */}
-          <div className="col-md-3">
-            <label className="form-label">State preference 3</label>
-            <select
-              className="form-control"
-              name="state3"
-              value={applyForm.state3}
-              onChange={handleInputChange}
-            >
-              <option value="">Select State</option>
-              {states.map((s) => (
-                <option key={s.state_id} value={s.state_id}>
-                  {s.state_name}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className="col-md-3">
+        <label className="form-label">Location preference 2</label>
+        <select
+          className="form-control"
+          name="location2"
+          value={applyForm.location2}
+          onChange={handleInputChange}
+          disabled={!applyForm.state2}
+        >
+          <option value="">Select Location</option>
+          {getCitiesByState(applyForm.state2).map((loc) => (
+            <option key={loc.city_id} value={loc.city_id}>
+              {loc.city_name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <div className="col-md-3">
-            <label className="form-label">Location Pref 3</label>
-            <select
-              className="form-control"
-              name="location3"
-              value={applyForm.location3}
-              onChange={handleInputChange}
-              disabled={!applyForm.state3}
-            >
-              <option value="">Select Location</option>
-              {getCitiesByState(applyForm.state3).map((loc) => (
-                <option key={loc.city_id} value={loc.city_id}>
-                  {loc.city_name}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* ---- Row 3 ---- */}
+      <div className="col-md-3">
+        <label className="form-label">State preference 3</label>
+        <select
+          className="form-control"
+          name="state3"
+          value={applyForm.state3}
+          onChange={handleInputChange}
+        >
+          <option value="">Select State</option>
+          {states.map((s) => (
+            <option key={s.state_id} value={s.state_id}>
+              {s.state_name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <div className="col-md-3">
-            <label className="form-label">
-              Expected CTC(in Lakhs) 
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              name="ctc"
-              value={applyForm.ctc}
-              onChange={handleInputChange}
-              placeholder="Enter expected CTC"
-            />
-          </div>
+      <div className="col-md-3">
+        <label className="form-label">Location preference 3</label>
+        <select
+          className="form-control"
+          name="location3"
+          value={applyForm.location3}
+          onChange={handleInputChange}
+          disabled={!applyForm.state3}
+        >
+          <option value="">Select Location</option>
+          {getCitiesByState(applyForm.state3).map((loc) => (
+            <option key={loc.city_id} value={loc.city_id}>
+              {loc.city_name}
+            </option>
+          ))}
+        </select>
+      </div>
+    </>
+  )}
 
-          <div className="col-md-3">
+  {/* ✅ ALWAYS SHOWN FIELDS */}
+  <div className="col-md-3">
+    <label className="form-label">Expected CTC (in Lakhs)</label>
+    <input
+      type="text"
+      className="form-control"
+      name="ctc"
+      value={applyForm.ctc}
+      onChange={handleInputChange}
+      placeholder="Enter expected CTC"
+    />
+  </div>
+
+  <div className="col-md-3">
     <label className="form-label">
       Exam/ Interview Center <span className="text-danger">*</span>
     </label>
@@ -226,18 +234,8 @@ const PreferenceModal = ({
     />
   </div>
 
-          {/* ✅ INFO TEXT HERE */}
-          <div className="bob-pref-info-bottom">
-            <img 
-    src={bulb}
-    alt="Info" 
-    style={{ width: '18px', height: '18px' }} 
-  />
-            <span>
-              All personal information will be automatically retrieved from the candidate's profile.
-            </span>
-          </div>
-        </div>
+</div>
+
       </Modal.Body>
 
       {/* ===== FOOTER ===== */}

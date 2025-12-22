@@ -11,6 +11,7 @@ const PreviewModal = ({
   onBack,
   onEditProfile,
   onProceedToPayment,
+  selectedJob
 }) => {
 
 
@@ -24,6 +25,7 @@ if (!previewData) {
   }
 
   console.log("Stored preference:", preferenceData);
+  console.log("Preview selectedJob:", selectedJob);
 
   return (
     <Modal
@@ -36,13 +38,12 @@ if (!previewData) {
       <Modal.Body className="bob-modal-body">
         {/* ===== HEADER ===== */}
         <div className="bob-header">
-          <div className="fw-semibold text-dark small mb-1">
-            Advt. No:-{" "}
-            <span className="fw-bold">BOB/HRM/REC/ADVT/2025/17</span>
+          <div className="fw-semibold text-dark small mb-1 title_pre">
+                 <span>{selectedJob?.requisition_code} - {selectedJob?.requisition_title}</span>
           </div>
-          <div className="fw-semibold bob-header-title">
-            Position for Application:- Deputy Manager: Product - ONDC (Open
-            Network for Digital Commerce)
+          <div className="bob-header-title">
+            {selectedJob?.position_title ||
+            "Deputy Manager : Product - ONDC (Open Network for Digital Commerce)"}
           </div>
         </div>
 
@@ -56,8 +57,8 @@ if (!previewData) {
                 <table className="table table-bordered bob-table w-100 mb-0">
                   <tbody>
                     <tr>
-                      <td className="fw-bold" style={{ width: "20%" }}>Full Name</td>
-                      <td colSpan={4} style={{ width: "60%" }}>
+                      <td className="fw-med" style={{ width: "20%" }}>Full Name</td>
+                      <td  className="fw-reg" colSpan={4} style={{ width: "60%" }}>
                         {previewData.personalDetails.fullName}
                       </td>
 
@@ -91,122 +92,122 @@ if (!previewData) {
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Address</td>
-                      <td colSpan={4}>{previewData.personalDetails.address}</td>
+                      <td className="fw-med">Address</td>
+                      <td className="fw-reg" colSpan={4}>{previewData.personalDetails.address}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Permanent Address</td>
-                      <td colSpan={4}>{previewData.personalDetails.permanentAddress}</td>
-                    </tr>
-
-                    <tr >
-                      <td className="fw-bold" >Mobile</td>
-                      <td colSpan={2}>{previewData.personalDetails.mobile}</td>
-                      <td className="fw-bold">Email</td>
-                      <td colSpan={2}>{previewData.personalDetails.email}</td>
+                      <td className="fw-med">Permanent Address</td>
+                      <td className="fw-reg" colSpan={4}>{previewData.personalDetails.permanentAddress}</td>
                     </tr>
 
                     <tr >
-                      <td className="fw-bold">Mother’s Name</td>
-                      <td colSpan={2}>{previewData.personalDetails.motherName || "-"}</td>
-                      <td className="fw-bold">Father’s Name</td>
-                      <td colSpan={2}>{previewData.personalDetails.fatherName}</td>
+                      <td className="fw-med" >Mobile</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.mobile}</td>
+                      <td className="fw-med">Email</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.email}</td>
+                    </tr>
+
+                    <tr >
+                      <td className="fw-med">Mother’s Name</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.motherName || "-"}</td>
+                      <td className="fw-med">Father’s Name</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.fatherName}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Gender</td>
-                      <td colSpan={2}>{previewData.personalDetails.gender || "M"}</td>
-                      <td className="fw-bold">Religion</td>
-                      <td colSpan={2}>{previewData.personalDetails.religion}</td>
+                      <td className="fw-med">Gender</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.gender || "M"}</td>
+                      <td className="fw-med">Religion</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.religion}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Category</td>
-                      <td colSpan={2}  >{previewData.personalDetails.category || "General"}</td>
-                      <td className="fw-bold">Caste/Community</td>
-                      <td colSpan={2}>{previewData.personalDetails.caste || "Brahmin"}</td>
+                      <td className="fw-med">Category</td>
+                      <td className="fw-reg" colSpan={2}  >{previewData.personalDetails.category || "General"}</td>
+                      <td className="fw-med">Caste/Community</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.caste || "Brahmin"}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Date of Birth</td>
-                      <td colSpan={2}>{previewData.personalDetails.dob}</td>
-                      <td className="fw-bold">Age (as on cut-off date)</td>
-                      <td colSpan={2}>{previewData.personalDetails.age || "30 years 11 months 1 day"}</td>
+                      <td className="fw-med">Date of Birth</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.dob}</td>
+                      <td className="fw-med">Age (as on cut-off date)</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "30 years 11 months 1 day"}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Ex-serviceman</td>
-                      <td colSpan={2}>{previewData.personalDetails.exService || "N/A"}</td>
-                      <td className="fw-bold">Physical Disability</td>
-                      <td colSpan={2}>{previewData.personalDetails.physicalDisability || "N"}</td>
+                      <td className="fw-med">Ex-serviceman</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.exService || "N/A"}</td>
+                      <td className="fw-med">Physical Disability</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.physicalDisability || "N"}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Exam Center</td>
-                      <td colSpan={2}>{previewData.personalDetails.examCenter || "Hyderabad"}</td>
-                      <td className="fw-bold">Nationality</td>
-                      <td colSpan={2}>{previewData.personalDetails.nationality}</td>
+                      <td className="fw-med">Exam Center</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.examCenter || "Hyderabad"}</td>
+                      <td className="fw-med">Nationality</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Marital Status</td>
-                      <td colSpan={2}>{previewData.personalDetails.maritalStatus}</td>
-                      <td className="fw-bold">Name of Spouse</td>
-                      <td colSpan={2}>{previewData.personalDetails.spouseName || "-"}</td>
+                      <td className="fw-med">Marital Status</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.maritalStatus}</td>
+                      <td className="fw-med">Name of Spouse</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.spouseName || "-"}</td>
                     </tr>
                     <tr>
-                      <td className="fw-bold">Twin Sibling</td>
-                      <td colSpan={2}></td>
-                      <td className="fw-bold">Details</td>
-                      <td colSpan={2}></td>
+                      <td className="fw-med">Twin Sibling</td>
+                      <td className="fw-reg" colSpan={2}></td>
+                      <td className="fw-med">Details</td>
+                      <td className="fw-reg" colSpan={2}></td>
                     </tr>
                     <tr>
-                      <td className="fw-bold">Current CTC</td>
-                      <td colSpan={2}>{previewData.personalDetails.currentCTC || "11"}</td>
-                      <td className="fw-bold">Expected CTC</td>
-                      <td colSpan={2}>{previewData.personalDetails.expectedCTC}</td>
-                    </tr>
-
-                    <tr>
-                      <td className="fw-bold">Location Preference 1</td>
-                      <td colSpan={2}>{previewData.personalDetails.location1}</td>
-                      <td className="fw-bold">Location Preference 2</td>
-                      <td colSpan={2}>{previewData.personalDetails.location2}</td>
+                      <td className="fw-med">Current CTC</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.currentCTC || "11"}</td>
+                      <td className="fw-med">Expected CTC</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.expectedCTC}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Location Preference 3</td>
-                      <td colSpan={2}>{previewData.personalDetails.location3}</td>
-                      <td className="fw-bold">Social Media Profile links</td>
-                      <td colSpan={2}>{previewData.personalDetails.location3}</td>
+                      <td className="fw-med">Location Preference 1</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location1}</td>
+                      <td className="fw-med">Location Preference 2</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location2}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Already secured regular employment under the Central Govt. in civil post?</td>
-                      <td colSpan={2}>{previewData.personalDetails.centralGovtEmployment || "No"}</td>
-                      <td className="fw-bold">Serving at a post lower than the one advertised?</td>
-                      <td colSpan={2}>{previewData.personalDetails.servingLowerPost || "No"}</td>
+                      <td className="fw-med">Location Preference 3</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location3}</td>
+                      <td className="fw-med">Social Media Profile links</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location3}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Family member of those who died in 1984 riots?</td>
-                      <td colSpan={2}>{previewData.personalDetails.familyMember1984 || "No"}</td>
-                      <td className="fw-bold">Belong to Religious Minority Community?</td>
-                      <td colSpan={2}>{previewData.personalDetails.religiousMinority || "No"}</td>
+                      <td className="fw-med">Already secured regular employment under the Central Govt. in civil post?</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.centralGovtEmployment || "No"}</td>
+                      <td className="fw-med">Serving at a post lower than the one advertised?</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.servingLowerPost || "No"}</td>
                     </tr>
 
                     <tr>
-                      <td className="fw-bold">Whether serving in Govt./ quasi Govt./ Public Sector Undertaking?</td>
-                      <td colSpan={2}>{previewData.personalDetails.servingInGovt || "No"}</td>
-                      <td className="fw-bold">Disciplinary action in any of your previous/ Current Employment?</td>
-                      <td colSpan={2}>{previewData.personalDetails.disciplinaryAction || "No"}</td>
+                      <td className="fw-med">Family member of those who died in 1984 riots?</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.familyMember1984 || "No"}</td>
+                      <td className="fw-med">Belong to Religious Minority Community?</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.religiousMinority || "No"}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="fw-med">Whether serving in Govt./ quasi Govt./ Public Sector Undertaking?</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.servingInGovt || "No"}</td>
+                      <td className="fw-med">Disciplinary action in any of your previous/ Current Employment?</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.disciplinaryAction || "No"}</td>
                     </tr>
 
                     {previewData.personalDetails.disciplinaryAction === "Yes" && (
                       <tr>
-                        <td className="fw-bold">Details of disciplinary proceedings, if Any</td>
-                        <td colSpan={5}>{previewData.personalDetails.disciplinaryDetails || "N/A"}</td>
+                        <td className="fw-med">Details of disciplinary proceedings, if Any</td>
+                        <td className="fw-reg" colSpan={5}>{previewData.personalDetails.disciplinaryDetails || "N/A"}</td>
                       </tr>
                     )}
                   </tbody>

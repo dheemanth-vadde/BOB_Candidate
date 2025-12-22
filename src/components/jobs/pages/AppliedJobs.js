@@ -22,7 +22,6 @@ const AppliedJobs = () => {
   const [showOfferModal, setShowOfferModal] = useState(false);
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
-  console.log("user111",userData)
   const candidateId = userData?.data?.user?.id;
 
   // ✅ Fetch applied jobs
@@ -37,7 +36,7 @@ const AppliedJobs = () => {
       // : [];
 
 
-      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/70721aa9-0b00-4f34-bea2-3bf268f1c212',
+      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/62394083-ded6-4861-9ccb-39e36024a98d',
         {
           headers: {
             "X-Client": "candidate",
@@ -127,7 +126,7 @@ const AppliedJobs = () => {
 
     {/* ===== PAGE HEADER ===== */}
     <div className="d-flex justify-content-between align-items-center mb-4">
-      <h5 className="mb-0 fw-semibold">Job Applications</h5>
+      <span className="mb-0 appliedheader">Job Applications</span>
      
       {/* Search Bar */}
       <div className="applied-search">
@@ -163,9 +162,9 @@ const AppliedJobs = () => {
 
         {/* Header */}
         <div className="applied-job-header">
-          <h6 className="job-title">
+          <span className="jobtitle">
             {job.requisition_code} - {job.position_title}
-          </h6>
+          </span>
 
           <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
             {job.application_status || "Applied"}
@@ -175,20 +174,19 @@ const AppliedJobs = () => {
         {/* Grid Info */}
       {/* ===== META DATA – SINGLE FLEX ROW ===== */}
 <div className="job-meta-row">
-  <span><strong>Employment Type:</strong> {job.employment_type}</span>
-  <span><strong>Department:</strong> {job.dept_name}</span>
-  <span><strong>Experience:</strong> {job.mandatory_experience} years</span>
-  <span><strong>Vacancies:</strong> {job.no_of_vacancies}</span>
-  <span>
-    <strong>Eligibility Age:</strong>{" "}
+  <span>Employment Type:</span>{job.employment_type}
+  <span>Department:</span>{job.dept_name}
+  <span>Experience:</span>{job.mandatory_experience} years
+  <span>Vacancies:</span> {job.no_of_vacancies}
+  <span> Eligibility Age:</span>
     {job.eligibility_age_min} – {job.eligibility_age_max} years
-  </span>
-  <span><strong>Applied On:</strong> {job.applied_on || "-"}</span>
+  
+  <span>Applied On:</span> {job.applied_on || "-"}
 </div>
 
 {/* ===== QUALIFICATION – NEXT ROW ONLY ===== */}
 <div className="job-qualification-row">
-  <strong>Qualification:</strong> {job.mandatory_qualification}
+  <span>Qualification:</span> {job.mandatory_qualification}
 </div>
 
         {/* Footer */}

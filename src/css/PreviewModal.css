@@ -17,14 +17,15 @@
   border: 1px solid #ffddb9;
   border-radius: 10px;
   padding: 14px 20px;
-  margin-top: 12px; /* ✅ Space before header box */
-  margin-bottom: 10px; /* space below header */
+  margin-top: 12px;
+  /* ✅ Space before header box */
+  margin-bottom: 10px;
+  /* space below header */
 }
 
 .bob-header-title {
-  color: #004e9a;
-  font-size: 15px;
-  line-height: 1.5;
+  color: #162B75;
+  font-size: 1.145rem;
   font-weight: 500;
 }
 
@@ -95,9 +96,15 @@
 }
 
 /* === Bold Labels === */
-.bob-table td.fw-bold {
-  font-weight: 600 !important;
-  color: #000;
+.bob-table td.fw-med {
+	font-weight: 500;
+	color: #000;
+	font-size: 0.698rem;
+}
+.bob-table td.fw-reg {
+	font-weight: 400;
+	color: #333333;
+	font-size: 0.698rem;
 }
 
 /* === PHOTO + SIGNATURE SECTION === */
@@ -135,15 +142,18 @@
   height: 55%;
   object-fit: cover;
 }
+
 .bob-photo-box .img2 {
   width: 100%;
   height: 32px;
 }
+
 .bob-photo-box1 img {
   width: 100%;
   height: 25%;
   object-fit: cover;
 }
+
 .photo-label {
   font-size: 11px;
   color: #555;
@@ -279,25 +289,29 @@
 
 .bob-accordion .accordion-header button {
   background: #f8f9fa !important;
-  color: #004e9a !important;
-  font-weight: 600;
   padding: 10px 14px;
-  font-size: 14px;
+color: #162B75 !important;
+  font-size: 1.145rem;
+  font-weight: 500;
   border: none;
   box-shadow: none !important;
 }
 
 .bob-accordion .accordion-header button:not(.collapsed) {
   /* background: #004e9a !important; */
-  color: #004e9a !important ;
+  color: #162B75 !important;
+  font-size: 1.145rem;
+  font-weight: 500;
 }
 
 .bob-accordion .accordion-body {
   background: #fff;
   padding: 15px;
 }
+
 /* === Responsive === */
 @media (max-width: 991px) {
+
   .bob-photo-box,
   .bob-sign-box {
     width: 100px;
@@ -322,4 +336,10 @@
   .photo-label {
     font-size: 10px;
   }
+}
+
+.bob-header .title_pre {
+  color: #F26522;
+  font-size: 1.145rem;
+  font-weight: 600;
 }

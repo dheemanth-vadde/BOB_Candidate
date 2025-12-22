@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon  } from "@fortawesome/react-fontawesome";
+import { useNavigate } from "react-router-dom";
 
 import {
   faCheckCircle,
@@ -28,7 +29,6 @@ const RelevantJobs = ({ candidateData = {} }) => {
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [appliedJobs, setAppliedJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [departments, setDepartments] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -40,6 +40,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
   const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const navigate = useNavigate();
   const [applyForm, setApplyForm] = useState({
     state1: "",
     location1: "",
@@ -78,7 +79,40 @@ useEffect(() => {
   selectedRequisition,
 ]);
   const user = useSelector((state) => state.user.user);
-  const candidateId = user?.candidate_id;
+
+  const candidateId = user?.data?.user?.id;
+
+
+  useEffect(() => {
+  const fetchCandidatePreview = async () => {
+    if (!candidateId) return;
+
+    try {
+      // const response = await axios.get(
+      //   `http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/${candidateId}`,
+      //   {
+      //     headers: {
+      //       "X-Client": "candidate",
+      //       "Content-Type": "application/json",
+      //     },
+      //   }
+      // );
+
+       const response = await axios.get("http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/75ddc495-a378-4a1c-8240-7bd6509c9965", {
+        headers: { "X-Client": "candidate", "Content-Type": "application/json" },
+      })
+
+
+      const mappedPreviewData = mapCandidateToPreview(response.data.data);
+      setPreviewData(mappedPreviewData);
+    } catch (error) {
+      console.error("Failed to fetch candidate preview", error);
+      toast.error("Unable to load candidate profile");
+    }
+  };
+
+  fetchCandidatePreview();
+}, [candidateId]);
 
   // ✅ Fetch requisitions
   const fetchRequisitions = async () => {
@@ -172,43 +206,128 @@ useEffect(() => {
     fetchJobs();
   }, []);
 
-  const handleConfirmApply = async () => {
-    if (!jobs) return;
+  const calculateAge = (dobString) => {
+  if (!dobString) return null;
 
-    try {
-      await apiService.applyJobs({
-        position_id: jobs.position_id,
-        candidate_id: candidateId,
-      });
-      setAppliedJobs((prev) => [
-        ...prev,
-        { position_id: jobs.position_id },
-      ]);
-      toast.success("Application submitted successfully!");
-    } catch (error) {
-      console.error("Error submitting application:", error);
-      toast.error("Failed to submit application. Please try again.");
-    } finally {
+  const dob = new Date(dobString);
+  const today = new Date();
+
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < dob.getDate())
+  ) {
+    age--;
+  }
+
+  return age;
+};
+const calculateExperienceYears = (totalExpString) => {
+  if (!totalExpString) return 0;
+
+  // "60 Months" → 60
+  const months = parseInt(totalExpString.replace(/\D/g, ""), 10);
+  return Math.floor(months / 12);
+};
+const validateAgeAndExperience = (job, previewData) => {
+  // ---------- AGE ----------
+  const dob = previewData?.personalDetails?.dob;
+  const age = calculateAge(dob);
+
+  console.log("age",age)
+
+  if (!age) {
+    toast.error("Date of Birth is missing in profile");
+    return false;
+  }
+ console.log("age min max",job.eligibility_age_min,job.eligibility_age_max)
+  if (
+    (job.eligibility_age_min && age < job.eligibility_age_min) ||
+    (job.eligibility_age_max && age > job.eligibility_age_max)
+  ) {
+    toast.error(
+      `Age must be between ${job.eligibility_age_min} - ${job.eligibility_age_max} years`
+    );
+    return false;
+  }
+
+  // ---------- EXPERIENCE ----------
+  const totalExpYears = calculateExperienceYears(
+    previewData?.experienceSummary?.total
+  );
+console.log("totalExpYears",totalExpYears)
+console.log("job.mandatory_experience",job.mandatory_experience)
+  if (
+    job.mandatory_experience &&
+    totalExpYears < Number(job.mandatory_experience)
+  ) {
+    toast.error(
+      `Minimum ${job.mandatory_experience} years experience required`
+    );
+    return false;
+  }
+
+  return true; // ✅ Eligible
+};
+
+ const handleConfirmApply = async () => {
+  if (!selectedJob || !candidateId) return;
+
+  try {
+    const response = await axios.post(
+      "http://192.168.20.111:8082/api/v1/candidate/applications/apply/job",
+      {
+        positionId: selectedJob.position_id,
+        candidateId: candidateId,
+      },
+      {
+        headers: {
+          "X-Client": "candidate",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // ✅ Check success flag
+    if (response?.data?.success) {
+      toast.success(response.data.message || "Application submitted successfully!");
+
+      // ✅ Close modal
       setShowPaymentModal(false);
-      setJobs(null);
+
+      // ✅ REDIRECT to Applied Jobs screen
+      navigate("/candidate/applied-jobs"); 
+      // 👆 change route as per your app
     }
-  };
+  } catch (error) {
+    console.error("Error submitting application:", error);
+    toast.error("Failed to submit application. Please try again.");
+  }
+};
+
   // ✅ Open Add Preference modal instead of Razorpay
-  const handleApplyClick = (job) => {
-    setSelectedJob(job);
-    // Reset the form data
-    setApplyForm({
-      state1: "",
-      location1: "",
-      state2: "",
-      location2: "",
-      state3: "",
-      location3: "",
-      ctc: "",
-      examCenter: "",
-    });
-    setShowPreferenceModal(true);
-  };
+  const handleApplyClick = (job, previewData) => {
+  console.log("previewData123", previewData);
+
+  const isEligible = validateAgeAndExperience(job, previewData);
+  if (!isEligible) return;
+
+  setSelectedJob(job);
+  setApplyForm({
+    state1: "",
+    location1: "",
+    state2: "",
+    location2: "",
+    state3: "",
+    location3: "",
+    ctc: "",
+    examCenter: "",
+  });
+
+  setShowPreferenceModal(true);
+};
 
   const handleKnowMore = (job) => {
     setSelectedJob(job);
@@ -313,48 +432,129 @@ const paginatedJobs = filteredJobs.slice(
     setSelectedExperience([]);
     setSearchTerm("");
   };
-  const handlePreviewClick = async () => {
-    try {
-      // 1️⃣ Save preference data
-      dispatch(
-        savePreference({
-          jobId: selectedJob.position_id,
-          requisitionId: selectedJob.requisition_id,
-          preferences: applyForm,
-        })
-      );
+  const handlePreviewClick = () => {
+  if (!previewData) {
+    toast.error("Candidate data not loaded yet");
+    return;
+  }
 
+  dispatch(
+    savePreference({
+      jobId: selectedJob.position_id,
+      requisitionId: selectedJob.requisition_id,
+      preferences: applyForm,
+    })
+  );
 
-      // 3️⃣ Fetch candidate details
-      //const response = await apiService.getCandidateDetails(candidateId);
-      const response = await axios.get("http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/70721aa9-0b00-4f34-bea2-3bf268f1c212", {
-        headers: { "X-Client": "candidate", "Content-Type": "application/json" },
-      })
-      // console.log("response22",response.data.data)
-
-      // 4️⃣ Map backend → UI
-      const mappedPreviewData = mapCandidateToPreview(response.data.data);
-
-      // 5️⃣ Set preview data
-      setPreviewData(mappedPreviewData);
-
-      // 6️⃣ Switch modals
-      setShowPreferenceModal(false);
-      setShowPreviewModal(true);
-    } catch (error) {
-      console.error("Error loading preview", error);
-      toast.error("Unable to load preview");
-    }
-  };
+  setShowPreferenceModal(false);
+  setShowPreviewModal(true);
+};
   const handleProceedToPayment = () => {
     setShowPreviewModal(false);   // close preview
     setShowPaymentModal(true);    // open payment modal
   };
   return (
     <div className="mx-4 my-3 relevant">
-      {/* 🔹 Search and Requisition Dropdown */}
-      <div className="d-flex justify-content-end mb-3 row">
-        <div className="d-flex justify-content-center" style={{ flex: 1 }}>
+      
+
+      {/* Filters + Job Cards */}
+      <div className="row" id="matched-jobs-container">
+        {/* Left Filters (unchanged) */}
+        <div
+          className="col-md-3 bob-left-fixed-filter bob-mob-side-filter"
+          style={{ paddingBottom: "30px" }}
+        >
+          <div className="bob-left-filter-div">
+              <img 
+                className="filter-icon"
+                src={filtericon} 
+                alt="filter" 
+               
+              />
+            <span className="filter">Filters</span>
+          </div>
+          <div
+            className="bob-left-custom-filter-div"
+            style={{
+              background: "#fff",
+              boxShadow: "0 3px 6px #1a2c7129",
+              borderRadius: "10px",
+              padding: "20px 10px",
+              marginTop: "25px",
+              border: "1px solid #eaeaea",
+            }}
+          >
+            <div className="bob-filter-c-div bob-inner-categories-c-div px-3">
+              <span className="header_filter">Departments</span>
+              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                {departments.map((dept) => (
+                  <div key={dept.department_id} className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={selectedDepartments.includes(dept.department_id)}
+                      onChange={() => handleDepartmentChange(dept.department_id)}
+                    />
+                    <label className="form-check-label label_filter">
+                      {dept.department_name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              <h6 className="mt-3 header_filter">Locations</h6>
+              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                {locations.map((location) => (
+                  <div key={`location-${location.city_id}`} className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={selectedLocations.includes(location.city_id)}
+                      onChange={() => handleLocationChange(location.city_id)}
+                      id={`location-${location.city_id}`}
+                    />
+                    <label className="form-check-label label_filter" htmlFor={`location-${location.city_id}`}>
+                      {location.city_name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <h6 className="mt-3 header_filter">Experience</h6>
+              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                {experienceOptions.map((exp) => (
+                  <div key={exp.label} className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={selectedExperience.some(
+                        (r) => r.label === exp.label
+                      )}
+                      onChange={() => handleExperienceChange(exp)}
+                    />
+                    <label className="form-check-label label_filter">
+                      {exp.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              {(selectedDepartments.length > 0 || selectedLocations.length > 0) && (
+                <button
+                  className="btn btn-sm btn-outline-secondary mt-3"
+                  onClick={clearFilters}
+                >
+                  Clear All Filters
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Job Cards (original style restored) */}
+        <div className="col-md-9">
+          {/* 🔹 Search and Requisition Dropdown */}
+      <div className="d-flex justify-content-between mb-3">
+        <div className="d-flex" style={{ flex: 1 }}>
           <div style={{ minWidth: "250px" }}>
             <select
               className="form-select"
@@ -387,102 +587,6 @@ const paginatedJobs = filteredJobs.slice(
           </span>
         </div>
       </div>
-
-      {/* Filters + Job Cards */}
-      <div className="row" id="matched-jobs-container">
-        {/* Left Filters (unchanged) */}
-        <div
-          className="col-md-3 bob-left-fixed-filter bob-mob-side-filter"
-          style={{ paddingBottom: "30px" }}
-        >
-          <div className="bob-left-filter-div">
-              <img 
-                className="filter-icon"
-                src={filtericon} 
-                alt="filter" 
-               
-              />
-            <strong>Filters</strong>
-          </div>
-          <div
-            className="bob-left-custom-filter-div"
-            style={{
-              background: "#fff",
-              boxShadow: "0 3px 6px #1a2c7129",
-              borderRadius: "10px",
-              padding: "20px 10px",
-              marginTop: "25px",
-              border: "1px solid #eaeaea",
-            }}
-          >
-            <div className="bob-filter-c-div bob-inner-categories-c-div">
-              <h6>Departments</h6>
-              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-                {departments.map((dept) => (
-                  <div key={dept.department_id} className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={selectedDepartments.includes(dept.department_id)}
-                      onChange={() => handleDepartmentChange(dept.department_id)}
-                    />
-                    <label className="form-check-label">
-                      {dept.department_name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-
-              <h6 className="mt-3">Locations</h6>
-              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-                {locations.map((location) => (
-                  <div key={`location-${location.city_id}`} className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={selectedLocations.includes(location.city_id)}
-                      onChange={() => handleLocationChange(location.city_id)}
-                      id={`location-${location.city_id}`}
-                    />
-                    <label className="form-check-label" htmlFor={`location-${location.city_id}`}>
-                      {location.city_name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-              <h6 className="mt-3">Experience</h6>
-              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-                {experienceOptions.map((exp) => (
-                  <div key={exp.label} className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={selectedExperience.some(
-                        (r) => r.label === exp.label
-                      )}
-                      onChange={() => handleExperienceChange(exp)}
-                    />
-                    <label className="form-check-label">
-                      {exp.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-
-              {(selectedDepartments.length > 0 || selectedLocations.length > 0) && (
-                <button
-                  className="btn btn-sm btn-outline-secondary mt-3"
-                  onClick={clearFilters}
-                >
-                  Clear All Filters
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Job Cards (original style restored) */}
-        <div className="col-md-9">
           {paginatedJobs.map((job) => (
             <div className="col-md-12 mb-4" key={job.position_id}>
               <div
@@ -499,27 +603,27 @@ const paginatedJobs = filteredJobs.slice(
                     <h6 className="job-title">
                       {job.requisition_code} - {job.position_title}
                     </h6>
-                    <p className="mb-1 text-muted small size35">
+                    <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Employment Type:</span>{" "}
                       {job.employment_type}
                     </p>
-                    <p className="mb-1 text-muted small size35">
+                    <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Eligibility Age:</span>{" "}
                       {job.eligibility_age_min} - {job.eligibility_age_max} years
                     </p>
-                    <p className="mb-1 text-muted small size30">
+                    <p className="mb-1 text-mutedd small size30">
                       <span className="subtitle">Experience:</span>{" "}
                       {job.mandatory_experience} years
                     </p>
-                    <p className="mb-1 text-muted small size35">
+                    <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Department:</span>{" "}
                       {job.dept_name}
                     </p>
-                    <p className="mb-1 text-muted small size35">
+                    <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Location:</span>{" "}
                       {job.city_name}
                     </p>
-                    <p className="mb-1 text-muted small qualification">
+                    <p className="mb-1 text-mutedd small qualification">
                       <span className="subtitle">Qualification:</span>{" "}
                       {job.mandatory_qualification}
                     </p>
@@ -528,7 +632,7 @@ const paginatedJobs = filteredJobs.slice(
 
                     <button
                       className="btn btn-sm btn-outline-primary hovbtn"
-                      onClick={() => handleApplyClick(job)}
+                      onClick={() => handleApplyClick(job,previewData)}
                     >
                       Apply Now
                     </button>
@@ -601,6 +705,7 @@ const paginatedJobs = filteredJobs.slice(
           toast.info("Redirecting to profile editor...");
         }}
         onProceedToPayment={handleProceedToPayment}
+        selectedJob={selectedJob}
       />
       <PaymentModal
         show={showPaymentModal}

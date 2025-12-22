@@ -32,12 +32,12 @@
 	font-size: 14px;
 }
   .job-title{
-    color: #162A75;
-  font-size: 15px;
+    color: #162B75;
+  font-size: 1rem;
   width: 75%;
   float: left;
     margin-bottom: 10px;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
   }
   .qualification{
     color: #1a2c71 !important;
@@ -46,7 +46,8 @@
   }
   .subtitle{
     font-weight:500;
-    color:#717178;
+    color:#4A5565;
+    font-size:0.875rem;
   }
    
   .size30{
@@ -57,9 +58,10 @@
   width: 35%;
   float: left;
   }
-  .text-muted{
-    color: #000 !important;
-  font-size: 14px;
+  .left_content .text-mutedd{
+    color:#404040;
+  font-size: 0.875rem;
+  font-weight:300;
   }
   .left_content{
     width:85%;
@@ -75,10 +77,14 @@
   .apply_btn .btn{
     padding: 8px 15px;
   margin: 0px 0 8px;
-  font-weight:normal;
-  font-size: 12px;
+  font-weight:600;
+  font-size: 0.75rem;
   }
     .apply_btn .hovbtn{
+      background-color: #F26522 !important;
+  border: 1px solid #ff6600 !important;
+  color: #fff !important;
+  border-radius: 20px !important;
       margin-top: 10px;
     }
   .job-main-header-sec{
@@ -195,8 +201,8 @@ display: flex;
 }
 
 .relevant .pagination .page-item.active .page-link {
-  background-color: #ff6a00;
-  border-color: #ff6a00;
+  background-color: #F26522;
+  border-color: #F26522;
   color: #fff;
 }
 
@@ -209,4 +215,24 @@ display: flex;
   height: 20px;
   margin-right: 10px;
   margin-left: 5px;
+}
+.relevant .filter{
+font-size: 1.125rem;
+font-weight: 500;
+color:  #162B75;
+}
+.header_filter{
+  font-size:0.875rem;
+font-weight: 500;
+color:  #404040;
+}
+.label_filter{
+     font-size: 0.875rem;
+font-weight: 400;
+color:  #4A5565;
+}
+.relevant .form-select{
+      font-size: 0.875rem;
+font-weight: 400;
+color:  #333333;
 }

@@ -31,15 +31,15 @@
 }
 
 .bob-pref-advt {
-  font-size: 13px;
+  font-size: 1rem;
   font-weight: 600;
-  color: #f37021;
+  color: #f26522;
   margin-bottom: 4px;
 }
 
 .bob-pref-position {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: #1a2c71;
 }
 .bob-pref-header-top span:first-child {
@@ -98,26 +98,26 @@
 
 .bob-pref-title {
   color: #1a2c71;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 1rem;
   /* margin-bottom: 15px; */
 }
 
 /* === FORM === */
-.form-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 5px;
-}
 
+.form-label {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: #404040;
+	margin-bottom: 5px;
+}
 .form-control {
   border: 1px solid #dcdcdc;
   border-radius: 6px;
   font-size: 0.875rem !important;
   height: 36px;
   padding: 5px 10px;
-  color: #333;
+  color: #404040;
   box-shadow: none !important;
   background-color: #fff;
 }
@@ -146,13 +146,13 @@
 /* === BUTTONS === */
 .btn-outline-secondary {
   border: 1px solid #c7c7c7 !important;
-  color: #333 !important;
+  color: #404040 !important;
   background: #fff !important;
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: 300;
   padding: 8px 28px;
   transition: all 0.2s ease-in-out;
-  font-size: 14px;
+  font-size: 1rem;
 }
 
 .btn-outline-secondary:hover {
@@ -160,19 +160,19 @@
   border-color: #aaa !important;
 }
 
-.btn-bob-orange {
-  background: #f37021;
+.bob-preference-modal .btn-bob-orange {
+  background: #f26522;
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: 400;
   padding: 9px 32px;
-  font-size: 14px;
+  font-size: 1rem;
   transition: all 0.2s ease-in-out;
 }
 
 .btn-bob-orange:hover {
-  background: #e66100;
+  background: #f26522;
 }
 
 /* === RESPONSIVE === */
@@ -248,8 +248,9 @@ select.form-control::-ms-expand {
   align-items: center;
   gap: 8px;
   margin-top: 18px;
-  font-size: 13px;
-  color: #f37021; /* Bank orange */
+  font-size: 1rem;
+  font-weight: 500;
+  color: #f26522; /* Bank orange */
 }
 
 .bob-pref-info-bottom svg {

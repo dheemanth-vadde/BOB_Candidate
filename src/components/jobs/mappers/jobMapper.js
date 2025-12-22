@@ -19,10 +19,10 @@ export const mapJobApiToModel = (apiJob, citiess = []) => {
   return {
     // === IDs & Titles ===
     position_id: positions?.positionId || "",
-    requisition_id: requisitionsDTO?.requisition_id || "",
+    requisition_id: requisitionsDTO?.requisitionId || "",
     position_title: positions?.positionTitle || "",
-    requisition_code: requisitionsDTO?.requisition_code || "",
-    requisition_title: requisitionsDTO?.requisition_title || "",
+    requisition_code: requisitionsDTO?.requisitionCode || "",
+    requisition_title: requisitionsDTO?.requisitionTitle || "",
 
     // === Descriptions ===
     description: positions?.description || "",
@@ -43,22 +43,22 @@ export const mapJobApiToModel = (apiJob, citiess = []) => {
     preferred_experience: positions?.preferredExperience ?? 0,
     probation_period: positions?.probationPeriod ?? 0,
 
-    // === Documents ===
+    // === Documents & Relaxation ===
     documents_required: positions?.documentsRequired || "",
     job_relaxation_policy_id: positions?.jobRelaxationPolicyId || "",
     job_relaxation_policy_json: relaxationPolicy?.relaxation || null,
 
     // === Vacancies ===
     no_of_vacancies: vacancies?.noOfVacancies ?? 0,
-    special_cat_id: vacancies?.specialCatId || null,
-    reservation_cat_id: vacancies?.reservationCatId || null,
+    special_cat_id: vacancies?.specialCatId ?? null,
+    reservation_cat_id: vacancies?.reservationCatId ?? null,
 
     // === Location & Department ===
-    dept_id: postingLocation?.deptId || departmentsDTO?.department_id || "",
-    dept_name: departmentsDTO?.department_name || "",
-    location_id: postingLocation?.locationId || locationDTO?.location_id || "",
-    location_name: locationDTO?.location_name || "",
-    city_id: postingLocation?.cityId || locationDTO?.city_id || "",
+    dept_id: postingLocation?.deptId || departmentsDTO?.departmentId || "",
+    dept_name: departmentsDTO?.departmentName || "",
+    location_id: postingLocation?.locationId || locationDTO?.locationId || "",
+    location_name: locationDTO?.locationName || "",
+    city_id: cityId,
     state_id: postingLocation?.stateId || "",
     country_id: postingLocation?.countryId || "",
 
@@ -67,12 +67,11 @@ export const mapJobApiToModel = (apiJob, citiess = []) => {
     max_salary: positions?.maxSalary ?? null,
 
     // === Requisition Details ===
-    registration_start_date: requisitionsDTO?.registration_start_date || "",
-    registration_end_date: requisitionsDTO?.registration_end_date || "",
-    requisition_status: requisitionsDTO?.requisition_status || "",
+    registration_start_date: requisitionsDTO?.registrationStartDate || "",
+    registration_end_date: requisitionsDTO?.registrationEndDate || "",
+    requisition_status: requisitionsDTO?.requisitionStatus || "",
 
-    //==cities==
-    city_id: cityId || "",
+    // === City Lookup ===
     city_name: city?.city_name || "Unknown",
   };
 };

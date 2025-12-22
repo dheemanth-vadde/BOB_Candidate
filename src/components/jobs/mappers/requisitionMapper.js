@@ -8,25 +8,30 @@ export const mapRequisitionApiToModel = (apiReq) => {
 
   return {
     isActive: apiReq.isActive ?? false,
-    created_by: apiReq.created_by || "",
-    updated_by: apiReq.updated_by || "",
-    created_date: apiReq.created_date || "",
-    updated_date: apiReq.updated_date || "",
 
-    requisition_id: apiReq.requisition_id || "",
-    requisition_code: apiReq.requisition_code || "",
-    requisition_title: apiReq.requisition_title || "",
-    requisition_description: apiReq.requisition_description || "",
-    registration_start_date: apiReq.registration_start_date || "",
-    registration_end_date: apiReq.registration_end_date || "",
-    requisition_status: apiReq.requisition_status || "",
-    requisition_comments: apiReq.requisition_comments || "",
-    requisition_approval: apiReq.requisition_approval || "",
+    created_by: apiReq.createdBy || "",
+    updated_by: apiReq.modifiedBy || "",
+    created_date: apiReq.createdDate || "",
+    updated_date: apiReq.modifiedDate || "",
+
+    requisition_id: apiReq.requisitionId || "",
+    requisition_code: apiReq.requisitionCode || "",
+    requisition_title: apiReq.requisitionTitle || "",
+    requisition_description: apiReq.requisitionDescription || "",
+
+    registration_start_date: apiReq.registrationStartDate || "",
+    registration_end_date: apiReq.registrationEndDate || "",
+
+    requisition_status: apiReq.requisitionStatus || "",
+    requisition_comments: apiReq.requisitionComments || "",
+    requisition_approval: apiReq.requisitionApproval || "",
+    requisition_approval_notes: apiReq.requisitionApprovalNotes || "",
+
+    no_of_positions: apiReq.noOfPositions ?? 0,
+    no_of_approvals: apiReq.noOfApprovals ?? 0,
+
+    job_postings: apiReq.jobPostings || "",
     others: apiReq.others || null,
-    no_of_positions: apiReq.no_of_positions ?? 0,
-    job_postings: apiReq.job_postings || "",
-    requisition_approval_notes: apiReq.requisition_approval_notes || "",
-    no_of_approvals: apiReq.no_of_approvals ?? 0,
   };
 };
 

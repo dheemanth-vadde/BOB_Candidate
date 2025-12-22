@@ -18,7 +18,7 @@ function loadRazorpay() {
 async function getRzpKey() {
   //const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/config");
   // const r = await apiService.getConfig();
-   const r = await axios.get('http://192.168.20.115:8082/api/v1/razorpay/config',
+   const data = await axios.get('http://192.168.20.111:8082/api/v1/razorpay/config',
         {
           headers: {
             "X-Client": "candidate",
@@ -26,6 +26,7 @@ async function getRzpKey() {
           }
         }
       );
+      const r=data.data;
    console.log ("test", r);
   // if (!r.ok) throw new Error("Failed to load Razorpay key");
   const keyId  =r.keyId;
@@ -43,9 +44,9 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
       candidate_id, 
       position_id 
     };
-
+console.log("DATA:", data);
     //const r = await apiService.getRazorOrder(data);
-   const r = await axios.post ('http://192.168.20.115:8082/api/v1/razorpay/orders',data,  
+   const r = await axios.post ('http://192.168.20.111:8082/api/v1/razorpay/orders',data,  
         {
           headers: {
             "X-Client": "candidate",
@@ -55,7 +56,7 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
         
       );
 
-    const order = r;
+    const order = r.data;
     console.log("ORDER:", order);
 
     // Correct validation
@@ -80,7 +81,7 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
 async function verifyPayment(payload) {
   try {
     //const r = await apiService.getRazorVerify(payload);
-const r = await axios.post('http://192.168.20.115:8082/api/v1/razorpay/verify',payload,
+const r = await axios.post('http://192.168.20.111:8082/api/v1/razorpay/verify',payload,
         {
           headers: {
             "X-Client": "candidate",
@@ -113,7 +114,8 @@ export default function Razorpay({
   onClose,
   autoTrigger = false, // 🔹 NEW: Auto-open Razorpay when mounted
 }) {
-  const userLoginData = useSelector((state) => state.user.user);
+  console.log("candidaterazorpay",candidate)
+  const userLoginData =useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(false);
 
   const initiatePayment = useCallback(async () => {
@@ -129,7 +131,7 @@ export default function Razorpay({
           candidateId: candidate?.id || "demo",
           purpose: "InterviewFee",
         },
-        candidate_id: userLoginData?.candidate_id,
+        candidate_id: userLoginData?.data?.user?.id,
         position_id,
       });
 

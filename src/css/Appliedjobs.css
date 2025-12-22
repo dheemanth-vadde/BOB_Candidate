@@ -9,9 +9,10 @@
 /* =========================================================
    PAGE HEADER
 ========================================================= */
-.applied-jobs-page h5 {
-  color: #1f3c88;
-  font-size: 18px;
+.appliedheader {
+  color: #162B75;
+  font-size: 1.125rem;
+  font-weight: 500;
 }
 
 /* =========================================================
@@ -71,10 +72,10 @@ display: flex;
   margin-bottom: 6px;
 }
 
-.job-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1f3c88;
+.applied-jobs-page .jobtitle {
+  font-size: 1rem;
+font-weight: 500;
+  color: #162B75;
 }
 
 /* =========================================================
@@ -110,17 +111,21 @@ display: flex;
   display: flex;
   flex-wrap: wrap;
   gap: 6px 32px;   /* row-gap | column-gap */
-  font-size: 13px;
-  color: #333;
+
+}
+
+.job-meta-row {
+  white-space: nowrap;
+
+  font-size:0.875rem;
+  font-weight: 300;
+  color: #404040;
 }
 
 .job-meta-row span {
-  white-space: nowrap;
-}
-
-.job-meta-row strong {
-  font-weight: 600;
-  color: #6c757d;
+  font-size:0.875rem;
+  font-weight: 500;
+  color: #4A5565;
 }
 
 /* =========================================================
@@ -128,13 +133,19 @@ display: flex;
 ========================================================= */
 .job-qualification-row {
   margin-top: 4px;
-  font-size: 13px;
-  color: #333;
+  
 }
-
-.job-qualification-row strong {
-  font-weight: 600;
-  color: #6c757d;
+.job-qualification-row{
+    white-space: nowrap;
+ font-size:0.875rem;
+  font-weight: 300;
+  color: #404040;
+  
+}
+.job-qualification-row span {
+   font-size:0.875rem;
+  font-weight: 500;
+  color: #4A5565;
 }
 
 /* =========================================================
@@ -152,9 +163,9 @@ display: flex;
   background: none;
   border: none;
   padding: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1a73e8;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #404040;
   cursor: pointer;
 }
 
