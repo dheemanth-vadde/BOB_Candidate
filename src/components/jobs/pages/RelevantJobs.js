@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon  } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -62,57 +62,57 @@ const RelevantJobs = ({ candidateData = {} }) => {
     { label: "11+ years", min: 11, max: Infinity },
   ];
   const ITEMS_PER_PAGE = 5; // change if needed
-const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const dispatch = useDispatch();
 
   const [previewData, setPreviewData] = useState();
 
 
-useEffect(() => {
-  setCurrentPage(1);
-}, [
-  searchTerm,
-  selectedDepartments,
-  selectedLocations,
-  selectedExperience,
-  selectedRequisition,
-]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    selectedDepartments,
+    selectedLocations,
+    selectedExperience,
+    selectedRequisition,
+  ]);
   const user = useSelector((state) => state.user.user);
 
   const candidateId = user?.data?.user?.id;
 
 
   useEffect(() => {
-  const fetchCandidatePreview = async () => {
-    if (!candidateId) return;
+    const fetchCandidatePreview = async () => {
+      if (!candidateId) return;
 
-    try {
-      // const response = await axios.get(
-      //   `http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/${candidateId}`,
-      //   {
-      //     headers: {
-      //       "X-Client": "candidate",
-      //       "Content-Type": "application/json",
-      //     },
-      //   }
-      // );
+      try {
+        // const response = await axios.get(
+        //   `http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/${candidateId}`,
+        //   {
+        //     headers: {
+        //       "X-Client": "candidate",
+        //       "Content-Type": "application/json",
+        //     },
+        //   }
+        // );
 
-       const response = await axios.get("http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/75ddc495-a378-4a1c-8240-7bd6509c9965", {
-        headers: { "X-Client": "candidate", "Content-Type": "application/json" },
-      })
+        const response = await axios.get("http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/75ddc495-a378-4a1c-8240-7bd6509c9965", {
+          headers: { "X-Client": "candidate", "Content-Type": "application/json" },
+        })
 
 
-      const mappedPreviewData = mapCandidateToPreview(response.data.data);
-      setPreviewData(mappedPreviewData);
-    } catch (error) {
-      console.error("Failed to fetch candidate preview", error);
-      toast.error("Unable to load candidate profile");
-    }
-  };
+        const mappedPreviewData = mapCandidateToPreview(response.data.data);
+        setPreviewData(mappedPreviewData);
+      } catch (error) {
+        console.error("Failed to fetch candidate preview", error);
+        toast.error("Unable to load candidate profile");
+      }
+    };
 
-  fetchCandidatePreview();
-}, [candidateId]);
+    fetchCandidatePreview();
+  }, [candidateId]);
 
   // ✅ Fetch requisitions
   const fetchRequisitions = async () => {
@@ -207,127 +207,127 @@ useEffect(() => {
   }, []);
 
   const calculateAge = (dobString) => {
-  if (!dobString) return null;
+    if (!dobString) return null;
 
-  const dob = new Date(dobString);
-  const today = new Date();
+    const dob = new Date(dobString);
+    const today = new Date();
 
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
 
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && today.getDate() < dob.getDate())
-  ) {
-    age--;
-  }
-
-  return age;
-};
-const calculateExperienceYears = (totalExpString) => {
-  if (!totalExpString) return 0;
-
-  // "60 Months" → 60
-  const months = parseInt(totalExpString.replace(/\D/g, ""), 10);
-  return Math.floor(months / 12);
-};
-const validateAgeAndExperience = (job, previewData) => {
-  // ---------- AGE ----------
-  const dob = previewData?.personalDetails?.dob;
-  const age = calculateAge(dob);
-
-  console.log("age",age)
-
-  if (!age) {
-    toast.error("Date of Birth is missing in profile");
-    return false;
-  }
- console.log("age min max",job.eligibility_age_min,job.eligibility_age_max)
-  if (
-    (job.eligibility_age_min && age < job.eligibility_age_min) ||
-    (job.eligibility_age_max && age > job.eligibility_age_max)
-  ) {
-    toast.error(
-      `Age must be between ${job.eligibility_age_min} - ${job.eligibility_age_max} years`
-    );
-    return false;
-  }
-
-  // ---------- EXPERIENCE ----------
-  const totalExpYears = calculateExperienceYears(
-    previewData?.experienceSummary?.total
-  );
-console.log("totalExpYears",totalExpYears)
-console.log("job.mandatory_experience",job.mandatory_experience)
-  if (
-    job.mandatory_experience &&
-    totalExpYears < Number(job.mandatory_experience)
-  ) {
-    toast.error(
-      `Minimum ${job.mandatory_experience} years experience required`
-    );
-    return false;
-  }
-
-  return true; // ✅ Eligible
-};
-
- const handleConfirmApply = async () => {
-  if (!selectedJob || !candidateId) return;
-
-  try {
-    const response = await axios.post(
-      "http://192.168.20.111:8082/api/v1/candidate/applications/apply/job",
-      {
-        positionId: selectedJob.position_id,
-        candidateId: candidateId,
-      },
-      {
-        headers: {
-          "X-Client": "candidate",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    // ✅ Check success flag
-    if (response?.data?.success) {
-      toast.success(response.data.message || "Application submitted successfully!");
-
-      // ✅ Close modal
-      setShowPaymentModal(false);
-
-      // ✅ REDIRECT to Applied Jobs screen
-      navigate("/candidate/applied-jobs"); 
-      // 👆 change route as per your app
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < dob.getDate())
+    ) {
+      age--;
     }
-  } catch (error) {
-    console.error("Error submitting application:", error);
-    toast.error("Failed to submit application. Please try again.");
-  }
-};
+
+    return age;
+  };
+  const calculateExperienceYears = (totalExpString) => {
+    if (!totalExpString) return 0;
+
+    // "60 Months" → 60
+    const months = parseInt(totalExpString.replace(/\D/g, ""), 10);
+    return Math.floor(months / 12);
+  };
+  const validateAgeAndExperience = (job, previewData) => {
+    // ---------- AGE ----------
+    const dob = previewData?.personalDetails?.dob;
+    const age = calculateAge(dob);
+
+    console.log("age", age)
+
+    if (!age) {
+      toast.error("Date of Birth is missing in profile");
+      return false;
+    }
+    console.log("age min max", job.eligibility_age_min, job.eligibility_age_max)
+    if (
+      (job.eligibility_age_min && age < job.eligibility_age_min) ||
+      (job.eligibility_age_max && age > job.eligibility_age_max)
+    ) {
+      toast.error(
+        `Age must be between ${job.eligibility_age_min} - ${job.eligibility_age_max} years`
+      );
+      return false;
+    }
+
+    // ---------- EXPERIENCE ----------
+    const totalExpYears = calculateExperienceYears(
+      previewData?.experienceSummary?.total
+    );
+    console.log("totalExpYears", totalExpYears)
+    console.log("job.mandatory_experience", job.mandatory_experience)
+    if (
+      job.mandatory_experience &&
+      totalExpYears < Number(job.mandatory_experience)
+    ) {
+      toast.error(
+        `Minimum ${job.mandatory_experience} years experience required`
+      );
+      return false;
+    }
+
+    return true; // ✅ Eligible
+  };
+
+  const handleConfirmApply = async () => {
+    if (!selectedJob || !candidateId) return;
+
+    try {
+      const response = await axios.post(
+        "http://192.168.20.111:8082/api/v1/candidate/applications/apply/job",
+        {
+          positionId: selectedJob.position_id,
+          candidateId: candidateId,
+        },
+        {
+          headers: {
+            "X-Client": "candidate",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // ✅ Check success flag
+      if (response?.data?.success) {
+        toast.success(response.data.message || "Application submitted successfully!");
+
+        // ✅ Close modal
+        setShowPaymentModal(false);
+
+        // ✅ REDIRECT to Applied Jobs screen
+        navigate("/candidate/applied-jobs");
+        // 👆 change route as per your app
+      }
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast.error("Failed to submit application. Please try again.");
+    }
+  };
 
   // ✅ Open Add Preference modal instead of Razorpay
   const handleApplyClick = (job, previewData) => {
-  console.log("previewData123", previewData);
+    console.log("previewData123", previewData);
 
-  const isEligible = validateAgeAndExperience(job, previewData);
-  if (!isEligible) return;
+    const isEligible = validateAgeAndExperience(job, previewData);
+    if (!isEligible) return;
 
-  setSelectedJob(job);
-  setApplyForm({
-    state1: "",
-    location1: "",
-    state2: "",
-    location2: "",
-    state3: "",
-    location3: "",
-    ctc: "",
-    examCenter: "",
-  });
+    setSelectedJob(job);
+    setApplyForm({
+      state1: "",
+      location1: "",
+      state2: "",
+      location2: "",
+      state3: "",
+      location3: "",
+      ctc: "",
+      examCenter: "",
+    });
 
-  setShowPreferenceModal(true);
-};
+    setShowPreferenceModal(true);
+  };
 
   const handleKnowMore = (job) => {
     setSelectedJob(job);
@@ -398,12 +398,12 @@ console.log("job.mandatory_experience",job.mandatory_experience)
     return matchesDepartment && matchesLocation && matchesSearch && matchesRequisition &&
       matchesExperience;
   });
-const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
 
-const paginatedJobs = filteredJobs.slice(
-  (currentPage - 1) * ITEMS_PER_PAGE,
-  currentPage * ITEMS_PER_PAGE
-);
+  const paginatedJobs = filteredJobs.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
   const handleDepartmentChange = (deptId) => {
     setSelectedDepartments((prev) =>
       prev.includes(deptId)
@@ -433,29 +433,29 @@ const paginatedJobs = filteredJobs.slice(
     setSearchTerm("");
   };
   const handlePreviewClick = () => {
-  if (!previewData) {
-    toast.error("Candidate data not loaded yet");
-    return;
-  }
+    if (!previewData) {
+      toast.error("Candidate data not loaded yet");
+      return;
+    }
 
-  dispatch(
-    savePreference({
-      jobId: selectedJob.position_id,
-      requisitionId: selectedJob.requisition_id,
-      preferences: applyForm,
-    })
-  );
+    dispatch(
+      savePreference({
+        jobId: selectedJob.position_id,
+        requisitionId: selectedJob.requisition_id,
+        preferences: applyForm,
+      })
+    );
 
-  setShowPreferenceModal(false);
-  setShowPreviewModal(true);
-};
+    setShowPreferenceModal(false);
+    setShowPreviewModal(true);
+  };
   const handleProceedToPayment = () => {
     setShowPreviewModal(false);   // close preview
     setShowPaymentModal(true);    // open payment modal
   };
   return (
     <div className="mx-4 my-3 relevant">
-      
+
 
       {/* Filters + Job Cards */}
       <div className="row" id="matched-jobs-container">
@@ -465,12 +465,12 @@ const paginatedJobs = filteredJobs.slice(
           style={{ paddingBottom: "30px" }}
         >
           <div className="bob-left-filter-div">
-              <img 
-                className="filter-icon"
-                src={filtericon} 
-                alt="filter" 
-               
-              />
+            <img
+              className="filter-icon"
+              src={filtericon}
+              alt="filter"
+
+            />
             <span className="filter">Filters</span>
           </div>
           <div
@@ -553,40 +553,40 @@ const paginatedJobs = filteredJobs.slice(
         {/* Right Job Cards (original style restored) */}
         <div className="col-md-9">
           {/* 🔹 Search and Requisition Dropdown */}
-      <div className="d-flex justify-content-between mb-3">
-        <div className="d-flex" style={{ flex: 1 }}>
-          <div style={{ minWidth: "250px" }}>
-            <select
-              className="form-select"
-              value={selectedRequisition}
-              onChange={(e) => setSelectedRequisition(e.target.value)}
-            >
-              <option value="">All Requisitions</option>
-              {requisitions
-                .filter((req) => req.requisition_status === "Approved")
-                .map((req) => (
-                  <option key={req.requisition_id} value={req.requisition_id}>
-                    {req.requisition_title || `Requisition ${req.requisition_id}`}
-                  </option>
-                ))}
-            </select>
+          <div className="d-flex justify-content-between mb-3">
+            <div className="d-flex" style={{ flex: 1 }}>
+              <div style={{ minWidth: "250px" }}>
+                <select
+                  className="form-select"
+                  value={selectedRequisition}
+                  onChange={(e) => setSelectedRequisition(e.target.value)}
+                >
+                  <option value="">All Requisitions</option>
+                  {requisitions
+                    .filter((req) => req.requisition_status === "Approved")
+                    .map((req) => (
+                      <option key={req.requisition_id} value={req.requisition_id}>
+                        {req.requisition_title || `Requisition ${req.requisition_id}`}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="applied-search">
+
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search by Job title or Req code..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <span className="search-icon">
+                <FontAwesomeIcon icon={faSearch} />
+              </span>
+            </div>
           </div>
-        </div>
-
-        <div className="applied-search">
-
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search by Job title or Req code..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <span className="search-icon">
-            <FontAwesomeIcon icon={faSearch} />
-          </span>
-        </div>
-      </div>
           {paginatedJobs.map((job) => (
             <div className="col-md-12 mb-4" key={job.position_id}>
               <div
@@ -632,7 +632,7 @@ const paginatedJobs = filteredJobs.slice(
 
                     <button
                       className="btn btn-sm btn-outline-primary hovbtn"
-                      onClick={() => handleApplyClick(job,previewData)}
+                      onClick={() => handleApplyClick(job, previewData)}
                     >
                       Apply Now
                     </button>
@@ -716,50 +716,50 @@ const paginatedJobs = filteredJobs.slice(
         onPaymentSuccess={handleConfirmApply}
       />
 
-{totalPages > 1 && (
-  <div className="d-flex justify-content-center mt-4">
-    <ul className="pagination pagination-sm align-items-center">
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-4">
+          <ul className="pagination pagination-sm align-items-center">
 
-      {/* ◀ Prev */}
-      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-        <button
-          className="page-link"
-          onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-        >
-          ‹
-        </button>
-      </li>
+            {/* ◀ Prev */}
+            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              >
+                ‹
+              </button>
+            </li>
 
-      {/* Page Numbers */}
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-        <li
-          key={page}
-          className={`page-item ${currentPage === page ? "active" : ""}`}
-        >
-          <button
-            className="page-link"
-            onClick={() => setCurrentPage(page)}
-          >
-            {page}
-          </button>
-        </li>
-      ))}
+            {/* Page Numbers */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <li
+                key={page}
+                className={`page-item ${currentPage === page ? "active" : ""}`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              </li>
+            ))}
 
-      {/* ▶ Next */}
-      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-        <button
-          className="page-link"
-          onClick={() =>
-            setCurrentPage((p) => Math.min(p + 1, totalPages))
-          }
-        >
-          ›
-        </button>
-      </li>
+            {/* ▶ Next */}
+            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+              >
+                ›
+              </button>
+            </li>
 
-    </ul>
-  </div>
-)}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

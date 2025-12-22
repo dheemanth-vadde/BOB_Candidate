@@ -29,8 +29,8 @@ const AppliedJobs = () => {
     console.log("fetchappliedjobs")
     if (!candidateId) return;
     try {
- //    const response = await apiService.appliedpositions(candidateId);
- 
+      //    const response = await apiService.appliedpositions(candidateId);
+
       //  const jobsArray = Array.isArray(response.data)
       // ? response.data
       // : [];
@@ -47,9 +47,9 @@ const AppliedJobs = () => {
       const jobsData = response?.data?.data || [];
 
       const mappedJobs = mapJobsApiToList(jobsData);
-           console.log(mappedJobs)
+      console.log(mappedJobs)
 
-    setAppliedJobs(mappedJobs);
+      setAppliedJobs(mappedJobs);
     } catch (error) {
       console.error("Error fetching applied jobs:", error);
       setAppliedJobs([]);
@@ -65,7 +65,7 @@ const AppliedJobs = () => {
       // setDepartments(masterData.departments || []);
       // setLocations(masterData.locations || []);
 
-       const masterData = await axios.get('http://192.168.20.115:8080/api/all',
+      const masterData = await axios.get('http://192.168.20.115:8080/api/all',
         {
           headers: {
             "X-Client": "candidate",
@@ -76,7 +76,7 @@ const AppliedJobs = () => {
       console.log("masterDataResponse", masterData)
       const departments = masterData.data.departments || [];
       const locations = masterData.data.cities || [];
-         setDepartments(departments);
+      setDepartments(departments);
       setLocations(locations);
     } catch (error) {
       console.error("Error fetching master data:", error);
@@ -84,10 +84,10 @@ const AppliedJobs = () => {
   };
 
   useEffect(() => {
-    console.log("candidateId",candidateId)
+    console.log("candidateId", candidateId)
     if (candidateId) {
       fetchAppliedJobs();
-     // fetchMasterData();
+      // fetchMasterData();
     }
   }, [candidateId]);
 
@@ -121,77 +121,77 @@ const AppliedJobs = () => {
 
 
   return (
-    
-  <div className="applied-jobs-page px-4 py-3">
 
-    {/* ===== PAGE HEADER ===== */}
-    <div className="d-flex justify-content-between align-items-center mb-4">
-      <span className="mb-0 appliedheader">Job Applications</span>
-     
-      {/* Search Bar */}
-      <div className="applied-search">
-       
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search by Job title or Req code..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-         <span className="search-icon">
-          <FontAwesomeIcon icon={faSearch} />
-        </span>
-      </div>
-    </div>
+    <div className="applied-jobs-page px-4 py-3">
 
-    {/* ===== LOADING ===== */}
-    {loading && (
-      <div className="text-center my-5">
-        <div className="spinner-border text-primary" role="status" />
-        <p className="mt-2">Loading Applied Jobs...</p>
-      </div>
-    )}
+      {/* ===== PAGE HEADER ===== */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <span className="mb-0 appliedheader">Job Applications</span>
 
-    {/* ===== APPLIED JOBS LIST ===== */}
-    {!loading && filteredJobs.length === 0 && (
-      <p className="text-muted">No applied jobs found.</p>
-    )}
+        {/* Search Bar */}
+        <div className="applied-search">
 
-    {filteredJobs.map((job) => (
-      <div className="applied-job-card mb-3" key={job.position_id}>
-
-        {/* Header */}
-        <div className="applied-job-header">
-          <span className="jobtitle">
-            {job.requisition_code} - {job.position_title}
-          </span>
-
-          <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
-            {job.application_status || "Applied"}
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by Job title or Req code..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <span className="search-icon">
+            <FontAwesomeIcon icon={faSearch} />
           </span>
         </div>
+      </div>
 
-        {/* Grid Info */}
-      {/* ===== META DATA – SINGLE FLEX ROW ===== */}
-<div className="job-meta-row">
-  <span>Employment Type:</span>{job.employment_type}
-  <span>Department:</span>{job.dept_name}
-  <span>Experience:</span>{job.mandatory_experience} years
-  <span>Vacancies:</span> {job.no_of_vacancies}
-  <span> Eligibility Age:</span>
-    {job.eligibility_age_min} – {job.eligibility_age_max} years
-  
-  <span>Applied On:</span> {job.applied_on || "-"}
-</div>
+      {/* ===== LOADING ===== */}
+      {loading && (
+        <div className="text-center my-5">
+          <div className="spinner-border text-primary" role="status" />
+          <p className="mt-2">Loading Applied Jobs...</p>
+        </div>
+      )}
 
-{/* ===== QUALIFICATION – NEXT ROW ONLY ===== */}
-<div className="job-qualification-row">
-  <span>Qualification:</span> {job.mandatory_qualification}
-</div>
+      {/* ===== APPLIED JOBS LIST ===== */}
+      {!loading && filteredJobs.length === 0 && (
+        <p className="text-muted">No applied jobs found.</p>
+      )}
 
-        {/* Footer */}
-        <div className="job-footer">
-          {/* {job.application_status === "Offered" && ( */}
+      {filteredJobs.map((job) => (
+        <div className="applied-job-card mb-3" key={job.position_id}>
+
+          {/* Header */}
+          <div className="applied-job-header">
+            <span className="jobtitle">
+              {job.requisition_code} - {job.position_title}
+            </span>
+
+            <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
+              {job.application_status || "Applied"}
+            </span>
+          </div>
+
+          {/* Grid Info */}
+          {/* ===== META DATA – SINGLE FLEX ROW ===== */}
+          <div className="job-meta-row">
+            <span>Employment Type:</span>{job.employment_type}
+            <span>Department:</span>{job.dept_name}
+            <span>Experience:</span>{job.mandatory_experience} years
+            <span>Vacancies:</span> {job.no_of_vacancies}
+            <span> Eligibility Age:</span>
+            {job.eligibility_age_min} – {job.eligibility_age_max} years
+
+            <span>Applied On:</span> {job.applied_on || "-"}
+          </div>
+
+          {/* ===== QUALIFICATION – NEXT ROW ONLY ===== */}
+          <div className="job-qualification-row">
+            <span>Qualification:</span> {job.mandatory_qualification}
+          </div>
+
+          {/* Footer */}
+          <div className="job-footer">
+            {/* {job.application_status === "Offered" && ( */}
             <>
               <button
                 className="footer-link"
@@ -202,31 +202,31 @@ const AppliedJobs = () => {
 
               <span className="footer-separator">|</span>
             </>
-          {/* )} */}
+            {/* )} */}
 
-          <button
-            className="footer-link"
-            onClick={() => {
-              setSelectedJob(job);
-              setShowTrackModal(true);
-            }}
-          >
-            Track Application
-          </button>
+            <button
+              className="footer-link"
+              onClick={() => {
+                setSelectedJob(job);
+                setShowTrackModal(true);
+              }}
+            >
+              Track Application
+            </button>
+          </div>
         </div>
-      </div>
-    ))}
-<TrackApplicationModal
-  show={showTrackModal}
-  onHide={() => setShowTrackModal(false)}
-  job={selectedJob}
-/>
-<OfferLetterModal
-  show={showOfferModal}
-  onHide={() => setShowOfferModal(false)}
-  pdfUrl="/offers/offer_letter_123.pdf" // from API
-/>
-  </div>
+      ))}
+      <TrackApplicationModal
+        show={showTrackModal}
+        onHide={() => setShowTrackModal(false)}
+        job={selectedJob}
+      />
+      <OfferLetterModal
+        show={showOfferModal}
+        onHide={() => setShowOfferModal(false)}
+        pdfUrl="/offers/offer_letter_123.pdf" // from API
+      />
+    </div>
   );
 };
 
