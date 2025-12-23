@@ -82,7 +82,7 @@ font-weight: 500;
    STATUS BADGES
 ========================================================= */
 .status-badge {
-  font-size: 12px;
+  font-size: 0.75rem;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 600;
@@ -90,7 +90,7 @@ font-weight: 500;
 
 .status-badge.applied {
   background: #e7f0ff;
-  color: #1a73e8;
+  color: #0C5DFF;
 }
 
 .status-badge.interview,

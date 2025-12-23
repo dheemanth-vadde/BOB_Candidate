@@ -121,6 +121,7 @@ const CandidatePortal = () => {
             candidateData={candidateData}
             jobsList={jobsList}
             setJobsList={setJobsList}
+            setActiveTab={setActiveTab}
           />
         );
 

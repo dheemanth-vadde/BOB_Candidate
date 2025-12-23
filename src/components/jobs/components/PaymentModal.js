@@ -51,9 +51,9 @@ const PaymentModal = ({
             amountPaise={selectedJob?.application_fee_paise ?? 50000}
             candidate={{
               id: candidateId,
-              full_name: user?.full_name,
-              email: user?.email,
-              phone: user?.phone,
+              full_name: user?.data?.user?.full_name,
+              email: user?.data?.user?.email,
+              phone: user?.data?.user?.phone,
             }}
           />
         )}

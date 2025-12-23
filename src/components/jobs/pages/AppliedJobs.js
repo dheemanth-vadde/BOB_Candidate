@@ -36,7 +36,7 @@ const AppliedJobs = () => {
       // : [];
 
 
-      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/62394083-ded6-4861-9ccb-39e36024a98d',
+      const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`, 
         {
           headers: {
             "X-Client": "candidate",

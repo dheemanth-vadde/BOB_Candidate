@@ -24,7 +24,7 @@ import { savePreference } from "../store/preferenceSlice";
 import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 import filtericon from "../../../assets/filter-icon.png";
 import PaymentModal from "../components/PaymentModal";
-const RelevantJobs = ({ candidateData = {} }) => {
+const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -53,6 +53,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
   });
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState([]);
+  const [appliedJobIds, setAppliedJobIds] = useState([]);
   const experienceOptions = [
     { label: "1-2 years", min: 1, max: 2 },
     { label: "3-4 years", min: 3, max: 4 },
@@ -80,9 +81,40 @@ const RelevantJobs = ({ candidateData = {} }) => {
   ]);
   const user = useSelector((state) => state.user.user);
 
+
   const candidateId = user?.data?.user?.id;
 
+  useEffect(() => {
+    const fetchAppliedJobs = async () => {
+      if (!candidateId) return;
 
+      try {
+        const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`,
+          {
+            headers: {
+              "X-Client": "candidate",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const jobsData = response?.data?.data || [];
+        const mappedJobs = mapJobsApiToList(jobsData);
+
+
+        console.log("applied jobs", mappedJobs)
+        // Extract position IDs
+        const appliedIds = (mappedJobs).map(
+          (app) => app.position_id
+        );
+
+        setAppliedJobIds(appliedIds);
+      } catch (err) {
+        console.error("Failed to fetch applied jobs", err);
+      }
+    };
+
+    fetchAppliedJobs();
+  }, [candidateId]);
   useEffect(() => {
     const fetchCandidatePreview = async () => {
       if (!candidateId) return;
@@ -98,7 +130,7 @@ const RelevantJobs = ({ candidateData = {} }) => {
         //   }
         // );
 
-        const response = await axios.get("http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/75ddc495-a378-4a1c-8240-7bd6509c9965", {
+        const response = await axios.get(`http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/${candidateId}`, {
           headers: { "X-Client": "candidate", "Content-Type": "application/json" },
         })
 
@@ -187,10 +219,6 @@ const RelevantJobs = ({ candidateData = {} }) => {
 
 
       // ✅ Convert new nested structure to old flat model
-      console.log("jobsdata", jobsData)
-      console.log("locationddds", locations);
-      console.log("departments", departments);
-      console.log("states", states);
       const mappedJobs = mapJobsApiToList(jobsData, locations);
       console.log(mappedJobs)
       setJobs(mappedJobs); // use the mapped flat array
@@ -276,12 +304,29 @@ const RelevantJobs = ({ candidateData = {} }) => {
     if (!selectedJob || !candidateId) return;
 
     try {
+      const payload = {
+        candidateId,
+        positionId: selectedJob.position_id,
+
+        statePreference1: applyForm.state1 || null,
+        cityPreference1: applyForm.location1 || null,
+        locationPreference1: applyForm.location1 || null,
+
+        statePreference2: applyForm.state2 || null,
+        cityPreference2: applyForm.location2 || null,
+        locationPreference2: applyForm.location2 || null,
+
+        statePreference3: applyForm.state3 || null,
+        cityPreference3: applyForm.location3 || null,
+        locationPreference3: applyForm.location3 || null,
+
+        expectedCtc: Number(applyForm.ctc) || 0,
+        interviewCenter: applyForm.examCenter || "",
+      };
+
       const response = await axios.post(
         "http://192.168.20.111:8082/api/v1/candidate/applications/apply/job",
-        {
-          positionId: selectedJob.position_id,
-          candidateId: candidateId,
-        },
+        payload,
         {
           headers: {
             "X-Client": "candidate",
@@ -289,17 +334,10 @@ const RelevantJobs = ({ candidateData = {} }) => {
           },
         }
       );
-
-      // ✅ Check success flag
       if (response?.data?.success) {
-        toast.success(response.data.message || "Application submitted successfully!");
-
-        // ✅ Close modal
-        setShowPaymentModal(false);
-
-        // ✅ REDIRECT to Applied Jobs screen
-        navigate("/candidate/applied-jobs");
-        // 👆 change route as per your app
+        toast.success("Job applied Successfully");
+        setShowPreferenceModal(false);
+        setActiveTab("applied-jobs"); // ✅ correct
       }
     } catch (error) {
       console.error("Error submitting application:", error);
@@ -307,12 +345,12 @@ const RelevantJobs = ({ candidateData = {} }) => {
     }
   };
 
+
   // ✅ Open Add Preference modal instead of Razorpay
   const handleApplyClick = (job, previewData) => {
-    console.log("previewData123", previewData);
 
-    const isEligible = validateAgeAndExperience(job, previewData);
-    if (!isEligible) return;
+    // const isEligible = validateAgeAndExperience(job, previewData);
+    // if (!isEligible) return;
 
     setSelectedJob(job);
     setApplyForm({
@@ -378,6 +416,11 @@ const RelevantJobs = ({ candidateData = {} }) => {
 
 
   const filteredJobs = jobs.filter((job) => {
+     // ❌ remove applied jobs
+      if (appliedJobIds.includes(job.position_id)) {
+        return false;
+      }
+
     const matchesDepartment =
       selectedDepartments.length === 0 || selectedDepartments.includes(job.dept_id);
     const matchesLocation =
