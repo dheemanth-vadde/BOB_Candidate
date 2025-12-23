@@ -19,13 +19,13 @@ const PreviewModal = ({
   const preferenceData = useSelector(
     (state) => state.preference.preferenceData
   );
-  
+  const preferences = preferenceData?.preferences || {};
 if (!previewData) {
     return null;
   }
 
   console.log("Stored preference:", preferenceData);
-  console.log("Preview selectedJob:", selectedJob);
+  console.log("Preview previewData:", previewData);
 
   return (
     <Modal
@@ -145,7 +145,7 @@ if (!previewData) {
 
                     <tr>
                       <td className="fw-med">Exam Center</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.examCenter || "Hyderabad"}</td>
+                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "Hyderabad"}</td>
                       <td className="fw-med">Nationality</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality}</td>
                     </tr>
@@ -166,7 +166,7 @@ if (!previewData) {
                       <td className="fw-med">Current CTC</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.currentCTC || "11"}</td>
                       <td className="fw-med">Expected CTC</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.expectedCTC}</td>
+                      <td className="fw-reg" colSpan={2}>{preferences.ctc || "-"}</td>
                     </tr>
 
                     <tr>

@@ -208,6 +208,7 @@ const PreferenceModal = ({
           )}
 
           {/* ✅ ALWAYS SHOWN FIELDS */}
+          {selectedJob?.employment_type?.toLowerCase() === 'contract' && (
           <div className="col-md-3">
             <label className="form-label">Expected CTC (in Lakhs)</label>
             <input
@@ -219,10 +220,10 @@ const PreferenceModal = ({
               placeholder="Enter expected CTC"
             />
           </div>
-
+          )}
           <div className="col-md-3">
             <label className="form-label">
-              Exam/ Interview Center <span className="text-danger">*</span>
+              Exam/ Interview Center 
             </label>
             <input
               type="text"

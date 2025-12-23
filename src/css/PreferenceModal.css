@@ -110,6 +110,7 @@
 	font-weight: 400;
 	color: #404040;
 	margin-bottom: 5px;
+  text-wrap: nowrap;
 }
 .bob-preference-modal .form-control {
   border: 1px solid #dcdcdc;

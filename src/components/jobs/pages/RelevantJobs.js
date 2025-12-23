@@ -69,7 +69,6 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
 
   const [previewData, setPreviewData] = useState();
 
-
   useEffect(() => {
     setCurrentPage(1);
   }, [
@@ -134,7 +133,7 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
           headers: { "X-Client": "candidate", "Content-Type": "application/json" },
         })
 
-
+console.log("emp response",response)
         const mappedPreviewData = mapCandidateToPreview(response.data.data);
         setPreviewData(mappedPreviewData);
       } catch (error) {
@@ -476,6 +475,22 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
     setSearchTerm("");
   };
   const handlePreviewClick = () => {
+    let isCtcRequired = false;
+
+    if (selectedJob?.employment_type === "Contract") {
+      isCtcRequired = true;
+    }
+
+    if (isCtcRequired && !applyForm.ctc) {
+      toast.error("Please enter Expected CTC");
+      return;
+    }
+
+    if (!applyForm.examCenter) {
+      toast.error("Please enter Interview Center");
+      return;
+    }
+   
     if (!previewData) {
       toast.error("Candidate data not loaded yet");
       return;

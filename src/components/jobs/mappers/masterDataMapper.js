@@ -4,82 +4,186 @@ export const mapMasterDataApi = (apiResponse) => {
   const data = apiResponse?.data || {};
 
   return {
-    // ✅ Departments
+    /* =====================
+       DEPARTMENTS
+    ====================== */
     departments: (data.departments || []).map(d => ({
       department_id: d.departmentId,
       department_name: d.departmentName,
       department_desc: d.departmentDesc,
-      isActive: d.isActive,
+      is_active: d.isActive,
     })),
 
-    // ✅ States
+    /* =====================
+       COUNTRIES
+    ====================== */
+    countries: (data.countries || []).map(c => ({
+      country_id: c.countryId,
+      country_name: c.countryName,
+      is_active: c.isActive,
+    })),
+
+    /* =====================
+       STATES
+    ====================== */
     states: (data.states || []).map(s => ({
       state_id: s.stateId,
       state_name: s.stateName,
       country_id: s.countryId,
-      isActive: s.isActive,
+      is_active: s.isActive,
     })),
 
-    // ✅ Cities
+    /* =====================
+       CITIES
+    ====================== */
     cities: (data.cities || []).map(c => ({
       city_id: c.cityId,
       city_name: c.cityName,
       state_id: c.stateId,
-      isActive: c.isActive,
+      is_active: c.isActive,
     })),
 
-    // ✅ Locations
+    /* =====================
+       LOCATIONS
+    ====================== */
     locations: (data.locations || []).map(l => ({
       location_id: l.locationId,
       location_name: l.locationName,
       city_id: l.cityId,
-      isActive: l.isActive,
+      is_active: l.isActive,
     })),
 
-    // ✅ Skills
+    /* =====================
+       SKILLS
+    ====================== */
     skills: (data.skills || []).map(s => ({
       skill_id: s.skillId,
       skill_name: s.skillName,
       skill_desc: s.skillDesc,
-      isActive: s.isActive,
+      is_active: s.isActive,
     })),
 
-    // ✅ Job Grades (IMPORTANT – UI uses this)
-    job_grade_data: (data.jobGrade || []).map(j => ({
+    /* =====================
+       JOB GRADES
+    ====================== */
+    job_grades: (data.jobGrade || []).map(j => ({
       job_grade_id: j.jobGradeId,
       job_grade_code: j.jobGradeCode,
       job_grade_desc: j.jobGradeDesc,
       job_scale: j.jobScale,
-      min_salary: j.minSalary,
-      max_salary: j.maxSalary,
-      isActive: j.isActive,
+      min_salary: j.minSalary?.parsedValue ?? 0,
+      max_salary: j.maxSalary?.parsedValue ?? 0,
+      is_active: j.isActive,
     })),
 
-    // ✅ Mandatory Qualification
-    mandatory_qualification: (data.mandatoryQualification || []).map(q => ({
-      edu_qualification_id: q.eduQualificationId,
-      edu_qualification_name: q.eduQualificationName,
-      edu_desc: q.eduDesc,
-      isActive: q.isActive,
+    /* =====================
+       MANDATORY QUALIFICATIONS
+    ====================== */
+    mandatory_qualifications: (data.mandatoryQualification || []).map(q => ({
+      qualification_id: q.educationQualificationsId,
+      qualification_code: q.qualificationCode,
+      qualification_name: q.qualificationName,
+      level_id: q.levelId,
+      is_active: q.isActive,
     })),
 
-    // ✅ Preferred Qualification
-    preferred_qualification: (data.preferredQualification || []).map(q => ({
-      edu_qualification_id: q.eduQualificationId,
-      edu_qualification_name: q.eduQualificationName,
-      edu_desc: q.eduDesc,
-      isActive: q.isActive,
+    /* =====================
+       PREFERRED QUALIFICATIONS
+    ====================== */
+    preferred_qualifications: (data.preferredQualification || []).map(q => ({
+      qualification_id: q.educationQualificationsId,
+      qualification_code: q.qualificationCode,
+      qualification_name: q.qualificationName,
+      level_id: q.levelId,
+      is_active: q.isActive,
     })),
 
-    // ✅ Master Positions
-    masterPositionsList: (data.masterPositions || []).map(p => ({
-      masterPositionId: p.positionId,
-      positionCode: p.positionCode,
-      positionName: p.positionName,
-      positionDescription: p.positionDescription,
-      jobGradeId: p.jobGradeId,
-      deptId: p.deptId,
-      isActive: p.isActive,
+    /* =====================
+       MASTER POSITIONS
+    ====================== */
+    master_positions: (data.masterPositions || []).map(p => ({
+      position_id: p.positionId,
+      position_name: p.positionName,
+      position_desc: p.positionDescription,
+      job_grade_id: p.jobGradeId,
+      department_id: p.deptId,
+      is_active: p.isActive,
+    })),
+
+    /* =====================
+       RESERVATION CATEGORIES
+    ====================== */
+    reservation_categories: (data.reservationCategories || []).map(r => ({
+      category_id: r.reservationCategoriesId,
+      category_code: r.categoryCode,
+      category_name: r.categoryName,
+      category_desc: r.categoryDesc,
+      is_active: r.isActive,
+    })),
+
+    /* =====================
+       GENDER
+    ====================== */
+    genders: (data.genderMasters || []).map(g => ({
+      gender_id: g.genderId,
+      gender_name: g.gender,
+      is_active: g.isActive,
+    })),
+
+    /* =====================
+       MARITAL STATUS
+    ====================== */
+    marital_statuses: (data.maritalStatusMaster || []).map(m => ({
+      marital_status_id: m.maritalStatusId,
+      marital_status: m.maritalStatus,
+      is_active: m.isActive,
+    })),
+
+    /* =====================
+       RELIGION
+    ====================== */
+    religions: (data.religionMaster || []).map(r => ({
+      religion_id: r.religionId,
+      religion_name: r.religion,
+      is_active: r.isActive,
+    })),
+
+    /* =====================
+       DISABILITY
+    ====================== */
+    disabilities: (data.disabilityCategories || []).map(d => ({
+      disability_id: d.disabilityCategoryId,
+      disability_code: d.disabilityCode,
+      disability_name: d.disabilityName,
+      is_active: d.isActive,
+    })),
+
+    /* =====================
+       LANGUAGES
+    ====================== */
+    languages: (data.languageMasters || []).map(l => ({
+      language_id: l.languageId,
+      language_name: l.languageName,
+    })),
+
+    /* =====================
+       PINCODES
+    ====================== */
+    pincodes: (data.pincodes || []).map(p => ({
+      pincode_id: p.pincodeId,
+      pin: p.pin,
+      city_id: p.cityId,
+      is_active: p.isActive,
+    })),
+
+    /* =====================
+       DISTRICTS
+    ====================== */
+    districts: (data.districts || []).map(d => ({
+      district_id: d.districtId,
+      district_name: d.districtName,
+      state_id: d.stateId,
+      is_active: d.isActive,
     })),
   };
 };
