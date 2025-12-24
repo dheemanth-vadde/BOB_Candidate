@@ -6,9 +6,10 @@ import AppliedJobs from '../../components/jobs/pages/AppliedJobs';
 // import Career from '../../components/Tabs/Career';
 import './../../css/custom-bootstrap-overrides.css';
 import { apiService } from '../../services/apiService';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import CandidateProfileStepper from '../../components/profile/pages/CandidateProfileStepper';
 import { useLocation } from 'react-router-dom';
+import { fetchDocumentTypes } from '../../components/profile/store/documentTypesSlice';
 
 const CandidatePortal = () => {
   const user = useSelector((state) => state.user.user);
@@ -23,6 +24,11 @@ const CandidatePortal = () => {
   const location = useLocation();
   const [showModal, setShowModal] = useState(false);
   const [agree, setAgree] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchDocumentTypes());
+  }, [dispatch]);
 
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem("disclaimerShown");

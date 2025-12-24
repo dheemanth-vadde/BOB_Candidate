@@ -5,19 +5,34 @@ import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons/faCheckCircle';
+import profileApi from '../services/profile.api';
+import { useSelector } from 'react-redux';
+import { mapExperienceApiToUi, mapExperienceDetailsFormToApi } from '../mappers/ExperienceMapper';
+import { toast } from 'react-toastify';
 
 const ExperienceDetails = ({ goNext, goBack }) => {
+	const user = useSelector((state) => state?.user?.user?.data);
+	const candidateId = user?.user?.id;
+	const email = user?.user?.email
+	const createdBy = user?.user?.id;
+	// const email = "sumanthsangam2@gmail.com"
+	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
+	// const createdBy = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
 		const [experienceList, setExperienceList] = useState([]);
 		const [certificateFile, setCertificateFile] = useState(null);
+		const [existingDocument, setExistingDocument] = useState(null);
 		const [totalExperienceMonths, setTotalExperienceMonths] = useState(0);
 		const [isFresher, setIsFresher] = useState(false);
+		const [isEditMode, setIsEditMode] = useState(false);
+		const [editingRow, setEditingRow] = useState(null);
+		const [showFresherOption, setShowFresherOption] = useState(false);
 		const [formData, setFormData] = useState({
 				organization: "",
 				role: "",
 				postHeld: "",
 				from: "",
 				to: "",
-				working: "",
+				working: false,
 				description: "",
 				experience: 0
 		});
@@ -28,35 +43,132 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			setTotalExperienceMonths(months);
 		}, [experienceList]);
 
+		useEffect(() => {
+			if (formData.working === true) {
+				setFormData(prev => ({
+					...prev,
+					to: ""
+				}));
+			}
+		}, [formData.working]);
+
+		useEffect(() => {
+			if (!formData.working || !formData.from) return;
+			const interval = setInterval(() => {
+				setFormData(prev => ({
+					...prev,
+					experience: calculateExperienceDays(prev.from, null)
+				}));
+			}, 24 * 60 * 60 * 1000); // every day
+			return () => clearInterval(interval);
+		}, [formData.working, formData.from]);
+
+		useEffect(() => {
+			const fetchWorkStatus = async () => {
+				try {
+					const res = await profileApi.getWorkStatus(candidateId);
+					const fresherStatus = Boolean(res?.data?.data);
+					setIsFresher(fresherStatus);
+				} catch (err) {
+					console.error("Failed to fetch work status", err);
+				}
+			};
+			if (candidateId) {
+				fetchWorkStatus();
+			}
+		}, [candidateId]);
+
+		const calculateExperienceDays = (fromDate, toDate) => {
+			if (!fromDate) return 0;
+			const start = new Date(fromDate);
+			const end = toDate ? new Date(toDate) : new Date(); // 🔑 TODAY if working
+			const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+			return diff > 0 ? diff : 0;
+		};
+
 		const handleChange = (e) => {
 			const { id, value } = e.target;
-			let updated = { ...formData, [id]: value };
-
-			// Auto-calc experience when both dates are selected
-			if ((id === "from" || id === "to") && updated.from && updated.to) {
-					const start = new Date(updated.from);
-					const end = new Date(updated.to);
-					const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
-					updated.experience = diff >= 0 ? diff : 0;
+			let updated = {
+				...formData,
+				[id]: value
+			};
+			// Recalculate experience correctly
+			if (id === "from" || id === "to" || id === "working") {
+				updated.experience = calculateExperienceDays(
+					updated.from,
+					updated.working ? null : updated.to
+				);
 			}
 			setFormData(updated);
 		};
 
+		const fetchExperienceDetails = async () => {
+			try {
+				const res = await profileApi.getExperienceDetails(candidateId);
+				const apiList = Array.isArray(res?.data?.data)
+					? res.data.data
+					: [];
+				const mappedList = apiList.map(mapExperienceApiToUi);
+				setExperienceList(mappedList);
+				// 🔑 CORE LOGIC
+				if (mappedList.length > 0) {
+					setShowFresherOption(false);
+					setIsFresher(false); // force consistency
+				} else {
+					setShowFresherOption(true);
+				}
+			} catch (err) {
+				console.error("Failed to fetch experience details", err);
+				setShowFresherOption(true); // safe fallback
+			}
+		};
 
-	const handleAddRow = () => {
-		setExperienceList([...experienceList, { ...formData }]);
-		setFormData({
-			organization: "",
-			role: "",
-			postHeld: "",
-			from: "",
-			to: "",
-			working: "",
-			description: "",
-			experience: 0
-		});
-		setCertificateFile(null);
-	};
+		useEffect(() => {
+			fetchExperienceDetails();
+		}, [candidateId]);
+
+		const handleSaveExperience = async () => {
+			try {
+				if (!formData.from) {
+					toast.error("From date is required");
+					return;
+				}
+
+				if (!formData.working && !formData.to) {
+					toast.error("To date is required if not presently working");
+					return;
+				}
+				const basePayload = mapExperienceDetailsFormToApi(formData, candidateId);
+				const payload = isEditMode
+					? {
+							...basePayload,
+							workExperienceId: editingRow.workExperienceId, // 🔑 decides UPDATE
+						}
+					: basePayload; // 🔑 decides CREATE
+
+				await profileApi.postExperienceDetails(
+					candidateId,
+					payload,
+					certificateFile
+				);
+
+				toast.success(
+					isEditMode
+						? "Experience updated successfully"
+						: "Experience saved successfully"
+				);
+
+				handleCancelEdit();   // resets form + edit state
+				fetchExperienceDetails();
+			} catch (err) {
+				console.error(err);
+				toast.error(
+					isEditMode
+						? "Failed to update experience"
+						: "Failed to save experience"
+				);
+			}
+		};
 
 	const handleFileChange = (e) => {
 		const file = e.target.files[0];
@@ -67,9 +179,84 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		document.getElementById("educationCertInput").click();
 	};
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
-		goNext();   // Move to next step
+		// ❌ Not fresher AND no experience
+		if (!isFresher && experienceList.length === 0) {
+			toast.error("Please add at least one experience or mark yourself as a fresher");
+			return;
+		}
+		try {
+			// Checkbox hidden => fresher cannot be true
+			const effectiveFresherStatus = showFresherOption ? isFresher : false;
+			await profileApi.postWorkStatus(candidateId, effectiveFresherStatus);
+			// toast.success("Work status saved successfully");
+			goNext();
+		} catch (err) {
+			console.error("Failed to save work status", err);
+			toast.error("Failed to save work status");
+		}
+	};
+
+	const handleEdit = (item) => {
+		setIsEditMode(true);
+		setEditingRow(item);
+		setFormData({
+			organization: item.organization,
+			role: item.role,
+			postHeld: item.postHeld,
+			from: item.from,
+			to: item.to,
+			working: item.working === "Yes" || item.working === true,
+			description: item.description,
+			experience: item.experience,
+		});
+		console.log(item)
+		// 🔑 EXISTING FILE FROM API
+		setExistingDocument(item.certificate || null);
+		// User has NOT uploaded a new file yet
+		setCertificateFile(null);
+	};
+
+	const handleCancelEdit = () => {
+		setIsEditMode(false);
+		setEditingRow(null);
+		setCertificateFile(null);
+		setExistingDocument(null);
+		setFormData({
+			organization: "",
+			role: "",
+			postHeld: "",
+			from: "",
+			to: "",
+			working: false,
+			description: "",
+			experience: 0,
+		});
+	};
+
+	const handleDelete = async (item) => {
+		if (!item?.workExperienceId) {
+			toast.error("Invalid experience selected");
+			return;
+		}
+		// const confirmDelete = window.confirm(
+		// 	"Are you sure you want to delete this experience?"
+		// );
+		// if (!confirmDelete) return;
+		try {
+			await profileApi.deleteExperienceDetails(item.workExperienceId);
+			toast.success("Experience deleted successfully");
+			// Always re-fetch — backend is source of truth
+			fetchExperienceDetails();
+			// If user was editing the same row, reset form
+			if (editingRow?.workExperienceId === item.workExperienceId) {
+				handleCancelEdit();
+			}
+		} catch (err) {
+			console.error(err);
+			toast.error("Failed to delete experience");
+		}
 	};
 
 	const formatFileSize = (size) => {
@@ -81,16 +268,18 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 	return (
 		<div className="px-4 py-3 border rounded bg-white">
-			<div className='col-md-2 col-sm-12 d-flex align-items-center gap-2 py-1 px-2 rounded' style={{ backgroundColor: '#fff7ed', border: '1px solid #e7946dff' }}>
-				<input
-					type="checkbox"
-					// className="form-control"
-					id="fresherCheckbox"
-					checked={isFresher}
-					onChange={(e) => setIsFresher(e.target.checked)}
-				/>
-				<label htmlFor="fresherCheckbox" className="form-label mt-1" style={{ fontSize: '14px', color: '#6e6e6e', fontWeight: 500 }}>I'm fresher</label>
-			</div>
+			{showFresherOption && (
+				<div className='col-md-2 col-sm-12 d-flex align-items-center gap-2 py-1 px-2 rounded' style={{ backgroundColor: '#fff7ed', border: '1px solid #e7946dff' }}>
+					<input
+						type="checkbox"
+						// className="form-control"
+						id="fresherCheckbox"
+						checked={isFresher}
+						onChange={(e) => setIsFresher(e.target.checked)}
+					/>
+					<label htmlFor="fresherCheckbox" className="form-label mt-1" style={{ fontSize: '14px', color: '#6e6e6e', fontWeight: 500 }}>I'm fresher</label>
+				</div>
+			)}
 			<form className="row g-4 formfields mt-2"
 				onSubmit={handleSubmit}
 				// onInvalid={handleInvalid}
@@ -118,8 +307,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
-					<label htmlFor="to" className="form-label">To <span className="text-danger">*</span></label>
-					<input type="date" className="form-control" id="to" value={formData.to} onChange={handleChange} disabled={isFresher === true} />
+					<label htmlFor="to" className="form-label">To {formData.working === false && (<span className="text-danger">*</span>)}</label>
+					<input type="date" className="form-control" id="to" value={formData.to} onChange={handleChange} disabled={isFresher === true || formData.working === true} />
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
@@ -127,12 +316,17 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					<select
 						className="form-select"
 						id="working"
-						value={formData.working}
-						onChange={handleChange}
-						disabled={isFresher === true}
+						value={String(formData.working)}
+						onChange={(e) =>
+							setFormData(prev => ({
+								...prev,
+								working: e.target.value === "true"
+							}))
+						}
+						disabled={isFresher}
 					>
-						<option value="Yes">Yes</option>
-						<option value="No">No</option>
+						<option value="true">Yes</option>
+						<option value="false">No</option>
 					</select>
 				</div>
 
@@ -143,7 +337,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className="col-md-6 col-sm-12 mt-2">
 					<label htmlFor="eduCert" className="form-label">Experience Certificate <span className="text-danger">*</span></label>
-					{!certificateFile && (
+					{!certificateFile && !existingDocument && (
 					<div
 						className="border rounded d-flex flex-column align-items-center justify-content-center"
 						style={{
@@ -180,6 +374,63 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 
 					{/* Show File Name */}
+					{existingDocument && !certificateFile && (
+						<div
+							className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
+							style={{
+								border: "2px solid #bfc8e2",
+								borderRadius: "8px",
+								background: "#f7f9fc"
+							}}
+						>
+							{/* LEFT SIDE: Check icon + File name + size */}
+							<div className="d-flex align-items-center">
+								<FontAwesomeIcon
+									icon={faCheckCircle}
+									style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+								/>
+
+								<div>
+									<div style={{ fontWeight: 600, color: "#42579f" }}>
+										{existingDocument?.fileName}
+									</div>
+									{/* <div className="text-muted" style={{ fontSize: "12px" }}>
+										{formatFileSize(certificateFile.size || existingDocument)}
+									</div> */}
+								</div>
+							</div>
+
+							{/* RIGHT SIDE: View / Edit / Delete */}
+							<div className="d-flex gap-2">
+
+								{/* View */}
+								<img
+									src={viewIcon}
+									alt="View"
+									style={{ width: "25px", cursor: "pointer" }}
+									onClick={() => window.open(existingDocument.fileUrl, "_blank")}
+								/>
+
+								{/* Edit → triggers file re-upload */}
+								<img
+									src={editIcon}
+									alt="Edit"
+									style={{ width: "25px", cursor: "pointer" }}
+									onClick={handleBrowse}
+								/>
+
+								{/* Delete */}
+								<img
+									src={deleteIcon}
+									alt="Delete"
+									style={{ width: "25px", cursor: "pointer" }}
+									onClick={() => setExistingDocument(null)}
+								/>
+
+							</div>
+						</div>
+					)}
+
 					{certificateFile && (
 						<div
 							className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
@@ -198,7 +449,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 								<div>
 									<div style={{ fontWeight: 600, color: "#42579f" }}>
-										{certificateFile.name}
+										{certificateFile?.name}
 									</div>
 									<div className="text-muted" style={{ fontSize: "12px" }}>
 										{formatFileSize(certificateFile.size)}
@@ -222,7 +473,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 									src={editIcon}
 									alt="Edit"
 									style={{ width: "25px", cursor: "pointer" }}
-									onClick={() => document.getElementById("educationCertInput").click()}
+									onClick={handleBrowse}
 								/>
 
 								{/* Delete */}
@@ -238,8 +489,35 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<div className='d-flex justify-content-center mt-2'>
-						<button type="button" className="btn blue-button mt-3" onClick={handleAddRow} disabled={isFresher === true}>Submit</button>
+				<div className="d-flex justify-content-center gap-3 mt-3">
+					{!isEditMode ? (
+						<button
+							type="button"
+							className="btn blue-button"
+							onClick={handleSaveExperience}
+							disabled={isFresher}
+						>
+							Submit
+						</button>
+					) : (
+						<>
+							<button
+								type="button"
+								className="btn btn-outline-secondary text-muted"
+								onClick={handleCancelEdit}
+							>
+								Cancel
+							</button>
+
+							<button
+								type="button"
+								className="btn blue-button"
+								onClick={handleSaveExperience}
+							>
+								Update
+							</button>
+						</>
+					)}
 				</div>
 
 				<table>
@@ -273,10 +551,10 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 											<img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
 										</div>
 										<div>
-											<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} />
+											<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(item)} />
 										</div>
 										<div>
-											<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} />
+											<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(item)} />
 										</div>
 									</div>
 								</td>
@@ -305,7 +583,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 					<div className="d-flex justify-content-between">
 		<div>
-			<button type="button" className="btn btn-outline-secondary" onClick={goBack}>Back</button>
+			<button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
 		</div>
 		<div>
 			<button

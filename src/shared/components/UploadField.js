@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../assets/delete-icon.png';
@@ -6,6 +6,8 @@ import editIcon from '../../assets/edit-icon.png';
 import viewIcon from '../../assets/view-icon.png';
 import { faFile } from "@fortawesome/free-solid-svg-icons/faFile";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
+import profileApi from "../../components/profile/services/profile.api";
+import { useSelector } from "react-redux";
 
 const UploadField = forwardRef(({
   label,
@@ -15,9 +17,11 @@ const UploadField = forwardRef(({
   customNameValue,
   onCustomNameChange,
   onBrowse,
-  onChange
+  onChange,
+  onDeleted
 }, ref) => {
-  
+  const user = useSelector((state) => state?.user?.user?.data);
+	const candidateId = user?.user?.id;
   const formatFileSize = (bytes) => {
     if (!bytes) return "0 KB";
     return bytes < 1024
@@ -27,8 +31,23 @@ const UploadField = forwardRef(({
       : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const clearFile = () => {
-    onChange({ target: { files: [] } });
+  const handleView = () => {
+    if (file?.url) {
+      window.open(file.url, "_blank");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!file) return;
+    try {
+      if (file.isFromApi && file.documentTypeId) {
+        await profileApi.deleteDocument(candidateId, file.documentTypeId);
+      }
+      // refresh parent state from backend
+      onDeleted?.();
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
   };
 
   return (
@@ -99,10 +118,10 @@ const UploadField = forwardRef(({
 		
 						<div className='p-2'>
 							<div style={{ fontWeight: 600, color: '#42579f' }}>
-								{file ? file.name : "Uploaded Resume"}
+								{file?.name || "Uploaded file"}
 							</div>
 							<div className="text-muted" style={{ fontSize: "12px" }}>
-								{formatFileSize(file.size)}
+								{file.size && formatFileSize(file.size)}
 							</div>
 						</div>
 					</div>
@@ -111,15 +130,11 @@ const UploadField = forwardRef(({
 					<div className="d-flex gap-2">
 		
 						<div>
-							<img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
+							<img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} onClick={handleView} />
 						</div>
 		
 						<div>
-							<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} />
-						</div>
-		
-						<div>
-							<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} />
+							<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={handleDelete} />
 						</div>
 					</div>
 				</div>

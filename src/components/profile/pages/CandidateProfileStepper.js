@@ -6,6 +6,7 @@ import EducationDetails from "../components/EducationDetails";
 import ExperienceDetails from "../components/ExperienceDetails";
 import DocumentDetails from "../components/DocumentDetails";
 import BasicDetails from "../components/BasicDetails";
+import UploadIdProof from "../components/UploadIdProof";
 
 const CandidateProfileStepper = ({
   resumeFile,
@@ -17,7 +18,7 @@ const CandidateProfileStepper = ({
   onSubmit
 }) => {
 
-  const steps = ["Upload Resume", "Basic Details", "Address", "Education", "Experience", "Document"];
+  const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Experience", "Document"];
 
   // Load existing step from localStorage
   const [activeStep, setActiveStep] = useState(() => {
@@ -30,6 +31,12 @@ const CandidateProfileStepper = ({
     localStorage.setItem("activeStep", activeStep);
   }, [activeStep]);
 
+  useEffect(() => {
+    if (activeStep === 1) {
+      setResumeFile(null);
+      setResumePublicUrl("");
+    }
+  }, [activeStep]);
 
   const goNext = () => setActiveStep(prev => Math.min(prev + 1, steps.length - 1));
   const goBack = () => setActiveStep(prev => Math.max(prev - 1, 0));
@@ -38,6 +45,13 @@ const CandidateProfileStepper = ({
     switch (activeStep) {
       case 0:
         return (
+          <UploadIdProof
+            goNext={goNext}
+          />
+        );
+
+      case 1:
+        return (
           <ResumeUpload
             resumeFile={resumeFile}
             setResumeFile={setResumeFile}
@@ -45,10 +59,11 @@ const CandidateProfileStepper = ({
             resumePublicUrl={resumePublicUrl}
             setResumePublicUrl={setResumePublicUrl}
             goNext={goNext}
+            goBack={goBack}
           />
         );
 
-      case 1:
+      case 2:
         return (
           <BasicDetails
             // initialData={candidateData}
@@ -59,16 +74,16 @@ const CandidateProfileStepper = ({
           />
         );
 
-      case 2:
+      case 3:
         return <AddressDetails goNext={goNext} goBack={goBack} />;
 
-      case 3:
+      case 4:
         return <EducationDetails goNext={goNext} goBack={goBack} />;
 
-      case 4:
+      case 5:
         return <ExperienceDetails goNext={goNext} goBack={goBack} />;
 
-      case 5:
+      case 6:
         return <DocumentDetails goNext={goNext} goBack={goBack} />;
 
       default:

@@ -143,3 +143,25 @@ export const validateConditionalDropdown = (
 
   return { valid: true };
 };
+
+export const validateEndDateAfterStart = (startDate, endDate) => {
+  if (!startDate || !endDate) {
+    return { isValid: true }; // don't block incomplete input
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return { isValid: false, error: "Invalid date format" };
+  }
+
+  if (end < start) {
+    return {
+      isValid: false,
+      error: "End date cannot be before Start date"
+    };
+  }
+
+  return { isValid: true };
+};
