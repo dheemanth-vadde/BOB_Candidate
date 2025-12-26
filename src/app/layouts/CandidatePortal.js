@@ -118,6 +118,7 @@ const CandidatePortal = () => {
             candidateData={candidateData}
             setCandidateData={setCandidateData}
             onSubmit={handleFormSubmit}
+            setActiveTab={setActiveTab}
           />
         );
 

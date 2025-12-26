@@ -165,3 +165,15 @@ export const validateEndDateAfterStart = (startDate, endDate) => {
 
   return { isValid: true };
 };
+
+export const validateNonEmptyText = (value) => {
+  if (typeof value !== "string") {
+    return { isValid: false, error: "Invalid text value" };
+  }
+
+  if (value.trim().length === 0) {
+    return { isValid: false, error: "This field cannot be empty" };
+  }
+
+  return { isValid: true };
+};

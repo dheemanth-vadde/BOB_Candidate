@@ -1,15 +1,59 @@
 // components/Tabs/UploadIdProof.jsx
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import '../../../css/Resumeupload.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faUpload, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
 import profileApi from '../services/profile.api';
+import { createWorker } from 'tesseract.js';
+import { setExtractedData, clearExtractedData } from '../store/idProofSlice';
+
+const normalize = (s) =>
+  s
+    .replace(/[^\w\s/]/g, "") // remove OCR junk
+    .replace(/\s+/g, " ")
+    .trim();
+
+// Function to parse AADHAAR text
+const parseAadhaarText = (text) => {
+  const lines = text
+    .split("\n")
+    .map(l => normalize(l))
+    .filter(Boolean);
+
+  let dob = "";
+  let name = "";
+
+  const dobRegex = /\b(\d{2}\/\d{2}\/\d{4})\b/;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (dobRegex.test(lines[i])) {
+      dob = lines[i].match(dobRegex)[1];
+
+      // NAME IS USUALLY ABOVE DOB
+      for (let j = i - 1; j >= 0; j--) {
+        if (
+          lines[j].length > 5 &&
+          !lines[j].toLowerCase().includes("government") &&
+          !lines[j].toLowerCase().includes("india") &&
+          !lines[j].match(/\d/)
+        ) {
+          name = lines[j];
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  return { name, dob };
+};
 
 const UploadIdProof = ({ goNext, goBack }) => {
+  const dispatch = useDispatch();
   const aadhaarDoc = useSelector((state) =>
     state.documentTypes?.list?.data?.find(
       (doc) => doc.docCode === "ADHAR"
@@ -23,31 +67,60 @@ const UploadIdProof = ({ goNext, goBack }) => {
   const [parsedIdProofData, setParsedIdProofData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState("");
+  const [ocrLoading, setOcrLoading] = useState(false);
+
+  const extractedName = useSelector(state => state.idProof.name);
+  const extractedDOB = useSelector(state => state.idProof.dob);
 
   const user = useSelector((state) => state?.user?.user?.data);
   const auth = useSelector((state) => state.user.authUser);
   const token = user?.accessToken;
   const candidateId = user?.user?.id;
 
+  const isImage = (fileName) => {
+    if (!fileName) return false;
+    const ext = fileName.split('.').pop().toLowerCase();
+    return ['jpg', 'jpeg', 'png'].includes(ext);
+  };
+
+  const performOCRFromBlob = async (blob) => {
+    setOcrLoading(true);
+    try {
+      const worker = await createWorker('eng+hin');
+      const { data: { text } } = await worker.recognize(blob);
+      await worker.terminate();
+
+      const extracted = parseAadhaarText(text);
+      dispatch(setExtractedData({
+        name: extracted.name,
+        dob: extracted.dob
+      }));
+    } catch (err) {
+      console.error("OCR failed", err);
+      dispatch(clearExtractedData());
+    } finally {
+      setOcrLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!candidateId || !documentCode) return;
-
     const fetchIdProof = async () => {
       try {
         const res = await profileApi.getDocumentDetailsByCode(
           candidateId,
           documentCode
         );
-
         const doc = res?.data?.data;
-
-        if (doc) {
-          // API sometimes returns `fileUrl` (new) or `publicUrl` (older).
-          const url = doc.fileUrl || doc.publicUrl || doc.publicUrlString || "";
-          setIdProofPublicUrl(url);
-          setUploadedFileName(doc.fileName || doc.fileNameString || "");
-          setParsedIdProofData(doc);
-        }
+        if (!doc) return;
+        const url =
+          doc.fileUrl ||
+          doc.publicUrl ||
+          doc.publicUrlString ||
+          "";
+        setIdProofPublicUrl(url);
+        setUploadedFileName(doc.fileName || doc.fileNameString || "");
+        setParsedIdProofData(doc);
       } catch (err) {
         console.error("Failed to fetch ID proof", err);
       }
@@ -56,13 +129,41 @@ const UploadIdProof = ({ goNext, goBack }) => {
     fetchIdProof();
   }, [candidateId, documentCode]);
 
-  const handleFileChange = (e) => {
+  useEffect(() => {
+    if (!idProofPublicUrl) return;
+    if (!isImage(uploadedFileName)) return;
+    if (extractedName || extractedDOB) return; // prevent re-run
+
+    const runOCR = async () => {
+      try {
+        const response = await fetch(idProofPublicUrl);
+        const blob = await response.blob();
+        await performOCRFromBlob(blob);
+      } catch (err) {
+        console.error("Failed to OCR fetched document", err);
+      }
+    };
+    runOCR();
+  }, [idProofPublicUrl]);
+
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
+    console.log('File selected:', file);
     if (file) {
+      console.log('File type:', file.type);
       setIdProofFile(file);
       setUploadedFileName(file.name);
       // if user selected a new file, clear previously stored public url
       setIdProofPublicUrl("");
+      dispatch(clearExtractedData());
+
+      // Perform OCR if it's an image
+      if (file.type.startsWith("image/")) {
+        await performOCRFromBlob(file);
+      } 
+      // else {
+      //   dispatch(clearExtractedData());
+      // }
     }
   };
 
@@ -122,6 +223,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
       setIdProofFile(null);
       setUploadedFileName("");
       setIdProofPublicUrl("");
+      dispatch(clearExtractedData());
 
       const input = document.getElementById("idproof-input");
       if (input) input.value = "";
@@ -143,6 +245,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
         setIdProofPublicUrl("");
         setParsedIdProofData(null);
         setUploadedFileName("");
+        dispatch(clearExtractedData());
 
         const input = document.getElementById("idproof-input");
         if (input) input.value = "";
@@ -241,6 +344,14 @@ const UploadIdProof = ({ goNext, goBack }) => {
         </div>
       )}
 
+      {(extractedName || extractedDOB || ocrLoading) && (
+        <div className="mt-2">
+          {ocrLoading && <p>Extracting information... <FontAwesomeIcon icon={faSpinner} spin /></p>}
+          {extractedName && <p style={{marginBottom: '0.25rem'}}>Name: {extractedName}</p>}
+          {extractedDOB && <p>Date of Birth: {extractedDOB}</p>}
+        </div>
+      )}
+
       <div className="mt-4 d-flex justify-content-end">
         {/* <div>
           <button type="button" className="btn btn-outline-secondary text-muted" onClick={() => goBack && goBack()}>Back</button>
@@ -256,9 +367,9 @@ const UploadIdProof = ({ goNext, goBack }) => {
               color: "#fff"
             }}
             onClick={handleContinue}
-            disabled={!idProofFile && !idProofPublicUrl}
+            disabled={loading || (!idProofFile && !idProofPublicUrl)}
           >
-            {loading ? "Processing..." : "Save & Next"}
+            {loading && <FontAwesomeIcon icon={faSpinner} spin />} {loading ? "Processing..." : "Save & Next"}
           </button>
         </div>
       </div>

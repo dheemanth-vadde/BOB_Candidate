@@ -5,11 +5,14 @@ export const mapBasicDetailsFormToApi = ({
   candidateProfileId,
   email
 }) => {
+  const hasDisability = formData.disabilities.length > 0;
+
   return {
     candidateProfile: {
       isActive: true,
-      candidateId: candidateId,
+      candidateId,
       candidateProfileId: candidateProfileId || null,
+
       firstName: formData.firstName || "",
       middleName: formData.middleName || "",
       lastName: formData.lastName || "",
@@ -17,16 +20,16 @@ export const mapBasicDetailsFormToApi = ({
       fullNameAadhar: formData.fullNameAadhar || "",
       fullNameSSC: formData.fullNameSSC || "",
 
-      genderId: formData.gender || "",
+      genderId: formData.gender || null,
       dateOfBirth: formData.dob || null,
 
-      maritalStatusId: formData.maritalStatus || "",
-      nationality: formData.nationality || "",
-      religionId: formData.religion || "",
-      reservationCategoryId: formData.category || "",
+      maritalStatusId: formData.maritalStatus || null,
+      nationality: formData.nationality || null,
+      religionId: formData.religion || null,
+      reservationCategoryId: formData.category || null,
 
       community: formData.caste || "",
-      stateId: formData.casteState || "",
+      stateId: formData.casteState || null,
 
       motherName: formData.motherName || "",
       fatherName: formData.fatherName || "",
@@ -37,12 +40,10 @@ export const mapBasicDetailsFormToApi = ({
       socialMediaProfileLink: formData.socialMediaLink || "",
 
       isTwin: Boolean(formData.twinSibling),
-      twinName: formData.siblingName || "",
-      twinGenderId: formData.twinGender || "",
+      twinName: formData.twinSibling ? formData.siblingName || "" : "",
+      twinGenderId: formData.twinSibling ? formData.twinGender || null : null,
 
-      disability: Boolean(formData.isDisabledPerson),
-      disabilityCategoryId: formData.disabilityType || "",
-      disabilityPercentage: Number(formData.disabilityPercentage) || 0,
+      disability: hasDisability,
       isScribeRequirement: formData.scribeRequirement === "Yes",
 
       exServiceman: Boolean(formData.isExService),
@@ -51,14 +52,15 @@ export const mapBasicDetailsFormToApi = ({
       serviceMonths: Number(formData.servicePeriod) || 0,
 
       centralGovtEmployed: formData.employmentSecured === "Yes",
-      isPublicSectorUndertaking: formData.servingInGovt === "Yes",
       employedInLowerPost: formData.lowerPostStatus === "Yes",
       riotVictimFamily: formData.riotVictimFamily === "Yes",
       minority: formData.minorityCommunity === "Yes",
+      isPublicSectorUndertaking: formData.servingInGovt === "Yes",
       anyDisciplinaryAction: formData.disciplinaryAction === "Yes",
-      createdBy: createdBy,
-      email: email,
-      registrationNo: ""
+
+      email,
+      registrationNo: formData.registrationNo || "",
+      createdBy
     },
 
     languagesKnown: [
@@ -66,30 +68,38 @@ export const mapBasicDetailsFormToApi = ({
         isActive: true,
         candidateId,
         languageId: formData.language1,
-        canRead: formData.language1Read,
-        canWrite: formData.language1Write,
-        canSpeak: formData.language1Speak,
+        canRead: !!formData.language1Read,
+        canWrite: !!formData.language1Write,
+        canSpeak: !!formData.language1Speak,
         createdBy
       },
       {
         isActive: true,
         candidateId,
         languageId: formData.language2,
-        canRead: formData.language2Read,
-        canWrite: formData.language2Write,
-        canSpeak: formData.language2Speak,
+        canRead: !!formData.language2Read,
+        canWrite: !!formData.language2Write,
+        canSpeak: !!formData.language2Speak,
         createdBy
       },
       {
         isActive: true,
         candidateId,
         languageId: formData.language3,
-        canRead: formData.language3Read,
-        canWrite: formData.language3Write,
-        canSpeak: formData.language3Speak,
+        canRead: !!formData.language3Read,
+        canWrite: !!formData.language3Write,
+        canSpeak: !!formData.language3Speak,
         createdBy
       }
-    ].filter(l => l.languageId) // ✅ remove empty languages
+    ].filter(l => l.languageId),
+
+    disabilityDetails: formData.disabilities.map(dis => ({
+      isActive: true,
+      candidateId,
+      disabilityCategoryId: dis.disabilityCategoryId,
+      disabilityPercentage: Number(dis.disabilityPercentage) || 0,
+      createdBy
+    }))
   };
 };
 
@@ -97,27 +107,32 @@ export const mapBasicDetailsFormToApi = ({
 export const mapBasicDetailsApiToForm = (apiData) => {
   const profile = apiData?.candidateProfile || {};
   const languages = apiData?.languagesKnown || [];
+  const disabilities = apiData?.disabilityDetails || [];
 
   return {
     // Personal
     firstName: profile.firstName || "",
     middleName: profile.middleName || "",
     lastName: profile.lastName || "",
+
     fullNameAadhar: profile.fullNameAadhar || "",
     fullNameSSC: profile.fullNameSSC || "",
 
     gender: profile.genderId || "",
     dob: profile.dateOfBirth || "",
+
     maritalStatus: profile.maritalStatusId || "",
     nationality: profile.nationality || "",
     religion: profile.religionId || "",
     category: profile.reservationCategoryId || "",
+
     caste: profile.community || "",
     casteState: profile.stateId || "",
 
     motherName: profile.motherName || "",
     fatherName: profile.fatherName || "",
     spouseName: profile.spouseName || "",
+
     contactNumber: profile.contactNo || "",
     altNumber: profile.altContactNo || "",
     socialMediaLink: profile.socialMediaProfileLink || "",
@@ -127,12 +142,13 @@ export const mapBasicDetailsApiToForm = (apiData) => {
     siblingName: profile.twinName || "",
     twinGender: profile.twinGenderId || "",
 
-    // Disability
-    isDisabledPerson: Boolean(profile.disability),
-    disabilityType: profile.disabilityCategoryId || "",
-    disabilityPercentage: profile.disabilityPercentage || "",
+    // ✅ Disability
+    isDisabledPerson: disabilities.length > 0,
+    disabilities: disabilities.map(d => ({
+      disabilityCategoryId: d.disabilityCategoryId || "",
+      disabilityPercentage: d.disabilityPercentage ?? ""
+    })),
     scribeRequirement: profile.isScribeRequirement ? "Yes" : "No",
-    disabilityCertificate: null,
 
     // Ex-Service
     isExService: Boolean(profile.exServiceman),
@@ -142,28 +158,28 @@ export const mapBasicDetailsApiToForm = (apiData) => {
 
     employmentSecured: profile.centralGovtEmployed ? "Yes" : "No",
     lowerPostStatus: profile.employedInLowerPost ? "Yes" : "No",
-
     riotVictimFamily: profile.riotVictimFamily ? "Yes" : "No",
     servingInGovt: profile.isPublicSectorUndertaking ? "Yes" : "No",
     minorityCommunity: profile.minority ? "Yes" : "No",
     disciplinaryAction: profile.anyDisciplinaryAction ? "Yes" : "No",
 
-    serviceCertificate: null,
-
     // Languages
     language1: languages[0]?.languageId || "",
-    language1Read: languages[0]?.canRead || false,
-    language1Write: languages[0]?.canWrite || false,
-    language1Speak: languages[0]?.canSpeak || false,
+    language1Read: !!languages[0]?.canRead,
+    language1Write: !!languages[0]?.canWrite,
+    language1Speak: !!languages[0]?.canSpeak,
 
     language2: languages[1]?.languageId || "",
-    language2Read: languages[1]?.canRead || false,
-    language2Write: languages[1]?.canWrite || false,
-    language2Speak: languages[1]?.canSpeak || false,
+    language2Read: !!languages[1]?.canRead,
+    language2Write: !!languages[1]?.canWrite,
+    language2Speak: !!languages[1]?.canSpeak,
 
     language3: languages[2]?.languageId || "",
-    language3Read: languages[2]?.canRead || false,
-    language3Write: languages[2]?.canWrite || false,
-    language3Speak: languages[2]?.canSpeak || false
+    language3Read: !!languages[2]?.canRead,
+    language3Write: !!languages[2]?.canWrite,
+    language3Speak: !!languages[2]?.canSpeak,
+
+    registrationNo: profile.registrationNo || ""
   };
 };
+

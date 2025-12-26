@@ -15,7 +15,8 @@ const CandidateProfileStepper = ({
   setResumePublicUrl,
   candidateData,
   setCandidateData,
-  onSubmit
+  onSubmit,
+  setActiveTab
 }) => {
 
   const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Experience", "Document"];
@@ -84,7 +85,7 @@ const CandidateProfileStepper = ({
         return <ExperienceDetails goNext={goNext} goBack={goBack} />;
 
       case 6:
-        return <DocumentDetails goNext={goNext} goBack={goBack} />;
+        return <DocumentDetails goNext={goNext} goBack={goBack} setActiveTab={setActiveTab} />;
 
       default:
         return <h3>Coming Soon…</h3>;

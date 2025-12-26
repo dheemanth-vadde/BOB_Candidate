@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import { validateEndDateAfterStart } from '../../../shared/utils/validation';
+import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
 
 const EducationForm = ({
   goNext,
@@ -130,6 +130,21 @@ const EducationForm = ({
     if (!isValid) {
       toast.error(error || "Invalid education date range");
       return;
+    }
+
+    const textFields = [
+      { key: "college", label: "School / College / University" },
+    ];
+
+    for (const field of textFields) {
+      const { isValid, error } = validateNonEmptyText(
+        formData[field.key],
+        field.label
+      );
+      if (!isValid) {
+        toast.error(error);
+        return;
+      }
     }
 
     try {
@@ -291,7 +306,26 @@ const EducationForm = ({
       {/* Percentage */}
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">Percentage/CGPA <span className="text-danger">*</span></label>
-        <input type="text" id="percentage" className="form-control" value={formData.percentage} onChange={handleChange} />
+        <input type="number" min={0} max={100} id="percentage" className="form-control" value={formData.percentage}
+          onChange={(e) => {
+            let value = e.target.value;
+            // allow empty while typing
+            if (value === "") {
+              setFormData(prev => ({ ...prev, percentage: "" }));
+              return;
+            }
+            // convert to number
+            let numericValue = Number(value);
+            if (Number.isNaN(numericValue)) return;
+            // clamp between 0 and 100
+            if (numericValue < 0) numericValue = 0;
+            if (numericValue > 100) numericValue = 100;
+            setFormData(prev => ({
+              ...prev,
+              percentage: numericValue
+            }));
+          }}
+        />
       </div>
 
       {/* SPECIALIZATION → only visible if showSpecialization = true */}

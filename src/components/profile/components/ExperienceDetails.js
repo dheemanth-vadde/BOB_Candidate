@@ -9,6 +9,7 @@ import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
 import { mapExperienceApiToUi, mapExperienceDetailsFormToApi } from '../mappers/ExperienceMapper';
 import { toast } from 'react-toastify';
+import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
 
 const ExperienceDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -34,7 +35,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 				to: "",
 				working: false,
 				description: "",
-				experience: 0
+				experience: 0,
+				currentCTC: 0
 		});
 
 		useEffect(() => {
@@ -138,6 +140,34 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					toast.error("To date is required if not presently working");
 					return;
 				}
+
+				const textFields = [
+					{ value: formData.organization, label: "Organization" },
+					{ value: formData.role, label: "Role" },
+					{ value: formData.postHeld, label: "Post Held" },
+					{ value: formData.description, label: "Description" },
+				];
+
+				for (const field of textFields) {
+					const { isValid } = validateNonEmptyText(field.value);
+					if (!isValid) {
+						toast.error(`${field.label} cannot be empty or whitespace`);
+						return;
+					}
+				}
+
+				if (!formData.working) {
+					const { isValid, error } = validateEndDateAfterStart(
+						formData.from,
+						formData.to
+					);
+
+					if (!isValid) {
+						toast.error(error);
+						return;
+					}
+				}
+
 				const basePayload = mapExperienceDetailsFormToApi(formData, candidateId);
 				const payload = isEditMode
 					? {
@@ -179,23 +209,33 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		document.getElementById("educationCertInput").click();
 	};
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-		// ❌ Not fresher AND no experience
-		if (!isFresher && experienceList.length === 0) {
-			toast.error("Please add at least one experience or mark yourself as a fresher");
-			return;
-		}
+	const saveWorkStatusAndProceed = async () => {
 		try {
-			// Checkbox hidden => fresher cannot be true
 			const effectiveFresherStatus = showFresherOption ? isFresher : false;
 			await profileApi.postWorkStatus(candidateId, effectiveFresherStatus);
-			// toast.success("Work status saved successfully");
 			goNext();
 		} catch (err) {
-			console.error("Failed to save work status", err);
+			console.error(err);
 			toast.error("Failed to save work status");
 		}
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		// RULE 1: Fresher is allowed
+		if (isFresher === true) {
+			await saveWorkStatusAndProceed();
+			return;
+		}
+		// RULE 2: At least one experience must exist
+		if (experienceList.length === 0) {
+			toast.error(
+				"Please add at least one experience or mark yourself as a fresher"
+			);
+			return;
+		}
+		// ✅ Valid case
+		await saveWorkStatusAndProceed();
 	};
 
 	const handleEdit = (item) => {
@@ -210,6 +250,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			working: item.working === "Yes" || item.working === true,
 			description: item.description,
 			experience: item.experience,
+			currentCTC: item.currentCTC
 		});
 		console.log(item)
 		// 🔑 EXISTING FILE FROM API
@@ -232,6 +273,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			working: false,
 			description: "",
 			experience: 0,
+			currentCTC: 0
 		});
 	};
 
@@ -256,6 +298,31 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		} catch (err) {
 			console.error(err);
 			toast.error("Failed to delete experience");
+		}
+	};
+
+	const handleCTCChange = (e) => {
+		let value = e.target.value;
+		// Empty → 0
+		if (value === "") {
+			setFormData(prev => ({ ...prev, currentCTC: 0 }));
+			return;
+		}
+		value = Number(value);
+		// NaN, negative, infinity → 0
+		if (!Number.isFinite(value) || value < 0) {
+			value = 0;
+		}
+		setFormData(prev => ({
+			...prev,
+			currentCTC: value
+		}));
+	};
+
+	const blockCTCKeys = (e) => {
+		const blocked = ["e", "E", "+", "-", ".", ","];
+		if (blocked.includes(e.key)) {
+			e.preventDefault();
 		}
 	};
 
@@ -284,31 +351,32 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 				onSubmit={handleSubmit}
 				// onInvalid={handleInvalid}
 				// onInput={handleInput}
+				noValidate
 			>
 				{/* <p className="tab_headers" style={{ marginBottom: '0px' }}>Experience Details</p> */}
 					
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="organization" className="form-label">Organization <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="organization" value={formData.organization} onChange={handleChange} disabled={isFresher === true} />
+					<input type="text" className="form-control" id="organization" value={formData.organization} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="role" className="form-label">Role <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="role" value={formData.role} onChange={handleChange} disabled={isFresher === true} />
+					<input type="text" className="form-control" id="role" value={formData.role} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="postHeld" className="form-label">Post Held <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="postHeld" value={formData.postHeld} onChange={handleChange} disabled={isFresher === true} />
+					<input type="text" className="form-control" id="postHeld" value={formData.postHeld} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 				</div>
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="from" className="form-label">From <span className="text-danger">*</span></label>
-					<input type="date" className="form-control" id="from" value={formData.from} onChange={handleChange} disabled={isFresher === true} />
+					<input type="date" className="form-control" id="from" value={formData.from} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="to" className="form-label">To {formData.working === false && (<span className="text-danger">*</span>)}</label>
-					<input type="date" className="form-control" id="to" value={formData.to} onChange={handleChange} disabled={isFresher === true || formData.working === true} />
+					<input type="date" className="form-control" id="to" value={formData.to} onChange={handleChange} disabled={isFresher === true || formData.working === true}  required={isFresher === false || formData.working === false} min={formData.from || undefined} />
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
@@ -324,18 +392,36 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 							}))
 						}
 						disabled={isFresher}
+						required={isFresher === false}
 					>
 						<option value="true">Yes</option>
 						<option value="false">No</option>
 					</select>
 				</div>
 
-				<div className="col-md-6 col-sm-12 mt-2">
-					<label htmlFor="description" className="form-label">Brief Description <span className="text-danger">*</span></label>
-					<textarea className="form-control" id="description" rows={4} value={formData.description} onChange={handleChange} disabled={isFresher === true} />
+				<div className="col-md-4 col-sm-12 mt-2">
+					<label htmlFor="currentCTC" className="form-label">Current CTC <span className="text-danger">*</span></label>
+					<input
+						type="number"
+						className="form-control"
+						id="currentCTC"
+						name="currentCTC"
+						value={formData.currentCTC}
+						min={0}
+						step={1}
+						disabled={isFresher === true}
+						required={isFresher === false}
+						onChange={handleCTCChange}
+						onKeyDown={blockCTCKeys}
+					/>
 				</div>
 
-				<div className="col-md-6 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-2">
+					<label htmlFor="description" className="form-label">Brief Description <span className="text-danger">*</span></label>
+					<textarea className="form-control" id="description" rows={4} value={formData.description} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+				</div>
+
+				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="eduCert" className="form-label">Experience Certificate <span className="text-danger">*</span></label>
 					{!certificateFile && !existingDocument && (
 					<div
@@ -409,14 +495,6 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 									alt="View"
 									style={{ width: "25px", cursor: "pointer" }}
 									onClick={() => window.open(existingDocument.fileUrl, "_blank")}
-								/>
-
-								{/* Edit → triggers file re-upload */}
-								<img
-									src={editIcon}
-									alt="Edit"
-									style={{ width: "25px", cursor: "pointer" }}
-									onClick={handleBrowse}
 								/>
 
 								{/* Delete */}
@@ -568,7 +646,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						<input type="number" className="form-control text-center" style={{ width: '70px', paddingLeft: '25px' }} id="to" disabled value={totalExperienceMonths} />
 					</div>
 
-					<div className='d-flex justify-content-center align-items-center gap-2 py-1' style={{ backgroundColor: '#fff7ed', borderLeft: '3px solid #f26623' }}>
+					{/* <div className='d-flex justify-content-center align-items-center gap-2 py-1' style={{ backgroundColor: '#fff7ed', borderLeft: '3px solid #f26623' }}>
 						<input
 							type="checkbox"
 							// className="form-control"
@@ -579,7 +657,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						<label htmlFor="declarationCheckbox" className="form-label mt-1">I declare that I possess the requisite work experience for this post, 
 							as stipulated in terms of the advertisement, and undertake to submit neccessary documents/testimonials in support of the same as and when called for by the Bank.
 						</label>
-					</div>
+					</div> */}
 
 					<div className="d-flex justify-content-between">
 		<div>

@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react'
 import UploadField from '../../../shared/components/UploadField';
 import { useSelector } from 'react-redux';
 import profileApi from '../services/profile.api';
+import { toast } from 'react-toastify';
 
-const DocumentDetails = ({ goNext, goBack }) => {
+const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
 	const candidateId = user?.user?.id;
 	const photoDoc = useSelector((state) =>
@@ -149,6 +150,14 @@ const DocumentDetails = ({ goNext, goBack }) => {
   };
 
 	const handleSubmit = () => {
+		// Validate required documents
+		for (const field of uploadFieldsConfig) {
+			if (field.required && !files[field.key]) {
+				toast.error(`${field.label} is required`);
+				return;
+			}
+		}
+		setActiveTab('jobs')
 		goNext();
 	};
 

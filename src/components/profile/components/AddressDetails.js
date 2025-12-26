@@ -5,6 +5,7 @@ import masterApi from "../../../services/master.api";
 import { useSelector } from "react-redux";
 import profileApi from "../services/profile.api";
 import { toast } from "react-toastify";
+import { validateNonEmptyText } from "../../../shared/utils/validation";
 
 const AddressDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -156,16 +157,49 @@ const AddressDetails = ({ goNext, goBack }) => {
 
 	const handleSubmit = async (e) => {
     e.preventDefault();
-		const payload = mapAddressFormToApi({
-			corrAddress,
-			permAddress,
-			sameAsCorrespondence,
-			candidateId
-		});
-  	console.log("Payload sent to API:", payload);
-  	await profileApi.postAddressDetails(candidateId, payload);
-		toast.success("Address details have been saved successfully")
-    goNext();   // Move to next step
+
+		const corrTextFields = [
+			{ value: corrAddress.line1, label: "Correspondence Address Line 1" },
+			{ value: corrAddress.line2, label: "Correspondence Address Line 2" },
+		];
+
+		for (const field of corrTextFields) {
+			const { isValid, error } = validateNonEmptyText(field.value, field.label);
+			if (!isValid) {
+				toast.error(error);
+				return;
+			}
+		}
+
+		if (!sameAsCorrespondence) {
+			const permTextFields = [
+				{ value: permAddress.line1, label: "Permanent Address Line 1" },
+				{ value: permAddress.line2, label: "Permanent Address Line 2" },
+			];
+
+			for (const field of permTextFields) {
+				const { isValid, error } = validateNonEmptyText(field.value, field.label);
+				if (!isValid) {
+					toast.error(error);
+					return;
+				}
+			}
+		}
+
+		try {
+			const payload = mapAddressFormToApi({
+				corrAddress,
+				permAddress,
+				sameAsCorrespondence,
+				candidateId,
+			});
+			await profileApi.postAddressDetails(candidateId, payload);
+			toast.success("Address details have been saved successfully");
+			goNext();
+		} catch (err) {
+			console.error(err);
+			toast.error("Failed to save address details");
+		}
   };
 
 	const handleCheckboxToggle = (e) => {

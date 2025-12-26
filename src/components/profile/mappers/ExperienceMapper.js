@@ -6,6 +6,7 @@ export const mapExperienceDetailsFormToApi = (item, candidateId) => ({
   toDate: item.working === "Yes" ? null : item.to,
   isPresentlyWorking: item.working,
   workDescription: item.description,
+  currentCtc: item.currentCTC,
   monthsOfExp: Math.floor(item.experience / 30),
   candidateId,
   createdBy: candidateId, // assuming same user
@@ -43,6 +44,7 @@ export const mapExperienceApiToUi = (apiItem) => {
     to,
     working: exp.isPresentlyWorking ? "Yes" : "No",
     description: exp.workDescription,
+    currentCTC: exp.currentCtc,
 
     // derived
     experience: experienceDays,
