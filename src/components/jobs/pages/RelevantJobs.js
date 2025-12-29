@@ -24,6 +24,7 @@ import { savePreference } from "../store/preferenceSlice";
 import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 import filtericon from "../../../assets/filter-icon.png";
 import PaymentModal from "../components/PaymentModal";
+import jobsApiService  from "../services/jobsApiService";
 const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,20 +83,24 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
 
 
   const candidateId = user?.data?.user?.id;
-
+console.log("candidateddd",candidateId)
   useEffect(() => {
     const fetchAppliedJobs = async () => {
       if (!candidateId) return;
 
       try {
-        const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`,
-          {
-            headers: {
-              "X-Client": "candidate",
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        // const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`,
+        //   {
+        //     headers: {
+        //       "X-Client": "candidate",
+        //       "Content-Type": "application/json",
+        //     },
+        //   }
+        // );
+       // const response = await jobapis.get(`/candidate/applied-jobs/get-applied-jobs/${candidateId}`);
+       
+        const response = await jobsApiService.getAppliedJobs(candidateId);  
+        console.log("appliedresponse",response)
         const jobsData = response?.data?.data || [];
         const mappedJobs = mapJobsApiToList(jobsData);
 
@@ -119,22 +124,9 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
       if (!candidateId) return;
 
       try {
-        // const response = await axios.get(
-        //   `http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/${candidateId}`,
-        //   {
-        //     headers: {
-        //       "X-Client": "candidate",
-        //       "Content-Type": "application/json",
-        //     },
-        //   }
-        // );
-
-        const response = await axios.get(`http://192.168.20.111:8082/api/v1/candidate/candidate/get-all-details/${candidateId}`, {
-          headers: { "X-Client": "candidate", "Content-Type": "application/json" },
-        })
-
-console.log("emp response",response)
-        const mappedPreviewData = mapCandidateToPreview(response.data.data);
+       
+        const response = await jobsApiService.getAllDetails(candidateId); 
+        const mappedPreviewData = mapCandidateToPreview(response.data);
         setPreviewData(mappedPreviewData);
       } catch (error) {
         console.error("Failed to fetch candidate preview", error);
@@ -149,16 +141,8 @@ console.log("emp response",response)
   const fetchRequisitions = async () => {
     try {
 
-      // const response = await apiService.getReqData();
-      const response = await axios.get('http://192.168.20.115:8082/api/v1/candidate/current-opportunities/get-job-requisition/active',
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      const apiData = response?.data?.data || [];
+      const response = await jobsApiService.getActiveRequisitions();
+      const apiData = response?.data || [];
       const mappedRequisitions = mapRequisitionsApiToList(apiData);
 
       console.log("✅ mapped requisitions:", mappedRequisitions);
@@ -172,41 +156,16 @@ console.log("emp response",response)
   // ✅ Fetch jobs
   const fetchJobs = async () => {
     try {
-      //const jobsResponse = await apiService.getActiveJobs();
-      // const jobsResponse = await axios.get('http://192.168.20.115:8082/api/v1/candidate/currentopportunitiescontroller/get-job-positions/active',
-      //   {
-      //     headers: {
-      //       "X-Client": "candidate",
-      //       "Content-Type": "application/json"
-      //     }
-      //   }
-      // );
-      //  console.log("jobsResponse",jobsResponse)
-      //const jobsData = jobsResponse?.data || [];
-      //const jobsData = jobsResponse?.data.data || [];
-      // const masterDataResponse = await apiService.getMasterData();
-      // const masterDataResponse = await axios.get('http://192.168.20.115:8080/api/all',
-      //   {
-      //     headers: {
-      //       "X-Client": "candidate",
-      //       "Content-Type": "application/json"
-      //     }
-      //   }
-      // )
+      
 
       const [jobsRes, masterRes] = await Promise.all([
-        axios.get("http://192.168.20.115:8082/api/v1/candidate/current-opportunities/get-job-positions/active", {
-          headers: { "X-Client": "candidate", "Content-Type": "application/json" },
-        }),
-        axios.get("http://192.168.20.111:8080/api/all", {
-          headers: { "X-Client": "candidate", "Content-Type": "application/json" },
-        }),
+        jobsApiService.getJobPositions(),
+        jobsApiService.getMasterData(),
       ]);
+      const jobsData = jobsRes?.data || [];
 
-      const jobsData = jobsRes?.data?.data || [];
 
-
-      const mappedMasterData = mapMasterDataApi(masterRes.data);
+      const mappedMasterData = mapMasterDataApi(masterRes);
       console.log("mappedMasterData", mappedMasterData);
 
       setDepartments(mappedMasterData.departments);

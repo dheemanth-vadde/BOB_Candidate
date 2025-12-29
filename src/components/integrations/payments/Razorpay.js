@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import apiService from "../../../services/apiService";
-import axios from "axios";
+import jobsApiService from "../../../components/jobs/services/jobsApiService";
 /** Load Razorpay SDK once */
 function loadRazorpay() {
   return new Promise((resolve, reject) => {
@@ -16,48 +16,28 @@ function loadRazorpay() {
 
 /** Backend calls */
 async function getRzpKey() {
-  //const r = await fetch("https://bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay/config");
-  // const r = await apiService.getConfig();
-   const data = await axios.get('http://192.168.20.111:8082/api/v1/razorpay/config',
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      const r=data.data;
-   console.log ("test", r);
+
+  const data = await jobsApiService.getConfig();
+  const r = data;
   // if (!r.ok) throw new Error("Failed to load Razorpay key");
-  const keyId  =r.keyId;
-  console.log( "keys",  keyId)
+  const keyId = r.keyId;
   if (!keyId) throw new Error("Invalid key from server");
   return keyId;
 }
 async function createOrder({ amountPaise, receipt, notes, candidate_id, position_id }) {
   try {
-    const data = { 
+    const data = {
       amount: amountPaise,
       currency: "INR",
-      receipt, 
-      notes, 
-      candidate_id, 
-      position_id 
+      receipt,
+      notes,
+      candidate_id,
+      position_id
     };
-console.log("DATA:", data);
-    //const r = await apiService.getRazorOrder(data);
-   const r = await axios.post ('http://192.168.20.111:8082/api/v1/razorpay/orders',data,  
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        },
-        
-      );
 
-    const order = r.data;
-    console.log("ORDER:", order);
+    const r = await jobsApiService.getRazorOrder(data);
+
+    const order = r;
 
     // Correct validation
     if (!order?.id) {
@@ -80,18 +60,8 @@ console.log("DATA:", data);
 
 async function verifyPayment(payload) {
   try {
-    //const r = await apiService.getRazorVerify(payload);
-const r = await axios.post('http://192.168.20.111:8082/api/v1/razorpay/verify',payload,
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
-    // Axios returns data directly
-    return r.data; // { success: true, message: "Payment verified" }
+    const r = await jobsApiService.getRazorVerify(payload);
+    return r; // { success: true, message: "Payment verified" }
 
   } catch (err) {
     const msg =
@@ -114,8 +84,8 @@ export default function Razorpay({
   onClose,
   autoTrigger = false, // 🔹 NEW: Auto-open Razorpay when mounted
 }) {
-  console.log("candidaterazorpay",candidate)
-  const userLoginData =useSelector((state) => state.user.user);
+  console.log("candidaterazorpay", candidate)
+  const userLoginData = useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(false);
 
   const initiatePayment = useCallback(async () => {

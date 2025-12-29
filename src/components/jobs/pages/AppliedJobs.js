@@ -8,6 +8,7 @@ import "../../../css/Appliedjobs.css";
 import apiService from "../../../services/apiService";
 import TrackApplicationModal from "../../jobs/components/TrackApplicationModal";
 import axios from "axios";
+import jobsApiService  from "../services/jobsApiService";
 import OfferLetterModal from "../../jobs/components/OfferLetterModal";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
@@ -34,16 +35,17 @@ const AppliedJobs = () => {
       //  const jobsArray = Array.isArray(response.data)
       // ? response.data
       // : [];
+       const response = await jobsApiService.getAppliedJobs(candidateId);  
+       console.log("jobsreposne",response)
 
-
-      const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`, 
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      // const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`, 
+      //   {
+      //     headers: {
+      //       "X-Client": "candidate",
+      //       "Content-Type": "application/json"
+      //     }
+      //   }
+      // );
       const jobsData = response?.data?.data || [];
 
       const mappedJobs = mapJobsApiToList(jobsData);
@@ -65,14 +67,15 @@ const AppliedJobs = () => {
       // setDepartments(masterData.departments || []);
       // setLocations(masterData.locations || []);
 
-      const masterData = await axios.get('http://192.168.20.115:8080/api/all',
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json"
-          }
-        }
-      )
+      // const masterData = await axios.get('http://192.168.20.115:8080/api/all',
+      //   {
+      //     headers: {
+      //       "X-Client": "candidate",
+      //       "Content-Type": "application/json"
+      //     }
+      //   }
+      // )
+       const masterData = await jobsApiService.getMasterData();
       console.log("masterDataResponse", masterData)
       const departments = masterData.data.departments || [];
       const locations = masterData.data.cities || [];

@@ -14,24 +14,33 @@ export const mapRequisitionApiToModel = (apiReq) => {
     created_date: apiReq.createdDate || "",
     updated_date: apiReq.modifiedDate || "",
 
-    requisition_id: apiReq.requisitionId || "",
+    requisition_id: apiReq.id || "",
     requisition_code: apiReq.requisitionCode || "",
     requisition_title: apiReq.requisitionTitle || "",
     requisition_description: apiReq.requisitionDescription || "",
 
-    registration_start_date: apiReq.registrationStartDate || "",
-    registration_end_date: apiReq.registrationEndDate || "",
+    registration_start_date: apiReq.startDate || "",
+    registration_end_date: apiReq.endDate || "",
 
     requisition_status: apiReq.requisitionStatus || "",
     requisition_comments: apiReq.requisitionComments || "",
-    requisition_approval: apiReq.requisitionApproval || "",
-    requisition_approval_notes: apiReq.requisitionApprovalNotes || "",
+    //requisition_approval: apiReq.requisitionApproval || "",
+    //requisition_approval_notes: apiReq.requisitionApprovalNotes || "",
 
-    no_of_positions: apiReq.noOfPositions ?? 0,
-    no_of_approvals: apiReq.noOfApprovals ?? 0,
+    //no_of_positions: apiReq.noOfPositions ?? 0,
+   // no_of_approvals: apiReq.noOfApprovals ?? 0,
 
-    job_postings: apiReq.jobPostings || "",
-    others: apiReq.others || null,
+    //job_postings: apiReq.jobPostings || "",
+    //others: apiReq.others || null,
+
+    /* =====================
+       NEW KEYS (SAFE ADDITIONS)
+    ====================== */
+    indent_path: apiReq.indentPath || "",
+
+    department_count: apiReq.departmentCount ?? 0,
+    position_count: apiReq.positionCount ?? 0,
+    vacancy_count: apiReq.vacancyCount ?? 0,
   };
 };
 

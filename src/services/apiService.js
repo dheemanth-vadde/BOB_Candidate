@@ -6,6 +6,16 @@ const API_BASE_URL = 'https://dev.bobjava.sentrifugo.com:8443/test-candidate-app
 const API_BASE_URLS = 'https://dev.bobjava.sentrifugo.com:8443/test-master-app/api';
 const JOBCREATION_API_URL = 'https://dev.bobjava.sentrifugo.com:8443/test-jobcreation-app/api/v1';
 const DIGILOCKER_API_URL = 'https://dev.bobjava.sentrifugo.com:8443/test-candidate-app/api/v1';
+
+
+// const JOBS_BASE_URL='http://192.168.20.115:8082/api/v1/candidate'
+// const JOBS_BASE_URLs='http://192.168.20.111:8082/api/v1/candidate'
+// const MASTER_BASE_URLs='http://192.168.20.111:8080/api'
+
+
+const JOBS_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/candidate'
+const RAZOR_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay'
+const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api'
 // Create a primary axios instance for most API calls
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -36,11 +46,39 @@ const jobcreationapis = axios.create({
   },
 });
 
+const jobsapi = axios.create({
+  baseURL: JOBS_BASE_URL,
+  headers: {
+      "X-Client": "candidate",
+    'Content-Type': 'application/json',
+  },
+});
+
+const razorpayapi = axios.create({
+  baseURL: RAZOR_BASE_URL,
+  headers: {
+      "X-Client": "candidate",
+    'Content-Type': 'application/json',
+  },
+});
+
+const mastersapi = axios.create({
+  baseURL: MASTER_BASE_URLs,
+  headers: {
+      "X-Client": "candidate",
+    'Content-Type': 'application/json',
+  },
+});
+
+
 // Attach interceptors to all instances
 applyInterceptors(api);
 applyInterceptors(digiLockerApi);
 applyInterceptors(apis);
 applyInterceptors(jobcreationapis);
+applyInterceptors(jobsapi);
+applyInterceptors(razorpayapi);
+applyInterceptors(mastersapi);
 
 export const apiService = {
   getMasterData: () => apis.get('/all'),
@@ -115,5 +153,11 @@ export const apiService = {
       }),
 
 };
+export {
+  jobsapi,
+  razorpayapi,
+  mastersapi,
+};
+
 
 export default apiService;
