@@ -102,11 +102,6 @@
   font-size:12px !important;
 }
 
-.modalwidth .modal-dialog{
-height: 660px;
-  width: 50% !important;
-  max-width: 50%;
-}
 .overul{
  max-height: 250px;
   overflow-y: auto;
@@ -235,4 +230,91 @@ color:  #4A5565;
       font-size: 0.875rem;
 font-weight: 400;
 color:  #333333;
+}
+/* Container for the top info row */
+
+/*modalwidth*/
+.stats-container {
+  /* background: #f8faff; */
+  border: 1px solid #e0e6ed;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.stat-label {
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.stat-value {
+  color: #162b75;
+  font-size: 14px;
+}
+
+/* Individual info cards */
+.info-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 10px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.job-title-main {
+  color: #162b75 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.card-section-header {
+  color: #4a5568;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+/* Bullet points styling */
+.custom-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.custom-list li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.custom-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #4a5568;
+  font-weight: bold;
+}
+
+/* OK Button */
+.ok-btn {
+  background-color: #f26522;
+  color: white;
+  border: none;
+  padding: 10px 60px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.ok-btn:hover {
+  opacity: 0.9;
+}
+
+/* Remove Bootstrap default border from header */
+.modal-header {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
 }

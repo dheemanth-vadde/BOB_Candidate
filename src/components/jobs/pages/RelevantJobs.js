@@ -41,6 +41,7 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [masterData,setMasterData]=useState([{}]);
   const navigate = useNavigate();
   const [applyForm, setApplyForm] = useState({
     state1: "",
@@ -102,7 +103,7 @@ console.log("candidateddd",candidateId)
         const response = await jobsApiService.getAppliedJobs(candidateId);  
         console.log("appliedresponse",response)
         const jobsData = response?.data?.data || [];
-        const mappedJobs = mapJobsApiToList(jobsData);
+        const mappedJobs = mapJobsApiToList(jobsData,masterData);
 
 
         console.log("applied jobs", mappedJobs)
@@ -171,13 +172,12 @@ console.log("candidateddd",candidateId)
       setDepartments(mappedMasterData.departments);
       setStates(mappedMasterData.states);
       setLocations(mappedMasterData.cities);
-
-
+setMasterData(mappedMasterData);
       const locations = mappedMasterData.cities || [];
 
 
       // ✅ Convert new nested structure to old flat model
-      const mappedJobs = mapJobsApiToList(jobsData, locations);
+      const mappedJobs = mapJobsApiToList(jobsData, mappedMasterData);
       console.log(mappedJobs)
       setJobs(mappedJobs); // use the mapped flat array
     } catch (err) {
@@ -374,6 +374,8 @@ console.log("candidateddd",candidateId)
 
 
   const filteredJobs = jobs.filter((job) => {
+
+    console.log("Filtering job:", job, "Applied IDs:", appliedJobIds);
      // ❌ remove applied jobs
       if (appliedJobIds.includes(job.position_id)) {
         return false;

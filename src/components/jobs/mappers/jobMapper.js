@@ -1,83 +1,107 @@
-// src/mappers/jobMapper.js
-export const mapJobApiToModel = (apiJob, citiess = []) => {
+import {
+  getDepartment,
+  getCity,
+  getLocation,
+  getJobGrade
+} from "../../../shared/utils/masterHelpers";
+
+export const mapJobApiToModel = (apiJob, masters = {}) => {
   if (!apiJob) return null;
 
-  const {
-    positions,
-    postingLocation,
-    vacancies,
-    selectionProcess,
-    relaxationPolicy,
-    departmentsDTO,
-    locationDTO,
-    requisitionsDTO,
-    gradeName,
-  } = apiJob;
-  console.log("cities",citiess)
- const cityId = postingLocation?.cityId || locationDTO?.city_id;
-  const city = citiess.find((c) => c.city_id === cityId);
+  const { positionsDTO, masterPositionsDTO, requisitionsDTO } = apiJob;
+
+  /* =========================
+     MASTER LOOKUPS
+  ========================= */
+  const dept = getDepartment(masters, positionsDTO?.deptId);
+  const location = getLocation(masters, positionsDTO?.locationId);
+  console.log("masters", masters);
+  console.log("cityId from positionsDTO:", positionsDTO?.cityId);
+  const city = getCity(masters, positionsDTO?.cityId);
+  const grade = getJobGrade(masters, positionsDTO?.gradeId);
+
   return {
-    // === IDs & Titles ===
-    position_id: positions?.positionId || "",
-    requisition_id: requisitionsDTO?.requisitionId || "",
-    position_title: positions?.positionTitle || "",
+    /* =========================
+       IDS & TITLES
+    ========================= */
+    position_id: positionsDTO?.positionId || "",
+    requisition_id: requisitionsDTO?.id || "",
+    position_title: masterPositionsDTO?.positionName || "",
+    position_code: masterPositionsDTO?.positionCode || "",
     requisition_code: requisitionsDTO?.requisitionCode || "",
     requisition_title: requisitionsDTO?.requisitionTitle || "",
 
-    // === Descriptions ===
-    description: positions?.description || "",
-    roles_responsibilities: positions?.rolesResponsibilities || "",
-    selection_procedure: selectionProcess?.selectionProcedure || "",
+    /* =========================
+       DESCRIPTIONS
+    ========================= */
+    description: masterPositionsDTO?.positionDescription || "",
+    roles_responsibilities: positionsDTO?.rolesResponsibilities || "",
 
-    // === Job details ===
-    grade_name: gradeName || "",
-    employment_type: positions?.employmentType || "",
-    position_status: positions?.positionStatus || "Inactive",
+    /* =========================
+       JOB DETAILS
+    ========================= */
+    employment_type: positionsDTO?.employmentType || "",
+    position_status: positionsDTO?.positionStatus || "Inactive",
 
-    // === Eligibility ===
-    eligibility_age_min: positions?.eligibilityAgeMin ?? null,
-    eligibility_age_max: positions?.eligibilityAgeMax ?? null,
-    mandatory_qualification: positions?.mandatoryQualification || "",
-    preferred_qualification: positions?.preferredQualification || "",
-    mandatory_experience: positions?.mandatoryExperience ?? 0,
-    preferred_experience: positions?.preferredExperience ?? 0,
-    probation_period: positions?.probationPeriod ?? 0,
+    grade_id: positionsDTO?.gradeId || "",
+    grade_name: grade ? grade.job_grade_code : "—",
 
-    // === Documents & Relaxation ===
-    documents_required: positions?.documentsRequired || "",
-    job_relaxation_policy_id: positions?.jobRelaxationPolicyId || "",
-    job_relaxation_policy_json: relaxationPolicy?.relaxation || null,
+    /* =========================
+       ELIGIBILITY
+    ========================= */
+    eligibility_age_min: positionsDTO?.eligibilityAgeMin ?? null,
+    eligibility_age_max: positionsDTO?.eligibilityAgeMax ?? null,
+    mandatory_qualification: positionsDTO?.mandatoryEducation || "",
+    preferred_qualification: positionsDTO?.preferredEducation || "",
+    mandatory_experience: Number(positionsDTO?.mandatoryExperience) || 0,
+    preferred_experience: Number(positionsDTO?.preferredExperience) || 0,
 
-    // === Vacancies ===
-    no_of_vacancies: vacancies?.noOfVacancies ?? 0,
-    special_cat_id: vacancies?.specialCatId ?? null,
-    reservation_cat_id: vacancies?.reservationCatId ?? null,
+    /* =========================
+       VACANCIES
+    ========================= */
+    no_of_vacancies: positionsDTO?.totalVacancies ?? 0,
 
-    // === Location & Department ===
-    dept_id: postingLocation?.deptId || departmentsDTO?.departmentId || "",
-    dept_name: departmentsDTO?.departmentName || "",
-    location_id: postingLocation?.locationId || locationDTO?.locationId || "",
-    location_name: locationDTO?.locationName || "",
-    city_id: cityId,
-    state_id: postingLocation?.stateId || "",
-    country_id: postingLocation?.countryId || "",
+    /* =========================
+       LOCATION & DEPARTMENT
+    ========================= */
+    dept_id: positionsDTO?.deptId || "",
+    dept_name: dept ? dept.department_name : "—",
 
-    // === Salary ===
-    min_salary: positions?.minSalary ?? null,
-    max_salary: positions?.maxSalary ?? null,
+    location_id: positionsDTO?.locationId || "",
+    location_name: location ? location.locationName : "—",
 
-    // === Requisition Details ===
-    registration_start_date: requisitionsDTO?.registrationStartDate || "",
-    registration_end_date: requisitionsDTO?.registrationEndDate || "",
+    city_id: positionsDTO?.cityId || "",
+    city_name: city ? city.city_name : "—",
+
+    /* =========================
+       SALARY (FROM GRADE IF AVAILABLE)
+    ========================= */
+    min_salary: grade ? grade.min_salary : null,
+    max_salary: grade ? grade.max_salary : null,
+
+    /* =========================
+       REQUISITION DETAILS
+    ========================= */
+    registration_start_date: requisitionsDTO?.startDate || "",
+    registration_end_date: requisitionsDTO?.endDate || "",
     requisition_status: requisitionsDTO?.requisitionStatus || "",
+    requisition_comments: requisitionsDTO?.requisitionComments || null,
 
-    // === City Lookup ===
-    city_name: city?.city_name || "Unknown",
+    /* =========================
+       FLAGS
+    ========================= */
+    is_location_preference_enabled:
+      positionsDTO?.isLocationPreferenceEnabled ?? false,
+    is_location_wise:
+      positionsDTO?.isLocationWise ?? false,
   };
 };
 
-// map full array
-export const mapJobsApiToList = (apiJobs,cities) => {
+/* =========================
+   LIST MAPPER
+========================= */
+export const mapJobsApiToList = (apiJobs, masters = {}) => {
   if (!Array.isArray(apiJobs)) return [];
-  return apiJobs.map((job) => mapJobApiToModel(job,cities));
+  return apiJobs.map(job => mapJobApiToModel(job, masters));
 };
+

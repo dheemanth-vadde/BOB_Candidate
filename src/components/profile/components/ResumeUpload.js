@@ -66,6 +66,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       );
     } finally {
       setLoading(false);
+       goNext();
     }
   };
 

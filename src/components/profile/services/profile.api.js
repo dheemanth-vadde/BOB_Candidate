@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://192.168.20.111:8082/api/v1/candidate";
+//const BASE_URL = "http://192.168.20.111:8082/api/v1/candidate";
+const BASE_URL = "https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/candidate";
 
 // Axios Instance
 const api = axios.create({
