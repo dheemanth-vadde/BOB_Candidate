@@ -2,23 +2,58 @@ import {
   getDepartment,
   getCity,
   getLocation,
-  getJobGrade
+  getJobGrade,
+  getEmploymentType,
+  getState
 } from "../../../shared/utils/masterHelpers";
 
 export const mapJobApiToModel = (apiJob, masters = {}) => {
   if (!apiJob) return null;
 
-  const { positionsDTO, masterPositionsDTO, requisitionsDTO } = apiJob;
+
+  /* =========================
+   STATE DISTRIBUTIONS
+========================= */
+
+
+  const {
+    positionsDTO,
+    masterPositionsDTO,
+    requisitionsDTO,
+    positionStateDistributions = []
+  } = apiJob;
+
+
+  const stateDistributions = positionStateDistributions || [];
+
+const stateIds = stateDistributions
+  .map(s => s.stateId)
+  .filter(Boolean);
+
+  console.log("stateIds", stateIds)
+
+const stateNames = stateIds
+  .map(id => getState(masters, id)?.state_name)
+  .filter(Boolean);
+  console.log("stateNames", stateNames)
 
   /* =========================
      MASTER LOOKUPS
   ========================= */
   const dept = getDepartment(masters, positionsDTO?.deptId);
-  const location = getLocation(masters, positionsDTO?.locationId);
-  console.log("masters", masters);
-  console.log("cityId from positionsDTO:", positionsDTO?.cityId);
-  const city = getCity(masters, positionsDTO?.cityId);
   const grade = getJobGrade(masters, positionsDTO?.gradeId);
+  const employmentType = getEmploymentType(
+    masters,
+    positionsDTO?.employmentType
+  );
+
+  /* =========================
+     STATE (NEW SOURCE)
+  ========================= */
+  const primaryStateId = positionStateDistributions[0]?.stateId || null;
+  const state = primaryStateId
+    ? getState(masters, primaryStateId)
+    : null;
 
   return {
     /* =========================
@@ -40,7 +75,9 @@ export const mapJobApiToModel = (apiJob, masters = {}) => {
     /* =========================
        JOB DETAILS
     ========================= */
-    employment_type: positionsDTO?.employmentType || "",
+    employment_type: employmentType
+      ? employmentType.employment_type_name
+      : "",
     position_status: positionsDTO?.positionStatus || "Inactive",
 
     grade_id: positionsDTO?.gradeId || "",
@@ -63,18 +100,28 @@ export const mapJobApiToModel = (apiJob, masters = {}) => {
 
     /* =========================
        LOCATION & DEPARTMENT
+       (KEYS UNCHANGED)
     ========================= */
     dept_id: positionsDTO?.deptId || "",
     dept_name: dept ? dept.department_name : "—",
 
-    location_id: positionsDTO?.locationId || "",
-    location_name: location ? location.locationName : "—",
+    location_id: "",           // ❗ not available in API anymore
+    location_name: "—",
 
-    city_id: positionsDTO?.cityId || "",
-    city_name: city ? city.city_name : "—",
+    city_id: "",               // ❗ not available in API anymore
+    city_name: "—",
 
     /* =========================
-       SALARY (FROM GRADE IF AVAILABLE)
+       STATE (NEW DATA ADDED)
+    ========================= */
+    state_id: stateIds.join(",") || "",
+    state_name: stateNames.join(", ") || "—",
+
+   state_id_array: stateIds || [],
+    state_name_array: stateNames || [],
+
+    /* =========================
+       SALARY
     ========================= */
     min_salary: grade ? grade.min_salary : null,
     max_salary: grade ? grade.max_salary : null,
@@ -96,6 +143,7 @@ export const mapJobApiToModel = (apiJob, masters = {}) => {
       positionsDTO?.isLocationWise ?? false,
   };
 };
+
 
 /* =========================
    LIST MAPPER

@@ -17,6 +17,7 @@ export const getMasterById = (
     console.log(`Invalid params: masters=${!!masters}, masterKey=${!!masterKey}, id=${!!id}`);
     return null;
   }
+  console.log("masters1234",masters)
 
   const list = masters[masterKey];
   console.log(`Looking for ${idKey}=${id} in ${masterKey}`, list);      

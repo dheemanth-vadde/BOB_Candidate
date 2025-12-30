@@ -25,6 +25,9 @@ import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper
 import filtericon from "../../../assets/filter-icon.png";
 import PaymentModal from "../components/PaymentModal";
 import jobsApiService  from "../services/jobsApiService";
+import ConfirmationModal from "../components/ConfirmationModal";
+import ValidationErrorModal from "../components/ValidationErrorModal";
+
 const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +45,9 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [masterData,setMasterData]=useState([{}]);
+  const [selectedStates, setSelectedStates] = useState([]);
   const navigate = useNavigate();
+  const [isMasterReady, setIsMasterReady] = useState(false);
   const [applyForm, setApplyForm] = useState({
     state1: "",
     location1: "",
@@ -55,7 +60,9 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   });
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState([]);
-  const [appliedJobIds, setAppliedJobIds] = useState([]);
+  const [showPreCheckModal, setShowPreCheckModal] = useState(false);
+const [showValidationErrorModal, setShowValidationErrorModal] = useState(false);
+const [validationErrorMsg, setValidationErrorMsg] = useState("");
   const experienceOptions = [
     { label: "1-2 years", min: 1, max: 2 },
     { label: "3-4 years", min: 3, max: 4 },
@@ -85,58 +92,42 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
 
   const candidateId = user?.data?.user?.id;
 console.log("candidateddd",candidateId)
-  useEffect(() => {
-    const fetchAppliedJobs = async () => {
-      if (!candidateId) return;
+  // useEffect(() => {
+  //   const fetchAppliedJobs = async () => {
+  //     if (!candidateId) return;
 
-      try {
-        // const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`,
-        //   {
-        //     headers: {
-        //       "X-Client": "candidate",
-        //       "Content-Type": "application/json",
-        //     },
-        //   }
-        // );
-       // const response = await jobapis.get(`/candidate/applied-jobs/get-applied-jobs/${candidateId}`);
+  //     try {
+  //       // const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`,
+  //       //   {
+  //       //     headers: {
+  //       //       "X-Client": "candidate",
+  //       //       "Content-Type": "application/json",
+  //       //     },
+  //       //   }
+  //       // );
+  //      // const response = await jobapis.get(`/candidate/applied-jobs/get-applied-jobs/${candidateId}`);
        
-        const response = await jobsApiService.getAppliedJobs(candidateId);  
-        console.log("appliedresponse",response)
-        const jobsData = response?.data?.data || [];
-        const mappedJobs = mapJobsApiToList(jobsData,masterData);
+  //       const response = await jobsApiService.getAppliedJobs(candidateId);  
+  //       console.log("appliedresponse",response)
+  //       const jobsData = response?.data?.data || [];
+  //       const mappedJobs = mapJobsApiToList(jobsData,masterData);
 
 
-        console.log("applied jobs", mappedJobs)
-        // Extract position IDs
-        const appliedIds = (mappedJobs).map(
-          (app) => app.position_id
-        );
+  //       console.log("applied jobs", mappedJobs)
+  //       // Extract position IDs
+  //       const appliedIds = (mappedJobs).map(
+  //         (app) => app.position_id
+  //       );
 
-        setAppliedJobIds(appliedIds);
-      } catch (err) {
-        console.error("Failed to fetch applied jobs", err);
-      }
-    };
+  //       setAppliedJobIds(appliedIds);
+  //     } catch (err) {
+  //       console.error("Failed to fetch applied jobs", err);
+  //     }
+  //   };
 
-    fetchAppliedJobs();
-  }, [candidateId]);
-  useEffect(() => {
-    const fetchCandidatePreview = async () => {
-      if (!candidateId) return;
-
-      try {
-       
-        const response = await jobsApiService.getAllDetails(candidateId); 
-        const mappedPreviewData = mapCandidateToPreview(response.data);
-        setPreviewData(mappedPreviewData);
-      } catch (error) {
-        console.error("Failed to fetch candidate preview", error);
-        toast.error("Unable to load candidate profile");
-      }
-    };
-
-    fetchCandidatePreview();
-  }, [candidateId]);
+  //   fetchAppliedJobs();
+  // }, [candidateId]);
+ 
 
   // ✅ Fetch requisitions
   const fetchRequisitions = async () => {
@@ -172,14 +163,13 @@ console.log("candidateddd",candidateId)
       setDepartments(mappedMasterData.departments);
       setStates(mappedMasterData.states);
       setLocations(mappedMasterData.cities);
-setMasterData(mappedMasterData);
+      setMasterData(mappedMasterData);
       const locations = mappedMasterData.cities || [];
-
-
       // ✅ Convert new nested structure to old flat model
       const mappedJobs = mapJobsApiToList(jobsData, mappedMasterData);
-      console.log(mappedJobs)
+      console.log("mapedjobs",mappedJobs)
       setJobs(mappedJobs); // use the mapped flat array
+      setIsMasterReady(true);
     } catch (err) {
       console.error("Error fetching jobs:", err);
     } finally {
@@ -191,7 +181,23 @@ setMasterData(mappedMasterData);
     fetchRequisitions();
     fetchJobs();
   }, []);
+ useEffect(() => {
+    const fetchCandidatePreview = async () => {
+      if (!candidateId) return;
 
+      try {
+       
+        const response = await jobsApiService.getAllDetails(candidateId); 
+        const mappedPreviewData = mapCandidateToPreview(response.data);
+        setPreviewData(mappedPreviewData);
+      } catch (error) {
+        console.error("Failed to fetch candidate preview", error);
+        toast.error("Unable to load candidate profile");
+      }
+    };
+
+    fetchCandidatePreview();
+  }, [candidateId,isMasterReady]);
   const calculateAge = (dobString) => {
     if (!dobString) return null;
 
@@ -257,7 +263,43 @@ setMasterData(mappedMasterData);
 
     return true; // ✅ Eligible
   };
+const handlePreCheckConfirm = async () => {
+  setShowPreCheckModal(false);
 
+  try {
+    //later uncomment
+    // const response = await jobsApiService.validateCandidateEligibility({
+    //   candidateId,
+    //   positionId: selectedJob.position_id,
+    // });
+
+    // if (!response?.success) {
+    //   setValidationErrorMsg(
+    //     response?.message ||
+    //       "Your profile does not meet the job requirements."
+    //   );
+    //   setShowValidationErrorModal(true);
+    //   return;
+    // }
+
+    // ✅ Validation passed
+    setApplyForm({
+      state1: "",
+      location1: "",
+      state2: "",
+      location2: "",
+      state3: "",
+      location3: "",
+      ctc: "",
+      examCenter: "",
+    });
+
+    setShowPreferenceModal(true);
+  } catch (err) {
+    setValidationErrorMsg("Unable to validate profile. Please try again.");
+    setShowValidationErrorModal(true);
+  }
+};
   const handleConfirmApply = async () => {
     if (!selectedJob || !candidateId) return;
 
@@ -282,20 +324,25 @@ setMasterData(mappedMasterData);
         interviewCenter: applyForm.examCenter || "",
       };
 
-      const response = await axios.post(
-        "http://192.168.20.111:8082/api/v1/candidate/applications/apply/job",
-        payload,
-        {
-          headers: {
-            "X-Client": "candidate",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response?.data?.success) {
+      // const response = await axios.post(
+      //   "http://192.168.20.111:8082/api/v1/candidate/applications/apply/job",
+      //   payload,
+      //   {
+      //     headers: {
+      //       "X-Client": "candidate",
+      //       "Content-Type": "application/json",
+      //     },
+      //   }
+      // );
+      const response = await jobsApiService.applyToJob(payload);
+      if (response?.success) {
         toast.success("Job applied Successfully");
         setShowPreferenceModal(false);
+        setShowPaymentModal(false);
         setActiveTab("applied-jobs"); // ✅ correct
+        
+      } else {
+        toast.error(response?.message || "Failed to apply for the job");
       }
     } catch (error) {
       console.error("Error submitting application:", error);
@@ -344,52 +391,31 @@ setMasterData(mappedMasterData);
     });
   };
 
-  // const handleApplySubmit = async () => {
-  //   if (!applyForm.ctc || !applyForm.examCenter) {
-  //     toast.error("Please fill all required fields.");
-  //     return;
-  //   }
-
-  //   try {
-  //     await apiService.applyJobs({
-  //       position_id: selectedJob.position_id,
-  //       candidate_id: candidateId,
-  //       preferences: applyForm,
-  //     });
-  //     toast.success("Application submitted successfully!");
-  //     setAppliedJobs((prev) => [...prev, { position_id: selectedJob.position_id }]);
-  //     setShowApplyModal(false);
-  //   } catch (error) {
-  //     toast.error("Failed to submit application.");
-  //   }
-  // };
-
-  // ✅ Filters (unchanged)
-  // const unappliedJobs = jobs.filter(
-  //   (job) =>
-  //     !appliedJobs.some(
-  //       (applied) => String(applied.position_id) === String(job.position_id)
-  //     )
-  // );
 
 
   const filteredJobs = jobs.filter((job) => {
 
-    console.log("Filtering job:", job, "Applied IDs:", appliedJobIds);
-     // ❌ remove applied jobs
-      if (appliedJobIds.includes(job.position_id)) {
-        return false;
-      }
-
     const matchesDepartment =
-      selectedDepartments.length === 0 || selectedDepartments.includes(job.dept_id);
-    const matchesLocation =
-      selectedLocations.length === 0 || selectedLocations.includes(job.city_id);
+      selectedDepartments.length === 0 ||
+      selectedDepartments.includes(job.dept_id);
+
+    /* =========================
+      STATE FILTER ✅ NEW
+    ========================= */
+
+    const matchesState =
+      selectedStates.length === 0 ||
+      selectedStates.some(stateId =>
+        job.state_id_array?.includes(stateId)
+      );
+
     const matchesSearch =
       job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesRequisition =
-      !selectedRequisition || String(job.requisition_id) === String(selectedRequisition);
+      !selectedRequisition ||
+      String(job.requisition_id) === String(selectedRequisition);
 
     const matchesExperience =
       selectedExperience.length === 0 ||
@@ -397,10 +423,17 @@ setMasterData(mappedMasterData);
         const exp = Number(job.mandatory_experience || 0);
         return exp >= range.min && exp <= range.max;
       });
-
-    return matchesDepartment && matchesLocation && matchesSearch && matchesRequisition &&
-      matchesExperience;
+      console.log("selected states",selectedStates,job.state_id)
+console.log("matchesState",matchesState)
+    return (
+      matchesDepartment &&
+      matchesState &&          // ✅ ADDED
+      matchesSearch &&
+      matchesRequisition &&
+      matchesExperience
+    );
   });
+
   const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
 
   const paginatedJobs = filteredJobs.slice(
@@ -415,13 +448,21 @@ setMasterData(mappedMasterData);
     );
   };
 
-  const handleLocationChange = (locationId) => {
-    setSelectedLocations((prev) =>
-      prev.includes(locationId)
-        ? prev.filter((id) => id !== locationId)
-        : [...prev, locationId]
-    );
-  };
+  // const handleLocationChange = (locationId) => {
+  //   setSelectedLocations((prev) =>
+  //     prev.includes(locationId)
+  //       ? prev.filter((id) => id !== locationId)
+  //       : [...prev, locationId]
+  //   );
+  // };
+
+  const handleStateChange = (stateId) => {
+  setSelectedStates((prev) =>
+    prev.includes(stateId)
+      ? prev.filter((id) => id !== stateId)
+      : [...prev, stateId]
+  );
+};
   const handleExperienceChange = (range) => {
     setSelectedExperience((prev) =>
       prev.some((r) => r.label === range.label)
@@ -472,7 +513,17 @@ setMasterData(mappedMasterData);
     setShowPreviewModal(false);   // close preview
     setShowPaymentModal(true);    // open payment modal
   };
+  if (loading) {
   return (
+    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  );
+}
+  return (
+    
     <div className="mx-4 my-3 relevant">
 
 
@@ -521,22 +572,26 @@ setMasterData(mappedMasterData);
                 ))}
               </div>
 
-              <h6 className="mt-3 header_filter">Locations</h6>
+              <h6 className="mt-3 header_filter">States</h6>
               <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-                {locations.map((location) => (
-                  <div key={`location-${location.city_id}`} className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={selectedLocations.includes(location.city_id)}
-                      onChange={() => handleLocationChange(location.city_id)}
-                      id={`location-${location.city_id}`}
-                    />
-                    <label className="form-check-label label_filter" htmlFor={`location-${location.city_id}`}>
-                      {location.city_name}
-                    </label>
-                  </div>
-                ))}
+                {states
+                  .map((state) => (
+                    <div key={state.state_id} className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={selectedStates.includes(state.state_id)}
+                        onChange={() => handleStateChange(state.state_id)}
+                        id={`state-${state.state_id}`}
+                      />
+                      <label
+                        className="form-check-label label_filter"
+                        htmlFor={`state-${state.state_id}`}
+                      >
+                        {state.state_name}
+                      </label>
+                    </div>
+                  ))}
               </div>
               <h6 className="mt-3 header_filter">Experience</h6>
               <div style={{ maxHeight: "200px", overflowY: "auto" }}>
@@ -640,7 +695,11 @@ setMasterData(mappedMasterData);
                     </p>
                     <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Location:</span>{" "}
-                      {job.city_name}
+                      {job.state_name}
+                    </p>
+                    <p className="mb-1 text-mutedd small size30">
+                      <span className="subtitle">Vacancies:</span>{" "}
+                      {job.no_of_vacancies}
                     </p>
                     <p className="mb-1 text-mutedd small qualification">
                       <span className="subtitle">Qualification:</span>{" "}
@@ -651,7 +710,10 @@ setMasterData(mappedMasterData);
 
                     <button
                       className="btn btn-sm btn-outline-primary hovbtn"
-                      onClick={() => handleApplyClick(job, previewData)}
+                       onClick={() => {
+                          setSelectedJob(job);
+                          setShowPreCheckModal(true);
+                        }}
                     >
                       Apply Now
                     </button>
@@ -734,7 +796,17 @@ setMasterData(mappedMasterData);
         user={user}
         onPaymentSuccess={handleConfirmApply}
       />
+      <ConfirmationModal
+        show={showPreCheckModal}
+        onCancel={() => setShowPreCheckModal(false)}
+        onConfirm={handlePreCheckConfirm}
+      />
 
+      <ValidationErrorModal
+        show={showValidationErrorModal}
+        onClose={() => setShowValidationErrorModal(false)}
+        message={validationErrorMsg}
+      />
       {totalPages > 1 && (
         <div className="d-flex justify-content-center mt-4">
           <ul className="pagination pagination-sm align-items-center">

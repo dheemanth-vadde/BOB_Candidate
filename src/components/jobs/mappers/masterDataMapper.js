@@ -2,79 +2,94 @@
 
 export const mapMasterDataApi = (apiResponse) => {
   const data = apiResponse?.data || {};
-
+  console.log("masterdata",data);
+const safeStr = (v) => (typeof v === "string" ? v.trim() : "");
+const safeNum = (v) => (Number.isFinite(v) ? v : 0);
+const safeBool = (v) => v ?? true;
   return {
-    /* =====================
-       DEPARTMENTS
-    ====================== */
-    departments: (data.departments || []).map(d => ({
-      department_id: d.departmentId,
-      department_name: d.departmentName,
-      department_desc: d.departmentDesc,
-      is_active: d.isActive,
-    })),
+    departments: (data.departments || [])
+      .filter(d => d.departmentId)
+      .map(d => ({
+        department_id: d.departmentId,
+        department_name: safeStr(d.departmentName),
+        department_desc: safeStr(d.departmentDesc),
+        is_active: safeBool(d.isActive),
+      })),
 
     /* =====================
        COUNTRIES
     ====================== */
-    countries: (data.countries || []).map(c => ({
-      country_id: c.countryId,
-      country_name: c.countryName,
-      is_active: c.isActive,
-    })),
+   countries: (data.countries || [])
+  .filter(c => c.countryId)
+  .map(c => ({
+    country_id: c.countryId,
+    country_name: safeStr(c.countryName),
+    is_active: safeBool(c.isActive),
+  })),
 
     /* =====================
        STATES
     ====================== */
-    states: (data.states || []).map(s => ({
-      state_id: s.stateId,
-      state_name: s.stateName,
-      country_id: s.countryId,
-      is_active: s.isActive,
-    })),
+    states: (data.states || [])
+  .filter(s => s.stateId)
+  .map(s => ({
+    state_id: s.stateId,
+    state_name: safeStr(s.stateName),
+    country_id: s.countryId,
+    is_active: safeBool(s.isActive),
+  })),
 
     /* =====================
        CITIES
     ====================== */
-    cities: (data.cities || []).map(c => ({
-      city_id: c.cityId,
-      city_name: c.cityName,
-      state_id: c.stateId,
-      is_active: c.isActive,
-    })),
+   cities: (data.cities || [])
+  .filter(c => c.cityId)
+  .map(c => ({
+    city_id: c.cityId,
+    city_name: safeStr(c.cityName),
+    state_id: c.stateId,
+    is_active: safeBool(c.isActive),
+  })),
 
     /* =====================
        LOCATIONS
     ====================== */
-    locations: (data.locations || []).map(l => ({
-      location_id: l.locationId,
-      location_name: l.locationName,
-      city_id: l.cityId,
-      is_active: l.isActive,
-    })),
+    locations: (data.locations || [])
+  .filter(l => l.locationId)
+  .map(l => ({
+    location_id: l.locationId,
+    location_name: safeStr(l.locationName),
+    city_id: l.cityId,
+    is_active: safeBool(l.isActive),
+  })),
 
     /* =====================
        SKILLS
     ====================== */
-    skills: (data.skills || []).map(s => ({
-      skill_id: s.skillId,
-      skill_name: s.skillName,
-      skill_desc: s.skillDesc,
-      is_active: s.isActive,
-    })),
+    skills: (data.skills || [])
+  .filter(s => s.skillId)
+  .map(s => ({
+    skill_id: s.skillId,
+    skill_name: safeStr(s.skillName),
+    skill_desc: safeStr(s.skillDesc),
+    is_active: safeBool(s.isActive),
+  })),
+
 
     /* =====================
        JOB GRADES
     ====================== */
-    job_grades: (data.jobGrade || []).map(j => ({
-      job_grade_id: j.jobGradeId,
-      job_grade_code: j.jobGradeCode,
-      job_grade_desc: j.jobGradeDesc,
-      job_scale: j.jobScale,
-      min_salary: j.minSalary?.parsedValue ?? 0,
-      max_salary: j.maxSalary?.parsedValue ?? 0,
-      is_active: j.isActive,
-    })),
+    job_grades: (data.jobGrade || [])
+  .filter(j => j.jobGradeId)
+  .map(j => ({
+    job_grade_id: j.jobGradeId,
+    job_grade_code: safeStr(j.jobGradeCode),
+    job_grade_desc: safeStr(j.jobGradeDesc),
+    job_scale: safeStr(j.jobScale),
+    min_salary: safeNum(j.minSalary),
+    max_salary: safeNum(j.maxSalary),
+    is_active: safeBool(j.isActive),
+  })),
 
     /* =====================
        MANDATORY QUALIFICATIONS
@@ -101,32 +116,42 @@ export const mapMasterDataApi = (apiResponse) => {
     /* =====================
        MASTER POSITIONS
     ====================== */
-    master_positions: (data.masterPositions || []).map(p => ({
-      position_id: p.positionId,
-      position_name: p.positionName,
-      position_desc: p.positionDescription,
-      job_grade_id: p.jobGradeId,
-      department_id: p.deptId,
-      is_active: p.isActive,
-    })),
+ master_positions: (data.masterPositions || [])
+  .filter(p => p.masterPositionsId)
+  .map(p => ({
+    position_id: p.masterPositionsId, // ✅ FIXED
+    position_code: safeStr(p.positionCode),
+    position_name: safeStr(p.positionName),
+    position_desc: safeStr(p.positionDescription),
+    job_grade_id: p.gradeId,
+    department_id: p.deptId,
+    employment_type_id: p.employmentType,
+    min_age: safeNum(p.eligibilityAgeMin),
+    max_age: safeNum(p.eligibilityAgeMax),
+    is_active: true,
+  })),
+
 
     /* =====================
        RESERVATION CATEGORIES
     ====================== */
-    reservation_categories: (data.reservationCategories || []).map(r => ({
-      category_id: r.reservationCategoriesId,
-      category_code: r.categoryCode,
-      category_name: r.categoryName,
-      category_desc: r.categoryDesc,
-      is_active: r.isActive,
-    })),
+  reservation_categories: (data.reservationCategories || [])
+  .filter(r => r.reservationCategoriesId)
+  .map(r => ({
+    category_id: r.reservationCategoriesId,
+    category_code: safeStr(r.categoryCode),
+    category_name: safeStr(r.categoryName),
+    category_desc: safeStr(r.categoryDesc),
+    is_active: safeBool(r.isActive),
+  })),
+
 
     /* =====================
        GENDER
     ====================== */
     genders: (data.genderMasters || []).map(g => ({
       gender_id: g.genderId,
-      gender_name: g.gender,
+      gender_name: safeStr(g.gender),
       is_active: g.isActive,
     })),
 
@@ -135,7 +160,7 @@ export const mapMasterDataApi = (apiResponse) => {
     ====================== */
     marital_statuses: (data.maritalStatusMaster || []).map(m => ({
       marital_status_id: m.maritalStatusId,
-      marital_status: m.maritalStatus,
+      marital_status: safeStr(m.maritalStatus),
       is_active: m.isActive,
     })),
 
@@ -144,7 +169,7 @@ export const mapMasterDataApi = (apiResponse) => {
     ====================== */
     religions: (data.religionMaster || []).map(r => ({
       religion_id: r.religionId,
-      religion_name: r.religion,
+      religion_name: safeStr(r.religion),
       is_active: r.isActive,
     })),
 
@@ -153,8 +178,8 @@ export const mapMasterDataApi = (apiResponse) => {
     ====================== */
     disabilities: (data.disabilityCategories || []).map(d => ({
       disability_id: d.disabilityCategoryId,
-      disability_code: d.disabilityCode,
-      disability_name: d.disabilityName,
+      disability_code: safeStr(d.disabilityCode),
+      disability_name: safeStr(d.disabilityName),
       is_active: d.isActive,
     })),
 
@@ -163,7 +188,7 @@ export const mapMasterDataApi = (apiResponse) => {
     ====================== */
     languages: (data.languageMasters || []).map(l => ({
       language_id: l.languageId,
-      language_name: l.languageName,
+      language_name: safeStr(l.languageName),
     })),
 
     /* =====================
@@ -181,9 +206,21 @@ export const mapMasterDataApi = (apiResponse) => {
     ====================== */
     districts: (data.districts || []).map(d => ({
       district_id: d.districtId,
-      district_name: d.districtName,
+      district_name: safeStr(d.districtName),
       state_id: d.stateId,
       is_active: d.isActive,
     })),
+
+    /* =====================
+   EMPLOYMENT TYPES ✅
+    ====================== */
+    employment_types: (data.employementTypes || [])
+      .filter(e => e.employementTypeId)
+      .map(e => ({
+        employment_type_id: e.employementTypeId,
+        employment_type_code: safeStr(e.typeCode),
+        employment_type_name: safeStr(e.typeName),
+        is_active: true,
+      })),
   };
 };

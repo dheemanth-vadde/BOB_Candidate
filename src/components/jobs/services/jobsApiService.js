@@ -22,7 +22,7 @@ const jobsApiService = {
   getAppliedJobs: (candidateId) => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}`),
   getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
   getJobPositions: () => jobsapi.get(`/current-opportunities/get-job-positions/active`),
-   applyJobs: (data) => jobsapi.post(`/applications/apply/job`,data),
+   applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
    getMasterData:()=>mastersapi.get(`/all`),
 
    //razor pay

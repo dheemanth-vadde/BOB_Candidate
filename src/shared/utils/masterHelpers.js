@@ -65,3 +65,57 @@ export const getSkill = (masters, skillId) =>
     skillId,
     "skill_id"        // ✅ FIXED
   );
+/* =========================
+   EMPLOYMENT TYPE
+========================= */
+export const getEmploymentType = (masters, employmentTypeId) =>
+  getMasterById(
+    masters,
+    "employment_types",     // ✅ matches API key
+    employmentTypeId,
+    "employment_type_id"     // ✅ matches ID field
+  );
+
+  /* =========================
+   COUNTRY (NATIONALITY)
+========================= */
+export const getNationality = (masters, countryId) =>
+  getMasterById(
+    masters,
+    "countries",
+    countryId,
+    "country_id"
+  );
+
+/* =========================
+   GENDER
+========================= */
+export const getGender = (masters, genderId) =>
+  getMasterById(
+    masters,
+    "genders",
+    genderId,
+    "gender_id"
+  );
+
+/* =========================
+   MARITAL STATUS
+========================= */
+export const getMaritalStatus = (masters, maritalStatusId) =>
+  getMasterById(
+    masters,
+    "marital_statuses",
+    maritalStatusId,
+    "marital_status_id"
+  );
+
+/* =========================
+   RELIGION
+========================= */
+export const getReligion = (masters, religionId) =>
+  getMasterById(
+    masters,
+    "religions",
+    religionId,
+    "religion_id"
+  );

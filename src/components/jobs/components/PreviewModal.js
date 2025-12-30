@@ -4,6 +4,7 @@ import "../../../css/PreviewModal.css";
 import logo_Bob from "../../../assets/bob-logo.png";
 import sign from "../../../assets/download.png";
 import { useSelector } from "react-redux";
+import viewIcon from "../../../assets/view-icon.png";
 const PreviewModal = ({
   show,
   onHide,
@@ -26,7 +27,7 @@ if (!previewData) {
 
   console.log("Stored preference:", preferenceData);
   console.log("Preview previewData:", previewData);
-
+const allDocuments = Object.values(previewData.documents || {}).flat();
   return (
     <Modal
       show={show}
@@ -117,23 +118,23 @@ if (!previewData) {
 
                     <tr>
                       <td className="fw-med">Gender</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.gender || "M"}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.gender_name || "-"}</td>
                       <td className="fw-med">Religion</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.religion}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.religion_name || "-"}</td>
                     </tr>
 
                     <tr>
                       <td className="fw-med">Category</td>
-                      <td className="fw-reg" colSpan={2}  >{previewData.personalDetails.category || "General"}</td>
+                      <td className="fw-reg" colSpan={2}  >{previewData.personalDetails.category || "-"}</td>
                       <td className="fw-med">Caste/Community</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.caste || "Brahmin"}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.caste || "-"}</td>
                     </tr>
 
                     <tr>
                       <td className="fw-med">Date of Birth</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.dob}</td>
                       <td className="fw-med">Age (as on cut-off date)</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "30 years 11 months 1 day"}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "-"}</td>
                     </tr>
 
                     <tr>
@@ -145,14 +146,14 @@ if (!previewData) {
 
                     <tr>
                       <td className="fw-med">Exam Center</td>
-                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "Hyderabad"}</td>
+                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "-"}</td>
                       <td className="fw-med">Nationality</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality_name}</td>
                     </tr>
 
                     <tr>
                       <td className="fw-med">Marital Status</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.maritalStatus}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.marital_status_name}</td>
                       <td className="fw-med">Name of Spouse</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.spouseName || "-"}</td>
                     </tr>
@@ -164,7 +165,7 @@ if (!previewData) {
                     </tr>
                     <tr>
                       <td className="fw-med">Current CTC</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.currentCTC || "11"}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.currentCTC || "-"}</td>
                       <td className="fw-med">Expected CTC</td>
                       <td className="fw-reg" colSpan={2}>{preferences.ctc || "-"}</td>
                     </tr>
@@ -238,13 +239,15 @@ if (!previewData) {
                     {previewData.education.map((edu, idx) => (
                       <tr key={idx}>
                         <td>{idx + 1}</td>
-                        <td>{edu.board}</td>
+                        <td>{edu.institution}</td>
                         <td>{edu.school}</td>
                         <td>{edu.degree}</td>
                         <td>{edu.subject}</td>
-                        <td>{edu.from}</td>
-                        <td>{edu.to}</td>
-                        <td>{edu.marks}</td>
+                        <td>{edu.startDate}</td>
+                        <td>{edu.endDate}</td>
+                        <td>{edu.percentage !== null && edu.percentage !== undefined
+                          ? `${edu.percentage}%`
+                          : "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -258,36 +261,7 @@ if (!previewData) {
             <Accordion.Header>Experience Details</Accordion.Header>
             <Accordion.Body>
               {/* Experience Summary Cards */}
-              <div className="row g-3 mb-4">
-                <div className="col-md-4">
-                  <div className="exp-card text-center">
-                    <div className="text-muted small">Total Experience</div>
-                    <div className="fw-semibold text-bob-blue fs-6">
-                      {previewData.experienceSummary?.total || "N/A"}
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="exp-card text-center">
-                    <div className="text-muted small">
-                      Relevant Experience
-                    </div>
-                    <div className="fw-semibold text-bob-blue fs-6">
-                      {previewData.experienceSummary?.relevant || "N/A"}
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="exp-card text-center">
-                    <div className="text-muted small">
-                      Current Designation
-                    </div>
-                    <div className="fw-semibold text-bob-blue fs-6">
-                      {previewData.experienceSummary?.designation || "N/A"}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
 
               {/* Experience Table */}
               <div className="table-responsive">
@@ -322,7 +296,82 @@ if (!previewData) {
               </div>
             </Accordion.Body>
           </Accordion.Item>
+           {/* === DOCUMENT DETAILS === */}
+        <Accordion.Item eventKey="3">
+  <Accordion.Header>Documents Details</Accordion.Header>
+  <Accordion.Body>
+    <table className="table table-bordered bob-table">
+      <thead className="table-header">
+        <tr>
+          <th>File Type</th>
+          <th>Action</th>
+          <th>File Type</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {allDocuments.length === 0 && (
+          <tr>
+            <td colSpan="4" className="text-center">
+              No documents available
+            </td>
+          </tr>
+        )}
+
+        {allDocuments.map((doc, index) => {
+          if (index % 2 !== 0) return null; // process in pairs only
+
+          const nextDoc = allDocuments[index + 1];
+
+          return (
+            <tr key={index}>
+              {/* LEFT DOCUMENT */}
+              <td>{doc.name}</td>
+              <td>
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noreferrer"
+                 
+                >
+                  <img src={viewIcon}  	alt="View"
+										style={{ width: "25px", cursor: "pointer" }}/>
+                </a>
+              </td>
+
+              {/* RIGHT DOCUMENT */}
+              {nextDoc ? (
+                <>
+                  <td>{nextDoc.name}</td>
+                  <td>
+                     <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noreferrer"
+                 
+                >
+                  <img src={viewIcon}  	alt="View"
+										style={{ width: "25px", cursor: "pointer" }}/>
+                </a>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>-</td>
+                  <td>-</td>
+                </>
+              )}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </Accordion.Body>
+</Accordion.Item>
+
         </Accordion>
+
+       
 
         {/* ===== DECLARATION + BUTTONS ===== */}
         <div className="mt-4 text-center">
@@ -346,6 +395,12 @@ if (!previewData) {
                 I further confirm that all documents uploaded in this
                 application have been provided voluntarily and as per my own
                 understanding.
+              </label>
+            </div>
+             <div className="form-check">
+              <input type="checkbox" className="form-check-input" id="decl2" />
+              <label htmlFor="decl2" className="form-check-label">
+                I declare that I possess the requisite work experience for this post, as stipulated in the terms of the advertisement, and undertake to submit necessary documents/testimonials in support of the same as and when called for by the Bank.
               </label>
             </div>
           </div>

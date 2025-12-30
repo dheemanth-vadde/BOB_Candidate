@@ -17,8 +17,11 @@ const PreferenceModal = ({
 }) => {
 
   console.log("selectedjob", selectedJob)
-  // const showPreferences = selectedJob?.preference === true;
-  const showPreferences = true;
+   const showPreferences = selectedJob?.is_location_preference_enabled === true;
+
+
+   const allowedStateIds = selectedJob?.state_id_array || [];
+  //const showPreferences = true;
   // ✅ Helper: Get cities based on selected state ID
   const getCitiesByState = (stateId) => {
     if (!stateId) return [];
@@ -33,31 +36,44 @@ const PreferenceModal = ({
 
   // ✅ Handle state/location change
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    // Prevent duplicate locations
-    if (name.startsWith("state")) {
-      const selected = [
-        applyForm.state1,
-        applyForm.state2,
-        applyForm.state3,
-      ].filter(Boolean);
+  /* =========================
+     STATE CHANGE
+     - allow duplicates
+     - reset linked location
+  ========================= */
+  if (name.startsWith("state")) {
+    const index = name.slice(-1);
 
-      if (selected.includes(value)) {
-        toast.info("This state is already selected in another preference.");
-        return;
-      }
+    onApplyFormChange(`state${index}`, value);
+    onApplyFormChange(`location${index}`, ""); // reset location
+    return;
+  }
+
+  /* =========================
+     LOCATION DUPLICATE CHECK ✅
+     (ONLY FOR LOCATIONS)
+  ========================= */
+  if (name.startsWith("location")) {
+    const selectedLocations = [
+      applyForm.location1,
+      applyForm.location2,
+      applyForm.location3,
+    ].filter(Boolean);
+
+    if (selectedLocations.includes(value)) {
+      toast.info("This location is already selected in another preference.");
+      return;
     }
+  }
 
-    // Reset corresponding location when state changes
-    if (name.startsWith("state")) {
-      const index = name.slice(-1);
-      onApplyFormChange(`state${index}`, value);
-      onApplyFormChange(`location${index}`, ""); // reset linked location
-    } else {
-      onApplyFormChange(name, value);
-    }
-  };
+  /* =========================
+     DEFAULT UPDATE
+  ========================= */
+  onApplyFormChange(name, value);
+};
+
 
   return (
     <Modal
@@ -105,12 +121,15 @@ const PreferenceModal = ({
                   name="state1"
                   value={applyForm.state1}
                   onChange={handleInputChange}
+                  disabled={allowedStateIds.length === 0}
                 >
                   <option value="">Select State</option>
-                  {states.map((s) => (
-                    <option key={s.state_id} value={s.state_id}>
-                      {s.state_name}
-                    </option>
+                  {states
+                    .filter(s => allowedStateIds.includes(s.state_id))
+                    .map((s) => (
+                      <option key={s.state_id} value={s.state_id}>
+                        {s.state_name}
+                      </option>
                   ))}
                 </select>
               </div>
@@ -143,10 +162,12 @@ const PreferenceModal = ({
                   onChange={handleInputChange}
                 >
                   <option value="">Select State</option>
-                  {states.map((s) => (
-                    <option key={s.state_id} value={s.state_id}>
-                      {s.state_name}
-                    </option>
+                   {states
+                    .filter(s => allowedStateIds.includes(s.state_id))
+                    .map((s) => (
+                      <option key={s.state_id} value={s.state_id}>
+                        {s.state_name}
+                      </option>
                   ))}
                 </select>
               </div>
@@ -179,10 +200,12 @@ const PreferenceModal = ({
                   onChange={handleInputChange}
                 >
                   <option value="">Select State</option>
-                  {states.map((s) => (
-                    <option key={s.state_id} value={s.state_id}>
-                      {s.state_name}
-                    </option>
+                   {states
+                    .filter(s => allowedStateIds.includes(s.state_id))
+                    .map((s) => (
+                      <option key={s.state_id} value={s.state_id}>
+                        {s.state_name}
+                      </option>
                   ))}
                 </select>
               </div>
@@ -235,6 +258,18 @@ const PreferenceModal = ({
             />
           </div>
 
+        </div>
+
+        {/* ===== INFO ROW (BULB MESSAGE) ===== */}
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="bob-pref-info">
+              <img src={bulb} alt="info" className="info-bulb-icon" />
+              <span className="info-text">
+                All personal information will be automatically retrieved from the candidate’s profile.
+              </span>
+            </div>
+          </div>
         </div>
 
       </Modal.Body>

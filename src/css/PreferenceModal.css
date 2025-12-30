@@ -71,24 +71,22 @@
 }
 
 /* === INFO BOX === */
-.bob-pref-info {
-  /* background: #fff3e0;
-  border: 1px solid #ffd9a6; */
+/* .bob-pref-info {
+
   border-radius: 6px;
-  /* padding: 0.65rem 1rem; */
   font-size: 0.9rem;
   color: #5d4037;
   display: flex;
   align-items: center;
   margin-top: 0.75rem;
-}
+} */
 
-.bob-pref-info svg {
+/* .bob-pref-info svg {
   color: #ff6f00;
   margin-right: 0.75rem;
   font-size: 1rem;
   flex-shrink: 0;
-}
+} */
 
 /* === BODY === */
 .bob-pref-body {
@@ -244,18 +242,19 @@ select.form-control::-ms-expand {
 /* =========================================================
    INFO TEXT BELOW FORM (ORANGE NOTE)
 ========================================================= */
-.bob-pref-info-bottom {
+.bob-pref-info {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 18px;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #f26522; /* Bank orange */
 }
 
-.bob-pref-info-bottom svg {
-  font-size: 14px;
+.info-bulb-icon{
   color: #f37021;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
