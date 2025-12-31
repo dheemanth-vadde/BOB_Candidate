@@ -3,7 +3,7 @@ import { applyInterceptors } from './interceptor';
 
 const JOBS_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/candidate'
 const RAZOR_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay'
-const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api'
+const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com:8443/dev-master-app'
 
 const jobsapi = axios.create({
   baseURL: JOBS_BASE_URL,

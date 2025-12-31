@@ -4,11 +4,94 @@ import "../../../css/TrackApplicationModal.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { Accordion, useAccordionButton } from "react-bootstrap";
-
+import jobsApiService from "../../jobs/services/jobsApiService";
+import { useSelector } from "react-redux";
+import RequestHistory from "../../jobs/components/RequestHistory";
+import { toast } from "react-toastify";
 const TrackApplicationModal = ({ show, onHide, job }) => {
   const [activeKey, setActiveKey] = useState("0");
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = React.useRef();
+  const [requestTypes, setRequestTypes] = useState([]);
+  const [selectedRequestType, setSelectedRequestType] = useState("");
+const [description, setDescription] = useState("");
+ const userData = useSelector((state) => state.user.user);
+  const candidateId = userData?.data?.user?.id;
+console.log("selected jobs",job)
+
+const handleSubmitRequest = async () => {
+  try {
+    if (!selectedRequestType || !description) {
+      alert("Please select request type and enter description");
+      return;
+    }
+
+    const candidate_Id = candidateId;
+    const applicationId = job?.application_id;
+    console.log("candidateId:", candidateId, "applicationId:", applicationId);
+    if (!candidate_Id || !applicationId) {
+      alert("Missing candidate or application details");
+      return;
+    }
+
+    const formData = new FormData();
+
+    // JSON part (must match Swagger key)
+    formData.append(
+      "createThreadRequestModel",
+      new Blob(
+        [
+          JSON.stringify({
+            requestTypeId: selectedRequestType,
+            description,
+            applicationId,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    // Optional file
+    if (selectedFile) {
+      formData.append("file", selectedFile);
+    }
+
+    await jobsApiService.createCandidateThread(candidateId, formData);
+
+    toast.success("Request submitted successfully");
+
+    // reset state
+    setSelectedRequestType("");
+    setDescription("");
+    setSelectedFile(null);
+
+    onHide();
+  } catch (error) {
+    console.error("Submit request failed", error);
+    toast.error("Failed to submit request");
+  }
+};
+
+
+  const fetchRequestTypes = async () => {
+  try {
+    const response = await jobsApiService.getRequestTypes();
+
+    const list = Array.isArray(response?.data)
+      ? response.data
+      : [];
+
+    setRequestTypes(list);
+  } catch (error) {
+    console.error("Failed to fetch request types", error);
+    setRequestTypes([]);
+  }
+};
+ useEffect(() => {
+  if (show) {
+    fetchRequestTypes();
+  }
+}, [show]);
 
   const handleFileSelect = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -96,11 +179,23 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
             <div className="col-md-7">
               <div className="">
                 <label className="form-label">Request Type *</label>
-                <select className="form-select">
+               <select
+                  className="form-select"
+                  value={selectedRequestType}
+                  onChange={(e) => setSelectedRequestType(e.target.value)}
+                >
                   <option value="">Select Request Type</option>
-                  <option value="reschedule">Interview Reschedule</option>
-                  <option value="query">General Query</option>
+
+                  {requestTypes.map((type) => (
+                    <option
+                      key={type.requestTypeId}
+                      value={type.requestTypeId}
+                    >
+                      {type.requestName}
+                    </option>
+                  ))}
                 </select>
+
               </div>
 
               <div>
@@ -109,6 +204,8 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
                   className="form-control"
                   rows="3"
                   placeholder="Describe your query here..."
+                    value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
             </div>
@@ -147,7 +244,10 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
                 >
                   Cancel
                 </button>
-                <button className="btn btn-primary">
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSubmitRequest}
+                >
                   Submit
                 </button>
               </div>
@@ -160,78 +260,9 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
         <div className="query-section bank-style request-history">
           <h6 className="section-title">Request History</h6>
 
-          <Accordion defaultActiveKey="0">
+           <RequestHistory applicationId={job?.application_id}   requestTypes={requestTypes}/>
 
-            {/* REQUEST 1 */}
-            <table className="table history-table">
-              <tbody>
-                <AccordionRow eventKey="0">
-                  <td>Interview Reschedule</td>
-                  <td>Request to reschedule technical round due to conflict</td>
-                  <td>29-09-2025 02:51 PM</td>
-                  <td className="status approved">Approved</td>
-                </AccordionRow>
-              </tbody>
-            </table>
-
-            <Accordion.Collapse eventKey="0">
-              <div className="history-thread">
-
-                <div className="thread-item recruiter">
-                  <div className="avatar">R</div>
-                  <div>
-                    <strong>Request reviewed and approved by Recruiter</strong>
-                    <p>
-                      Approved and rescheduled your technical round. Please check
-                      updated details in your email.
-                    </p>
-                    <span className="time">29-09-2025 06:15 PM</span>
-                  </div>
-                </div>
-
-                <div className="thread-item candidate">
-                  <div className="avatar">C</div>
-                  <div>
-                    <strong>Request raised by Candidate</strong>
-                    <p>
-                      Requesting to reschedule the technical round due to a scheduling
-                      conflict.
-                    </p>
-                    <span className="time">29-09-2025 03:01 PM</span>
-                  </div>
-                </div>
-
-              </div>
-            </Accordion.Collapse>
-
-            {/* REQUEST 2 */}
-            <table className="table history-table">
-              <tbody>
-                <AccordionRow eventKey="1">
-                  <td>Document Missing</td>
-                  <td>Uploaded my experience document for my previous company</td>
-                  <td>25-09-2025 10:30 AM</td>
-                  <td className="status pending">Pending</td>
-                </AccordionRow>
-              </tbody>
-            </table>
-
-            <Accordion.Collapse eventKey="1">
-              <div className="history-thread">
-                <div className="thread-item candidate">
-                  <div className="avatar">C</div>
-                  <div>
-                    <strong>Request raised by Candidate</strong>
-                    <p>
-                      Uploaded my previous experience document as requested.
-                    </p>
-                    <span className="time">25-09-2025 10:30 AM</span>
-                  </div>
-                </div>
-              </div>
-            </Accordion.Collapse>
-
-          </Accordion>
+           
         </div>
       </Modal.Body>
     </Modal>

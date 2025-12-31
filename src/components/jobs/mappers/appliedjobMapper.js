@@ -1,6 +1,5 @@
 import {
   getDepartment,
-
   getJobGrade,
   getEmploymentType,
   getState
@@ -9,32 +8,26 @@ import {
 export const mapAppliedJobApiToModel = (apiJob, masters = {}) => {
   if (!apiJob) return null;
 
-
-  /* =========================
-   STATE DISTRIBUTIONS
-========================= */
-
-
   const {
-    positions :positionsDTO,
-    masterPositions:masterPositionsDTO,
-    requisitions:requisitionsDTO,
-    positionStateDistributions:positionStateDistributions = []
+    positions: positionsDTO,
+    masterPositions: masterPositionsDTO,
+    requisitions: requisitionsDTO,
+    candidateApplication: candidateApplicationDTO, // 🆕 NEW
   } = apiJob;
 
+  const positionStateDistributions =
+    positionsDTO?.positionStateDistributions || [];
 
-  const stateDistributions = positionStateDistributions || [];
+  /* =========================
+     STATE DISTRIBUTIONS
+  ========================= */
+  const stateIds = positionStateDistributions
+    .map(s => s.stateId)
+    .filter(Boolean);
 
-const stateIds = stateDistributions
-  .map(s => s.stateId)
-  .filter(Boolean);
-
-  console.log("stateIds", stateIds)
-
-const stateNames = stateIds
-  .map(id => getState(masters, id)?.state_name)
-  .filter(Boolean);
-  console.log("stateNames", stateNames)
+  const stateNames = stateIds
+    .map(id => getState(masters, id)?.state_name)
+    .filter(Boolean);
 
   /* =========================
      MASTER LOOKUPS
@@ -45,17 +38,6 @@ const stateNames = stateIds
     masters,
     positionsDTO?.employmentType
   );
-console.log("masters111",masters);
-  console.log("dept", dept);
-  console.log("employmentType", employmentType);
-  console.log("grade", grade);
-  /* =========================
-     STATE (NEW SOURCE)
-  ========================= */
-  const primaryStateId = positionStateDistributions[0]?.stateId || null;
-  const state = primaryStateId
-    ? getState(masters, primaryStateId)
-    : null;
 
   return {
     /* =========================
@@ -80,10 +62,10 @@ console.log("masters111",masters);
     employment_type: employmentType
       ? employmentType.employment_type_name
       : "",
-    position_status: positionsDTO?.positionStatus || "Inactive",
+    position_status: positionsDTO?.positionStatus || "-",
 
-    grade_id: positionsDTO?.gradeId || "",
-    grade_name: grade ? grade.job_grade_code : "—",
+    grade_id: positionsDTO?.gradeId || "-",
+    grade_name: grade ? grade.job_grade_code : "-",
 
     /* =========================
        ELIGIBILITY
@@ -102,25 +84,24 @@ console.log("masters111",masters);
 
     /* =========================
        LOCATION & DEPARTMENT
-       (KEYS UNCHANGED)
     ========================= */
-    dept_id: positionsDTO?.deptId || "",
-    dept_name: dept ? dept.department_name : "—",
+    dept_id: positionsDTO?.deptId || "-",
+    dept_name: dept ? dept.department_name : "-",
 
-    location_id: "",           // ❗ not available in API anymore
-    location_name: "—",
+    location_id: "-",
+    location_name: "-",
 
-    city_id: "",               // ❗ not available in API anymore
-    city_name: "—",
+    city_id: "-",
+    city_name: "-",
 
     /* =========================
-       STATE (NEW DATA ADDED)
+       STATE
     ========================= */
-    state_id: stateIds.join(",") || "",
-    state_name: stateNames.join(", ") || "—",
+    state_id: stateIds.join(",") || "-",
+    state_name: stateNames.join(", ") || "-",
 
-   state_id_array: stateIds || [],
-    state_name_array: stateNames || [],
+    state_id_array: stateIds,
+    state_name_array: stateNames,
 
     /* =========================
        SALARY
@@ -143,9 +124,32 @@ console.log("masters111",masters);
       positionsDTO?.isLocationPreferenceEnabled ?? false,
     is_location_wise:
       positionsDTO?.isLocationWise ?? false,
+
+    /* =========================
+       🆕 APPLICATION DETAILS
+    ========================= */
+    application_id: candidateApplicationDTO?.id || "",
+    application_status: candidateApplicationDTO?.applicationStatus || "",
+    application_date: candidateApplicationDTO?.applicationDate || "",
+    application_updated_date: candidateApplicationDTO?.updatedDate || null,
+
+    /* =========================
+       🆕 STATE DISTRIBUTION META
+    ========================= */
+    state_distribution_details: positionStateDistributions.map(s => ({
+      state_id: s.stateId,
+      vacancies: s.totalVacancies,
+      local_language: s.localLanguage,
+      distribution_id: s.positionStateDistributionId,
+    })),
+
+    /* =========================
+       🆕 EXTRA POSITION INFO
+    ========================= */
+    cibil_score: positionsDTO?.cibilScore ?? null,
+    required_documents: positionsDTO?.positionRequiredDocuments || [],
   };
 };
-
 
 /* =========================
    LIST MAPPER
@@ -154,4 +158,3 @@ export const mapAppliedJobsApiToList = (apiJobs, masters = {}) => {
   if (!Array.isArray(apiJobs)) return [];
   return apiJobs.map(job => mapAppliedJobApiToModel(job, masters));
 };
-

@@ -23,7 +23,17 @@ const jobsApiService = {
   getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
   getJobPositions: (candidateId) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}`),
    applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
-   getMasterData:()=>mastersapi.get(`/all`),
+   getMasterData:()=>mastersapi.get(`api/all`),
+    getRequestTypes:()=>mastersapi.get(`master-dd-data/get/request-types`),
+
+    //thread apis 
+    createCandidateThread: (candidateId, formData) => jobsapi.post(`/candidate-conversation/create-thread/${candidateId}`, formData, {
+      headers: {
+        "X-Client": "candidate",
+        "Content-Type": "multipart/form-data"
+      }
+    }),
+    getRequestHistory: (applicationId) => jobsapi.get(`/candidate-conversation/request-history/${applicationId}`),
 
    //razor pay
 

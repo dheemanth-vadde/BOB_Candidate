@@ -22,6 +22,8 @@ const AppliedJobs = () => {
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
     const [masterData,setMasterData]=useState([{}]);
+
+
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
   const candidateId = userData?.data?.user?.id;
@@ -165,25 +167,61 @@ useEffect(() => {
 
           {/* Grid Info */}
           {/* ===== META DATA – SINGLE FLEX ROW ===== */}
-          <div className="job-meta-row">
-            <span>Employment Type:</span>{job.employment_type}
-            <span>Department:</span>{job.dept_name}
-            <span>Experience:</span>{job.mandatory_experience} years
-            <span>Vacancies:</span> {job.no_of_vacancies}
-            <span> Eligibility Age:</span>
-            {job.eligibility_age_min} – {job.eligibility_age_max} years
+          {/* ===== META ROW 1 ===== */}
+{/* ===== META ROW 1 ===== */}
+<div className="job-meta-grid row-1">
+  <div className="meta-item">
+    <span className="label">Reference No:</span>
+    <span className="value">{job.requisition_code}</span>
+  </div>
 
-            <span>Applied On:</span> {job.applied_on || "-"}
-          </div>
+  <div className="meta-item">
+    <span className="label">Eligibility Age:</span>
+    <span className="value">
+      {job.eligibility_age_min} – {job.eligibility_age_max} years
+    </span>
+  </div>
 
-          {/* ===== QUALIFICATION – NEXT ROW ONLY ===== */}
-          <div className="job-qualification-row">
-            <span>Qualification:</span> {job.mandatory_qualification}
-          </div>
+  <div className="meta-item">
+    <span className="label">Applied On:</span>
+    <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
+  </div>
+
+  <div className="meta-item">
+    <span className="label">Employment Type:</span>
+    <span className="value">{job.employment_type}</span>
+  </div>
+</div>
+
+{/* ===== META ROW 2 ===== */}
+<div className="job-meta-grid row-2">
+  <div className="meta-item">
+    <span className="label">Department:</span>
+    <span className="value">{job.dept_name}</span>
+  </div>
+
+  <div className="meta-item">
+    <span className="label">Experience:</span>
+    <span className="value">{job.mandatory_experience} years</span>
+  </div>
+
+  <div className="meta-item">
+    <span className="label">Vacancies:</span>
+    <span className="value">{job.no_of_vacancies}</span>
+  </div>
+</div>
+
+{/* ===== META ROW 3 ===== */}
+<div className="job-meta-grid row-3">
+  <div className="meta-item">
+    <span className="label">Qualification:</span>
+    <span className="value">{job.mandatory_qualification}</span>
+  </div>
+</div>
 
           {/* Footer */}
           <div className="job-footer">
-            {/* {job.application_status === "Offered" && ( */}
+            {job.application_status === "Offered" && ( 
             <>
               <button
                 className="footer-link"
@@ -194,7 +232,7 @@ useEffect(() => {
 
               <span className="footer-separator">|</span>
             </>
-            {/* )} */}
+             )} 
 
             <button
               className="footer-link"

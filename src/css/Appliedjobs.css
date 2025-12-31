@@ -177,6 +177,67 @@ font-weight: 500;
   color: #6c757d;
   margin: 0 2px;
 }
+
+/* ===============================
+   JOB META GRID
+================================ */
+
+.job-meta-grid {
+  display: grid;
+  column-gap: 32px;
+  row-gap: 10px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.job-meta-grid span {
+  font-weight: 600;
+  color: #1f2d5a;
+  margin-right: 6px;
+}
+
+/* /* GRID STRUCTURE */
+.job-meta-grid.row-1 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.job-meta-grid.row-2 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.job-meta-grid.row-3 {
+  grid-template-columns: 1fr;
+  margin-top: 6px;
+}
+
+.meta-item .label {
+  font-weight: 600;
+  color: #162b75;
+  margin-right: 6px;
+}
+
+.meta-item .value {
+  color: #333;
+  font-weight: 400;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .job-meta-grid.row-1 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .job-meta-grid.row-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .job-meta-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* =========================================================
    RESPONSIVE
 ========================================================= */
