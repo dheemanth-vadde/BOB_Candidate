@@ -91,7 +91,8 @@ export const getNationality = (masters, countryId) =>
    GENDER
 ========================= */
 export const getGender = (masters, genderId) =>
-  getMasterById(
+
+   getMasterById(
     masters,
     "genders",
     genderId,

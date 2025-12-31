@@ -18,6 +18,8 @@ export const getMasterById = (
     return null;
   }
   console.log("masters1234",masters)
+  console.log("masterKey",masterKey)
+  console.log("id",id)
 
   const list = masters[masterKey];
   console.log(`Looking for ${idKey}=${id} in ${masterKey}`, list);      

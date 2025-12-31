@@ -28,7 +28,7 @@ const documents = apiData?.documentDetails || [];
     masters,
     profile.maritalStatusId
   );
-
+  const twinGender = getGender?.(masters, profile.twinGenderId);
   console.log("gender:", gender);
   console.log("religion:", religion);
   console.log("nationality:", nationality);
@@ -56,6 +56,19 @@ const documents = apiData?.documentDetails || [];
       fatherName: profile.fatherName || "-",
       spouseName: profile.spouseName || "-",
       dob: profile.dateOfBirth || "-",
+socialMediaProfileLink: profile.socialMediaProfileLink || "-",
+        /* ================= TWIN DETAILS ================= */
+  isTwin: yesNo(profile.isTwin),
+
+  twinName:
+    profile.isTwin === true
+      ? profile.twinName || "-"
+      : "-",
+
+  twinGender_name:
+    profile.isTwin === true
+      ? twinGender?.gender_name || "-"
+      : "-",
 
       /* 🔁 IDs (existing behaviour) */
       gender: profile.genderId || "-",
@@ -67,8 +80,8 @@ const documents = apiData?.documentDetails || [];
       /* 🆕 DISPLAY NAMES (NEW – NON-BREAKING) */
       gender_name: gender?.gender_name || "-",
       religion_name: religion?.religion_name || "-",
-      nationality_name: nationality?.nationality_name || "-",
-      marital_status_name: maritalStatus?.marital_status_name || "-",
+      nationality_name: nationality?.country_name || "-",
+      maritalStatus_name: maritalStatus?.marital_status || "-",
 
       /* ================= ADDRESS ================= */
       address: `${address.addressLine1 || ""} ${address.addressLine2 || ""}`.trim(),
@@ -110,7 +123,7 @@ const documents = apiData?.documentDetails || [];
         ? "Present"
         : e.workExperience.toDate || "-",
       duration: `${e.workExperience.monthsOfExp || 0} Months`,
-      nature: e.workExperience.workDescription || "-",
+      nature: e.workExperience.workDescription || "-"
     })),
 
     experienceSummary: {
@@ -121,6 +134,10 @@ const documents = apiData?.documentDetails || [];
       relevant: "-",
       designation:
         experiences[0]?.workExperience?.postHeld || "-",
+         currentCtc:
+    experiences[0]?.workExperience?.currentCtc
+      ? `₹${experiences[0].workExperience.currentCtc.toLocaleString()}`
+      : "-",
     },
 
     /* =========================

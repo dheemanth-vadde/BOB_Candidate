@@ -169,7 +169,15 @@
   font-size: 1rem;
   transition: all 0.2s ease-in-out;
 }
-
+/* ✅ KEEP TEXT WHITE ON HOVER */
+.bob-preference-modal .btn-bob-orange:hover,
+.bob-preference-modal .btn-bob-orange:focus,
+.bob-preference-modal .btn-bob-orange:active {
+  background: #f26522;
+  color: #fff;
+  border: none;
+  box-shadow: none;
+}
 .bob-preference-modal .btn-bob-orange:hover {
   background: #f26522;
 }

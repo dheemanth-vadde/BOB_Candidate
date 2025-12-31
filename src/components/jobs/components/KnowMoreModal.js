@@ -21,7 +21,7 @@ const KnowMoreModal = ({ show, onHide, selectedJob }) => {
 
       <Modal.Body className="p-4">
         {/* Top Stats Box */}
-        <div className="stats-container mb-4">
+        <div className="stats-container mb-3">
           <div className="row">
             <div className="col-md-4 mb-2">
               <span className="stat-label">Employment Type:</span> <span className="stat-value">{selectedJob.employment_type || "N/A"}</span>
@@ -43,7 +43,7 @@ const KnowMoreModal = ({ show, onHide, selectedJob }) => {
         </div>
 
         {/* Education Section */}
-        <div className="info-card mb-4">
+        <div className="info-card mb-3">
           <h6 className="card-section-header">Mandatory Education:</h6>
            <ul className="custom-list">
             {selectedJob.mandatory_education ? (
@@ -63,7 +63,7 @@ const KnowMoreModal = ({ show, onHide, selectedJob }) => {
         </div>
 
         {/* Experience Section */}
-        <div className="info-card mb-4">
+        <div className="info-card mb-3">
           <h6 className="card-section-header">Mandatory Experience:</h6>
          <ul className="custom-list">
             {selectedJob.mandatory_experience ? (
@@ -83,7 +83,7 @@ const KnowMoreModal = ({ show, onHide, selectedJob }) => {
         </div>
 
         {/* Responsibilities Section */}
-        <div className="info-card mb-4">
+        <div className="info-card">
           <h6 className="card-section-header">Key Responsibilities:</h6>
           <ul className="custom-list">
             {selectedJob.roles_responsibilities ? (

@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal } from "react-bootstrap";
-
+import "../../../css/ConfirmationModal.css";
 const ConfirmationModal = ({
   show,
   onCancel,
@@ -14,16 +14,17 @@ const ConfirmationModal = ({
       centered
       backdrop="static"
       keyboard={false}
+      dialogClassName="confirmation-modal"
     >
       <Modal.Body className="text-center p-4">
-        <p className="mb-4">
+        <p className="mb-4 confirmtext">
           {message ||
             "Please ensure that your latest education and experience details have been added before proceeding."}
         </p>
 
         <div className="d-flex justify-content-center gap-3">
           <button
-            className="btn btn-outline-secondary px-4"
+            className="btn btn-outline-secondary px-4 cancelbutton"
             onClick={onCancel}
           >
             Cancel

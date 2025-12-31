@@ -235,42 +235,44 @@ color:  #333333;
 
 /*modalwidth*/
 .stats-container {
-  /* background: #f8faff; */
+  background: rgba(66, 87, 159, 0.05); 
   border: 1px solid #e0e6ed;
   border-radius: 12px;
   padding: 20px;
 }
 
 .stat-label {
-  color: #4a5568;
+  color: #42579F;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .stat-value {
-  color: #162b75;
-  font-size: 14px;
+  color: #404040;
+  font-size: 0.813rem;
+  font-weight: 400;
 }
 
 /* Individual info cards */
 .info-card {
-  background: #ffffff;
+  background: rgba(66, 87, 159, 0.05);
   border: 1px solid #eef2f6;
   border-radius: 10px;
   padding: 15px 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.job-title-main {
-  color: #162b75 !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
+.job-detail-modal .job-title-main {
+  color: #42579F ;
+  font-size: 1rem ;
+  font-weight:500;
+  margin-left: 10px;
 }
 
 .card-section-header {
-  color: #4a5568;
-  font-weight: 700;
-  font-size: 14px;
+  color: #42579F;
+  font-weight: 500;
+  font-size: 0.875rem;
   margin-top: 10px;
   margin-bottom: 8px;
 }
@@ -285,32 +287,30 @@ color:  #333333;
   position: relative;
   padding-left: 20px;
   margin-bottom: 8px;
-  font-size: 14px;
-  color: #555;
+  font-size: 0.813rem;
+  color: #404040;
   line-height: 1.6;
+  font-weight: 400;
 }
 
 .custom-list li::before {
   content: "•";
   position: absolute;
   left: 0;
-  color: #4a5568;
-  font-weight: bold;
+  color: #404040;
+  font-weight: 400;
+  font-size: 0.813rem;
 }
 
 /* OK Button */
-.ok-btn {
+.job-detail-modal .ok-btn {
   background-color: #f26522;
   color: white;
   border: none;
-  padding: 10px 60px;
+  padding: 10px 40px;
   border-radius: 8px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.ok-btn:hover {
-  opacity: 0.9;
+  font-weight: 400;
+  font-size: 0.875rem;
 }
 
 /* Remove Bootstrap default border from header */

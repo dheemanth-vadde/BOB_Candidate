@@ -1,10 +1,11 @@
-import React from "react";
+import React,{ useState } from "react";
 import { Modal, Accordion } from "react-bootstrap";
 import "../../../css/PreviewModal.css";
 import logo_Bob from "../../../assets/bob-logo.png";
 import sign from "../../../assets/download.png";
 import { useSelector } from "react-redux";
 import viewIcon from "../../../assets/view-icon.png";
+import { getState, getLocation } from "../../../shared/utils/masterHelpers";
 const PreviewModal = ({
   show,
   onHide,
@@ -12,18 +13,37 @@ const PreviewModal = ({
   onBack,
   onEditProfile,
   onProceedToPayment,
-  selectedJob
+  selectedJob,
+  masterData
 }) => {
 
-
+  const [declarations, setDeclarations] = useState({
+    decl1: false,
+    decl2: false,
+    decl3: false,
+  });
+ const allChecked =
+    declarations.decl1 &&
+    declarations.decl2 &&
+    declarations.decl3;
   
   const preferenceData = useSelector(
     (state) => state.preference.preferenceData
   );
   const preferences = preferenceData?.preferences || {};
+
+  const state1 = getState(masterData, preferences.state1);
+const location1 = getLocation(masterData, preferences.location1);
+
+const state2 = getState(masterData, preferences.state2);
+const location2 = getLocation(masterData, preferences.location2);
+
+const state3 = getState(masterData, preferences.state3);
+const location3 = getLocation(masterData, preferences.location3);
 if (!previewData) {
     return null;
   }
+
 
   console.log("Stored preference:", preferenceData);
   console.log("Preview previewData:", previewData);
@@ -39,7 +59,7 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
       <Modal.Body className="bob-modal-body">
         {/* ===== HEADER ===== */}
         <div className="bob-header">
-          <div className="fw-semibold text-dark small mb-1 title_pre">
+          <div className="title_pre">
                  <span>{selectedJob?.requisition_code} - {selectedJob?.requisition_title}</span>
           </div>
           <div className="bob-header-title">
@@ -153,35 +173,37 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
 
                     <tr>
                       <td className="fw-med">Marital Status</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.marital_status_name}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.maritalStatus_name}</td>
                       <td className="fw-med">Name of Spouse</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.spouseName || "-"}</td>
                     </tr>
                     <tr>
                       <td className="fw-med">Twin Sibling</td>
-                      <td className="fw-reg" colSpan={2}></td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.isTwin}</td>
                       <td className="fw-med">Details</td>
-                      <td className="fw-reg" colSpan={2}></td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.isTwin === "YES"
+                        ? `${previewData.personalDetails.twinName} (${previewData.personalDetails.twinGender_name})`
+                        : "-"}</td>
                     </tr>
                     <tr>
                       <td className="fw-med">Current CTC</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.currentCTC || "-"}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.experienceSummary?.currentCtc || "-"}</td>
                       <td className="fw-med">Expected CTC</td>
-                      <td className="fw-reg" colSpan={2}>{preferences.ctc || "-"}</td>
+                      <td className="fw-reg" colSpan={2}>{preferences.ctc ? `₹${Number(preferences.ctc).toLocaleString()}` : "-"}</td>
                     </tr>
 
                     <tr>
                       <td className="fw-med">Location Preference 1</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location1}</td>
+                      <td className="fw-reg" colSpan={2}>{state1?.state_name || "-"}</td>
                       <td className="fw-med">Location Preference 2</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location2}</td>
+                      <td className="fw-reg" colSpan={2}>{state2?.state_name || "-"}</td>
                     </tr>
 
                     <tr>
                       <td className="fw-med">Location Preference 3</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location3}</td>
+                      <td className="fw-reg" colSpan={2}>{state3?.state_name || "-"}</td>
                       <td className="fw-med">Social Media Profile links</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.location3}</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.socialMediaProfileLink}</td>
                     </tr>
 
                     <tr>
@@ -381,29 +403,66 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
           </div>
 
           <div className="declaration-box text-start">
-            <div className="form-check mb-2">
-              <input type="checkbox" className="form-check-input" id="decl1" />
-              <label htmlFor="decl1" className="form-check-label">
-                I acknowledge that any misrepresentation, omission, or
-                furnishing of incorrect information may render my application
-                liable for rejection at any stage of the recruitment process.
-              </label>
-            </div>
-            <div className="form-check">
-              <input type="checkbox" className="form-check-input" id="decl2" />
-              <label htmlFor="decl2" className="form-check-label">
-                I further confirm that all documents uploaded in this
-                application have been provided voluntarily and as per my own
-                understanding.
-              </label>
-            </div>
-             <div className="form-check">
-              <input type="checkbox" className="form-check-input" id="decl2" />
-              <label htmlFor="decl2" className="form-check-label">
-                I declare that I possess the requisite work experience for this post, as stipulated in the terms of the advertisement, and undertake to submit necessary documents/testimonials in support of the same as and when called for by the Bank.
-              </label>
-            </div>
-          </div>
+  <div className="form-check mb-2">
+    <input
+      type="checkbox"
+      className="form-check-input"
+      id="decl1"
+      checked={declarations.decl1}
+      onChange={(e) =>
+        setDeclarations((prev) => ({
+          ...prev,
+          decl1: e.target.checked,
+        }))
+      }
+    />
+    <label htmlFor="decl1" className="form-check-label decl">
+      I acknowledge that any misrepresentation, omission, or furnishing of
+      incorrect information may render my application liable for rejection
+      at any stage of the recruitment process.
+    </label>
+  </div>
+
+  <div className="form-check mb-2">
+    <input
+      type="checkbox"
+      className="form-check-input"
+      id="decl2"
+      checked={declarations.decl2}
+      onChange={(e) =>
+        setDeclarations((prev) => ({
+          ...prev,
+          decl2: e.target.checked,
+        }))
+      }
+    />
+    <label htmlFor="decl2" className="form-check-label decl">
+      I further confirm that all documents uploaded in this application
+      have been provided voluntarily and as per my own understanding.
+    </label>
+  </div>
+
+  <div className="form-check">
+    <input
+      type="checkbox"
+      className="form-check-input"
+      id="decl3"
+      checked={declarations.decl3}
+      onChange={(e) =>
+        setDeclarations((prev) => ({
+          ...prev,
+          decl3: e.target.checked,
+        }))
+      }
+    />
+    <label htmlFor="decl3" className="form-check-label decl">
+      I declare that I possess the requisite work experience for this post,
+      as stipulated in the terms of the advertisement, and undertake to
+      submit necessary documents/testimonials in support of the same.
+    </label>
+  </div>
+</div>
+
 
           {/* Footer Buttons */}
           <div className="d-flex justify-content-between align-items-center mt-4">
@@ -412,13 +471,14 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
             </button>
             <div className="d-flex gap-3">
               <button
-                className="btn btn-outline-primary"
+                className="btn edit-button"
                 onClick={onEditProfile}
               >
                 Edit Profile Details
               </button>
               <button
                 className="btn btn-bob-orange"
+                 disabled={!allChecked}
                 onClick={onProceedToPayment}
               >
                 Proceed for Payment

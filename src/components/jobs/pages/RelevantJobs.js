@@ -151,7 +151,7 @@ console.log("candidateddd",candidateId)
       
 
       const [jobsRes, masterRes] = await Promise.all([
-        jobsApiService.getJobPositions(),
+        jobsApiService.getJobPositions(candidateId),
         jobsApiService.getMasterData(),
       ]);
       const jobsData = jobsRes?.data || [];
@@ -181,14 +181,18 @@ console.log("candidateddd",candidateId)
     fetchRequisitions();
     fetchJobs();
   }, []);
- useEffect(() => {
-    const fetchCandidatePreview = async () => {
-      if (!candidateId) return;
+  useEffect(() => {
+    if (!candidateId || !isMasterReady) return;
 
+    const fetchCandidatePreview = async () => {
       try {
-       
-        const response = await jobsApiService.getAllDetails(candidateId); 
-        const mappedPreviewData = mapCandidateToPreview(response.data);
+        const response = await jobsApiService.getAllDetails(candidateId);
+
+        const mappedPreviewData = mapCandidateToPreview(
+          response.data,
+          masterData        // ✅ PASS MASTERS HERE
+        );
+
         setPreviewData(mappedPreviewData);
       } catch (error) {
         console.error("Failed to fetch candidate preview", error);
@@ -197,7 +201,7 @@ console.log("candidateddd",candidateId)
     };
 
     fetchCandidatePreview();
-  }, [candidateId,isMasterReady]);
+  }, [candidateId, isMasterReady, masterData]);
   const calculateAge = (dobString) => {
     if (!dobString) return null;
 
@@ -463,6 +467,7 @@ console.log("matchesState",matchesState)
       : [...prev, stateId]
   );
 };
+ 
   const handleExperienceChange = (range) => {
     setSelectedExperience((prev) =>
       prev.some((r) => r.label === range.label)
@@ -779,14 +784,23 @@ console.log("matchesState",matchesState)
           setShowPreviewModal(false);
           setShowApplyModal(true);
         }}
-        onEditProfile={() => {
-          // Handle edit profile action
+         onEditProfile={() => {
+                    // 1️⃣ Set step to "Basic Details"
+          localStorage.setItem("activeStep", "2");
+
+          // 2️⃣ Switch to PROFILE menu (info tab)
+          setActiveTab("info");
+          // 2️⃣ Close preview modal
           setShowPreviewModal(false);
-          // You might want to navigate to profile page or open edit modal
-          toast.info("Redirecting to profile editor...");
+
+        
+
+          //toast.info("Redirecting to Basic Details...");
         }}
+
         onProceedToPayment={handleProceedToPayment}
         selectedJob={selectedJob}
+          masterData={masterData}
       />
       <PaymentModal
         show={showPaymentModal}

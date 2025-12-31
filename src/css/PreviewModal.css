@@ -25,7 +25,7 @@
 
 .bob-header-title {
   color: #162B75;
-  font-size: 1.145rem;
+  font-size: 1rem;
   font-weight: 500;
 }
 
@@ -238,19 +238,45 @@
   background: #fff9f5;
   border: 1px solid #ffd7b3;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 0.75rem;
   line-height: 1.6;
-  color: #333;
+  color: #404040;
+}
+.declaration-box .decl {
+font-size: 0.75rem;
+  font-weight: 400;
+  color: #404040;
+  line-height: 1.3;
 }
 
+
+.bob-modal-body .edit-button{
+  font-weight: 400;
+  font-size: 0.875rem;
+  color: #162B75;
+  border: 1px solid #162B75;
+  background: rgba(22, 43, 117, 0.15);
+  cursor: pointer;
+}
+.bob-modal-body .edit-button:hover,
+.bob-modal-body .edit-button:focus,
+.bob-modal-body .edit-button:active {
+  color: #162B75;
+  border-color: #162B75;
+  background: rgba(22, 43, 117, 0.15);
+  box-shadow: none;
+}
+
+
 /* === Buttons === */
-.btn-bob-orange {
-  background: #ff6f00 !important;
+.bob-modal-body .btn-bob-orange {
+  background: #f26522 !important;
   color: #fff !important;
   border: none;
   border-radius: 4px;
   padding: 8px 22px;
-  font-weight: 500;
+  font-weight: 400;
+  font-size:0.875rem;
 }
 
 .btn-bob-orange:hover {
@@ -290,8 +316,9 @@
 .bob-accordion .accordion-header button {
   background: #f8f9fa !important;
   padding: 10px 14px;
-color: #162B75 !important;
-  font-size: 1.145rem;
+color: #162B75 ;
+  /* font-size: 1.125rem; */
+  font-size:1rem;
   font-weight: 500;
   border: none;
   box-shadow: none !important;
@@ -299,8 +326,9 @@ color: #162B75 !important;
 
 .bob-accordion .accordion-header button:not(.collapsed) {
   /* background: #004e9a !important; */
-  color: #162B75 !important;
-  font-size: 1.145rem;
+  color: #162B75 ;
+  font-size:1rem;
+  /* font-size: 1.125rem; */
   font-weight: 500;
 }
 
@@ -340,6 +368,6 @@ color: #162B75 !important;
 
 .bob-header .title_pre {
   color: #F26522;
-  font-size: 1.145rem;
+  font-size: 1rem;
   font-weight: 600;
 }
