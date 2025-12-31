@@ -3,17 +3,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import Razorpay from "../../integrations/payments/Razorpay";
-import { mapJobsApiToList } from "../../jobs/mappers/jobMapper";
+import { mapAppliedJobsApiToList } from "../../jobs/mappers/appliedjobMapper";
 import "../../../css/Appliedjobs.css";
 import apiService from "../../../services/apiService";
 import TrackApplicationModal from "../../jobs/components/TrackApplicationModal";
 import axios from "axios";
 import jobsApiService  from "../services/jobsApiService";
 import OfferLetterModal from "../../jobs/components/OfferLetterModal";
+import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [locations, setLocations] = useState([]);
+
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,78 +21,67 @@ const AppliedJobs = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
+    const [masterData,setMasterData]=useState([{}]);
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
   const candidateId = userData?.data?.user?.id;
+const fetchMasterData = async () => {
+  try {
+    const masterResponse = await jobsApiService.getMasterData();
+    const mappedMasterData = mapMasterDataApi(masterResponse);
 
-  // ✅ Fetch applied jobs
-  const fetchAppliedJobs = async () => {
-    console.log("fetchappliedjobs")
-    if (!candidateId) return;
-    try {
-      //    const response = await apiService.appliedpositions(candidateId);
+    if (
+      !mappedMasterData ||
+      !Object.keys(mappedMasterData).length
+    ) {
+      console.warn("Master data empty");
+      return null;
+    }
 
-      //  const jobsArray = Array.isArray(response.data)
-      // ? response.data
-      // : [];
-       const response = await jobsApiService.getAppliedJobs(candidateId);  
-       console.log("jobsreposne",response)
+    setMasterData(mappedMasterData);
+    return mappedMasterData; // ✅ IMPORTANT
+  } catch (error) {
+    console.error("Error fetching master data:", error);
+    return null;
+  }
+};
+const fetchAppliedJobs = async (master) => {
+  if (!candidateId || !master) return;
 
-      // const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`, 
-      //   {
-      //     headers: {
-      //       "X-Client": "candidate",
-      //       "Content-Type": "application/json"
-      //     }
-      //   }
-      // );
-      const jobsData = response?.data?.data || [];
+  try {
+    setLoading(true);
 
-      const mappedJobs = mapJobsApiToList(jobsData);
-      console.log(mappedJobs)
+    const jobsResponse = await jobsApiService.getAppliedJobs(candidateId);
 
-      setAppliedJobs(mappedJobs);
-    } catch (error) {
-      console.error("Error fetching applied jobs:", error);
-      setAppliedJobs([]);
-    } finally {
-      setLoading(false);
+    const jobsData = Array.isArray(jobsResponse?.data)
+      ? jobsResponse.data
+      : [];
+
+    const mappedJobs = mapAppliedJobsApiToList(jobsData, master);
+    setAppliedJobs(mappedJobs);
+
+  } catch (error) {
+    console.error("Error fetching applied jobs:", error);
+    setAppliedJobs([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  if (!candidateId) return;
+
+  const init = async () => {
+    const master = await fetchMasterData();
+    if (master) {
+      fetchAppliedJobs(master);
     }
   };
 
-  // ✅ Fetch departments & locations (for filters)
-  const fetchMasterData = async () => {
-    try {
-      // const masterData = await apiService.getMasterData();
-      // setDepartments(masterData.departments || []);
-      // setLocations(masterData.locations || []);
+  init();
+}, [candidateId]);
 
-      // const masterData = await axios.get('http://192.168.20.115:8080/api/all',
-      //   {
-      //     headers: {
-      //       "X-Client": "candidate",
-      //       "Content-Type": "application/json"
-      //     }
-      //   }
-      // )
-       const masterData = await jobsApiService.getMasterData();
-      console.log("masterDataResponse", masterData)
-      const departments = masterData.data.departments || [];
-      const locations = masterData.data.cities || [];
-      setDepartments(departments);
-      setLocations(locations);
-    } catch (error) {
-      console.error("Error fetching master data:", error);
-    }
-  };
 
-  useEffect(() => {
-    console.log("candidateId", candidateId)
-    if (candidateId) {
-      fetchAppliedJobs();
-      // fetchMasterData();
-    }
-  }, [candidateId]);
 
   // ✅ Filter logic
   const filteredJobs = appliedJobs.filter((job) => {
