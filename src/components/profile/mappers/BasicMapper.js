@@ -57,6 +57,7 @@ export const mapBasicDetailsFormToApi = ({
       minority: formData.minorityCommunity === "Yes",
       isPublicSectorUndertaking: formData.servingInGovt === "Yes",
       anyDisciplinaryAction: formData.disciplinaryAction === "Yes",
+      isFresher: formData.isFresher ,
 
       email,
       registrationNo: formData.registrationNo || "",
@@ -162,6 +163,7 @@ export const mapBasicDetailsApiToForm = (apiData) => {
     servingInGovt: profile.isPublicSectorUndertaking ? "Yes" : "No",
     minorityCommunity: profile.minority ? "Yes" : "No",
     disciplinaryAction: profile.anyDisciplinaryAction ? "Yes" : "No",
+    isFresher: profile.isFresher ,
 
     // Languages
     language1: languages[0]?.languageId || "",

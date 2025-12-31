@@ -130,17 +130,49 @@ export const getDocumentDetailsByCode = (candidateId, docCode) => {
 export const postDocumentDetails = (
   candidateId,
   documentId,
+  file,
+  isOther,
+  documentName
+) => {
+  if (!file) {
+    throw new Error("Document file is required");
+  }
+  if (isOther && !documentName) {
+    throw new Error("Document Name is required");
+  }
+
+  const formData = new FormData();
+  formData.append("documents", file); // key name MUST match backend
+  const Url = isOther ? `/documents/upload-other/${candidateId}/${documentName}` : `/documents/upload/${candidateId}/${documentId}`;
+  return api.post(
+    Url,
+    formData,
+    {
+      headers: {
+        "X-Client": "candidate",
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+//Validate Document  API
+export const ValidateDocument = (
+  documentName,
   file
 ) => {
   if (!file) {
     throw new Error("Document file is required");
   }
+  if (!documentName) {
+    throw new Error("Document Name is required");
+  }
 
   const formData = new FormData();
-  formData.append("documents", file); // key name MUST match backend
-
+  formData.append("file", file); // key name MUST match backend
+  const Url = `/validate-document/validate/${documentName}`;
   return api.post(
-    `/documents/upload/${candidateId}/${documentId}`,
+    Url,
     formData,
     {
       headers: {
@@ -204,7 +236,7 @@ export const postWorkStatus = (candidateId, isFresher) => {
     `/profile/save-work-status/${candidateId}`,
     null,
     {
-      params: { isFresher }, // ⚠️ backend expects QUERY param
+      params: { isFresher: isFresher }, // ⚠️ backend expects QUERY param
       headers: {
         "X-Client": "candidate",
       },
@@ -218,17 +250,18 @@ export default {
   postBasicDetails,
   getAddressDetails,
   postAddressDetails,
-	getEducationDetails,
-	postEducationDetails,
-	getExperienceDetails,
-	postExperienceDetails,
+  getEducationDetails,
+  postEducationDetails,
+  getExperienceDetails,
+  postExperienceDetails,
   deleteExperienceDetails,
-	getDocumentDetails,
+  getDocumentDetails,
   getDocumentDetailsByCode,
-	postDocumentDetails,
+  postDocumentDetails,
   deleteDocument,
-	parseResumeDetails,
+  parseResumeDetails,
   getResumeDetails,
   getWorkStatus,
-  postWorkStatus
+  postWorkStatus,
+  ValidateDocument
 };

@@ -51,7 +51,7 @@ const UploadField = forwardRef(({
   };
 
   return (
-    <div className="col-md-6 col-sm-12 mt-3">
+    <div className="col-md-12 col-sm-12 mt-3">
 
       <div className="d-flex gap-3 align-items-center">
         <label className="grey-label mb-1" style={{ fontSize: '12px' }}>

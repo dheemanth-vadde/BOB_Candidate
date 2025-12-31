@@ -10,9 +10,11 @@ import CryptoJS from "crypto-js";
 import JSEncrypt from "jsencrypt";
 import { toast } from "react-toastify";
 import authApi from "../services/auth.api";
+import TurnstileWidget from "../../integrations/Cpatcha/TurnstileWidget";
 
 const Register = () => {
   const [publicKey, setPublicKey] = useState("");
+  const [token, setToken] = useState("");
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -22,9 +24,9 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
-//   const [otp, setOtp] = useState("");
-// const [mfaToken, setMfaToken] = useState("");
-// const [showOtpInput, setShowOtpInput] = useState(false);
+  //   const [otp, setOtp] = useState("");
+  // const [mfaToken, setMfaToken] = useState("");
+  // const [showOtpInput, setShowOtpInput] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -35,7 +37,7 @@ const Register = () => {
       .then(key => setPublicKey(key))
       .catch(err => console.error("Failed to load public key:", err));
   }, []);
-  
+
   const hashPassword = (password) => {
     return CryptoJS.SHA256(password).toString(); // hex string
   };
@@ -79,6 +81,7 @@ const Register = () => {
         mobileNumber: Number(phone),
         dateOfBirth: dob,
         credentials: encryptedCredentials,
+        ["cf-turnstile-response"]: token
       });
       setShowVerificationModal(true);
       // navigate("/login");
@@ -121,16 +124,16 @@ const Register = () => {
           </button> */}
 
           <label>Full Name as per Aadhar <span className="text-danger">*</span></label>
-          <input name="name" onChange={handleChange} required/>
+          <input name="name" onChange={handleChange} required />
 
           <label>Date of Birth <span className="text-danger">*</span></label>
-          <input type="date" name="dob" onChange={handleChange} required/>
+          <input type="date" name="dob" onChange={handleChange} required />
 
           <label>Mobile Number <span className="text-danger">*</span></label>
-          <input type="text" name="phone" onChange={handleChange} required/>
+          <input type="text" name="phone" onChange={handleChange} required />
 
           <label>Email <span className="text-danger">*</span></label>
-          <input type="email" name="email" onChange={handleChange} required/>
+          <input type="email" name="email" onChange={handleChange} required />
 
           <label>Password <span className="text-danger">*</span></label>
           <div style={{ position: "relative" }}>
@@ -139,14 +142,14 @@ const Register = () => {
               name="password"
               onChange={handleChange}
               required
-              // style={{
-              //   borderRadius: "5px",
-              //   backgroundColor: "#fff",
-              //   border: "1px solid #ccc",
-              //   padding: "8px",
-              //   width: "100%",
-              //   paddingRight: "40px",
-              // }}
+            // style={{
+            //   borderRadius: "5px",
+            //   backgroundColor: "#fff",
+            //   border: "1px solid #ccc",
+            //   padding: "8px",
+            //   width: "100%",
+            //   paddingRight: "40px",
+            // }}
             />
             <FontAwesomeIcon
               icon={showPassword ? faEye : faEyeSlash}
@@ -172,14 +175,14 @@ const Register = () => {
               name="confirmPassword"
               onChange={handleChange}
               required
-              // style={{
-              //   borderRadius: "5px",
-              //   backgroundColor: "#fff",
-              //   border: "1px solid #ccc",
-              //   padding: "8px",
-              //   width: "100%",
-              //   paddingRight: "40px",
-              // }}
+            // style={{
+            //   borderRadius: "5px",
+            //   backgroundColor: "#fff",
+            //   border: "1px solid #ccc",
+            //   padding: "8px",
+            //   width: "100%",
+            //   paddingRight: "40px",
+            // }}
             />
             <FontAwesomeIcon
               icon={showConfirmPassword ? faEye : faEyeSlash}
@@ -198,7 +201,7 @@ const Register = () => {
               }
             />
           </div>
-
+          <TurnstileWidget onTokenChange={setToken} />
           <button type="submit" className="login-button mt-2 mb-2">Register</button>
 
           <p className="register-link mb-0">
@@ -213,7 +216,7 @@ const Register = () => {
             <p style={{ fontSize: '1rem', fontWeight: 500 }}>We've sent a verification link to your Email.<br />
               Please check your inbox and verify to continue.</p>
 
-            <button 
+            <button
               onClick={() => {
                 setShowVerificationModal(false);
                 navigate("/login");   // redirect ONLY after closing modal

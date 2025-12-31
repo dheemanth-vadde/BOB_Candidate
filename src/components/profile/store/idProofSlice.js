@@ -10,11 +10,14 @@ const idProofSlice = createSlice({
     setExtractedData: (state, action) => {
       state.name = action.payload.name;
       state.dob = action.payload.dob;
+      state.isNewUpload = true;
     },
     clearExtractedData: (state) => {
-      state.name = '';
-      state.dob = '';
-    },
+      state.name = "";
+      state.dob = "";
+      state.isNewUpload = false;
+    }
+
   },
 });
 

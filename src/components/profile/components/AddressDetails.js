@@ -9,7 +9,12 @@ import { validateNonEmptyText } from "../../../shared/utils/validation";
 
 const AddressDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
-  const candidateId = user?.user?.id;
+	const [formErrors, setFormErrors] = useState({
+    corrAddress: {},
+    permAddress: {}
+  });
+
+	const candidateId = user?.user?.id;
 	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
 	const [corrAddress, setCorrAddress] = useState({
 		line1: "",
@@ -104,6 +109,15 @@ const AddressDetails = ({ goNext, goBack }) => {
 	const handleCorrChange = (e) => {
 		const { id, value } = e.target;
 
+		// Clear the error for the current field
+		setFormErrors(prev => ({
+			...prev,
+			corrAddress: {
+				...prev.corrAddress,
+				[id]: undefined
+			}
+		}));
+
 		setCorrAddress(prev => {
 			let updated = { ...prev, [id]: value };
 
@@ -133,6 +147,15 @@ const AddressDetails = ({ goNext, goBack }) => {
 	const handlePermChange = (e) => {
 		const { id, value } = e.target;
 
+		// Clear the error for the current field
+		setFormErrors(prev => ({
+			...prev,
+			permAddress: {
+				...prev.permAddress,
+				[id]: undefined
+			}
+		}));
+
 		setPermAddress(prev => {
 			let updated = { ...prev, [id]: value };
 
@@ -155,36 +178,77 @@ const AddressDetails = ({ goNext, goBack }) => {
 		});
 	};
 
+	const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      corrAddress: {},
+      permAddress: {}
+    };
+
+    // Validate Correspondence Address
+    if (!corrAddress.line1.trim()) {
+      newErrors.corrAddress.line1 = 'This feild is required';
+      isValid = false;
+    }
+    if (!corrAddress.line2.trim()) {
+      newErrors.corrAddress.line2 = 'This feild is required';
+      isValid = false;
+    }
+    if (!corrAddress.state) {
+      newErrors.corrAddress.state = 'This feild is required';
+      isValid = false;
+    }
+    if (!corrAddress.district) {
+      newErrors.corrAddress.district = 'This feild is required';
+      isValid = false;
+    }
+    if (!corrAddress.city) {
+      newErrors.corrAddress.city = 'This feild is required';
+      isValid = false;
+    }
+    if (!corrAddress.pincode) {
+      newErrors.corrAddress.pincode = 'This feild is required';
+      isValid = false;
+    }
+
+    // Validate Permanent Address if different from correspondence
+    if (!sameAsCorrespondence) {
+      if (!permAddress.line1.trim()) {
+        newErrors.permAddress.line1 = 'This feild is required';
+        isValid = false;
+      }
+      if (!permAddress.line2.trim()) {
+        newErrors.permAddress.line2 = 'This feild is required';
+        isValid = false;
+      }
+      if (!permAddress.state) {
+        newErrors.permAddress.state = 'This feild is required';
+        isValid = false;
+      }
+      if (!permAddress.district) {
+        newErrors.permAddress.district = 'This feild is required';
+        isValid = false;
+      }
+      if (!permAddress.city) {
+        newErrors.permAddress.city = 'This feild is required';
+        isValid = false;
+      }
+      if (!permAddress.pincode) {
+        newErrors.permAddress.pincode = 'This feild is required';
+        isValid = false;
+      }
+    }
+
+    setFormErrors(newErrors);
+    return isValid;
+  };
+
 	const handleSubmit = async (e) => {
     e.preventDefault();
-
-		const corrTextFields = [
-			{ value: corrAddress.line1, label: "Correspondence Address Line 1" },
-			{ value: corrAddress.line2, label: "Correspondence Address Line 2" },
-		];
-
-		for (const field of corrTextFields) {
-			const { isValid, error } = validateNonEmptyText(field.value, field.label);
-			if (!isValid) {
-				toast.error(error);
-				return;
-			}
-		}
-
-		if (!sameAsCorrespondence) {
-			const permTextFields = [
-				{ value: permAddress.line1, label: "Permanent Address Line 1" },
-				{ value: permAddress.line2, label: "Permanent Address Line 2" },
-			];
-
-			for (const field of permTextFields) {
-				const { isValid, error } = validateNonEmptyText(field.value, field.label);
-				if (!isValid) {
-					toast.error(error);
-					return;
-				}
-			}
-		}
+    
+    if (!validateForm()) {
+      return;
+    }
 
 		try {
 			const payload = mapAddressFormToApi({
@@ -200,44 +264,76 @@ const AddressDetails = ({ goNext, goBack }) => {
 			console.error(err);
 			toast.error("Failed to save address details");
 		}
-  };
+	};
 
 	const handleCheckboxToggle = (e) => {
 		const checked = e.target.checked;
 		setSameAsCorrespondence(checked);
 
 		if (checked) {
-			// copy values
+			// copy values and clear permanent address errors
 			setPermAddress({ ...corrAddress });
+			setFormErrors(prev => ({
+				...prev,
+				permAddress: {}
+			}));
+		} else {
+			// Clear any existing errors when unchecking
+			setFormErrors(prev => ({
+				...prev,
+				permAddress: {}
+			}));
 		}
 	};
 
-  return (
-    <div className="px-4 py-3 border rounded bg-white">
+	return (
+		<div className="px-4 py-3 border rounded bg-white">
 			<form className="row g-4 formfields"
 				onSubmit={handleSubmit}
-				// onInvalid={handleInvalid}
-				// onInput={handleInput}
+			// onInvalid={handleInvalid}
+			// onInput={handleInput}
 			>
 				<p className="tab_headers" style={{ marginBottom: '0px' }}>Address of Correspondence</p>
-				
+
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="line1" className="form-label">Address Line 1 <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="line1" value={corrAddress.line1} onChange={handleCorrChange} required />
+					<input 
+                    type="text" 
+                    className={`form-control ${formErrors.corrAddress?.line1 ? 'is-invalid' : ''}`} 
+                    id="line1" 
+                    value={corrAddress.line1} 
+                    onChange={handleCorrChange} 
+                  />
+                  {formErrors.corrAddress?.line1 && (
+                    <div className="invalid-feedback">{formErrors.corrAddress.line1}</div>
+                  )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="line2" className="form-label">Address Line 2 <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="line2" value={corrAddress.line2} onChange={handleCorrChange} required />
+					<input 
+                    type="text" 
+                    className={`form-control ${formErrors.corrAddress?.line2 ? 'is-invalid' : ''}`} 
+                    id="line2" 
+                    value={corrAddress.line2} 
+                    onChange={handleCorrChange} 
+                  />
+                  {formErrors.corrAddress?.line2 && (
+                    <div className="invalid-feedback">{formErrors.corrAddress.line2}</div>
+                  )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="state" className="form-label">State <span className="text-danger">*</span></label>
-					<select id="state" className="form-select"
-						value={corrAddress.state}
-						onChange={handleCorrChange}
-						required
-					>
+					<select 
+                    id="state" 
+                    className={`form-select ${formErrors.corrAddress?.state ? 'is-invalid' : ''}`}
+                    value={corrAddress.state}
+                    onChange={handleCorrChange}
+                  >
+                    {formErrors.corrAddress?.state && (
+                      <div className="invalid-feedback">{formErrors.corrAddress.state}</div>
+                    )}
 						<option value="">Select State</option>
 						{masters?.states.map(s => (
 							<option key={s?.stateId} value={s?.stateId}>
@@ -249,12 +345,16 @@ const AddressDetails = ({ goNext, goBack }) => {
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="district" className="form-label">District <span className="text-danger">*</span></label>
-					<select id="district" className="form-select"
-						value={corrAddress.district}
-						onChange={handleCorrChange}
-						disabled={!corrAddress.state}
-						required
-					>
+					<select 
+                    id="district" 
+                    className={`form-select ${formErrors.corrAddress?.district ? 'is-invalid' : ''}`}
+                    value={corrAddress.district}
+                    onChange={handleCorrChange}
+                    disabled={!corrAddress.state}
+                  >
+                    {formErrors.corrAddress?.district && (
+                      <div className="invalid-feedback">{formErrors.corrAddress.district}</div>
+                    )}
 						<option value="">Select District</option>
 						{filteredDistricts.map(d => (
 							<option key={d.districtId} value={d.districtId}>
@@ -262,16 +362,23 @@ const AddressDetails = ({ goNext, goBack }) => {
 							</option>
 						))}
 					</select>
+					{formErrors.permAddress?.district && (
+                      <div className="invalid-feedback">{formErrors.permAddress.district}</div>
+                    )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="city" className="form-label">City <span className="text-danger">*</span></label>
-					<select id="city" className="form-select"
-						value={corrAddress.city}
-						onChange={handleCorrChange}
-						disabled={!corrAddress.district}
-						required
-					>
+					<select 
+                    id="city" 
+                    className={`form-select ${formErrors.corrAddress?.city ? 'is-invalid' : ''}`}
+                    value={corrAddress.city}
+                    onChange={handleCorrChange}
+                    disabled={!corrAddress.district}
+                  >
+                    {formErrors.corrAddress?.city && (
+                      <div className="invalid-feedback">{formErrors.corrAddress.city}</div>
+                    )}
 						<option value="">Select City</option>
 						{filteredCities.map(c => (
 							<option key={c.cityId} value={c.cityId}>
@@ -279,16 +386,23 @@ const AddressDetails = ({ goNext, goBack }) => {
 							</option>
 						))}
 					</select>
+					{formErrors.permAddress?.city && (
+                      <div className="invalid-feedback">{formErrors.permAddress.city}</div>
+                    )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="pincode" className="form-label">Pin <span className="text-danger">*</span></label>
-					<select id="pincode" className="form-select"
-						value={corrAddress.pincode}
-						onChange={handleCorrChange}
-						disabled={!corrAddress.city}
-						required
-					>
+					<select 
+                    id="pincode" 
+                    className={`form-select ${formErrors.corrAddress?.pincode ? 'is-invalid' : ''}`}
+                    value={corrAddress.pincode}
+                    onChange={handleCorrChange}
+                    disabled={!corrAddress.city}
+                  >
+                    {formErrors.corrAddress?.pincode && (
+                      <div className="invalid-feedback">{formErrors.corrAddress.pincode}</div>
+                    )}
 						<option value="">Select Pincode</option>
 						{filteredPincodes.map(p => (
 							<option key={p.pincodeId} value={p.pincodeId}>
@@ -296,6 +410,9 @@ const AddressDetails = ({ goNext, goBack }) => {
 							</option>
 						))}
 					</select>
+					{formErrors.permAddress?.pincode && (
+                      <div className="invalid-feedback">{formErrors.permAddress.pincode}</div>
+                    )}
 				</div>
 
 				<div className="col-md-12 col-sm-12 mt-3 d-flex align-items-center gap-2 pb-3 border-bottom">
@@ -306,32 +423,51 @@ const AddressDetails = ({ goNext, goBack }) => {
 						// value={formData.education_qualification || ''}
 						// onChange={handleChange}
 						checked={sameAsCorrespondence}
-  					onChange={handleCheckboxToggle}
+						onChange={handleCheckboxToggle}
 					/>
 					<label htmlFor="sameCheckbox" className="form-label mb-0">Same as Address of Correspondence</label>
 				</div>
 
 				<p className="tab_headers mt-3" style={{ marginBottom: '0px' }}>Permanent Address</p>
-				
+
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="line1" className="form-label">Address Line 1 <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="line1" value={permAddress.line1} onChange={handlePermChange} required disabled={sameAsCorrespondence} />
+					<input 
+                    type="text" 
+                    className={`form-control ${formErrors.permAddress?.line1 ? 'is-invalid' : ''}`} 
+                    id="line1" 
+                    value={permAddress.line1} 
+                    onChange={handlePermChange} 
+                    disabled={sameAsCorrespondence}
+                  />
+                  {formErrors.permAddress?.line1 && (
+                    <div className="invalid-feedback">{formErrors.permAddress.line1}</div>
+                  )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="line2" className="form-label">Address Line 2 <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="line2" value={permAddress.line2} onChange={handlePermChange} required disabled={sameAsCorrespondence} />
+					<input 
+                    type="text" 
+                    className={`form-control ${formErrors.permAddress?.line2 ? 'is-invalid' : ''}`} 
+                    id="line2" 
+                    value={permAddress.line2} 
+                    onChange={handlePermChange} 
+                    disabled={sameAsCorrespondence}
+                  />
+                  {formErrors.permAddress?.line2 && (
+                    <div className="invalid-feedback">{formErrors.permAddress.line2}</div>
+                  )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="state" className="form-label">State <span className="text-danger">*</span></label>
 					<select
-						className="form-select"
+						className={`form-select ${formErrors.permAddress?.state ? 'is-invalid' : ''}`}
 						id="state"
 						value={permAddress.state}
 						onChange={handlePermChange}
 						disabled={sameAsCorrespondence}
-						required
 					>
 						<option value="">Select State</option>
 						{masters.states.map(s => (
@@ -340,17 +476,19 @@ const AddressDetails = ({ goNext, goBack }) => {
 							</option>
 						))}
 					</select>
+					{formErrors.permAddress?.state && (
+                      <div className="invalid-feedback">{formErrors.permAddress.state}</div>
+                    )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="district" className="form-label">District <span className="text-danger">*</span></label>
 					<select
-						className="form-select"
+						className={`form-select ${formErrors.permAddress?.district ? 'is-invalid' : ''}`}
 						id="district"
 						value={permAddress.district}
 						onChange={handlePermChange}
 						disabled={sameAsCorrespondence || !permAddress.state}
-						required
 					>
 						<option value="">Select District</option>
 						{permFilteredDistricts.map(d => (
@@ -359,17 +497,19 @@ const AddressDetails = ({ goNext, goBack }) => {
 							</option>
 						))}
 					</select>
+					{formErrors.permAddress?.district && (
+                      <div className="invalid-feedback">{formErrors.permAddress.district}</div>
+                    )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="city" className="form-label">City <span className="text-danger">*</span></label>
 					<select
-						className="form-select"
+						className={`form-select ${formErrors.permAddress?.city ? 'is-invalid' : ''}`}
 						id="city"
 						value={permAddress.city}
 						onChange={handlePermChange}
 						disabled={sameAsCorrespondence || !permAddress.district}
-						required
 					>
 						<option value="">Select City</option>
 						{permFilteredCities.map(c => (
@@ -378,17 +518,19 @@ const AddressDetails = ({ goNext, goBack }) => {
 							</option>
 						))}
 					</select>
+					{formErrors.permAddress?.city && (
+                      <div className="invalid-feedback">{formErrors.permAddress.city}</div>
+                    )}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="pincode" className="form-label">Pin <span className="text-danger">*</span></label>
 					<select
-						className="form-select"
+						className={`form-select ${formErrors.permAddress?.pincode ? 'is-invalid' : ''}`}
 						id="pincode"
 						value={permAddress.pincode}
 						onChange={handlePermChange}
 						disabled={sameAsCorrespondence || !permAddress.city}
-						required
 					>
 						<option value="">Select Pincode</option>
 						{permFilteredPincodes.map(p => (
@@ -397,6 +539,9 @@ const AddressDetails = ({ goNext, goBack }) => {
 							</option>
 						))}
 					</select>
+					{formErrors.permAddress?.pincode && (
+                      <div className="invalid-feedback">{formErrors.permAddress.pincode}</div>
+                    )}
 				</div>
 
 				<div className="d-flex justify-content-between">
@@ -419,8 +564,8 @@ const AddressDetails = ({ goNext, goBack }) => {
 				</div>
 
 			</form>
-    </div>
-  );
+		</div>
+	);
 };
 
 export default AddressDetails;

@@ -34,6 +34,7 @@ const EducationForm = ({
   // );
   const [certificateFile, setCertificateFile] = useState(null);
   const [existingDocument, setExistingDocument] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const [formData, setFormData] = useState({
     university: "",
@@ -93,7 +94,18 @@ const EducationForm = ({
   ]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    
+    // Clear the error for the current field when user starts typing/selecting
+    setFormErrors(prev => ({
+      ...prev,
+      [id]: undefined
+    }));
+    
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
   };
 
   const handleBrowse = () => {
@@ -104,9 +116,18 @@ const EducationForm = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Clear any previous file error
+    setFormErrors(prev => ({
+      ...prev,
+      certificateFile: undefined
+    }));
+
     // Optional validation
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("File size must be under 2MB");
+      setFormErrors(prev => ({
+        ...prev,
+        certificateFile: "File size must be under 2MB"
+      }));
       return;
     }
 
@@ -120,38 +141,65 @@ const EducationForm = ({
 		return (kb / 1024).toFixed(1) + " MB";
 	};
 
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+
+    // Required fields validation
+    const requiredFields = [
+      { key: 'educationLevel', label: 'Education Level' },
+      { key: 'college', label: 'School / College / University' },
+      { key: 'from', label: 'From Date' },
+      { key: 'to', label: 'To Date' },
+      { key: 'percentage', label: 'Percentage/CGPA' },
+      ...(showBoard ? [{ key: 'university', label: 'Board' }] : []),
+      ...(showSpecialization ? [{ key: 'specialization', label: 'Specialization' }] : []),
+      { key: 'educationType', label: 'Education Type' }
+    ];
+
+    requiredFields.forEach(field => {
+      if (!formData[field.key]?.toString().trim()) {
+        errors[field.key] = `This feild is required`;
+        isValid = false;
+      }
+    });
+
+    // Date range validation
+    if (formData.from && formData.to) {
+      const { isValid: isDateValid, error } = validateEndDateAfterStart(
+        formData.from,
+        formData.to
+      );
+      if (!isDateValid) {
+        errors.dateRange = error || "Invalid education date range";
+        isValid = false;
+      }
+    }
+
+    // Certificate file validation
+    if (!certificateFile && !existingDocument) {
+      errors.certificateFile = "Certificate file is required";
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return { isValid, errors };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { isValid, error } = validateEndDateAfterStart(
-      formData.from,
-      formData.to
-    );
-
+    
+    const { isValid } = validateForm();
     if (!isValid) {
-      toast.error(error || "Invalid education date range");
+      // Scroll to the first error
+      const firstError = Object.keys(formErrors)[0];
+      if (firstError) {
+        document.getElementById(firstError)?.scrollIntoView({ behavior: 'smooth' });
+      }
       return;
     }
 
-    const textFields = [
-      { key: "college", label: "School / College / University" },
-    ];
-
-    for (const field of textFields) {
-      const { isValid, error } = validateNonEmptyText(
-        formData[field.key],
-        field.label
-      );
-      if (!isValid) {
-        toast.error(error);
-        return;
-      }
-    }
-
     try {
-      if (!formData.educationLevel) {
-        toast.error("Invalid education level selection");
-        return;
-      }
       
       // Get the docCode from masterData based on the selected education level
       const selectedEducationLevel = masterData.educationLevels.find(
@@ -199,7 +247,7 @@ const EducationForm = ({
         </label>
         <select
           id="educationLevel"
-          className="form-select"
+          className={`form-select ${formErrors.educationLevel ? 'is-invalid' : ''}`}
           value={formData.educationLevel}
           disabled={disableEducationLevel}
           onChange={(e) => {
@@ -212,6 +260,12 @@ const EducationForm = ({
               documentTypeId,
               masterData.educationLevels
             );
+
+            // Clear error when user selects an option
+            setFormErrors(prev => ({
+              ...prev,
+              educationLevel: undefined
+            }));
 
             setFormData(prev => ({
               ...prev,
@@ -263,10 +317,13 @@ const EducationForm = ({
         <input
           type="text"
           id="college"
-          className="form-control"
+          className={`form-control ${formErrors.college ? 'is-invalid' : ''}`}
           value={formData.college}
           onChange={handleChange}
         />
+        {formErrors.college && (
+          <div className="invalid-feedback">{formErrors.college}</div>
+        )}
       </div>
 
       {/* University */}
@@ -277,7 +334,7 @@ const EducationForm = ({
           </label>
           <select
             id="university"
-            className="form-select"
+            className={`form-select ${formErrors.university ? 'is-invalid' : ''}`}
             value={formData.university}
             onChange={handleChange}
           >
@@ -288,27 +345,58 @@ const EducationForm = ({
               </option>
             ))}
           </select>
+          {formErrors.university && (
+            <div className="invalid-feedback">{formErrors.university}</div>
+          )}
+         
         </div>
       )}
 
       {/* From */}
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">From <span className="text-danger">*</span></label>
-        <input type="date" id="from" className="form-control" value={formData.from} onChange={handleChange} />
+        <input
+          type="date"
+          id="from"
+          className={`form-control ${formErrors.from || formErrors.dateRange ? 'is-invalid' : ''}`}
+          value={formData.from}
+          onChange={handleChange}
+        />
+        {formErrors.from && (
+          <div className="invalid-feedback">{formErrors.from}</div>
+        )}
+        {formErrors.dateRange && !formErrors.from && !formErrors.to && (
+          <div className="invalid-feedback">{formErrors.dateRange}</div>
+        )}
       </div>
 
       {/* To */}
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">To <span className="text-danger">*</span></label>
-        <input type="date" id="to" className="form-control" value={formData.to} onChange={handleChange} min={formData.from || undefined} />
+        <input type="date" id="to" className={`form-control ${formErrors.to || formErrors.dateRange ? 'is-invalid' : ''}`} value={formData.to} onChange={handleChange} min={formData.from || undefined} />
+     {formErrors.to && (
+          <div className="invalid-feedback">{formErrors.to}</div>
+        )}
       </div>
 
       {/* Percentage */}
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">Percentage/CGPA <span className="text-danger">*</span></label>
-        <input type="number" min={0} max={100} id="percentage" className="form-control" value={formData.percentage}
+        <input 
+          type="number" 
+          min={0} 
+          max={100} 
+          id="percentage" 
+          className={`form-control ${formErrors.percentage ? 'is-invalid' : ''}`} 
+          value={formData.percentage}
           onChange={(e) => {
             let value = e.target.value;
+            // Clear error when user starts typing
+            setFormErrors(prev => ({
+              ...prev,
+              percentage: undefined
+            }));
+            
             // allow empty while typing
             if (value === "") {
               setFormData(prev => ({ ...prev, percentage: "" }));
@@ -326,6 +414,9 @@ const EducationForm = ({
             }));
           }}
         />
+        {formErrors.percentage && (
+          <div className="invalid-feedback">{formErrors.percentage}</div>
+        )}
       </div>
 
       {/* SPECIALIZATION → only visible if showSpecialization = true */}
@@ -334,7 +425,7 @@ const EducationForm = ({
           <label className="form-label">Specialization <span className="text-danger">*</span></label>
           <select
             id="specialization"
-            className="form-select"
+            className={`form-select ${formErrors.specialization ? 'is-invalid' : ''}`}
             value={formData.specialization}
             onChange={handleChange}
           >
@@ -345,6 +436,9 @@ const EducationForm = ({
               </option>
             ))}
           </select>
+          {formErrors.specialization && (
+            <div className="invalid-feedback">{formErrors.specialization}</div>
+          )}
         </div>
       )}
 
@@ -352,7 +446,7 @@ const EducationForm = ({
         <label className="form-label">Education Type <span className="text-danger">*</span></label>
         <select
           id="educationType"
-          className="form-select"
+          className={`form-select ${formErrors.educationType ? 'is-invalid' : ''}`}
           value={formData.educationType}
           onChange={handleChange}
         >
@@ -363,6 +457,9 @@ const EducationForm = ({
             </option>
           ))}
         </select>
+        {formErrors.educationType && (
+          <div className="invalid-feedback">{formErrors.educationType}</div>
+        )}
       </div>
 
       {/* File Upload */}
@@ -550,6 +647,9 @@ const EducationForm = ({
 
             </div>
           </div>
+        )}
+        {formErrors.certificateFile && (
+          <div className="invalid-feedback d-block">{formErrors.certificateFile}</div>
         )}
       </div>
 

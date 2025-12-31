@@ -93,8 +93,10 @@ const UploadIdProof = ({ goNext, goBack }) => {
       const extracted = parseAadhaarText(text);
       dispatch(setExtractedData({
         name: extracted.name,
-        dob: extracted.dob
+        dob: extracted.dob,
+        isNewUpload: true
       }));
+
     } catch (err) {
       console.error("OCR failed", err);
       dispatch(clearExtractedData());
@@ -160,7 +162,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
       // Perform OCR if it's an image
       if (file.type.startsWith("image/")) {
         await performOCRFromBlob(file);
-      } 
+      }
       // else {
       //   dispatch(clearExtractedData());
       // }
@@ -347,7 +349,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
       {(extractedName || extractedDOB || ocrLoading) && (
         <div className="mt-2">
           {ocrLoading && <p>Extracting information... <FontAwesomeIcon icon={faSpinner} spin /></p>}
-          {extractedName && <p style={{marginBottom: '0.25rem'}}>Name: {extractedName}</p>}
+          {extractedName && <p style={{ marginBottom: '0.25rem' }}>Name: {extractedName}</p>}
           {extractedDOB && <p>Date of Birth: {extractedDOB}</p>}
         </div>
       )}

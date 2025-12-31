@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import ResumeUpload from "../components/ResumeUpload";
 import Stepper from "../../../shared/components/Stepper";
 import AddressDetails from "../components/AddressDetails";
@@ -21,16 +22,25 @@ const CandidateProfileStepper = ({
 
   const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Experience", "Document"];
 
-  // Load existing step from localStorage
-  const [activeStep, setActiveStep] = useState(() => {
-    const saved = localStorage.getItem("activeStep");
-    return saved ? parseInt(saved) : 0;
-  });
+  // Use server-provided user info from Redux to determine start step
+  const serverData = useSelector((state) => state?.user?.user?.data); // matches other components
+  const computeInitialStep = () => {
+    if (!serverData) return 0;
+    const srvUser = serverData?.user;
+    if (srvUser?.isProfileCompleted) return 2; // Basic Details index
+    const cs = parseInt(srvUser?.currentStep, 10);
+    if (!isNaN(cs) && cs >= 1 && cs <= steps.length) return cs - 1;
+    return 0;
+  };
 
-  // Save whenever activeStep changes
+  const [activeStep, setActiveStep] = useState(computeInitialStep);
+
+  // If server data changes after login, update active step accordingly
   useEffect(() => {
-    localStorage.setItem("activeStep", activeStep);
-  }, [activeStep]);
+    if (!serverData) return;
+    const next = computeInitialStep();
+    setActiveStep(next);
+  }, [serverData]);
 
   useEffect(() => {
     if (activeStep === 1) {

@@ -16,193 +16,207 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	const candidateId = user?.user?.id;
 	const email = user?.user?.email
 	const createdBy = user?.user?.id;
+	const [formErrors, setFormErrors] = useState({});
 	// const email = "sumanthsangam2@gmail.com"
 	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
 	// const createdBy = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
-		const [experienceList, setExperienceList] = useState([]);
-		const [certificateFile, setCertificateFile] = useState(null);
-		const [existingDocument, setExistingDocument] = useState(null);
-		const [totalExperienceMonths, setTotalExperienceMonths] = useState(0);
-		const [isFresher, setIsFresher] = useState(false);
-		const [isEditMode, setIsEditMode] = useState(false);
-		const [editingRow, setEditingRow] = useState(null);
-		const [showFresherOption, setShowFresherOption] = useState(false);
-		const [formData, setFormData] = useState({
-				organization: "",
-				role: "",
-				postHeld: "",
-				from: "",
-				to: "",
-				working: false,
-				description: "",
-				experience: 0,
-				currentCTC: 0
-		});
+	const [experienceList, setExperienceList] = useState([]);
+	const [certificateFile, setCertificateFile] = useState(null);
+	const [existingDocument, setExistingDocument] = useState(null);
+	const [totalExperienceMonths, setTotalExperienceMonths] = useState(0);
+	const [isFresher, setIsFresher] = useState(false);
+	const [isEditMode, setIsEditMode] = useState(false);
+	const [editingRow, setEditingRow] = useState(null);
+	const [showFresherOption, setShowFresherOption] = useState(false);
+	const [formData, setFormData] = useState({
+		organization: "",
+		role: "",
+		postHeld: "",
+		from: "",
+		to: "",
+		working: false,
+		description: "",
+		experience: 0,
+		currentCTC: 0
+	});
 
-		useEffect(() => {
-			let totalDays = experienceList.reduce((sum, item) => sum + (item.experience || 0), 0);
-			let months = Math.floor(totalDays / 30);
-			setTotalExperienceMonths(months);
-		}, [experienceList]);
+	useEffect(() => {
+		let totalDays = experienceList.reduce((sum, item) => sum + (item.experience || 0), 0);
+		let months = Math.floor(totalDays / 30);
+		setTotalExperienceMonths(months);
+	}, [experienceList]);
 
-		useEffect(() => {
-			if (formData.working === true) {
-				setFormData(prev => ({
-					...prev,
-					to: ""
-				}));
-			}
-		}, [formData.working]);
+	useEffect(() => {
+		if (formData.working === true) {
+			setFormData(prev => ({
+				...prev,
+				to: ""
+			}));
+		}
+	}, [formData.working]);
 
-		useEffect(() => {
-			if (!formData.working || !formData.from) return;
-			const interval = setInterval(() => {
-				setFormData(prev => ({
-					...prev,
-					experience: calculateExperienceDays(prev.from, null)
-				}));
-			}, 24 * 60 * 60 * 1000); // every day
-			return () => clearInterval(interval);
-		}, [formData.working, formData.from]);
+	useEffect(() => {
+		if (!formData.working || !formData.from) return;
+		const interval = setInterval(() => {
+			setFormData(prev => ({
+				...prev,
+				experience: calculateExperienceDays(prev.from, null)
+			}));
+		}, 24 * 60 * 60 * 1000); // every day
+		return () => clearInterval(interval);
+	}, [formData.working, formData.from]);
 
-		useEffect(() => {
-			const fetchWorkStatus = async () => {
-				try {
-					const res = await profileApi.getWorkStatus(candidateId);
-					const fresherStatus = Boolean(res?.data?.data);
-					setIsFresher(fresherStatus);
-				} catch (err) {
-					console.error("Failed to fetch work status", err);
-				}
-			};
-			if (candidateId) {
-				fetchWorkStatus();
-			}
-		}, [candidateId]);
-
-		const calculateExperienceDays = (fromDate, toDate) => {
-			if (!fromDate) return 0;
-			const start = new Date(fromDate);
-			const end = toDate ? new Date(toDate) : new Date(); // 🔑 TODAY if working
-			const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
-			return diff > 0 ? diff : 0;
-		};
-
-		const handleChange = (e) => {
-			const { id, value } = e.target;
-			let updated = {
-				...formData,
-				[id]: value
-			};
-			// Recalculate experience correctly
-			if (id === "from" || id === "to" || id === "working") {
-				updated.experience = calculateExperienceDays(
-					updated.from,
-					updated.working ? null : updated.to
-				);
-			}
-			setFormData(updated);
-		};
-
-		const fetchExperienceDetails = async () => {
+	useEffect(() => {
+		const fetchWorkStatus = async () => {
 			try {
-				const res = await profileApi.getExperienceDetails(candidateId);
-				const apiList = Array.isArray(res?.data?.data)
-					? res.data.data
-					: [];
-				const mappedList = apiList.map(mapExperienceApiToUi);
-				setExperienceList(mappedList);
-				// 🔑 CORE LOGIC
-				if (mappedList.length > 0) {
-					setShowFresherOption(false);
-					setIsFresher(false); // force consistency
-				} else {
-					setShowFresherOption(true);
-				}
+				const res = await profileApi.getWorkStatus(candidateId);
+				const fresherStatus = Boolean(res?.data?.data);
+				setIsFresher(fresherStatus);
 			} catch (err) {
-				console.error("Failed to fetch experience details", err);
-				setShowFresherOption(true); // safe fallback
+				console.error("Failed to fetch work status", err);
 			}
 		};
+		if (candidateId) {
+			fetchWorkStatus();
+		}
+	}, [candidateId]);
 
-		useEffect(() => {
+	const calculateExperienceDays = (fromDate, toDate) => {
+		if (!fromDate) return 0;
+		const start = new Date(fromDate);
+		const end = toDate ? new Date(toDate) : new Date(); // 🔑 TODAY if working
+		const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+		return diff > 0 ? diff : 0;
+	};
+
+	const handleChange = (e) => {
+		const { id, value } = e.target;
+
+		setFormData(prev => ({
+			...prev,
+			[id]: value
+		}));
+
+		// 🔥 clear error immediately
+		if (formErrors[id]) {
+			setFormErrors(prev => ({
+				...prev,
+				[id]: ""
+			}));
+		}
+	};
+
+
+	const fetchExperienceDetails = async () => {
+		try {
+			const res = await profileApi.getExperienceDetails(candidateId);
+			const apiList = Array.isArray(res?.data?.data)
+				? res.data.data
+				: [];
+			const mappedList = apiList.map(mapExperienceApiToUi);
+			setExperienceList(mappedList);
+			// 🔑 CORE LOGIC
+			if (mappedList.length > 0) {
+				setShowFresherOption(false);
+				setIsFresher(false); // force consistency
+			} else {
+				setShowFresherOption(true);
+			}
+		} catch (err) {
+			console.error("Failed to fetch experience details", err);
+			setShowFresherOption(true); // safe fallback
+		}
+	};
+
+	useEffect(() => {
+		fetchExperienceDetails();
+	}, [candidateId]);
+	const validateForm = () => {
+		const errors = {};
+
+		if (!formData.organization.trim()) {
+			errors.organization = "This feild is required";
+		}
+
+		if (!formData.role.trim()) {
+			errors.role = "This feild is required";
+		}
+
+		if (!formData.postHeld.trim()) {
+			errors.postHeld = "This feild is required";
+		}
+
+		if (!formData.from) {
+			errors.from = "This feild is required";
+		}
+
+		if (!formData.working && !formData.to) {
+			errors.to = "This feild is required";
+		}
+
+		if (!formData.working && formData.from && formData.to) {
+			const { isValid, error } = validateEndDateAfterStart(
+				formData.from,
+				formData.to
+			);
+			if (!isValid) {
+				errors.to = error;
+			}
+		}
+
+		if (!formData.description.trim()) {
+			errors.description = "This feild is required";
+		}
+
+		if (!formData.currentCTC || formData.currentCTC <= 0) {
+			errors.currentCTC = "This feild is required";
+		}
+
+		if (!certificateFile && !existingDocument) {
+			errors.certificate = "This feild is required";
+		}
+
+		setFormErrors(errors);
+		return Object.keys(errors).length === 0;
+	};
+
+
+	const handleSaveExperience = async () => {
+		if (!validateForm()) return;
+
+		try {
+			const basePayload = mapExperienceDetailsFormToApi(formData, candidateId);
+
+			const payload = isEditMode
+				? { ...basePayload, workExperienceId: editingRow.workExperienceId }
+				: basePayload;
+
+			await profileApi.postExperienceDetails(
+				candidateId,
+				payload,
+				certificateFile
+			);
+
+			toast.success(
+				isEditMode
+					? "Experience updated successfully"
+					: "Experience saved successfully"
+			);
+
+			handleCancelEdit();
 			fetchExperienceDetails();
-		}, [candidateId]);
-
-		const handleSaveExperience = async () => {
-			try {
-				if (!formData.from) {
-					toast.error("From date is required");
-					return;
-				}
-
-				if (!formData.working && !formData.to) {
-					toast.error("To date is required if not presently working");
-					return;
-				}
-
-				const textFields = [
-					{ value: formData.organization, label: "Organization" },
-					{ value: formData.role, label: "Role" },
-					{ value: formData.postHeld, label: "Post Held" },
-					{ value: formData.description, label: "Description" },
-				];
-
-				for (const field of textFields) {
-					const { isValid } = validateNonEmptyText(field.value);
-					if (!isValid) {
-						toast.error(`${field.label} cannot be empty or whitespace`);
-						return;
-					}
-				}
-
-				if (!formData.working) {
-					const { isValid, error } = validateEndDateAfterStart(
-						formData.from,
-						formData.to
-					);
-
-					if (!isValid) {
-						toast.error(error);
-						return;
-					}
-				}
-
-				const basePayload = mapExperienceDetailsFormToApi(formData, candidateId);
-				const payload = isEditMode
-					? {
-							...basePayload,
-							workExperienceId: editingRow.workExperienceId, // 🔑 decides UPDATE
-						}
-					: basePayload; // 🔑 decides CREATE
-
-				await profileApi.postExperienceDetails(
-					candidateId,
-					payload,
-					certificateFile
-				);
-
-				toast.success(
-					isEditMode
-						? "Experience updated successfully"
-						: "Experience saved successfully"
-				);
-
-				handleCancelEdit();   // resets form + edit state
-				fetchExperienceDetails();
-			} catch (err) {
-				console.error(err);
-				toast.error(
-					isEditMode
-						? "Failed to update experience"
-						: "Failed to save experience"
-				);
-			}
-		};
+		} catch (err) {
+			console.error(err);
+			toast.error("Failed to save experience");
+		}
+	};
 
 	const handleFileChange = (e) => {
 		const file = e.target.files[0];
-		if (file) setCertificateFile(file);
+		if (file) {
+			setCertificateFile(file);
+			setFormErrors(prev => ({ ...prev, certificate: "" }));
+		}
 	};
 
 	const handleBrowse = () => {
@@ -212,7 +226,11 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	const saveWorkStatusAndProceed = async () => {
 		try {
 			const effectiveFresherStatus = showFresherOption ? isFresher : false;
+			const payload = { isFresher: effectiveFresherStatus };
+			console.log("Work fresher status payload:", payload);
+			console.log("Work status savedsss:", effectiveFresherStatus);
 			await profileApi.postWorkStatus(candidateId, effectiveFresherStatus);
+			console.log("Work status saved:", effectiveFresherStatus);
 			goNext();
 		} catch (err) {
 			console.error(err);
@@ -302,22 +320,18 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	};
 
 	const handleCTCChange = (e) => {
-		let value = e.target.value;
-		// Empty → 0
-		if (value === "") {
-			setFormData(prev => ({ ...prev, currentCTC: 0 }));
-			return;
-		}
-		value = Number(value);
-		// NaN, negative, infinity → 0
-		if (!Number.isFinite(value) || value < 0) {
-			value = 0;
-		}
+		let value = e.target.value === "" ? 0 : Number(e.target.value);
+
 		setFormData(prev => ({
 			...prev,
 			currentCTC: value
 		}));
+
+		if (formErrors.currentCTC) {
+			setFormErrors(prev => ({ ...prev, currentCTC: "" }));
+		}
 	};
+
 
 	const blockCTCKeys = (e) => {
 		const blocked = ["e", "E", "+", "-", ".", ","];
@@ -354,35 +368,50 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 				noValidate
 			>
 				{/* <p className="tab_headers" style={{ marginBottom: '0px' }}>Experience Details</p> */}
-					
+
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="organization" className="form-label">Organization <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="organization" value={formData.organization} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<input type="text" className={`form-control ${formErrors.organization ? "is-invalid" : ""}`} id="organization" value={formData.organization} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					{formErrors.organization && (
+						<div className="invalid-feedback">{formErrors.organization}</div>
+					)}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="role" className="form-label">Role <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="role" value={formData.role} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<input type="text" className={`form-control ${formErrors.role ? "is-invalid" : ""}`} id="role" value={formData.role} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					{formErrors.role && (
+						<div className="invalid-feedback">{formErrors.role}</div>
+					)}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="postHeld" className="form-label">Post Held <span className="text-danger">*</span></label>
-					<input type="text" className="form-control" id="postHeld" value={formData.postHeld} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<input type="text" className={`form-control ${formErrors.postHeld ? "is-invalid" : ""}`} id="postHeld" value={formData.postHeld} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					{formErrors.postHeld && (
+						<div className="invalid-feedback">{formErrors.postHeld}</div>
+					)}
 				</div>
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="from" className="form-label">From <span className="text-danger">*</span></label>
-					<input type="date" className="form-control" id="from" value={formData.from} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<input type="date" className={`form-control ${formErrors.from ? "is-invalid" : ""}`} id="from" value={formData.from} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					{formErrors.from && (
+						<div className="invalid-feedback">{formErrors.from}</div>
+					)}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="to" className="form-label">To {formData.working === false && (<span className="text-danger">*</span>)}</label>
-					<input type="date" className="form-control" id="to" value={formData.to} onChange={handleChange} disabled={isFresher === true || formData.working === true}  required={isFresher === false || formData.working === false} min={formData.from || undefined} />
+					<input type="date" className={`form-control ${formErrors.to ? "is-invalid" : ""}`} id="to" value={formData.to} onChange={handleChange} disabled={isFresher === true || formData.working === true} required={isFresher === false || formData.working === false} min={formData.from || undefined} />
+					{formErrors.to && (
+						<div className="invalid-feedback">{formErrors.to}</div>
+					)}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="working" className="form-label">Presently Working <span className="text-danger">*</span></label>
 					<select
-						className="form-select"
+						className={`form-select ${formErrors.working ? "is-invalid" : ""}`}
 						id="working"
 						value={String(formData.working)}
 						onChange={(e) =>
@@ -397,13 +426,16 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						<option value="true">Yes</option>
 						<option value="false">No</option>
 					</select>
+					{formErrors.working && (
+						<div className="invalid-feedback">{formErrors.working}</div>
+					)}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="currentCTC" className="form-label">Current CTC <span className="text-danger">*</span></label>
 					<input
 						type="number"
-						className="form-control"
+						className={`form-control ${formErrors.currentCTC ? "is-invalid" : ""}`}
 						id="currentCTC"
 						name="currentCTC"
 						value={formData.currentCTC}
@@ -414,158 +446,114 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						onChange={handleCTCChange}
 						onKeyDown={blockCTCKeys}
 					/>
+					{formErrors.currentCTC && (
+						<div className="invalid-feedback">{formErrors.currentCTC}</div>
+					)}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="description" className="form-label">Brief Description <span className="text-danger">*</span></label>
-					<textarea className="form-control" id="description" rows={4} value={formData.description} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<textarea className={`form-control ${formErrors.description ? "is-invalid" : ""}`} id="description" rows={4} value={formData.description} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					{formErrors.description && (
+						<div className="invalid-feedback">{formErrors.description}</div>
+					)}
 				</div>
 
 				<div className="col-md-4 col-sm-12 mt-2">
-					<label htmlFor="eduCert" className="form-label">Experience Certificate <span className="text-danger">*</span></label>
-					{!certificateFile && !existingDocument && (
+					<label className="form-label">
+						Experience Certificate <span className="text-danger">*</span>
+					</label>
+
+					{/* Wrapper to show red border on error */}
 					<div
-						className="border rounded d-flex flex-column align-items-center justify-content-center"
-						style={{
-							minHeight: "100px",
-							cursor: isFresher ? "not-allowed" : "pointer",
-							opacity: isFresher ? 0.6 : 1
-						}}
-						onClick={!isFresher ? handleBrowse : undefined}
+						className={`border rounded ${formErrors.certificate ? "border-danger" : ""
+							}`}
 					>
-						{/* Upload Icon */}
-						<FontAwesomeIcon
-							icon={faUpload}
-							className="me-2 text-secondary"
-						/>
+						{/* Upload box */}
+						{!certificateFile && !existingDocument && (
+							<div
+								className="d-flex flex-column align-items-center justify-content-center"
+								style={{
+									minHeight: "100px",
+									cursor: isFresher ? "not-allowed" : "pointer",
+									opacity: isFresher ? 0.6 : 1
+								}}
+								onClick={!isFresher ? handleBrowse : undefined}
+							>
+								<FontAwesomeIcon icon={faUpload} className="text-secondary" />
 
-						{/* Upload Text */}
-						<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-						Click to upload or drag and drop
-						</div>
-
-						<div className="text-muted" style={{ fontSize: "12px" }}>
-						Max: 2MB picture
-						</div>
-
-						{/* Hidden File Input */}
-						<input
-							id="educationCertInput"
-							type="file"
-							accept=".jpg,.jpeg,.png,.pdf"
-							style={{ display: "none" }}
-							onChange={handleFileChange}
-						/>
-					</div>
-					)}
-
-					{/* Show File Name */}
-					{existingDocument && !certificateFile && (
-						<div
-							className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
-							style={{
-								border: "2px solid #bfc8e2",
-								borderRadius: "8px",
-								background: "#f7f9fc"
-							}}
-						>
-							{/* LEFT SIDE: Check icon + File name + size */}
-							<div className="d-flex align-items-center">
-								<FontAwesomeIcon
-									icon={faCheckCircle}
-									style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
-								/>
-
-								<div>
-									<div style={{ fontWeight: 600, color: "#42579f" }}>
-										{existingDocument?.fileName}
-									</div>
-									{/* <div className="text-muted" style={{ fontSize: "12px" }}>
-										{formatFileSize(certificateFile.size || existingDocument)}
-									</div> */}
+								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: 500 }}>
+									Click to upload or drag and drop
 								</div>
-							</div>
 
-							{/* RIGHT SIDE: View / Edit / Delete */}
-							<div className="d-flex gap-2">
+								<div className="text-muted" style={{ fontSize: "12px" }}>
+									Max: 2MB (jpg, png, pdf)
+								</div>
 
-								{/* View */}
-								<img
-									src={viewIcon}
-									alt="View"
-									style={{ width: "25px", cursor: "pointer" }}
-									onClick={() => window.open(existingDocument.fileUrl, "_blank")}
+								<input
+									id="educationCertInput"
+									type="file"
+									accept=".jpg,.jpeg,.png,.pdf"
+									hidden
+									onChange={handleFileChange}
 								/>
+							</div>
+						)}
 
-								{/* Delete */}
+						{/* Existing document */}
+						{existingDocument && !certificateFile && (
+							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center">
+								<div className="d-flex align-items-center">
+									<FontAwesomeIcon
+										icon={faCheckCircle}
+										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									/>
+									<div style={{ fontWeight: 600 }}>{existingDocument.fileName}</div>
+								</div>
+
 								<img
 									src={deleteIcon}
 									alt="Delete"
-									style={{ width: "25px", cursor: "pointer" }}
+									style={{ width: "22px", cursor: "pointer" }}
 									onClick={() => setExistingDocument(null)}
 								/>
-
 							</div>
-						</div>
-					)}
+						)}
 
-					{certificateFile && (
-						<div
-							className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
-							style={{
-								border: "2px solid #bfc8e2",
-								borderRadius: "8px",
-								background: "#f7f9fc"
-							}}
-						>
-							{/* LEFT SIDE: Check icon + File name + size */}
-							<div className="d-flex align-items-center">
-								<FontAwesomeIcon
-									icon={faCheckCircle}
-									style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
-								/>
-
-								<div>
-									<div style={{ fontWeight: 600, color: "#42579f" }}>
-										{certificateFile?.name}
-									</div>
-									<div className="text-muted" style={{ fontSize: "12px" }}>
-										{formatFileSize(certificateFile.size)}
+						{/* New uploaded file */}
+						{certificateFile && (
+							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center">
+								<div className="d-flex align-items-center">
+									<FontAwesomeIcon
+										icon={faCheckCircle}
+										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									/>
+									<div>
+										<div style={{ fontWeight: 600 }}>{certificateFile.name}</div>
+										<div className="text-muted" style={{ fontSize: "12px" }}>
+											{formatFileSize(certificateFile.size)}
+										</div>
 									</div>
 								</div>
-							</div>
 
-							{/* RIGHT SIDE: View / Edit / Delete */}
-							<div className="d-flex gap-2">
-
-								{/* View */}
-								<img
-									src={viewIcon}
-									alt="View"
-									style={{ width: "25px", cursor: "pointer" }}
-									onClick={() => window.open(URL.createObjectURL(certificateFile), "_blank")}
-								/>
-
-								{/* Edit → triggers file re-upload */}
-								<img
-									src={editIcon}
-									alt="Edit"
-									style={{ width: "25px", cursor: "pointer" }}
-									onClick={handleBrowse}
-								/>
-
-								{/* Delete */}
 								<img
 									src={deleteIcon}
 									alt="Delete"
-									style={{ width: "25px", cursor: "pointer" }}
+									style={{ width: "22px", cursor: "pointer" }}
 									onClick={() => setCertificateFile(null)}
 								/>
-
 							</div>
+						)}
+					</div>
+
+					{/* ❌ Validation error */}
+					{formErrors.certificate && (
+						<div className="text-danger mt-1" style={{ fontSize: "13px" }}>
+							{formErrors.certificate}
 						</div>
 					)}
 				</div>
+
 
 				<div className="d-flex justify-content-center gap-3 mt-3">
 					{!isEditMode ? (
@@ -625,9 +613,9 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 								<td className='profile_table_td'>{item?.description}</td>
 								<td className='profile_table_td'>
 									<div className="d-flex gap-2">
-										<div>
+										{/* <div>
 											<img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
-										</div>
+										</div> */}
 										<div>
 											<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(item)} />
 										</div>
@@ -641,12 +629,12 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					</tbody>
 				</table>
 
-					<div className='d-flex justify-content-center align-items-center gap-2'>
-						<label htmlFor="working" className="form-label mb-0">Total experience in months</label>
-						<input type="number" className="form-control text-center" style={{ width: '70px', paddingLeft: '25px' }} id="to" disabled value={totalExperienceMonths} />
-					</div>
+				<div className='d-flex justify-content-center align-items-center gap-2'>
+					<label htmlFor="working" className="form-label mb-0">Total experience in months</label>
+					<input type="number" className="form-control text-center" style={{ width: '70px', paddingLeft: '25px' }} id="to" disabled value={totalExperienceMonths} />
+				</div>
 
-					{/* <div className='d-flex justify-content-center align-items-center gap-2 py-1' style={{ backgroundColor: '#fff7ed', borderLeft: '3px solid #f26623' }}>
+				{/* <div className='d-flex justify-content-center align-items-center gap-2 py-1' style={{ backgroundColor: '#fff7ed', borderLeft: '3px solid #f26623' }}>
 						<input
 							type="checkbox"
 							// className="form-control"
@@ -659,24 +647,24 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						</label>
 					</div> */}
 
-					<div className="d-flex justify-content-between">
-		<div>
-			<button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
-		</div>
-		<div>
-			<button
-				type="submit"
-				className="btn btn-primary"
-				style={{
-					backgroundColor: "#ff7043",
-					border: "none",
-					padding: "8px 24px",
-					borderRadius: "4px",
-					color: "#fff"
-				}}
-			>Save and Next</button>
-		</div>
-	</div>
+				<div className="d-flex justify-content-between">
+					<div>
+						<button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
+					</div>
+					<div>
+						<button
+							type="submit"
+							className="btn btn-primary"
+							style={{
+								backgroundColor: "#ff7043",
+								border: "none",
+								padding: "8px 24px",
+								borderRadius: "4px",
+								color: "#fff"
+							}}
+						>Save and Next</button>
+					</div>
+				</div>
 			</form>
 		</div>
 	)
