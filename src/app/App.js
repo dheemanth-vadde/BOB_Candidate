@@ -30,7 +30,7 @@ import ChangePassword from '../components/auth/pages/ChangePassword';
 function App() {
   const location = useLocation(); // Get current path
   // Only show chat on specific routes
-  const showChat = !['/careers-portal', '/forgot-password', '/register', '/login', '/'].includes(location.pathname);
+  const showChat = !['/careers-portal', '/forgot-password', '/register', '/login', '/', '/otp-verification', '/change-password-verification', '/change-password'].includes(location.pathname);
   const [chatOpen, setChatOpen] = useState(false);
 
   // Handle chat toggle

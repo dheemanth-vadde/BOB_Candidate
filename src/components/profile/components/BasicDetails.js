@@ -350,6 +350,11 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 		setDisabilityFile(file);
 		input.value = "";
+		setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated.disabilityCertificate;
+			return updated;
+		});
 	};
 
 	const handleDisabilityBrowse = () => {
@@ -536,10 +541,10 @@ const BasicDetails = ({ goNext, goBack }) => {
 			} else {
 				formData.disabilities.forEach((dis, index) => {
 					if (!dis.disabilityCategoryId) {
-						errors[`disabilityType_${index}`] = "This field is required";
+						errors[`disabilityType_${index}`] = "Please select a disability type";
 					}
 					if (!dis.disabilityPercentage) {
-						errors[`disabilityPercentage_${index}`] = "This field is required";
+						errors[`disabilityPercentage_${index}`] = "Please enter a disability percentage";
 					}
 				});
 			}
@@ -1635,6 +1640,11 @@ const BasicDetails = ({ goNext, goBack }) => {
 									/>
 
 								</div>
+							</div>
+						)}
+						{formErrors.disabilityCertificate && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.disabilityCertificate}
 							</div>
 						)}
 					</div>
