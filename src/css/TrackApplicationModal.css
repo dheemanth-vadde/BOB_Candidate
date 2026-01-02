@@ -31,7 +31,7 @@
 .step::after {
   content: "";
   position: absolute;
-  top: 17px;
+  top: 18px;
   left: 50%;
   width: 100%;
   height: 2px;
@@ -74,7 +74,6 @@
 
 /* Current (BLUE RING + WHITE DOT) */
 .circle.current {
-  border: 3px solid #1f3c88;
   background: #1f3c88;
 }
 
@@ -103,12 +102,12 @@
 }
 
 /* ==============================
-   LABELS
+   LABEL + DATE
 ================================ */
 .step-label {
   font-size: 13px;
   font-weight: 600;
-  margin-top: 6px;
+  margin-top: 8px;
   color: #6c757d;
 }
 
@@ -116,21 +115,37 @@
   color: #1f3c88;
 }
 
-/* Status text */
-.step-status {
-  font-size: 11px;
-  margin-top: 2px;
+/* Date & time */
+.step-date {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 4px;
 }
 
-.step-status.completed {
+/* ==============================
+   STATUS BADGE
+================================ */
+.step-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.step-badge.completed {
+  background: #e8f8f1;
   color: #28a745;
 }
 
-.step-status.current {
+.step-badge.current {
+  background: #e8efff;
   color: #1f3c88;
 }
 
-.step-status.pending {
+.step-badge.pending {
+  background: #f1f1f1;
   color: #999;
 }
 
@@ -166,173 +181,8 @@
 }
 
 .query-section textarea {
-  min-height: 80px !important;      /* Bank UI height */
+  min-height: 80px !important;
   resize: none !important;
-}
-
-/* Upload box */
-.upload-box {
-  /* height: 120px; */
-  border: 1px  solid #cfd4dc;
-  border-radius: 10px;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.upload-box small {
-   font-size: 11px;
-  color: #1f3c88;   /* Bank blue */
-  font-weight: 500;
-}
-
-/* ==============================
-   BUTTONS
-================================ */
-.modal-actions {
-	display: inline;
-	/* justify-content: flex-end; */
-	gap: 10px;
-	margin-top: 13px !important;
-	/* width: 10px !important; */
-	/* float: right; */
-}
-.modal-actions .btn-outline-secondary {
-  border-radius: 8px;
-  padding: 6px 18px;
-  font-size: 14px;
-}
-
-.modal-actions .btn-primary {
-  background: #1f3c88;
-  border-color: #1f3c88;
-  border-radius: 8px;
-  padding: 6px 20px;
-  font-size: 14px;
-}
-
-.modal-actions .btn-primary:hover {
-  background: #162d66;
-  border-color: #162d66;
-}
-
-/* ==============================
-   REQUEST HISTORY
-================================ */
-.request-history {
-  margin-top: 24px;
-}
-
-.section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1f3c88;
-  margin-bottom: 12px;
-}
-
-/* Table */
-.history-table th {
-  font-size: 12px;
-  color: #6c757d;
-}
-
-.history-table td {
-  font-size: 13px;
-  vertical-align: middle;
-}
-
-/* Status colors */
-.status.approved {
-  color: #28a745;
-  font-weight: 600;
-}
-
-.status.pending {
-  color: #f0ad4e;
-  font-weight: 600;
-}
-
-/* ==============================
-   HISTORY THREAD
-================================ */
-.history-thread {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 14px;
-  margin-top: 10px;
-}
-
-.thread-item {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.thread-item:last-child {
-  margin-bottom: 0;
-}
-
-/* Avatar */
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.thread-item.recruiter .avatar {
-  background: #ff7043;
-}
-
-.thread-item.candidate .avatar {
-  background: #1f3c88;
-}
-
-.thread-item p {
-  font-size: 13px;
-  margin: 4px 0;
-}
-
-.thread-item .time {
-  font-size: 11px;
-  color: #999;
-}
-/* ==============================
-   SUBMIT REQUEST – BANK STYLE
-================================ */
-.query-section.bank-style {
-  background: #f9fafb;
-  border: 1px solid #e3e7ee;
-  border-radius: 12px;
-  padding: 20px 22px;
-  margin-bottom: 24px;
-}
-
-.query-section.bank-style .section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1f3c88;
-  margin-bottom: 10px;
-}
-
-.query-section.bank-style .form-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6c757d;
-}
-
-.query-section.bank-style .form-control,
-.query-section.bank-style .form-select {
-  font-size: 13px;
-  border-radius: 8px;
-  border: 1px solid #dfe3ea;
 }
 
 /* ==============================
@@ -348,12 +198,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-}
-
-.upload-icon {
-  font-size: 18px;
-  color: #1f3c88;
-  margin-bottom: 6px;
 }
 
 .upload-text {
@@ -391,4 +235,87 @@
 .query-actions .btn-primary:hover {
   background: #162d66;
   border-color: #162d66;
+}
+
+/* ==============================
+   REQUEST HISTORY
+================================ */
+.request-history {
+  margin-top: 24px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f3c88;
+  margin-bottom: 12px;
+}
+
+.history-table th {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.history-table td {
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.status.approved {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status.pending {
+  color: #f0ad4e;
+  font-weight: 600;
+}
+
+/* ==============================
+   HISTORY THREAD
+================================ */
+.history-thread {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.thread-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.thread-item:last-child {
+  margin-bottom: 0;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.thread-item.recruiter .avatar {
+  background: #ff7043;
+}
+
+.thread-item.candidate .avatar {
+  background: #1f3c88;
+}
+
+.thread-item p {
+  font-size: 13px;
+  margin: 4px 0;
+}
+
+.thread-item .time {
+  font-size: 11px;
+  color: #999;
 }

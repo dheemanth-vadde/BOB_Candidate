@@ -23,8 +23,9 @@ const jobsApiService = {
   getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
   getJobPositions: (candidateId) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}`),
    applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
-   getMasterData:()=>mastersapi.get(`api/v1/master/display/all`),
-    getRequestTypes:()=>mastersapi.get(`master-dd-data/get/request-types`),
+   getMasterData:()=>mastersapi.get(`/display/all`),
+    getRequestTypes:()=>mastersapi.get(`/master-dd-data/get/request-types`),
+    getApplicationStatus:(applicationId) => jobsapi.get(`/track-app-status/status/${applicationId}`),
 
     //thread apis 
     createCandidateThread: (candidateId, formData) => jobsapi.post(`/candidate-conversation/create-thread/${candidateId}`, formData, {

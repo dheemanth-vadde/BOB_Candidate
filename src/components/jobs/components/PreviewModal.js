@@ -6,6 +6,8 @@ import sign from "../../../assets/download.png";
 import { useSelector } from "react-redux";
 import viewIcon from "../../../assets/view-icon.png";
 import { getState, getLocation } from "../../../shared/utils/masterHelpers";
+
+import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 const PreviewModal = ({
   show,
   onHide,
@@ -69,7 +71,7 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
         </div>
 
         {/* ===== ACCORDION ===== */}
-        <Accordion defaultActiveKey="0" className="bob-accordion">
+        <Accordion defaultActiveKey={["0"]} alwaysOpen className="bob-accordion">
           {/* === PERSONAL DETAILS === */}
           <Accordion.Item eventKey="0">
             <Accordion.Header>Personal Details</Accordion.Header>
@@ -470,12 +472,21 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
               ← Back
             </button>
             <div className="d-flex gap-3">
-              <button
+              {onEditProfile && (
+                <button
+                  className="btn edit-button"
+                  onClick={onEditProfile}
+                >
+                  Edit Profile Details
+                </button>
+              )}
+              {/* <button
                 className="btn edit-button"
                 onClick={onEditProfile}
               >
                 Edit Profile Details
-              </button>
+              </button> */}
+              {onProceedToPayment && (
               <button
                 className="btn btn-bob-orange"
                  disabled={!allChecked}
@@ -483,6 +494,7 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
               >
                 Proceed for Payment
               </button>
+              )}
             </div>
           </div>
         </div>

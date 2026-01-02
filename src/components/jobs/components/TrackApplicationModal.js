@@ -17,7 +17,67 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
 const [description, setDescription] = useState("");
  const userData = useSelector((state) => state.user.user);
   const candidateId = userData?.data?.user?.id;
+const [currentIndex, setCurrentIndex] = useState(0);
+const [statusHistory, setStatusHistory] = useState([]);
+const [statusMap, setStatusMap] = useState({});
+const steps = [
+  "Applied",
+  "Shortlisted",
+  "Interview Scheduled",
+  "Selected In Interview",
+  "Offer"
+];
+
+const statusToIndexMap = {
+  Applied: 0,
+  Application: 0,
+  Shortlisted: 1,
+  "Interview Scheduled": 2,
+  "Selected In Interview": 3,
+  Offered: 4
+};
+
 console.log("selected jobs",job)
+
+const fetchApplicationStatus = async () => {
+  try {
+    if (!job?.application_id) return;
+
+    const res = await jobsApiService.getApplicationStatus(
+      job.application_id
+    );
+
+    const list = Array.isArray(res?.data) ? res.data : [];
+
+    const map = {};
+    list.forEach(item => {
+      map[item.status] = item.actionDate;
+    });
+
+    setStatusMap(map);
+
+    if (list.length > 0) {
+      const latestStatus = list[list.length - 1].status;
+      const index = statusToIndexMap[latestStatus] ?? 0;
+      setCurrentIndex(index);
+    }
+  } catch (err) {
+    console.error("Failed to fetch application status", err);
+  }
+};
+const formatDateTime = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }) + " " +
+  d.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+};
 
 const handleSubmitRequest = async () => {
   try {
@@ -87,11 +147,13 @@ const handleSubmitRequest = async () => {
     setRequestTypes([]);
   }
 };
- useEffect(() => {
-  if (show) {
+useEffect(() => {
+  if (show && job?.application_id) {
     fetchRequestTypes();
+    fetchApplicationStatus();
   }
-}, [show]);
+}, [show, job?.application_id]);
+
 
   const handleFileSelect = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -101,14 +163,6 @@ const handleSubmitRequest = async () => {
     fileInputRef.current.click();
   };
   if (!job) return null;
-
-  const steps = [
-    "Application",
-    "Shortlisted",
-    "Interview Scheduled",
-    "Selected In Interview",
-    "Offer"
-  ];
 
   const AccordionRow = ({ eventKey, children }) => {
     const decoratedOnClick = useAccordionButton(eventKey, () => {
@@ -124,8 +178,7 @@ const handleSubmitRequest = async () => {
       </tr>
     );
   };
-  // Example current stage index (can come from API later)
-  const currentIndex = 2; // Interview Scheduled
+
 
   return (
     <Modal show={show} onHide={onHide} size="lg" centered backdrop="static">
@@ -140,35 +193,44 @@ const handleSubmitRequest = async () => {
 
         {/* ===== STATUS STEPPER ===== */}
         <div className="status-stepper">
-          {steps.map((step, index) => {
-            const state =
-              index < currentIndex
-                ? "completed"
-                : index === currentIndex
+            {steps.map((step, index) => {
+              const state =
+                index < currentIndex
+                  ? "completed"
+                  : index === currentIndex
                   ? "current"
                   : "pending";
 
-            return (
-              <div className={`step ${state}`} key={index}>
-                <div className="main">
-                  <div className={`circle ${state}`}>
-                    {state === "completed" && "✓"}
+              const stepDate = statusMap[step];
+
+              return (
+                <div className={`step ${state}`} key={index}>
+                  <div className="circle-wrapper">
+                    <div className={`circle ${state}`}>
+                      {state === "completed" && "✓"}
+                    </div>
                   </div>
 
                   <div className="step-label">{step}</div>
 
-                  <div className={`step-status ${state}`}>
+                  {/* DATE */}
+                  <div className="step-date">
+                    {stepDate ? formatDateTime(stepDate) : ""}
+                  </div>
+
+                  {/* STATUS BADGE */}
+                  <div className={`step-badge ${state}`}>
                     {state === "completed"
                       ? "Completed"
                       : state === "current"
-                        ? "Current Stage"
-                        : "Pending"}
+                      ? "Current Stage"
+                      : "Pending"}
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+
 
         {/* ===== SUBMIT REQUEST ===== */}
         <div className="query-section bank-style">
