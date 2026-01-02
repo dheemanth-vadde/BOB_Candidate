@@ -86,6 +86,8 @@ font-weight: 500;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 600;
+   background: #e7f0ff;
+  color: #0C5DFF;
 }
 
 .status-badge.applied {
