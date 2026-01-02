@@ -358,14 +358,23 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 	const handleServiceFileChange = (e) => {
 		const file = e.target.files[0];
-		if (file) {
-			if (file.size > 2 * 1024 * 1024) {
-				toast.error("File size must be under 2MB");
-				return;
-			}
-			setServiceFile(file);
+		if (!file) return;
+
+		if (file.size > 2 * 1024 * 1024) {
+			toast.error("File size must be under 2MB");
+			return;
 		}
+
+		setServiceFile(file);
+
+		// 🔥 CLEAR VALIDATION ERROR
+		setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated.serviceCertificate;
+			return updated;
+		});
 	};
+
 
 	const handleServiceBrowse = () => {
 		document.getElementById("serviceCertificate").click();
@@ -435,7 +444,23 @@ const BasicDetails = ({ goNext, goBack }) => {
 				i === index ? { ...dis, [field]: value } : dis
 			)
 		}));
+
+		// 🔥 CLEAR VALIDATION ERROR
+		setFormErrors(prev => {
+			const updated = { ...prev };
+
+			if (field === "disabilityCategoryId") {
+				delete updated[`disabilityType_${index}`];
+			}
+
+			if (field === "disabilityPercentage") {
+				delete updated[`disabilityPercentage_${index}`];
+			}
+
+			return updated;
+		});
 	};
+
 
 	const addDisability = () => {
 		const lastDis = formData.disabilities[formData.disabilities.length - 1];
@@ -451,7 +476,15 @@ const BasicDetails = ({ goNext, goBack }) => {
 			...prev,
 			disabilities: prev.disabilities.filter((_, i) => i !== index)
 		}));
+
+		setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated[`disabilityType_${index}`];
+			delete updated[`disabilityPercentage_${index}`];
+			return updated;
+		});
 	};
+
 
 	const handleRadio = (e) => {
 		const { name, value } = e.target;
@@ -491,7 +524,7 @@ const BasicDetails = ({ goNext, goBack }) => {
 		if (formData.twinSibling && !formData.siblingName?.trim()) {
 			errors.siblingName = "Please add twin sibling's name";
 		}
-if (formData.twinSibling && !formData.twinGender) {
+		if (formData.twinSibling && !formData.twinGender) {
 			errors.twinGender = "This field is required";
 		}
 
@@ -522,13 +555,17 @@ if (formData.twinSibling && !formData.twinGender) {
 		}
 
 		// Ex-service validations
+		// Ex-Service validations
 		if (formData.isExService) {
 			if (!formData.serviceEnrollment) {
 				errors.serviceEnrollment = "This field is required";
 			}
+
 			if (!formData.dischargeDate) {
 				errors.dischargeDate = "This field is required";
 			}
+
+			// Date order validation (only if both exist)
 			if (formData.serviceEnrollment && formData.dischargeDate) {
 				const { isValid, error } = validateEndDateAfterStart(
 					formData.serviceEnrollment,
@@ -543,6 +580,7 @@ if (formData.twinSibling && !formData.twinGender) {
 				errors.serviceCertificate = "This field is required";
 			}
 		}
+
 
 		// Document validations
 		if (!isGeneralCategory && !communityFile && !existingCommunityDoc) {
@@ -612,6 +650,27 @@ if (formData.twinSibling && !formData.twinGender) {
 		}
 		return months;
 	};
+	useEffect(() => {
+		if (!formData.isExService) {
+			setFormErrors(prev => {
+				const updated = { ...prev };
+				delete updated.serviceEnrollment;
+				delete updated.dischargeDate;
+				delete updated.serviceCertificate;
+				return updated;
+			});
+
+			setFormData(prev => ({
+				...prev,
+				serviceEnrollment: "",
+				dischargeDate: "",
+				servicePeriod: ""
+			}));
+
+			setServiceFile(null);
+		}
+	}, [formData.isExService]);
+
 
 	useEffect(() => {
 		if (!formData.isExService) {
@@ -1280,13 +1339,28 @@ if (formData.twinSibling && !formData.twinGender) {
 							className="form-select"
 							id="twinSibling"
 							value={formData?.twinSibling}
-							onChange={(e) =>
+							onChange={(e) => {
+								const hasTwin = e.target.value === "true";
+
 								setFormData(prev => ({
 									...prev,
-									twinSibling: e.target.value === "true"
-								}))
-							}
-							required
+									twinSibling: hasTwin,
+									siblingName: hasTwin ? prev.siblingName : "",
+									twinGender: hasTwin ? prev.twinGender : ""
+								}));
+
+								// 🔥 CLEAR TWIN-SPECIFIC ERRORS WHEN TURNED OFF
+								if (!hasTwin) {
+									setFormErrors(prev => {
+										const updated = { ...prev };
+										delete updated.siblingName;
+										delete updated.twinGender;
+										return updated;
+									});
+								}
+							}}
+
+
 						>
 							<option value={true}>Yes</option>
 							<option value={false}>No</option>
@@ -1306,24 +1380,24 @@ if (formData.twinSibling && !formData.twinGender) {
 						{formErrors.siblingName && <div className="invalid-feedback">{formErrors.siblingName}</div>}
 					</div>
 
-					 <div className="col-md-3 col-sm-12 mt-2">
-                        <label htmlFor="twinGender" className="form-label">Gender of the twin</label>
-                        <select
-                            className={`form-select ${formErrors.twinGender ? 'is-invalid' : ''}`}
-                            id="twinGender"
-                            value={formData?.twinGender}
-                            onChange={handleChange}
-                            disabled={!formData?.twinSibling}
-                        >
-                            <option value="">Select Gender</option>
-                            {masterData?.genders.map(g => (
-                                <option key={g.genderId} value={g.genderId}>
-                                    {g.gender}
-                                </option>
-                            ))}
-                        </select>
-                        {formErrors.twinGender && <div className="invalid-feedback">{formErrors.twinGender}</div>}
-                    </div>
+					<div className="col-md-3 col-sm-12 mt-2">
+						<label htmlFor="twinGender" className="form-label">Gender of the twin</label>
+						<select
+							className={`form-select ${formErrors.twinGender ? 'is-invalid' : ''}`}
+							id="twinGender"
+							value={formData?.twinGender}
+							onChange={handleChange}
+							disabled={!formData?.twinSibling}
+						>
+							<option value="">Select Gender</option>
+							{masterData?.genders.map(g => (
+								<option key={g.genderId} value={g.genderId}>
+									{g.gender}
+								</option>
+							))}
+						</select>
+						{formErrors.twinGender && <div className="invalid-feedback">{formErrors.twinGender}</div>}
+					</div>
 				</div>
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
@@ -1337,13 +1411,42 @@ if (formData.twinSibling && !formData.twinGender) {
 							value={formData?.isDisabledPerson}
 							onChange={(e) => {
 								const isDisabled = e.target.value === "true";
+
 								setFormData(prev => ({
 									...prev,
 									isDisabledPerson: isDisabled,
-									disabilities: isDisabled ? (prev.disabilities.length > 0 ? prev.disabilities : [{ disabilityCategoryId: "", disabilityPercentage: "" }]) : []
+									disabilities: isDisabled
+										? (prev.disabilities.length > 0
+											? prev.disabilities
+											: [{ disabilityCategoryId: "", disabilityPercentage: "" }])
+										: [],
+									scribeRequirement: isDisabled ? prev.scribeRequirement : ""
 								}));
+
+								// 🔥 CLEAR ALL DISABILITY-RELATED ERRORS
+								if (!isDisabled) {
+									setFormErrors(prev => {
+										const updated = { ...prev };
+
+										delete updated.disabilities;
+										delete updated.scribeRequirement;
+										delete updated.disabilityCertificate;
+
+										Object.keys(updated).forEach(key => {
+											if (
+												key.startsWith("disabilityType_") ||
+												key.startsWith("disabilityPercentage_")
+											) {
+												delete updated[key];
+											}
+										});
+
+										return updated;
+									});
+								}
 							}}
-							required
+
+
 						>
 							<option value={true}>Yes</option>
 							<option value={false}>No</option>
@@ -1353,17 +1456,24 @@ if (formData.twinSibling && !formData.twinGender) {
 					<div className="col-md-4 col-sm-12 mt-2">
 						<label htmlFor="scribeRequirement" className="form-label">Scribe Requirement</label>
 						<select
-							className="form-select"
+							className={`form-select ${formErrors.scribeRequirement ? 'is-invalid' : ''
+								}`}
 							id="scribeRequirement"
 							value={formData?.scribeRequirement}
 							onChange={handleChange}
 							disabled={!formData?.isDisabledPerson}
-							required={formData.isDisabledPerson}
 						>
 							<option value="">Select Scribe Requirement</option>
 							<option value="Yes">Yes</option>
 							<option value="No">No</option>
 						</select>
+
+						{formErrors.scribeRequirement && (
+							<div className="invalid-feedback">
+								{formErrors.scribeRequirement}
+							</div>
+						)}
+
 					</div>
 
 					<div className="col-md-4 col-sm-12 mt-2">
@@ -1555,10 +1665,12 @@ if (formData.twinSibling && !formData.twinGender) {
 								<select
 									id={`disabilityType-${index}`}
 									value={dis.disabilityCategoryId}
-									onChange={(e) => handleDisabilityChange(index, 'disabilityCategoryId', e.target.value)}
+									onChange={(e) =>
+										handleDisabilityChange(index, 'disabilityCategoryId', e.target.value)
+									}
 									disabled={!formData.isDisabledPerson}
-									className="form-select"
-									required={formData.isDisabledPerson}
+									className={`form-select ${formErrors[`disabilityType_${index}`] ? 'is-invalid' : ''
+										}`}
 								>
 									<option value="">Select Disability Type</option>
 									{masterData?.disabilityCategories.map(d => (
@@ -1567,6 +1679,13 @@ if (formData.twinSibling && !formData.twinGender) {
 										</option>
 									))}
 								</select>
+
+								{formErrors[`disabilityType_${index}`] && (
+									<div className="invalid-feedback">
+										{formErrors[`disabilityType_${index}`]}
+									</div>
+								)}
+
 							</div>
 
 							<div className="col-md-5 col-sm-12 mt-2">
@@ -1574,13 +1693,13 @@ if (formData.twinSibling && !formData.twinGender) {
 								<div className='d-flex gap-1 align-items-center'>
 									<input
 										type="number"
-										className="form-control"
+										className={`form-control ${formErrors[`disabilityPercentage_${index}`] ? 'is-invalid' : ''
+											}`}
 										id={`disabilityPercentage-${index}`}
 										value={dis.disabilityPercentage}
 										min={1}
 										max={100}
 										disabled={!formData.isDisabledPerson}
-										required={formData.isDisabledPerson}
 										placeholder="1 - 100"
 										onChange={(e) => {
 											let value = e.target.value;
@@ -1595,7 +1714,15 @@ if (formData.twinSibling && !formData.twinGender) {
 										}}
 									/>
 									<span className="">%</span>
+
+
+
 								</div>
+								{formErrors[`disabilityPercentage_${index}`] && (
+									<div className="invalid-feedback d-block">
+										{formErrors[`disabilityPercentage_${index}`]}
+									</div>
+								)}
 							</div>
 
 							{formData.disabilities.length > 1 && (
@@ -1637,12 +1764,42 @@ if (formData.twinSibling && !formData.twinGender) {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="serviceEnrollment" className="form-label">Service Start Enrollment Date</label>
-						<input type="date" className="form-control" id="serviceEnrollment" disabled={!formData?.isExService} value={formData?.serviceEnrollment} onChange={handleChange} required={formData?.isExService} />
+						<input
+							type="date"
+							className={`form-control ${formErrors.serviceEnrollment ? "is-invalid" : ""
+								}`}
+							id="serviceEnrollment"
+							disabled={!formData?.isExService}
+							value={formData?.serviceEnrollment}
+							onChange={handleChange}
+						/>
+
+						{formErrors.serviceEnrollment && (
+							<div className="invalid-feedback">
+								{formErrors.serviceEnrollment}
+							</div>
+						)}
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="dischargeDate" className="form-label">Discharge Date</label>
-						<input type="date" className="form-control" id="dischargeDate" disabled={!formData?.isExService} value={formData?.dischargeDate} onChange={handleChange} required={formData?.isExService} min={formData.serviceEnrollment || undefined} />
+						<input
+							type="date"
+							className={`form-control ${formErrors.dischargeDate ? "is-invalid" : ""
+								}`}
+							id="dischargeDate"
+							disabled={!formData?.isExService}
+							value={formData?.dischargeDate}
+							onChange={handleChange}
+							min={formData.serviceEnrollment || undefined}
+						/>
+
+						{formErrors.dischargeDate && (
+							<div className="invalid-feedback">
+								{formErrors.dischargeDate}
+							</div>
+						)}
+
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
@@ -1686,7 +1843,9 @@ if (formData.twinSibling && !formData.twinGender) {
 						<label htmlFor="serviceCertificate" className="form-label">Upload Certificate</label>
 						{!serviceFile && !existingServiceDoc && (
 							<div
-								className="border rounded d-flex flex-column align-items-center justify-content-center"
+
+								className={`border rounded d-flex flex-column align-items-center justify-content-center ${formErrors.serviceCertificate ? "border-danger" : ""
+									}`}
 								style={{
 									minHeight: "100px",
 									cursor: !formData?.isExService ? "not-allowed" : "pointer",
@@ -1843,6 +2002,12 @@ if (formData.twinSibling && !formData.twinGender) {
 								</div>
 							</div>
 						)}
+						{formErrors.serviceCertificate && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.serviceCertificate}
+							</div>
+						)}
+
 					</div>
 				</div>
 
