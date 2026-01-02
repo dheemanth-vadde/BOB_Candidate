@@ -18,17 +18,18 @@ const UploadField = forwardRef(({
   onCustomNameChange,
   onBrowse,
   onChange,
-  onDeleted
+  onDeleted,
+  disabled = false
 }, ref) => {
   const user = useSelector((state) => state?.user?.user?.data);
-	const candidateId = user?.user?.id;
+  const candidateId = user?.user?.id;
   const formatFileSize = (bytes) => {
     if (!bytes) return "0 KB";
     return bytes < 1024
       ? `${bytes} B`
       : bytes < 1024 * 1024
-      ? `${(bytes / 1024).toFixed(1)} KB`
-      : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        ? `${(bytes / 1024).toFixed(1)} KB`
+        : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const handleView = () => {
@@ -74,9 +75,16 @@ const UploadField = forwardRef(({
       {!file && (
         <div
           className="border rounded d-flex align-items-center gap-2 px-3"
-          style={{ minHeight: "90px", cursor: "pointer" }}
-          onClick={onBrowse}
+          style={{
+            minHeight: "90px",
+            cursor: disabled ? "not-allowed" : "pointer",
+            backgroundColor: disabled ? "#f5f5f5" : "#fff",
+            borderColor: disabled ? "#d0d0d0" : "#bfc8e2",
+            opacity: disabled ? 0.6 : 1
+          }}
+          onClick={!disabled ? onBrowse : undefined}
         >
+
           <FontAwesomeIcon icon={faUpload} className="text-secondary" size="lg" />
 
           <div className="d-flex flex-column" style={{ marginTop: '-10px' }}>
@@ -102,42 +110,42 @@ const UploadField = forwardRef(({
       {/* AFTER UPLOAD */}
       {file && (
         <div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
-					style={{
-						border: "2px solid #bfc8e2",
-						borderRadius: "8px",
-						background: "#f7f9fc"
-					}}
-				>
-		
-					{/* Left: Check icon + file info */}
-					<div className="d-flex align-items-center">
-						<FontAwesomeIcon
-							icon={faCheckCircle}
-							style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
-						/>
-		
-						<div className='p-2'>
-							<div style={{ fontWeight: 600, color: '#42579f' }}>
-								{file?.name || "Uploaded file"}
-							</div>
-							<div className="text-muted" style={{ fontSize: "12px" }}>
-								{file.size && formatFileSize(file.size)}
-							</div>
-						</div>
-					</div>
-		
-					{/* Right: Action icons */}
-					<div className="d-flex gap-2">
-		
-						<div>
-							<img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} onClick={handleView} />
-						</div>
-		
-						<div>
-							<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={handleDelete} />
-						</div>
-					</div>
-				</div>
+          style={{
+            border: "2px solid #bfc8e2",
+            borderRadius: "8px",
+            background: "#f7f9fc"
+          }}
+        >
+
+          {/* Left: Check icon + file info */}
+          <div className="d-flex align-items-center">
+            <FontAwesomeIcon
+              icon={faCheckCircle}
+              style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+            />
+
+            <div className='p-2'>
+              <div style={{ fontWeight: 600, color: '#42579f' }}>
+                {file?.name || "Uploaded file"}
+              </div>
+              <div className="text-muted" style={{ fontSize: "12px" }}>
+                {file.size && formatFileSize(file.size)}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Action icons */}
+          <div className="d-flex gap-2">
+
+            <div>
+              <img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} onClick={handleView} />
+            </div>
+
+            <div>
+              <img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={handleDelete} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

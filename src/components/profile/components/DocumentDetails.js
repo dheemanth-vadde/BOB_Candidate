@@ -205,19 +205,31 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 		return isValid;
 	};
 
-	const handleSubmit = () => {
-		if (!validateForm()) {
-			// Scroll to the first error
-			const firstErrorKey = Object.keys(formErrors)[0];
-			if (firstErrorKey) {
-				const element = document.getElementById(`upload-${firstErrorKey}`);
-				element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			}
-			return;
-		}
-		setActiveTab('jobs');
-		goNext();
-	};
+	const handleSubmit = async () => {
+  const errors = validateForm();
+
+  if (Object.keys(errors).length > 0) {
+    const firstErrorKey = Object.keys(errors)[0];
+    document
+      .getElementById(`upload-${firstErrorKey}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  try {
+   await profileApi.saveProfileComplete(candidateId, true);
+
+
+    toast.success("Profile completed successfully");
+
+    setActiveTab("jobs");
+    goNext();
+  } catch (err) {
+    console.error(err);
+    toast.error("Profile completion failed");
+  }
+};
+
 
 	return (
 		<div className="px-4 py-3 border rounded bg-white">
@@ -248,6 +260,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 									}}
 									isInvalid={!!formErrors[field.key]}
 									disabled={disabled}
+									 className={disabled ? "upload-disabled" : ""}
 								/>
 								{formErrors[field.key] && (
 									<div className="text-danger" style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
