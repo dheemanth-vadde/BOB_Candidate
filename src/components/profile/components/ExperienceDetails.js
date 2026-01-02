@@ -508,7 +508,9 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 										icon={faCheckCircle}
 										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
 									/>
-									<div style={{ fontWeight: 600 }}>{existingDocument.fileName}</div>
+									<div style={{ fontWeight: 600 }}>
+										{existingDocument.displayName ?? existingDocument.fileName}
+									</div>
 								</div>
 
 								<img

@@ -22,7 +22,7 @@ const EducationForm = ({
   showSpecialization = true,
   showBoard = true,
   existingData = null,
-  masterData 
+  masterData
 }) => {
   const user = useSelector((state) => state?.user?.user?.data);
   const candidateId = user?.user?.id;
@@ -95,13 +95,13 @@ const EducationForm = ({
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    
+
     // Clear the error for the current field when user starts typing/selecting
     setFormErrors(prev => ({
       ...prev,
       [id]: undefined
     }));
-    
+
     setFormData(prev => ({
       ...prev,
       [id]: value
@@ -109,8 +109,8 @@ const EducationForm = ({
   };
 
   const handleBrowse = () => {
-		document.getElementById("educationCertInput").click();
-	};
+    document.getElementById("educationCertInput").click();
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -135,11 +135,11 @@ const EducationForm = ({
   };
 
   const formatFileSize = (size) => {
-		if (!size) return "";
-		const kb = size / 1024;
-		if (kb < 1024) return kb.toFixed(1) + " KB";
-		return (kb / 1024).toFixed(1) + " MB";
-	};
+    if (!size) return "";
+    const kb = size / 1024;
+    if (kb < 1024) return kb.toFixed(1) + " KB";
+    return (kb / 1024).toFixed(1) + " MB";
+  };
 
   const validateForm = () => {
     const errors = {};
@@ -188,7 +188,7 @@ const EducationForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const { isValid } = validateForm();
     if (!isValid) {
       // Scroll to the first error
@@ -200,18 +200,18 @@ const EducationForm = ({
     }
 
     try {
-      
+
       // Get the docCode from masterData based on the selected education level
       const selectedEducationLevel = masterData.educationLevels.find(
         level => level.documentTypeId === formData.educationLevel
       );
-      
+
       const docCode = selectedEducationLevel?.docCode;
       if (!docCode) {
         toast.error("Education level docCode not found");
         return;
       }
-      
+
       const payload = mapEducationFormToApi({
         formData,
         candidateId,
@@ -234,9 +234,9 @@ const EducationForm = ({
     }
   };
 
-    if (!masterData) {
-      return null; // ⬅️ THIS LINE FIXES YOUR CRASH
-    }
+  if (!masterData) {
+    return null; // ⬅️ THIS LINE FIXES YOUR CRASH
+  }
 
   return (
     <form className="row g-4 formfields pt-2" onSubmit={handleSubmit}>
@@ -348,7 +348,7 @@ const EducationForm = ({
           {formErrors.university && (
             <div className="invalid-feedback">{formErrors.university}</div>
           )}
-         
+
         </div>
       )}
 
@@ -374,7 +374,7 @@ const EducationForm = ({
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">To <span className="text-danger">*</span></label>
         <input type="date" id="to" className={`form-control ${formErrors.to || formErrors.dateRange ? 'is-invalid' : ''}`} value={formData.to} onChange={handleChange} min={formData.from || undefined} />
-     {formErrors.to && (
+        {formErrors.to && (
           <div className="invalid-feedback">{formErrors.to}</div>
         )}
       </div>
@@ -382,12 +382,12 @@ const EducationForm = ({
       {/* Percentage */}
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">Percentage/CGPA <span className="text-danger">*</span></label>
-        <input 
-          type="number" 
-          min={0} 
-          max={100} 
-          id="percentage" 
-          className={`form-control ${formErrors.percentage ? 'is-invalid' : ''}`} 
+        <input
+          type="number"
+          min={0}
+          max={100}
+          id="percentage"
+          className={`form-control ${formErrors.percentage ? 'is-invalid' : ''}`}
           value={formData.percentage}
           onChange={(e) => {
             let value = e.target.value;
@@ -396,7 +396,7 @@ const EducationForm = ({
               ...prev,
               percentage: undefined
             }));
-            
+
             // allow empty while typing
             if (value === "") {
               setFormData(prev => ({ ...prev, percentage: "" }));
@@ -500,39 +500,39 @@ const EducationForm = ({
       <div className="col-md-4 col-sm-12 mt-2">
         <label htmlFor="eduCert" className="form-label">Education Certificate <span className="text-danger">*</span></label>
         {!certificateFile && !existingDocument && (
-        <div
-          className="border rounded d-flex flex-column align-items-center justify-content-center"
-          style={{
-            minHeight: "100px",
-            cursor: "pointer",
-            opacity: 1
-          }}
-          onClick={handleBrowse}
-        >
-          {/* Upload Icon */}
-          <FontAwesomeIcon
-            icon={faUpload}
-            className="me-2 text-secondary"
-          />
+          <div
+            className="border rounded d-flex flex-column align-items-center justify-content-center"
+            style={{
+              minHeight: "100px",
+              cursor: "pointer",
+              opacity: 1
+            }}
+            onClick={handleBrowse}
+          >
+            {/* Upload Icon */}
+            <FontAwesomeIcon
+              icon={faUpload}
+              className="me-2 text-secondary"
+            />
 
-          {/* Upload Text */}
-          <div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-          Click to upload or drag and drop
+            {/* Upload Text */}
+            <div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
+              Click to upload or drag and drop
+            </div>
+
+            <div className="text-muted" style={{ fontSize: "12px" }}>
+              Max: 2MB picture
+            </div>
+
+            {/* Hidden File Input */}
+            <input
+              id="educationCertInput"
+              type="file"
+              accept=".jpg,.jpeg,.png,.pdf"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
           </div>
-
-          <div className="text-muted" style={{ fontSize: "12px" }}>
-          Max: 2MB picture
-          </div>
-
-          {/* Hidden File Input */}
-          <input
-            id="educationCertInput"
-            type="file"
-            accept=".jpg,.jpeg,.png,.pdf"
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-        </div>
         )}
 
         {existingDocument && !certificateFile && (
@@ -553,7 +553,8 @@ const EducationForm = ({
 
               <div>
                 <div style={{ fontWeight: 600, color: "#42579f" }}>
-                  {existingDocument.fileName}
+                  {existingDocument.displayName ?? existingDocument.fileName}
+
                 </div>
                 {/* <div className="text-muted" style={{ fontSize: "12px" }}>
                   {formatFileSize(certificateFile.size)}

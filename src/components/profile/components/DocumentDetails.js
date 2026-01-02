@@ -102,11 +102,14 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 				)[0];
 
 				populatedFiles[field.key] = {
-					name: latest.fileName,
+					name: latest.displayName ?? latest.fileName,
+					fileName: latest.fileName,
+					displayName: latest.displayName,
 					url: latest.fileUrl,
 					documentTypeId: latest.documentId,
 					isFromApi: true
 				};
+
 			}
 
 			setFiles(populatedFiles);

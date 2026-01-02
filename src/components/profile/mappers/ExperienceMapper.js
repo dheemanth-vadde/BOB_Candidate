@@ -55,6 +55,7 @@ export const mapExperienceApiToUi = (apiItem) => {
       ? {
           fileName: doc.fileName,
           fileUrl: doc.fileUrl,
+          displayName: doc.displayName,
         }
       : null,
   };

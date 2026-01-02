@@ -70,7 +70,8 @@ export const mapEducationApiToUi = (item, mandatoryQualifications = []) => {
     document: doc
       ? {
           fileName: doc.fileName,
-          fileUrl: doc.fileUrl
+          fileUrl: doc.fileUrl,
+          displayName: doc.displayName
         }
       : null
   };

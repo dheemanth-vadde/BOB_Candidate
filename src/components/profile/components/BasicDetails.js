@@ -876,7 +876,7 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
-											{existingBirthDoc.fileName}
+											{existingBirthDoc.displayName ?? existingBirthDoc.fileName}
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 											{formatFileSize(certificateFile.size)}
@@ -1222,7 +1222,9 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
-											{existingCommunityDoc.fileName}
+											{/* {existingCommunityDoc.fileName} */}
+											{existingCommunityDoc.displayName ?? existingCommunityDoc.fileName}
+
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 											{formatFileSize(certificateFile.size)}
@@ -1538,7 +1540,8 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
-											{existingDisabilityDoc.fileName}
+											{existingDisabilityDoc.displayName ?? existingDisabilityDoc.fileName}
+
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 										{formatFileSize(certificateFile.size)}
@@ -1908,7 +1911,7 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
-											{existingServiceDoc.fileName}
+											{existingServiceDoc.displayName ?? existingServiceDoc.fileName}
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 										{formatFileSize(certificateFile.size)}
