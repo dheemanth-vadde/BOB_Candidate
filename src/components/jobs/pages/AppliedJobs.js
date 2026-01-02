@@ -25,6 +25,7 @@ const AppliedJobs = () => {
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showTrackModal, setShowTrackModal] = useState(false);
+  const [offerData, setOfferData] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
     const [masterData,setMasterData]=useState([{}]);
 const [showPreview, setShowPreview] = useState(false);
@@ -199,6 +200,34 @@ console.log("Preview height:", previewRef.current.offsetHeight);
   }
 };
 
+const handleViewOffer = async (job) => {
+  try {
+    if (!job?.application_id) {
+      toast.error("Application ID missing");
+      return;
+    }
+
+    setLoading(true);
+
+    const res = await jobsApiService.getOfferLetterByApplicationId(
+      job.application_id
+    );
+
+    if (!res?.success || !res?.data) {
+      toast.error("Offer letter not found");
+      return;
+    }
+
+    setOfferData(res.data);       // ✅ store API response
+    setShowOfferModal(true);      // ✅ open modal
+
+  } catch (err) {
+    console.error("Failed to fetch offer letter", err);
+    toast.error("Unable to load offer letter");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
 
@@ -307,24 +336,29 @@ console.log("Preview height:", previewRef.current.offsetHeight);
 
           {/* Footer */}
           <div className="job-footer">
-            {job.application_status === "Offered" && ( 
-            <>
-              <button
-                className="footer-link"
-                onClick={() => setShowOfferModal(true)}
-              >
-                View Offer
-              </button>
+           {(
+  job.application_status === "Offered" ||
+  job.application_status === "Offer_Accepted" ||
+  job.application_status === "Offer_Rejected"
+) && (
+  <>
+    <button
+      className="footer-link"
+      onClick={() => handleViewOffer(job)}
+    >
+      View Offer
+    </button>
 
-              <span className="footer-separator">|</span>
-            </>
-             )} 
-        <button
+    <span className="footer-separator">|</span>
+  </>
+)}
+
+        {/* <button
           className="footer-link download-link"
            onClick={() => handleDirectDownload(job)}
         >
           Download Application
-        </button>
+        </button> */}
             <button
               className="footer-link"
               onClick={() => {
@@ -345,7 +379,8 @@ console.log("Preview height:", previewRef.current.offsetHeight);
       <OfferLetterModal
         show={showOfferModal}
         onHide={() => setShowOfferModal(false)}
-        pdfUrl="/offers/offer_letter_123.pdf" // from API
+         offerData={offerData}
+           onDecisionSuccess={() => fetchAppliedJobs(masterData)} 
       />
       
 <ApplicationDownload

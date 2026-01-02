@@ -30,11 +30,18 @@ const steps = [
 
 const statusToIndexMap = {
   Applied: 0,
-  Application: 0,
   Shortlisted: 1,
-  "Interview Scheduled": 2,
-  "Selected In Interview": 3,
+  Scheduled: 2,                 // backend
+  "Interview Scheduled": 2,     // UI label
+  "Selected": 3,
   Offered: 4
+};
+const stepToStatusMap = {
+  "Applied": "Applied",
+  "Shortlisted": "Shortlisted",
+  "Interview Scheduled": "Scheduled",
+  "Selected In Interview": "Selected",
+  "Offer": "Offered"
 };
 
 console.log("selected jobs",job)
@@ -43,28 +50,30 @@ const fetchApplicationStatus = async () => {
   try {
     if (!job?.application_id) return;
 
-    const res = await jobsApiService.getApplicationStatus(
-      job.application_id
-    );
-
+    const res = await jobsApiService.getApplicationStatus(job.application_id);
     const list = Array.isArray(res?.data) ? res.data : [];
 
+    // store dates for each status
     const map = {};
+    let maxIndex = 0;
+
     list.forEach(item => {
       map[item.status] = item.actionDate;
+
+      const idx = statusToIndexMap[item.status];
+      if (idx !== undefined && idx > maxIndex) {
+        maxIndex = idx;
+      }
     });
 
     setStatusMap(map);
+    setCurrentIndex(maxIndex); // ✅ THIS drives the stepper
 
-    if (list.length > 0) {
-      const latestStatus = list[list.length - 1].status;
-      const index = statusToIndexMap[latestStatus] ?? 0;
-      setCurrentIndex(index);
-    }
   } catch (err) {
     console.error("Failed to fetch application status", err);
   }
 };
+
 const formatDateTime = (date) => {
   if (!date) return "";
   const d = new Date(date);
@@ -194,41 +203,41 @@ useEffect(() => {
         {/* ===== STATUS STEPPER ===== */}
         <div className="status-stepper">
             {steps.map((step, index) => {
-              const state =
-                index < currentIndex
-                  ? "completed"
-                  : index === currentIndex
-                  ? "current"
-                  : "pending";
+  const state =
+    index < currentIndex
+      ? "completed"
+      : index === currentIndex
+      ? "current"
+      : "pending";
 
-              const stepDate = statusMap[step];
+  const backendStatus = stepToStatusMap[step];
+  const stepDate = statusMap[backendStatus];
 
-              return (
-                <div className={`step ${state}`} key={index}>
-                  <div className="circle-wrapper">
-                    <div className={`circle ${state}`}>
-                      {state === "completed" && "✓"}
-                    </div>
-                  </div>
+  return (
+    <div className={`step ${state}`} key={index}>
+      <div className="circle-wrapper">
+        <div className={`circle ${state}`}>
+          {state === "completed" && "✓"}
+        </div>
+      </div>
 
-                  <div className="step-label">{step}</div>
+      <div className="step-label">{step}</div>
 
-                  {/* DATE */}
-                  <div className="step-date">
-                    {stepDate ? formatDateTime(stepDate) : ""}
-                  </div>
+      {/* ✅ DATE NOW WORKS */}
+      <div className="step-date">
+        {stepDate ? formatDateTime(stepDate) : ""}
+      </div>
 
-                  {/* STATUS BADGE */}
-                  <div className={`step-badge ${state}`}>
-                    {state === "completed"
-                      ? "Completed"
-                      : state === "current"
-                      ? "Current Stage"
-                      : "Pending"}
-                  </div>
-                </div>
-              );
-            })}
+      <div className={`step-badge ${state}`}>
+        {state === "completed"
+          ? "Completed"
+          : state === "current"
+          ? "Current Stage"
+          : "Pending"}
+      </div>
+    </div>
+  );
+})}
           </div>
 
 

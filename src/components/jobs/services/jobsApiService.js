@@ -2,18 +2,7 @@
 import { jobsapi,razorpayapi,mastersapi} from "../../../services/apiService"; // reuse axios instances + interceptors
 
 const jobsApiService = {
-  /* Users (Node API) */
-  // Note: auth header is injected by nodeApi interceptor; no need to pass token manually
-  // getRegister: () => jobapi.get('/getdetails/users/all'),
-  // registerUser: (data) => nodeApi.post('/recruiter-auth/recruiter-register', data),
-
-  // // city
-  // getallCities: () => apis.get('/city/all'),
-  // /* Locations */
-  // getAllLocations: () => apis.get("/location/all"),
-  // addLocation: (data) => apis.post("/location/add", data),
-  // updateLocation: (id, data) => apis.put(`/location/update/${id}`, data),
-  // deleteLocation: (id) => apis.delete(`/location/delete/${id}`),
+ 
 
 
   //Relevamnt Jobs
@@ -41,7 +30,10 @@ const jobsApiService = {
    getConfig: () => razorpayapi.get('/config'),
   getRazorOrder: (data) => razorpayapi.post('/orders', data),
   getRazorVerify: (data) => razorpayapi.post('/verify', data),
-  
+
+  //offer letter /api/v1/candidate/applications/update-offer-decision
+  getOfferLetterByApplicationId:(applicationId)=> jobsapi.get(`/offer-letter/get-offer/by-app-id/${applicationId}`),
+  updateOfferDecision: (data) => jobsapi.post(`/applications/update-offer-decision`, data)
 };
 
 export default jobsApiService;

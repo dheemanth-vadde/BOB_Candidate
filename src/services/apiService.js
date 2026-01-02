@@ -1,9 +1,14 @@
 import axios from 'axios';
 import { applyInterceptors } from './interceptor';
 
-const JOBS_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/candidate'
-const RAZOR_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay'
-const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api/v1/master'
+ const JOBS_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/candidate'
+// const RAZOR_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay'
+// const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api/v1/master'
+
+
+//const JOBS_BASE_URL='http://192.168.20.115:8082/api/v1/candidate';
+const RAZOR_BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/razorpay';
+const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api/v1/master';
 
 const jobsapi = axios.create({
   baseURL: JOBS_BASE_URL,
