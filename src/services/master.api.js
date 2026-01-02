@@ -17,11 +17,11 @@ const api = axios.create({
 // ---------------- PROFILE APIs ----------------
 
 export const getMasterData = () => {
-  return api.get(`/all`);
+  return api.get(`/v1/master/display/all`);
 }
 
 export const getDocumentTypes = () => {
-  return api.get(`/document-types/all`);
+  return api.get(`/v1/master/document-types/all`);
 };
 
 export default {

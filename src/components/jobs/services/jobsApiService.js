@@ -23,7 +23,7 @@ const jobsApiService = {
   getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
   getJobPositions: (candidateId) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}`),
    applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
-   getMasterData:()=>mastersapi.get(`api/all`),
+   getMasterData:()=>mastersapi.get(`api/v1/master/display/all`),
     getRequestTypes:()=>mastersapi.get(`master-dd-data/get/request-types`),
 
     //thread apis 
