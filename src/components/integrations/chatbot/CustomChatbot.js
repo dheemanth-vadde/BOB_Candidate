@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initialMessages, options, responses } from '../../../data/chatbotData';
-import apiService from '../../../services/apiService';
 import '../../../css/Chatbot.css';
 import { useSelector } from 'react-redux';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import chatBot from '../../../assets/chat-bot-new.png';
+import masterApi from '../../../services/master.api';
 
 const CustomChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,19 +45,22 @@ const CustomChatbot = () => {
 
   const fetchChatbotReply = async (question) => {
     try {
-      const res = await apiService.getChatFAQReply(question);
-      if (res.success) {
-        return JSON.parse(res.data);
+      const res = await masterApi.getChatFAQReply(question);
+
+      if (res.data?.success && res.data?.data) {
+        return JSON.parse(res.data.data); // ✅ correct
       }
+
       return [];
     } catch (err) {
       console.error("Chatbot API Error:", err);
       return [];
     }
   };
+
   const fetchApplicationStatus = async (question, candidateId) => {
     try {
-      const res = await apiService.getChatQueryReply(question, candidateId);
+      const res = await masterApi.getChatQueryReply(question, candidateId);
 
       if (res.success) {
         try {

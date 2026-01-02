@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //const BASE_URL = "http://192.168.20.111:8080/api";
-const BASE_URL='https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api'
+const BASE_URL = 'https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api'
 
 
 // Axios Instance
@@ -20,11 +20,19 @@ export const getMasterData = () => {
   return api.get(`/v1/master/display/all`);
 }
 
+export const getChatFAQReply = (question) => {
+  return api.get("/v1/master/chatbot/getChatFAQReply", {
+    params: { question },
+  });
+};
+
+
 export const getDocumentTypes = () => {
   return api.get(`/v1/master/document-types/all`);
 };
 
 export default {
   getMasterData,
-  getDocumentTypes
+  getDocumentTypes,
+  getChatFAQReply
 };
