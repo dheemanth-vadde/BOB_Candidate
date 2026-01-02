@@ -212,6 +212,14 @@ const EducationForm = ({
         return;
       }
 
+      // Validate the document before uploading
+      try {
+        await profileApi.ValidateDocument(docCode, certificateFile);
+      } catch (validationErr) {
+        toast.error("Invalid Certificate");
+        return;
+      }
+      
       const payload = mapEducationFormToApi({
         formData,
         candidateId,
@@ -631,12 +639,12 @@ const EducationForm = ({
               />
 
               {/* Edit → triggers file re-upload */}
-              <img
+              {/* <img
                 src={editIcon}
                 alt="Edit"
                 style={{ width: "25px", cursor: "pointer" }}
                 onClick={handleBrowse}
-              />
+              /> */}
 
               {/* Delete */}
               <img

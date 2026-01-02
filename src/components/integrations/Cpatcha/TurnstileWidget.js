@@ -21,7 +21,7 @@ export default function TurnstileWidget({ onTokenChange }) {
       flexDirection: "column",
       gap: "6px"
     }}>
-
+ 
       <Turnstile
         sitekey="0x4AAAAAACJt2YP9AbuhUTuE"
         appearance="always"

@@ -148,6 +148,20 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 			return;
 		}
 		try {
+			// Validate the document
+			const skipValidation =
+				["PHOTO", "SIGN", "OTHERS"].includes(field.docCode) ||
+				field.customName === true;
+
+			if (!skipValidation) {
+				try {
+					await profileApi.ValidateDocument(field.docCode, file);
+				} catch {
+					toast.error("Invalid Certificate");
+					return false;
+				}
+			}
+
 			await profileApi.postDocumentDetails(
 				candidateId,
 				field.documentId,
@@ -156,6 +170,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 				customNames[field.key]
 			);
 			console.log(`${field.label} uploaded successfully`);
+			return true;
 		} catch (err) {
 			console.error(`Upload failed for ${field.label}`, err);
 		}
@@ -174,10 +189,15 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 			...prev,
 			[key]: ''
 		}));
-		// Save locally first (UI update)
-		setFiles((prev) => ({ ...prev, [key]: file }));
 		// Upload immediately
-		await uploadDocument(field, file);
+		const uploadSucceeded = await uploadDocument(field, file);
+
+		if (uploadSucceeded) {
+			setFiles(prev => ({
+				...prev,
+				[key]: file
+			}));
+		}
 	};
 
 	const handleCustomName = (key, value) => {
