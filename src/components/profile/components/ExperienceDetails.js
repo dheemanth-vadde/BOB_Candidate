@@ -37,7 +37,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		working: false,
 		description: "",
 		experience: 0,
-		currentCTC: 0
+		currentCTC: ""
 	});
 
 	useEffect(() => {
@@ -110,8 +110,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	const fetchExperienceDetails = async () => {
 		try {
 			const res = await profileApi.getExperienceDetails(candidateId);
-			const apiList = Array.isArray(res?.data?.data)
-				? res.data.data
+			const apiList = Array.isArray(res?.data)
+				? res?.data
 				: [];
 			const mappedList = apiList.map(mapExperienceApiToUi);
 			setExperienceList(mappedList);
@@ -135,23 +135,23 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		const errors = {};
 
 		if (!formData.organization.trim()) {
-			errors.organization = "This feild is required";
+			errors.organization = "This field is required";
 		}
 
 		if (!formData.role.trim()) {
-			errors.role = "This feild is required";
+			errors.role = "This field is required";
 		}
 
 		if (!formData.postHeld.trim()) {
-			errors.postHeld = "This feild is required";
+			errors.postHeld = "This field is required";
 		}
 
 		if (!formData.from) {
-			errors.from = "This feild is required";
+			errors.from = "This field is required";
 		}
 
 		if (!formData.working && !formData.to) {
-			errors.to = "This feild is required";
+			errors.to = "This field is required";
 		}
 
 		if (!formData.working && formData.from && formData.to) {
@@ -165,15 +165,15 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		}
 
 		if (!formData.description.trim()) {
-			errors.description = "This feild is required";
+			errors.description = "This field is required";
 		}
 
-		if (!formData.currentCTC || formData.currentCTC <= 0) {
-			errors.currentCTC = "This feild is required";
+		if (!formData.currentCTC.trim() || isNaN(Number(formData.currentCTC)) || Number(formData.currentCTC) <= 0) {
+			errors.currentCTC = "This field is required";
 		}
 
 		if (!certificateFile && !existingDocument) {
-			errors.certificate = "This feild is required";
+			errors.certificate = "This field is required";
 		}
 
 		setFormErrors(errors);
@@ -268,7 +268,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			working: item.working === "Yes" || item.working === true,
 			description: item.description,
 			experience: item.experience,
-			currentCTC: item.currentCTC
+			currentCTC: String(item.currentCTC || "")
 		});
 		console.log(item)
 		// 🔑 EXISTING FILE FROM API
@@ -291,7 +291,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			working: false,
 			description: "",
 			experience: 0,
-			currentCTC: 0
+			currentCTC: ""
 		});
 	};
 
@@ -320,7 +320,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	};
 
 	const handleCTCChange = (e) => {
-		let value = e.target.value === "" ? 0 : Number(e.target.value);
+		let value = e.target.value;
 
 		setFormData(prev => ({
 			...prev,
@@ -439,8 +439,6 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						id="currentCTC"
 						name="currentCTC"
 						value={formData.currentCTC}
-						min={0}
-						step={1}
 						disabled={isFresher === true}
 						required={isFresher === false}
 						onChange={handleCTCChange}

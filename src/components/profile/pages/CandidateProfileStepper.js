@@ -82,6 +82,7 @@ const CandidateProfileStepper = ({
             // onSubmit={onSubmit}
             goNext={goNext}
             goBack={goBack}
+            parsedData={candidateData}
           />
         );
 

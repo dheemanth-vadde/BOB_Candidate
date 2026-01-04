@@ -83,7 +83,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 		if (!candidateId) return;
 		try {
 			const res = await profileApi.getAddressDetails(candidateId);
-			const apiData = res?.data?.data;
+			const apiData = res?.data;
 			console.log("Fetched Address Details:", apiData);
 			if (!apiData) return;
 			const mapped = mapAddressApiToForm(apiData);
@@ -187,54 +187,54 @@ const AddressDetails = ({ goNext, goBack }) => {
 
     // Validate Correspondence Address
     if (!corrAddress.line1.trim()) {
-      newErrors.corrAddress.line1 = 'This feild is required';
+      newErrors.corrAddress.line1 = 'This field is required';
       isValid = false;
     }
     if (!corrAddress.line2.trim()) {
-      newErrors.corrAddress.line2 = 'This feild is required';
+      newErrors.corrAddress.line2 = 'This field is required';
       isValid = false;
     }
     if (!corrAddress.state) {
-      newErrors.corrAddress.state = 'This feild is required';
+      newErrors.corrAddress.state = 'This field is required';
       isValid = false;
     }
     if (!corrAddress.district) {
-      newErrors.corrAddress.district = 'This feild is required';
+      newErrors.corrAddress.district = 'This field is required';
       isValid = false;
     }
     if (!corrAddress.city) {
-      newErrors.corrAddress.city = 'This feild is required';
+      newErrors.corrAddress.city = 'This field is required';
       isValid = false;
     }
     if (!corrAddress.pincode) {
-      newErrors.corrAddress.pincode = 'This feild is required';
+      newErrors.corrAddress.pincode = 'This field is required';
       isValid = false;
     }
 
     // Validate Permanent Address if different from correspondence
     if (!sameAsCorrespondence) {
       if (!permAddress.line1.trim()) {
-        newErrors.permAddress.line1 = 'This feild is required';
+        newErrors.permAddress.line1 = 'This field is required';
         isValid = false;
       }
       if (!permAddress.line2.trim()) {
-        newErrors.permAddress.line2 = 'This feild is required';
+        newErrors.permAddress.line2 = 'This field is required';
         isValid = false;
       }
       if (!permAddress.state) {
-        newErrors.permAddress.state = 'This feild is required';
+        newErrors.permAddress.state = 'This field is required';
         isValid = false;
       }
       if (!permAddress.district) {
-        newErrors.permAddress.district = 'This feild is required';
+        newErrors.permAddress.district = 'This field is required';
         isValid = false;
       }
       if (!permAddress.city) {
-        newErrors.permAddress.city = 'This feild is required';
+        newErrors.permAddress.city = 'This field is required';
         isValid = false;
       }
       if (!permAddress.pincode) {
-        newErrors.permAddress.pincode = 'This feild is required';
+        newErrors.permAddress.pincode = 'This field is required';
         isValid = false;
       }
     }

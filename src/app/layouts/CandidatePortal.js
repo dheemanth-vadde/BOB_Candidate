@@ -18,7 +18,7 @@ const CandidatePortal = () => {
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(null); // null = loading
   const [showModal, setShowModal] = useState(false);
   const [checkboxChecked, setCheckboxChecked] = useState(false);
-
+  
   const [activeTab, setActiveTab] = useState('info');
   const [resumeFile, setResumeFile] = useState(null);
   const [ResumePublicUrl, setResumePublicUrl] = useState(null);

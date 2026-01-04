@@ -17,8 +17,8 @@ function decodeJWT(token) {
 // Get token from Redux store
 function getToken() {
   const state = store.getState();
-  const token = state.user?.authUser?.access_token || null;
-
+  const token = state?.user?.user?.data?.accessToken;
+  console.log("token: ", token)
   if (token) {
     const decoded = decodeJWT(token);
     if (decoded?.exp) {

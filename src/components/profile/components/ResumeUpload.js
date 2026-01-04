@@ -62,8 +62,11 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
     setLoading(true);
     try {
       const res = await profileApi.parseResumeDetails(candidateId, resumeFile);
-      if (res?.data?.publicUrl) {
-        setResumePublicUrl(res.data.publicUrl);
+      if (res?.publicUrl) {
+        setResumePublicUrl(res.publicUrl);
+      }
+      if (res?.data) {
+        setParsedData(res.data);
       }
       goNext(); // ✅ success only
     } catch (err) {
@@ -83,7 +86,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
     const fetchResume = async () => {
       try {
         const res = await profileApi.getResumeDetails(candidateId);
-        const resumeData = res.data?.data; // IMPORTANT
+        const resumeData = res.data; // IMPORTANT
         if (resumeData?.fileUrl) {
           setResumePublicUrl(resumeData.fileUrl);
           setFileName(resumeData.fileName);

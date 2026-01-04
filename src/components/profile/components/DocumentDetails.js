@@ -41,7 +41,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 	);
 	const othersDoc = useSelector((state) =>
 		state.documentTypes?.list?.data?.find(
-			(doc) => doc.docCode === "Others"
+			(doc) => doc.docCode === "OTHERS"
 		) || null
 	);
 
@@ -53,9 +53,6 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 		{ key: "salary1", label: "Last 3 Month Salary Slip - Month 1", required: true, docCode: payslipDoc1?.docCode, documentId: payslipDoc1?.documentTypeId },
 		{ key: "salary2", label: "Last 3 Month Salary Slip - Month 2", required: true, docCode: payslipDoc2?.docCode, documentId: payslipDoc2?.documentTypeId },
 		{ key: "salary3", label: "Last 3 Month Salary Slip - Month 3", required: true, docCode: payslipDoc3?.docCode, documentId: payslipDoc3?.documentTypeId },
-
-
-		{ key: "other", label: "Others - Name", required: false, customName: true },
 		{ key: "other", label: "Others - Name", required: false, customName: true, docCode: othersDoc?.docCode, documentId: othersDoc?.documentTypeId }
 	];
 	const [files, setFiles] = useState({});
@@ -82,7 +79,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 		try {
 			const res = await profileApi.getDocumentDetails(candidateId);
 
-			const docs = (res?.data?.data || []).filter(
+			const docs = (res?.data || []).filter(
 				d => d.documentId !== null
 			);
 
@@ -259,7 +256,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 					const isPayslip = payslipDocCodes.includes(field.docCode);
 					const disabled = isPayslip && isFresher;
 					return (
-						<div key={field.key + (field.docCode || '')} className="col-md-6 col-sm-12">
+						<div key={field.key + (field.docCode || '')} className="col-md-6 col-sm-12 mt-2">
 							<div id={`upload-${field.key}`}>
 								<UploadField
 									label={field.label}

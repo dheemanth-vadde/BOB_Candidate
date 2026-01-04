@@ -1,0 +1,773 @@
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import profileApi from '../services/profile.api';
+import { mapBasicDetailsApiToForm, mapBasicDetailsFormToApi } from '../mappers/BasicMapper';
+import masterApi from '../../../services/master.api';
+import { toast } from 'react-toastify';
+import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
+
+const normalizeName = (name = "") =>
+	name
+		.toLowerCase()
+		.replace(/\s+/g, " ")
+		.trim();
+
+const normalizeDate = (date = "") => {
+	// Aadhaar OCR: DD/MM/YYYY
+	// Form input: YYYY-MM-DD
+	if (!date) return "";
+
+	if (date.includes("/")) {
+		const [dd, mm, yyyy] = date.split("/");
+		return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+	}
+	return date;
+};
+
+export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
+	const [formErrors, setFormErrors] = useState({});
+	const aadhaarName = useSelector(state => state.idProof.name);
+	const aadhaarDob = useSelector(state => state.idProof.dob);
+	console.log("AADHAAR FROM REDUX:", aadhaarName);
+
+	const user = useSelector((state) => state?.user?.user?.data);
+	const candidateId = user?.user?.id;
+	const email = user?.user?.email;
+	const createdBy = user?.user?.id;
+	// const email = "sumanthsangam2@gmail.com"
+	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
+	// const createdBy = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
+	const communityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "COMMUNITY_CERT"));
+	const disabilityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "DISABILITY"));
+	const serviceDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "SERVICE"));
+	const birthDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT"));
+	const [formData, setFormData] = useState({
+		firstName: "",
+		middleName: "",
+		lastName: "",
+		fullNameAadhar: "",
+		fullNameSSC: "",
+		gender: "",
+		dob: "",
+		maritalStatus: "",
+		nationality: "",
+		religion: "",
+		category: "",
+		caste: "",
+		communityCertificate: null,
+		casteState: "",
+		motherName: "",
+		fatherName: "",
+		spouseName: "",
+		contactNumber: "",
+		altNumber: "",
+		socialMediaLink: "",
+
+		twinSibling: false,
+		siblingName: "",
+		twinGender: "",
+
+		isDisabledPerson: false,
+		disabilities: [],
+		scribeRequirement: "",
+		disabilityCertificate: null,
+
+		isExService: false,
+		serviceEnrollment: "",
+		dischargeDate: "",
+		servicePeriod: "",
+		employmentSecured: "",
+		lowerPostStatus: "",
+		serviceCertificate: null,
+
+		riotVictimFamily: "",
+		servingInGovt: "",
+		minorityCommunity: "",
+		disciplinaryAction: "",
+
+		language1: "",
+		language1Read: false,
+		language1Write: false,
+		language1Speak: false,
+
+		language2: "",
+		language2Read: false,
+		language2Write: false,
+		language2Speak: false,
+
+		language3: "",
+		language3Read: false,
+		language3Write: false,
+		language3Speak: false,
+
+		registrationNo: ""
+	});
+	const [masterData, setMasterData] = useState({
+		genders: [],
+		maritalStatus: [],
+		religions: [],
+		reservationCategories: [],
+		countries: [],
+		states: [],
+		districts: [],
+		cities: [],
+		pincodes: [],
+		disabilityCategories: [],
+		languages: []
+	});
+	const [candidateProfileId, setCandidateProfileId] = useState(null);
+
+	const [communityFile, setCommunityFile] = useState(null);
+	const [existingCommunityDoc, setExistingCommunityDoc] = useState(null);
+	const [disabilityFile, setDisabilityFile] = useState(null);
+	const [existingDisabilityDoc, setExistingDisabilityDoc] = useState(null);
+	const [serviceFile, setServiceFile] = useState(null);
+	const [existingServiceDoc, setExistingServiceDoc] = useState(null);
+	const [birthFile, setBirthFile] = useState(null);
+	const [existingBirthDoc, setExistingBirthDoc] = useState(null);
+	const [touched, setTouched] = useState({
+		fullNameAadhar: false,
+		dob: false
+	});
+
+	const isNameMismatch =
+		touched.fullNameAadhar &&
+		aadhaarName &&
+		normalizeName(formData.fullNameAadhar) !== normalizeName(aadhaarName);
+
+	const isDobMismatch =
+		touched.dob &&
+		aadhaarDob &&
+		normalizeDate(formData.dob) !== normalizeDate(aadhaarDob);
+
+	const isNewAadhaarUpload = useSelector(
+		state => state.idProof?.isNewUpload
+	);
+	console.log("IS NEW UPLOAD:", isNewAadhaarUpload);
+
+	const [isAadhaarLocked, setIsAadhaarLocked] = useState(false);
+
+	useEffect(() => {
+		const fetchMasterData = async () => {
+			const res = await masterApi.getMasterData();
+			const data = res?.data?.data;
+			setMasterData({
+				genders: data.genderMasters || [],
+				maritalStatus: data.maritalStatusMaster || [],
+				religions: data.religionMaster || [],
+				reservationCategories: data.reservationCategories || [],
+				countries: data.countries || [],
+				states: data.states || [],
+				districts: data.districts || [],
+				cities: data.cities || [],
+				pincodes: data.pincodes || [],
+				disabilityCategories: data.disabilityCategories || [],
+				languages: data.languageMasters || []
+			});
+		};
+		fetchMasterData();
+	}, []);
+
+	useEffect(() => {
+		const fetchBasicDetails = async () => {
+			try {
+				const res = await profileApi.getBasicDetails(candidateId);
+				const apiData = res?.data;
+				console.log(apiData);
+				setCandidateProfileId(apiData?.candidateProfile?.candidateProfileId || null);
+				if (!apiData) return;
+				const mappedForm = mapBasicDetailsApiToForm(apiData);
+
+				setFormData(prev => ({
+					...prev,
+					...mappedForm,
+					// 👇 Use extracted Aadhaar name if available, else DB data
+					fullNameAadhar: aadhaarName || mappedForm.fullNameAadhar
+				}));
+				console.log("Mapped Form Data:", mappedForm);
+
+				setIsAadhaarLocked(
+					Boolean(aadhaarName || mappedForm.fullNameAadhar)
+				);
+
+			} catch (error) {
+				console.error("Failed to fetch basic details", error);
+			}
+		};
+		fetchBasicDetails();
+	}, [candidateId]);
+	useEffect(() => {
+		if (!aadhaarName || !isNewAadhaarUpload) return;
+		setFormData(prev => ({
+			...prev,
+			fullNameAadhar: aadhaarName
+		}));
+		setIsAadhaarLocked(true);
+	}, [aadhaarName, isNewAadhaarUpload]);
+
+	useEffect(() => {
+		if (!candidateId || !communityDoc?.docCode) return;
+		profileApi
+			.getDocumentDetailsByCode(candidateId, communityDoc.docCode)
+			.then(res => setExistingCommunityDoc(res?.data || null))
+			.catch(console.error);
+	}, [candidateId, communityDoc?.docCode]);
+
+	useEffect(() => {
+		if (!candidateId || !birthDoc?.docCode) return;
+
+		profileApi
+			.getDocumentDetailsByCode(candidateId, birthDoc.docCode)
+			.then(res => {
+				setExistingBirthDoc(res?.data || null);
+			})
+			.catch(err => {
+				console.error("Birth cert fetch failed", err);
+			});
+	}, [candidateId, birthDoc?.docCode]);
+
+	useEffect(() => {
+		if (!candidateId || !disabilityDoc?.docCode) return;
+
+		profileApi
+			.getDocumentDetailsByCode(candidateId, disabilityDoc.docCode)
+			.then(res => {
+				setExistingDisabilityDoc(res?.data || null);
+			})
+			.catch(err => {
+				console.error("Disability Certificate fetch failed", err);
+			});
+	}, [candidateId, disabilityDoc?.docCode]);
+
+	useEffect(() => {
+		if (!candidateId || !serviceDoc?.docCode) return;
+
+		profileApi
+			.getDocumentDetailsByCode(candidateId, serviceDoc.docCode)
+			.then(res => {
+				setExistingServiceDoc(res?.data || null);
+			})
+			.catch(err => {
+				console.error("Service Certificate fetch failed", err);
+			});
+	}, [candidateId, serviceDoc?.docCode]);
+
+	const selectedCategory = masterData?.reservationCategories?.find(
+		c => c.reservationCategoriesId === formData?.category
+	);
+
+	const isGeneralCategory = selectedCategory?.categoryCode === "GEN";
+	useEffect(() => {
+		if (isGeneralCategory) {
+			setFormData(prev => ({
+				...prev,
+				casteState: ""
+			}));
+
+			setCommunityFile(null);
+			setExistingCommunityDoc(null);
+		}
+	}, [isGeneralCategory]);
+
+	const getAvailableLanguages = (excludeIds = []) => {
+		return masterData.languages.filter(
+			l => !excludeIds.includes(l.languageId)
+		);
+	};
+	useEffect(() => {
+		if (
+			formData.language1 &&
+			formData.language1 === formData.language2
+		) {
+			setFormData(prev => ({ ...prev, language2: "" }));
+		}
+
+		if (
+			formData.language1 &&
+			formData.language1 === formData.language3
+		) {
+			setFormData(prev => ({ ...prev, language3: "" }));
+		}
+	}, [formData.language1]);
+
+	const handleCommunityFileChange = async (e) => {
+		const input = e.currentTarget || e.target;
+		const file = input.files && input.files[0];
+		if (!file) return;
+		if (file.size > 2 * 1024 * 1024) {
+			toast.error("File size must be under 2MB");
+			input.value = "";
+			return;
+		}
+		const validateresoponse = await validateDoc("COMMUNITY_CERT", file);
+		if (!validateresoponse || validateresoponse?.data?.success === false) {
+			toast.error(validateresoponse?.data?.message || "Invalid Community Certificate");
+			input.value = "";
+			return;
+		}
+		setCommunityFile(file);
+		input.value = "";
+	};
+	const handleCommunityBrowse = () => {
+		document.getElementById("communityCertificate").click();
+	};
+
+	const handleDisabilityFileChange = async (e) => {
+		const input = e.currentTarget || e.target;
+		const file = input.files && input.files[0];
+		if (!file) return;
+		if (file.size > 2 * 1024 * 1024) {
+			toast.error("File size must be under 2MB");
+			input.value = "";
+			return;
+		}
+		const validateresoponse = await validateDoc("DISABILITY", file);
+		if (!validateresoponse || validateresoponse?.data?.success === false) {
+			toast.error(validateresoponse?.data?.message || "Invalid Disability Certificate");
+			input.value = "";
+			return;
+		}
+
+		setDisabilityFile(file);
+		input.value = "";
+		setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated.disabilityCertificate;
+			return updated;
+		});
+	};
+
+	const handleDisabilityBrowse = () => {
+		document.getElementById("disabilityCertificate").click();
+	};
+
+	const handleServiceFileChange = (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+
+		if (file.size > 2 * 1024 * 1024) {
+			toast.error("File size must be under 2MB");
+			return;
+		}
+
+		setServiceFile(file);
+
+		// 🔥 CLEAR VALIDATION ERROR
+		setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated.serviceCertificate;
+			return updated;
+		});
+	};
+
+	const handleServiceBrowse = () => {
+		document.getElementById("serviceCertificate").click();
+	};
+
+	const handleBirthFileChange = async (e) => {
+		const input = e.currentTarget || e.target;
+		const file = input.files && input.files[0];
+		if (!file) return;
+		if (file.size > 2 * 1024 * 1024) {
+			toast.error("File size must be under 2MB");
+			input.value = "";
+			return;
+		}
+		const validateresoponse = await validateDoc("BIRTH_CERT", file);
+		if (!validateresoponse || validateresoponse?.data?.success === false) {
+			toast.error(validateresoponse?.data?.message || "Invalid Birth Certificate");
+			input.value = "";
+			return;
+		}
+
+		setBirthFile(file);
+		// Clear input so selecting the same file again triggers onChange
+		input.value = "";
+	};
+	const validateDoc = async (documentName, file) => {
+		try {
+			const res = await profileApi.ValidateDocument(documentName, file);
+			return res;
+		} catch (err) {
+			return false;
+		}
+	}
+	const handleBirthBrowse = () => {
+		document.getElementById("birthCertificate").click();
+	};
+
+	const formatFileSize = (size) => {
+		if (!size) return "";
+		const kb = size / 1024;
+		if (kb < 1024) return kb.toFixed(1) + " KB";
+		return (kb / 1024).toFixed(1) + " MB";
+	};
+
+	const handleChange = (e) => {
+		const { id, value } = e.target;
+		setFormData((prev) => ({
+			...prev,
+			[id]: value
+		}));
+		setFormErrors(prev => ({
+			...prev,
+			[id]: ""
+		}));
+		if (id === "fullNameAadhar" || id === "dob") {
+			setTouched(prev => ({
+				...prev,
+				[id]: true
+			}));
+		}
+	};
+
+	const handleDisabilityChange = (index, field, value) => {
+		setFormData(prev => ({
+			...prev,
+			disabilities: prev.disabilities.map((dis, i) =>
+				i === index ? { ...dis, [field]: value } : dis
+			)
+		}));
+
+		// 🔥 CLEAR VALIDATION ERROR
+		setFormErrors(prev => {
+			const updated = { ...prev };
+
+			if (field === "disabilityCategoryId") {
+				delete updated[`disabilityType_${index}`];
+			}
+
+			if (field === "disabilityPercentage") {
+				delete updated[`disabilityPercentage_${index}`];
+			}
+
+			return updated;
+		});
+	};
+
+	const addDisability = () => {
+		const lastDis = formData.disabilities[formData.disabilities.length - 1];
+		const newDis = lastDis ? { ...lastDis } : { disabilityCategoryId: "", disabilityPercentage: "" };
+		setFormData(prev => ({
+			...prev,
+			disabilities: [...prev.disabilities, newDis]
+		}));
+	};
+
+	const removeDisability = (index) => {
+		setFormData(prev => ({
+			...prev,
+			disabilities: prev.disabilities.filter((_, i) => i !== index)
+		}));
+
+		setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated[`disabilityType_${index}`];
+			delete updated[`disabilityPercentage_${index}`];
+			return updated;
+		});
+	};
+
+	const handleRadio = (e) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({
+			...prev,
+			[name]: value
+		}));
+	};
+
+	const handleCheckbox = (e) => {
+		const { id, checked } = e.target;
+		setFormData((prev) => ({
+			...prev,
+			[id]: checked
+		}));
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		const errors = {};
+
+		// Required fields validation
+		const requiredFields = [
+			'firstName', 'lastName', 'fullNameAadhar', 'fullNameSSC', 'gender',
+			'dob', 'maritalStatus', 'nationality', 'religion', 'category',
+			'caste', 'motherName', 'fatherName', 'contactNumber', 'language1'
+		];
+
+		// Check required fields
+		requiredFields.forEach(field => {
+			if (!formData[field]?.toString().trim()) {
+				errors[field] = "This field is required";
+			}
+		});
+
+		// Twin sibling validation
+		if (formData.twinSibling && !formData.siblingName?.trim()) {
+			errors.siblingName = "Please add twin sibling's name";
+		}
+		if (formData.twinSibling && !formData.twinGender) {
+			errors.twinGender = "This field is required";
+		}
+
+		// Disability validations
+		if (formData.isDisabledPerson) {
+			if (formData.disabilities.length === 0) {
+				errors.disabilities = "This field is required";
+			} else {
+				formData.disabilities.forEach((dis, index) => {
+					if (!dis.disabilityCategoryId) {
+						errors[`disabilityType_${index}`] = "Please select a disability type";
+					}
+					if (!dis.disabilityPercentage) {
+						errors[`disabilityPercentage_${index}`] = "Please enter a disability percentage";
+					}
+				});
+			}
+
+			if (formData.scribeRequirement === undefined) {
+				errors.scribeRequirement = "This field is required";
+			}
+
+			if (!disabilityFile && !existingDisabilityDoc) {
+				errors.disabilityCertificate = "This field is required";
+			}
+		}
+
+		// Ex-service validations
+		// Ex-Service validations
+		if (formData.isExService) {
+			if (!formData.serviceEnrollment) {
+				errors.serviceEnrollment = "This field is required";
+			}
+
+			if (!formData.dischargeDate) {
+				errors.dischargeDate = "This field is required";
+			}
+
+			// Date order validation (only if both exist)
+			if (formData.serviceEnrollment && formData.dischargeDate) {
+				const { isValid, error } = validateEndDateAfterStart(
+					formData.serviceEnrollment,
+					formData.dischargeDate
+				);
+				if (!isValid) {
+					errors.dischargeDate = error;
+				}
+			}
+
+			if (!serviceFile && !existingServiceDoc) {
+				errors.serviceCertificate = "This field is required";
+			}
+		}
+
+		// Document validations
+		if (!isGeneralCategory && !communityFile && !existingCommunityDoc) {
+			errors.communityCertificate = "This field is required";
+		}
+
+		if (!birthFile && !existingBirthDoc) {
+			errors.birthCertificate = "This field is required";
+		}
+
+		// If there are errors, set them and return
+		if (Object.keys(errors).length > 0) {
+			setFormErrors(errors);
+			const firstError = Object.keys(errors)[0];
+			document.getElementById(firstError)?.scrollIntoView({ behavior: 'smooth' });
+			return;
+		}
+
+		// Rest of your form submission logic...
+		try {
+			const payload = mapBasicDetailsFormToApi({
+				formData,
+				candidateId,
+				createdBy,
+				candidateProfileId,
+				email,
+			});
+
+			await profileApi.postBasicDetails(candidateId, payload);
+
+			// Handle file uploads...
+			const uploadPromises = [];
+			if (communityFile) {
+				uploadPromises.push(profileApi.postDocumentDetails(candidateId, communityDoc.documentTypeId, communityFile));
+			}
+			if (birthFile) {
+				uploadPromises.push(profileApi.postDocumentDetails(candidateId, birthDoc.documentTypeId, birthFile));
+			}
+			if (disabilityFile && formData.isDisabledPerson) {
+				uploadPromises.push(profileApi.postDocumentDetails(candidateId, disabilityDoc.documentTypeId, disabilityFile));
+			}
+			if (serviceFile && formData.isExService) {
+				uploadPromises.push(profileApi.postDocumentDetails(candidateId, serviceDoc.documentTypeId, serviceFile));
+			}
+			await Promise.all(uploadPromises);
+
+			toast.success("Basic details have been saved successfully");
+			goNext();
+		} catch (err) {
+			console.error(err);
+			toast.error("Failed to save basic details");
+		}
+	};
+	const calculateServicePeriodInMonths = (start, end) => {
+		if (!start || !end) return "";
+		const startDate = new Date(start);
+		const endDate = new Date(end);
+		if (endDate < startDate) return "";
+		let months =
+			(endDate.getFullYear() - startDate.getFullYear()) * 12 +
+			(endDate.getMonth() - startDate.getMonth());
+		// count partial month if end day >= start day
+		if (endDate.getDate() >= startDate.getDate()) {
+			months += 1;
+		}
+		return months;
+	};
+	useEffect(() => {
+		if (!formData.isExService) {
+			setFormErrors(prev => {
+				const updated = { ...prev };
+				delete updated.serviceEnrollment;
+				delete updated.dischargeDate;
+				delete updated.serviceCertificate;
+				return updated;
+			});
+
+			setFormData(prev => ({
+				...prev,
+				serviceEnrollment: "",
+				dischargeDate: "",
+				servicePeriod: ""
+			}));
+
+			setServiceFile(null);
+		}
+	}, [formData.isExService]);
+
+	useEffect(() => {
+		if (!formData.isExService) {
+			setFormData(prev => ({
+				...prev,
+				serviceEnrollment: "",
+				dischargeDate: "",
+				servicePeriod: ""
+			}));
+			return;
+		}
+		const months = calculateServicePeriodInMonths(
+			formData.serviceEnrollment,
+			formData.dischargeDate
+		);
+		setFormData(prev => ({
+			...prev,
+			servicePeriod: months
+		}));
+	}, [formData.serviceEnrollment, formData.dischargeDate, formData.isExService]);
+
+	useEffect(() => {
+		if (!formData.isDisabledPerson) {
+			setFormData(prev => ({
+				...prev,
+				disabilityType: "",
+				disabilityPercentage: 0,
+				scribeRequirement: "",
+			}));
+			return;
+		}
+	}, [formData.isDisabledPerson]);
+
+	// when OCR/extracted data arrives, populate form and lock fullNameAadhar
+	useEffect(() => {
+		if (!aadhaarName) return;
+
+		setFormData(prev => ({
+			...prev,
+			fullNameAadhar: aadhaarName
+		}));
+
+		setFormErrors(prev => ({
+			...prev,
+			fullNameAadhar: ""
+		}));
+
+		setTouched(prev => ({
+			...prev,
+			fullNameAadhar: true
+		}));
+
+		setIsAadhaarLocked(true);
+	}, [aadhaarName]);
+
+	useEffect(() => {
+		if (parsedData?.personal?.name) {
+			const name = parsedData.personal.name.trim();
+			const parts = name.split(/\s+/);
+			let firstName = '', middleName = '', lastName = '';
+			if (parts.length >= 1) firstName = parts[0];
+			if (parts.length >= 2) lastName = parts[parts.length - 1];
+			if (parts.length >= 3) middleName = parts.slice(1, -1).join(' ');
+			setFormData(prev => ({
+				...prev,
+				firstName: prev.firstName || firstName,
+				middleName: prev.middleName || middleName,
+				lastName: prev.lastName || lastName,
+			}));
+		}
+	}, [parsedData]);
+
+	return {
+		formData,
+		setFormData,
+		formErrors,
+		setFormErrors,
+		masterData,
+		candidateProfileId,
+		communityFile,
+		setCommunityFile,
+		existingCommunityDoc,
+		setExistingCommunityDoc,
+		disabilityFile,
+		setDisabilityFile,
+		existingDisabilityDoc,
+		setExistingDisabilityDoc,
+		serviceFile,
+		setServiceFile,
+		existingServiceDoc,
+		setExistingServiceDoc,
+		birthFile,
+		setBirthFile,
+		existingBirthDoc,
+		setExistingBirthDoc,
+		touched,
+		setTouched,
+		isNameMismatch,
+		isDobMismatch,
+		isAadhaarLocked,
+		setIsAadhaarLocked,
+		selectedCategory,
+		isGeneralCategory,
+		getAvailableLanguages,
+		handleCommunityFileChange,
+		handleCommunityBrowse,
+		handleDisabilityFileChange,
+		handleDisabilityBrowse,
+		handleServiceFileChange,
+		handleServiceBrowse,
+		handleBirthFileChange,
+		validateDoc,
+		handleBirthBrowse,
+		formatFileSize,
+		handleChange,
+		handleDisabilityChange,
+		addDisability,
+		removeDisability,
+		handleRadio,
+		handleCheckbox,
+		handleSubmit,
+		calculateServicePeriodInMonths
+	};
+};

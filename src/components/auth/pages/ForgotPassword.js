@@ -22,7 +22,8 @@ const ForgotPassword = () => {
       navigate("/change-password-verification", {
         state: {
           email: email  // send email for OTP validation
-        }
+        },
+        replace: true
       });
     } catch (error) {
       console.error(error);

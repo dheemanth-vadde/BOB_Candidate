@@ -36,6 +36,20 @@ const OtpVerification = () => {
     if (e.key === "Backspace" && otp[index] === "" && index > 0) {
       inputsRef.current[index - 1].focus();
     }
+  }
+
+  const handlePaste = (e, index) => {
+    e.preventDefault();
+    const paste = e.clipboardData.getData('text').replace(/\D/g, ''); // Keep only digits
+    const digits = paste.split('');
+    const newOtp = [...otp];
+    for (let i = 0; i < digits.length && index + i < 6; i++) {
+      newOtp[index + i] = digits[i];
+    }
+    setOtp(newOtp);
+    // Focus the next input
+    const nextIndex = Math.min(index + digits.length, 5);
+    inputsRef.current[nextIndex]?.focus();
   };
 
   const submitOtp = async (e) => {
@@ -54,7 +68,7 @@ const OtpVerification = () => {
       const res = await authApi.verifyOtp(email, otpValue);
       console.log("OTP Verified:", res.data);
 			dispatch(setUser(res.data));
-      navigate("/candidate-portal", { state: { showDisclaimer: true } }); // SUCCESS
+      navigate("/candidate-portal", { replace: true, state: { showDisclaimer: true } }); // Replace history entry and pass state
     } catch (err) {
       console.log(err);
       toast.error(err.response?.data?.message || "OTP verification failed. Please try again.");
@@ -111,6 +125,7 @@ const OtpVerification = () => {
                 value={digit}
                 onChange={(e) => handleChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
+                onPaste={(e) => handlePaste(e, index)}
                 className="otp-box"
               />
             ))}
