@@ -1,744 +1,76 @@
 import { faCheckCircle, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import { useSelector } from 'react-redux';
+import { useBasicDetails } from '../hooks/basicHooks';
 import profileApi from '../services/profile.api';
-import { mapBasicDetailsApiToForm, mapBasicDetailsFormToApi } from '../mappers/BasicMapper';
-import masterApi from '../../../services/master.api';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
 
-const normalizeName = (name = "") =>
-	name
-		.toLowerCase()
-		.replace(/\s+/g, " ")
-		.trim();
-
-const normalizeDate = (date = "") => {
-	// Aadhaar OCR: DD/MM/YYYY
-	// Form input: YYYY-MM-DD
-	if (!date) return "";
-
-	if (date.includes("/")) {
-		const [dd, mm, yyyy] = date.split("/");
-		return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
-	}
-	return date;
-};
-
-const BasicDetails = ({ goNext, goBack }) => {
-
-	const [formErrors, setFormErrors] = useState({});
-	const aadhaarName = useSelector(state => state.idProof.name);
-	const aadhaarDob = useSelector(state => state.idProof.dob);
-	console.log("AADHAAR FROM REDUX:", aadhaarName);
-
+const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
 	const candidateId = user?.user?.id;
-	const email = user?.user?.email
-	const createdBy = user?.user?.id;
-	// const email = "sumanthsangam2@gmail.com"
-	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
-	// const createdBy = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
-	const communityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "COMMUNITY_CERT"));
-	const disabilityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "DISABILITY"));
-	const serviceDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "SERVICE"));
-	const birthDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT"));
-	const [formData, setFormData] = useState({
-		firstName: "",
-		middleName: "",
-		lastName: "",
-		fullNameAadhar: "",
-		fullNameSSC: "",
-		gender: "",
-		dob: "",
-		maritalStatus: "",
-		nationality: "",
-		religion: "",
-		category: "",
-		caste: "",
-		communityCertificate: null,
-		casteState: "",
-		motherName: "",
-		fatherName: "",
-		spouseName: "",
-		contactNumber: "",
-		altNumber: "",
-		socialMediaLink: "",
-
-		twinSibling: false,
-		siblingName: "",
-		twinGender: "",
-
-		isDisabledPerson: false,
-		disabilities: [],
-		scribeRequirement: "",
-		disabilityCertificate: null,
-
-		isExService: false,
-		serviceEnrollment: "",
-		dischargeDate: "",
-		servicePeriod: "",
-		employmentSecured: "",
-		lowerPostStatus: "",
-		serviceCertificate: null,
-
-		riotVictimFamily: "",
-		servingInGovt: "",
-		minorityCommunity: "",
-		disciplinaryAction: "",
-
-		language1: "",
-		language1Read: false,
-		language1Write: false,
-		language1Speak: false,
-
-		language2: "",
-		language2Read: false,
-		language2Write: false,
-		language2Speak: false,
-
-		language3: "",
-		language3Read: false,
-		language3Write: false,
-		language3Speak: false,
-
-		registrationNo: ""
-	});
-	const [masterData, setMasterData] = useState({
-		genders: [],
-		maritalStatus: [],
-		religions: [],
-		reservationCategories: [],
-		countries: [],
-		states: [],
-		districts: [],
-		cities: [],
-		pincodes: [],
-		disabilityCategories: [],
-		languages: []
-	});
-	const [candidateProfileId, setCandidateProfileId] = useState(null);
-
-	const [communityFile, setCommunityFile] = useState(null);
-	const [existingCommunityDoc, setExistingCommunityDoc] = useState(null);
-	const [disabilityFile, setDisabilityFile] = useState(null);
-	const [existingDisabilityDoc, setExistingDisabilityDoc] = useState(null);
-	const [serviceFile, setServiceFile] = useState(null);
-	const [existingServiceDoc, setExistingServiceDoc] = useState(null);
-	const [birthFile, setBirthFile] = useState(null);
-	const [existingBirthDoc, setExistingBirthDoc] = useState(null);
-	const [touched, setTouched] = useState({
-		fullNameAadhar: false,
-		dob: false
-	});
-
-	const isNameMismatch =
-		touched.fullNameAadhar &&
-		aadhaarName &&
-		normalizeName(formData.fullNameAadhar) !== normalizeName(aadhaarName);
-
-
-	const isDobMismatch =
-		touched.dob &&
-		aadhaarDob &&
-		normalizeDate(formData.dob) !== normalizeDate(aadhaarDob);
-
-	const isNewAadhaarUpload = useSelector(
-		state => state.idProof?.isNewUpload
-
-	);
-	console.log("IS NEW UPLOAD:", isNewAadhaarUpload);
-
-
-	const [isAadhaarLocked, setIsAadhaarLocked] = useState(false);
-
-
-
-
-	useEffect(() => {
-		const fetchMasterData = async () => {
-			const res = await masterApi.getMasterData();
-			const data = res?.data?.data;
-			setMasterData({
-				genders: data.genderMasters || [],
-				maritalStatus: data.maritalStatusMaster || [],
-				religions: data.religionMaster || [],
-				reservationCategories: data.reservationCategories || [],
-				countries: data.countries || [],
-				states: data.states || [],
-				districts: data.districts || [],
-				cities: data.cities || [],
-				pincodes: data.pincodes || [],
-				disabilityCategories: data.disabilityCategories || [],
-				languages: data.languageMasters || []
-			});
-		};
-		fetchMasterData();
-	}, []);
-
-	useEffect(() => {
-		const fetchBasicDetails = async () => {
-			try {
-				const res = await profileApi.getBasicDetails(candidateId);
-				const apiData = res?.data?.data;
-				console.log(apiData);
-				setCandidateProfileId(apiData?.candidateProfile?.candidateProfileId || null);
-				if (!apiData) return;
-				const mappedForm = mapBasicDetailsApiToForm(apiData);
-
-				setFormData(prev => ({
-					...prev,
-					...mappedForm,
-					// 👇 OCR overrides DB ONLY if new Aadhaar uploaded
-					fullNameAadhar: isNewAadhaarUpload
-						? aadhaarName
-						: mappedForm.fullNameAadhar
-				}));
-				console.log("Mapped Form Data:", mappedForm);
-
-				setIsAadhaarLocked(
-					Boolean(isNewAadhaarUpload || mappedForm.fullNameAadhar)
-				);
-
-			} catch (error) {
-				console.error("Failed to fetch basic details", error);
-			}
-		};
-		fetchBasicDetails();
-	}, [candidateId]);
-	useEffect(() => {
-		if (!aadhaarName || !isNewAadhaarUpload) return;
-
-		setFormData(prev => ({
-			...prev,
-			fullNameAadhar: aadhaarName
-		}));
-
-		setIsAadhaarLocked(true);
-	}, [aadhaarName, isNewAadhaarUpload]);
-
-
-	useEffect(() => {
-		if (!candidateId || !communityDoc?.docCode) return;
-
-		profileApi
-			.getDocumentDetailsByCode(candidateId, communityDoc.docCode)
-			.then(res => setExistingCommunityDoc(res?.data?.data || null))
-			.catch(console.error);
-	}, [candidateId, communityDoc?.docCode]);
-
-	useEffect(() => {
-		if (!candidateId || !birthDoc?.docCode) return;
-
-		profileApi
-			.getDocumentDetailsByCode(candidateId, birthDoc.docCode)
-			.then(res => {
-				setExistingBirthDoc(res?.data?.data || null);
-			})
-			.catch(err => {
-				console.error("Birth cert fetch failed", err);
-			});
-	}, [candidateId, birthDoc?.docCode]);
-
-	useEffect(() => {
-		if (!candidateId || !disabilityDoc?.docCode) return;
-
-		profileApi
-			.getDocumentDetailsByCode(candidateId, disabilityDoc.docCode)
-			.then(res => {
-				setExistingDisabilityDoc(res?.data?.data || null);
-			})
-			.catch(err => {
-				console.error("Disability Certificate fetch failed", err);
-			});
-	}, [candidateId, disabilityDoc?.docCode]);
-
-	useEffect(() => {
-		if (!candidateId || !serviceDoc?.docCode) return;
-
-		profileApi
-			.getDocumentDetailsByCode(candidateId, serviceDoc.docCode)
-			.then(res => {
-				setExistingServiceDoc(res?.data?.data || null);
-			})
-			.catch(err => {
-				console.error("Service Certificate fetch failed", err);
-			});
-	}, [candidateId, serviceDoc?.docCode]);
-
-	const selectedCategory = masterData?.reservationCategories?.find(
-		c => c.reservationCategoriesId === formData?.category
-	);
-
-	const isGeneralCategory = selectedCategory?.categoryCode === "GEN";
-	useEffect(() => {
-		if (isGeneralCategory) {
-			setFormData(prev => ({
-				...prev,
-				casteState: ""
-			}));
-
-			setCommunityFile(null);
-			setExistingCommunityDoc(null);
-		}
-	}, [isGeneralCategory]);
-
-	const getAvailableLanguages = (excludeIds = []) => {
-		return masterData.languages.filter(
-			l => !excludeIds.includes(l.languageId)
-		);
-	};
-	useEffect(() => {
-		if (
-			formData.language1 &&
-			formData.language1 === formData.language2
-		) {
-			setFormData(prev => ({ ...prev, language2: "" }));
-		}
-
-		if (
-			formData.language1 &&
-			formData.language1 === formData.language3
-		) {
-			setFormData(prev => ({ ...prev, language3: "" }));
-		}
-	}, [formData.language1]);
-
-
-
-	const handleCommunityFileChange = async (e) => {
-		const input = e.currentTarget || e.target;
-		const file = input.files && input.files[0];
-		if (!file) return;
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
-			input.value = "";
-			return;
-		}
-		const validateresoponse = await validateDoc("COMMUNITY_CERT", file);
-		if (!validateresoponse || validateresoponse?.data?.success === false) {
-			toast.error(validateresoponse?.data?.message || "Invalid Community Certificate");
-			input.value = "";
-			return;
-		}
-		setCommunityFile(file);
-		input.value = "";
-	};
-	const handleCommunityBrowse = () => {
-		document.getElementById("communityCertificate").click();
-	};
-
-	const handleDisabilityFileChange = async (e) => {
-		const input = e.currentTarget || e.target;
-		const file = input.files && input.files[0];
-		if (!file) return;
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
-			input.value = "";
-			return;
-		}
-		const validateresoponse = await validateDoc("DISABILITY", file);
-		if (!validateresoponse || validateresoponse?.data?.success === false) {
-			toast.error(validateresoponse?.data?.message || "Invalid Disability Certificate");
-			input.value = "";
-			return;
-		}
-
-		setDisabilityFile(file);
-		input.value = "";
-		setFormErrors(prev => {
-			const updated = { ...prev };
-			delete updated.disabilityCertificate;
-			return updated;
-		});
-	};
-
-	const handleDisabilityBrowse = () => {
-		document.getElementById("disabilityCertificate").click();
-	};
-
-	const handleServiceFileChange = (e) => {
-		const file = e.target.files[0];
-		if (!file) return;
-
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
-			return;
-		}
-
-		setServiceFile(file);
-
-		// 🔥 CLEAR VALIDATION ERROR
-		setFormErrors(prev => {
-			const updated = { ...prev };
-			delete updated.serviceCertificate;
-			return updated;
-		});
-	};
-
-
-	const handleServiceBrowse = () => {
-		document.getElementById("serviceCertificate").click();
-	};
-
-	const handleBirthFileChange = async (e) => {
-		const input = e.currentTarget || e.target;
-		const file = input.files && input.files[0];
-		if (!file) return;
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
-			input.value = "";
-			return;
-		}
-		const validateresoponse = await validateDoc("BIRTH_CERT", file);
-		if (!validateresoponse || validateresoponse?.data?.success === false) {
-			toast.error(validateresoponse?.data?.message || "Invalid Birth Certificate");
-			input.value = "";
-			return;
-		}
-
-		setBirthFile(file);
-		// Clear input so selecting the same file again triggers onChange
-		input.value = "";
-	};
-	const validateDoc = async (documentName, file) => {
-		try {
-			const res = await profileApi.ValidateDocument(documentName, file);
-			return res;
-		} catch (err) {
-			return false;
-		}
-	}
-	const handleBirthBrowse = () => {
-		document.getElementById("birthCertificate").click();
-	};
-
-	const formatFileSize = (size) => {
-		if (!size) return "";
-		const kb = size / 1024;
-		if (kb < 1024) return kb.toFixed(1) + " KB";
-		return (kb / 1024).toFixed(1) + " MB";
-	};
-
-	const handleChange = (e) => {
-		const { id, value } = e.target;
-		setFormData((prev) => ({
-			...prev,
-			[id]: value
-		}));
-		setFormErrors(prev => ({
-			...prev,
-			[id]: ""
-		}));
-		if (id === "fullNameAadhar" || id === "dob") {
-			setTouched(prev => ({
-				...prev,
-				[id]: true
-			}));
-		}
-	};
-
-	const handleDisabilityChange = (index, field, value) => {
-		setFormData(prev => ({
-			...prev,
-			disabilities: prev.disabilities.map((dis, i) =>
-				i === index ? { ...dis, [field]: value } : dis
-			)
-		}));
-
-		// 🔥 CLEAR VALIDATION ERROR
-		setFormErrors(prev => {
-			const updated = { ...prev };
-
-			if (field === "disabilityCategoryId") {
-				delete updated[`disabilityType_${index}`];
-			}
-
-			if (field === "disabilityPercentage") {
-				delete updated[`disabilityPercentage_${index}`];
-			}
-
-			return updated;
-		});
-	};
-
-
-	const addDisability = () => {
-		const lastDis = formData.disabilities[formData.disabilities.length - 1];
-		const newDis = lastDis ? { ...lastDis } : { disabilityCategoryId: "", disabilityPercentage: "" };
-		setFormData(prev => ({
-			...prev,
-			disabilities: [...prev.disabilities, newDis]
-		}));
-	};
-
-	const removeDisability = (index) => {
-		setFormData(prev => ({
-			...prev,
-			disabilities: prev.disabilities.filter((_, i) => i !== index)
-		}));
-
-		setFormErrors(prev => {
-			const updated = { ...prev };
-			delete updated[`disabilityType_${index}`];
-			delete updated[`disabilityPercentage_${index}`];
-			return updated;
-		});
-	};
-
-
-	const handleRadio = (e) => {
-		const { name, value } = e.target;
-		setFormData((prev) => ({
-			...prev,
-			[name]: value
-		}));
-	};
-
-	const handleCheckbox = (e) => {
-		const { id, checked } = e.target;
-		setFormData((prev) => ({
-			...prev,
-			[id]: checked
-		}));
-	};
-
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-		const errors = {};
-
-		// Required fields validation
-		const requiredFields = [
-			'firstName', 'lastName', 'fullNameAadhar', 'fullNameSSC', 'gender',
-			'dob', 'maritalStatus', 'nationality', 'religion', 'category',
-			'caste', 'motherName', 'fatherName', 'contactNumber', 'language1'
-		];
-
-		// Check required fields
-		requiredFields.forEach(field => {
-			if (!formData[field]?.toString().trim()) {
-				errors[field] = "This field is required";
-			}
-		});
-
-		// Twin sibling validation
-		if (formData.twinSibling && !formData.siblingName?.trim()) {
-			errors.siblingName = "Please add twin sibling's name";
-		}
-		if (formData.twinSibling && !formData.twinGender) {
-			errors.twinGender = "This field is required";
-		}
-
-
-		// Disability validations
-		if (formData.isDisabledPerson) {
-			if (formData.disabilities.length === 0) {
-				errors.disabilities = "This field is required";
-			} else {
-				formData.disabilities.forEach((dis, index) => {
-					if (!dis.disabilityCategoryId) {
-						errors[`disabilityType_${index}`] = "Please select a disability type";
-					}
-					if (!dis.disabilityPercentage) {
-						errors[`disabilityPercentage_${index}`] = "Please enter a disability percentage";
-					}
-				});
-			}
-
-
-			if (formData.scribeRequirement === undefined) {
-				errors.scribeRequirement = "This field is required";
-			}
-
-			if (!disabilityFile && !existingDisabilityDoc) {
-				errors.disabilityCertificate = "This field is required";
-			}
-		}
-
-		// Ex-service validations
-		// Ex-Service validations
-		if (formData.isExService) {
-			if (!formData.serviceEnrollment) {
-				errors.serviceEnrollment = "This field is required";
-			}
-
-			if (!formData.dischargeDate) {
-				errors.dischargeDate = "This field is required";
-			}
-
-			// Date order validation (only if both exist)
-			if (formData.serviceEnrollment && formData.dischargeDate) {
-				const { isValid, error } = validateEndDateAfterStart(
-					formData.serviceEnrollment,
-					formData.dischargeDate
-				);
-				if (!isValid) {
-					errors.dischargeDate = error;
-				}
-			}
-
-			if (!serviceFile && !existingServiceDoc) {
-				errors.serviceCertificate = "This field is required";
-			}
-		}
-
-
-		// Document validations
-		if (!isGeneralCategory && !communityFile && !existingCommunityDoc) {
-			errors.communityCertificate = "This field is required";
-		}
-
-		if (!birthFile && !existingBirthDoc) {
-			errors.birthCertificate = "This field is required";
-		}
-
-
-
-		// If there are errors, set them and return
-		if (Object.keys(errors).length > 0) {
-			setFormErrors(errors);
-			const firstError = Object.keys(errors)[0];
-			document.getElementById(firstError)?.scrollIntoView({ behavior: 'smooth' });
-			return;
-		}
-
-		// Rest of your form submission logic...
-		try {
-			const payload = mapBasicDetailsFormToApi({
-				formData,
-				candidateId,
-				createdBy,
-				candidateProfileId,
-				email,
-			});
-
-			await profileApi.postBasicDetails(candidateId, payload);
-
-			// Handle file uploads...
-			const uploadPromises = [];
-			if (communityFile) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, communityDoc.documentTypeId, communityFile));
-			}
-			if (birthFile) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, birthDoc.documentTypeId, birthFile));
-			}
-			if (disabilityFile && formData.isDisabledPerson) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, disabilityDoc.documentTypeId, disabilityFile));
-			}
-			if (serviceFile && formData.isExService) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, serviceDoc.documentTypeId, serviceFile));
-			}
-			await Promise.all(uploadPromises);
-
-			toast.success("Basic details have been saved successfully");
-			goNext();
-		} catch (err) {
-			console.error(err);
-			toast.error("Failed to save basic details");
-		}
-	};
-	const calculateServicePeriodInMonths = (start, end) => {
-		if (!start || !end) return "";
-		const startDate = new Date(start);
-		const endDate = new Date(end);
-		if (endDate < startDate) return "";
-		let months =
-			(endDate.getFullYear() - startDate.getFullYear()) * 12 +
-			(endDate.getMonth() - startDate.getMonth());
-		// count partial month if end day >= start day
-		if (endDate.getDate() >= startDate.getDate()) {
-			months += 1;
-		}
-		return months;
-	};
-	useEffect(() => {
-		if (!formData.isExService) {
-			setFormErrors(prev => {
-				const updated = { ...prev };
-				delete updated.serviceEnrollment;
-				delete updated.dischargeDate;
-				delete updated.serviceCertificate;
-				return updated;
-			});
-
-			setFormData(prev => ({
-				...prev,
-				serviceEnrollment: "",
-				dischargeDate: "",
-				servicePeriod: ""
-			}));
-
-			setServiceFile(null);
-		}
-	}, [formData.isExService]);
-
-
-	useEffect(() => {
-		if (!formData.isExService) {
-			setFormData(prev => ({
-				...prev,
-				serviceEnrollment: "",
-				dischargeDate: "",
-				servicePeriod: ""
-			}));
-			return;
-		}
-		const months = calculateServicePeriodInMonths(
-			formData.serviceEnrollment,
-			formData.dischargeDate
-		);
-		setFormData(prev => ({
-			...prev,
-			servicePeriod: months
-		}));
-	}, [formData.serviceEnrollment, formData.dischargeDate, formData.isExService]);
-
-	useEffect(() => {
-		if (!formData.isDisabledPerson) {
-			setFormData(prev => ({
-				...prev,
-				disabilityType: "",
-				disabilityPercentage: 0,
-				scribeRequirement: "",
-			}));
-			return;
-		}
-	}, [formData.isDisabledPerson]);
-
-	// when OCR/extracted data arrives, populate form and lock fullNameAadhar
-	useEffect(() => {
-		if (!aadhaarName) return;
-
-		setFormData(prev => ({
-			...prev,
-			fullNameAadhar: aadhaarName
-		}));
-
-		setFormErrors(prev => ({
-			...prev,
-			fullNameAadhar: ""
-		}));
-
-		setTouched(prev => ({
-			...prev,
-			fullNameAadhar: true
-		}));
-	}, [aadhaarName]);
+	const {
+		formData,
+		setFormData,
+		formErrors,
+		setFormErrors,
+		masterData,
+		candidateProfileId,
+		communityFile,
+		setCommunityFile,
+		existingCommunityDoc,
+		setExistingCommunityDoc,
+		disabilityFile,
+		setDisabilityFile,
+		existingDisabilityDoc,
+		setExistingDisabilityDoc,
+		serviceFile,
+		setServiceFile,
+		existingServiceDoc,
+		setExistingServiceDoc,
+		birthFile,
+		setBirthFile,
+		existingBirthDoc,
+		setExistingBirthDoc,
+		touched,
+		setTouched,
+		isNameMismatch,
+		isDobMismatch,
+		isAadhaarLocked,
+		setIsAadhaarLocked,
+		selectedCategory,
+		isGeneralCategory,
+		getAvailableLanguages,
+		handleCommunityFileChange,
+		handleCommunityBrowse,
+		handleDisabilityFileChange,
+		handleDisabilityBrowse,
+		handleServiceFileChange,
+		handleServiceBrowse,
+		handleBirthFileChange,
+		validateDoc,
+		handleBirthBrowse,
+		formatFileSize,
+		handleChange,
+		handleDisabilityChange,
+		addDisability,
+		removeDisability,
+		handleRadio,
+		handleCheckbox,
+		handleSubmit,
+		calculateServicePeriodInMonths
+	} = useBasicDetails({ goNext, goBack, parsedData });
 
 	return (
 		<div>
 			<form className="row g-4 formfields"
 				onSubmit={handleSubmit}
-			// onInvalid={handleInvalid}
-			// onInput={handleInput}
 			>
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Personal Details</p>
-
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="firstName" className="form-label">First Name <span className="text-danger">*</span></label>
 						<input
@@ -770,17 +102,12 @@ const BasicDetails = ({ goNext, goBack }) => {
 							readOnly={isAadhaarLocked}
 							className={`form-control ${isAadhaarLocked ? "bg-light text-muted" : ""}`}
 						/>
-
-
-
-
 						{isNameMismatch && (
 							<small className="text-danger">
 								Name not matching with Aadhaar
 							</small>
 						)}
 						{formErrors.fullNameAadhar && <div className="invalid-feedback">{formErrors.fullNameAadhar}</div>}
-
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
@@ -796,7 +123,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							id="gender"
 							value={formData.gender}
 							onChange={handleChange}
-
 						>
 							<option value="">Select Gender</option>
 							{masterData?.genders.map(g => (
@@ -823,8 +149,7 @@ const BasicDetails = ({ goNext, goBack }) => {
 						<label htmlFor="birthCertificate" className="form-label">Upload Birth Certificate <span className="text-danger">*</span></label>
 						{!birthFile && !existingBirthDoc && (
 							<div
-								className={`border rounded d-flex flex-column align-items-center justify-content-center
-    ${formErrors.birthCertificate ? "border-danger" : ""}`}
+								className={`border rounded d-flex flex-column align-items-center justify-content-center ${formErrors.birthCertificate ? "border-danger" : ""}`}
 								style={{
 									minHeight: "100px",
 									cursor: "pointer",
@@ -837,16 +162,13 @@ const BasicDetails = ({ goNext, goBack }) => {
 									icon={faUpload}
 									className="me-2 text-secondary"
 								/>
-
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
 									Click to upload or drag and drop
 								</div>
-
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
 								</div>
-
 								{/* Hidden File Input */}
 								<input
 									id="birthCertificate"
@@ -886,7 +208,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -894,15 +215,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingBirthDoc.fileUrl, "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									{/* <img
-										src={editIcon}
-										alt="Edit"
-										style={{ width: "25px", cursor: "pointer" }}
-										onClick={handleBrowse}
-									/> */}
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -919,7 +231,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 											}
 										}}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -939,7 +250,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										icon={faCheckCircle}
 										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
 									/>
-
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
 											{birthFile?.name}
@@ -952,7 +262,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -960,15 +269,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(birthFile), "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									<img
-										src={editIcon}
-										alt="Edit"
-										style={{ width: "25px", cursor: "pointer" }}
-										onClick={handleBirthBrowse}
-									/>
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -976,7 +276,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => setBirthFile(null)}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -994,7 +293,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							value={formData.maritalStatus}
 							onChange={handleChange}
 							className={`form-select ${formErrors.maritalStatus ? 'is-invalid' : ''}`}
-
 						>
 							<option value="">Select Marital Status</option>
 							{masterData?.maritalStatus.map(ms => (
@@ -1050,11 +348,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 						<input type="text" className="form-control" id="altNumber" value={formData?.altNumber} onChange={handleChange} />
 					</div>
 
-					{/* <div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="currentCTC" className="form-label">Current CTC (in Lakhs) <span className="text-danger">*</span></label>
-						<input type="text" className="form-control" id="currentCTC" />
-					</div> */}
-
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="socialMediaLink" className="form-label">Socail Media Profile Link</label>
 						<input type="text" className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} />
@@ -1071,7 +364,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							id="nationality"
 							value={formData?.nationality}
 							onChange={handleChange}
-
 						>
 							<option value="">Select Nationality</option>
 							{masterData?.countries.map(ms => (
@@ -1094,7 +386,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							value={formData.religion}
 							onChange={handleChange}
 							className={`form-select ${formErrors.religion ? 'is-invalid' : ''}`}
-
 						>
 							<option value="">Select Religion</option>
 							{masterData?.religions.map(r => (
@@ -1117,7 +408,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							value={formData.category}
 							onChange={handleChange}
 							className={`form-select ${formErrors.category ? 'is-invalid' : ''}`}
-
 						>
 							<option value="">Select Category</option>
 							{masterData?.reservationCategories.map(c => (
@@ -1159,7 +449,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 								</option>
 							))}
 						</select>
-
 					</div>
 
 					<div className="col-md-6 col-sm-12 mt-2">
@@ -1169,30 +458,26 @@ const BasicDetails = ({ goNext, goBack }) => {
 						</label>
 						{!communityFile && !existingCommunityDoc && (
 							<div
-								className={`border rounded d-flex flex-column align-items-center justify-content-center
-    ${formErrors.communityCertificate ? "border-danger" : ""}`} style={{
+								className={`border rounded d-flex flex-column align-items-center justify-content-center ${formErrors.communityCertificate ? "border-danger" : ""}`}
+								style={{
 									minHeight: "100px",
 									cursor: isGeneralCategory ? "not-allowed" : "pointer",
 									opacity: isGeneralCategory ? 0.6 : 1
 								}}
 								onClick={!isGeneralCategory ? handleCommunityBrowse : undefined}
 							>
-
 								{/* Upload Icon */}
 								<FontAwesomeIcon
 									icon={faUpload}
 									className="me-2 text-secondary"
 								/>
-
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
 									Click to upload or drag and drop
 								</div>
-
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
 								</div>
-
 								{/* Hidden File Input */}
 								<input
 									id="communityCertificate"
@@ -1219,12 +504,10 @@ const BasicDetails = ({ goNext, goBack }) => {
 										icon={faCheckCircle}
 										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
 									/>
-
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
 											{/* {existingCommunityDoc.fileName} */}
 											{existingCommunityDoc.displayName ?? existingCommunityDoc.fileName}
-
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 											{formatFileSize(certificateFile.size)}
@@ -1234,7 +517,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -1242,15 +524,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingCommunityDoc.fileUrl, "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									{/* <img
-										src={editIcon}
-										alt="Edit"
-										style={{ width: "25px", cursor: "pointer" }}
-										onClick={handleBrowse}
-									/> */}
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -1267,7 +540,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 											}
 										}}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -1287,7 +559,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										icon={faCheckCircle}
 										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
 									/>
-
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
 											{communityFile?.name}
@@ -1300,7 +571,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -1308,15 +578,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(communityFile), "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									<img
-										src={editIcon}
-										alt="Edit"
-										style={{ width: "25px", cursor: "pointer" }}
-										onClick={handleCommunityBrowse}
-									/>
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -1324,7 +585,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => setCommunityFile(null)}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -1334,12 +594,10 @@ const BasicDetails = ({ goNext, goBack }) => {
 							</div>
 						)}
 					</div>
-
 				</div>
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Siblings</p>
-
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="twinSibling" className="form-label">Do you have a twin sibling? <span className="text-danger">*</span></label>
 						<select
@@ -1348,15 +606,13 @@ const BasicDetails = ({ goNext, goBack }) => {
 							value={formData?.twinSibling}
 							onChange={(e) => {
 								const hasTwin = e.target.value === "true";
-
 								setFormData(prev => ({
 									...prev,
 									twinSibling: hasTwin,
 									siblingName: hasTwin ? prev.siblingName : "",
 									twinGender: hasTwin ? prev.twinGender : ""
 								}));
-
-								// 🔥 CLEAR TWIN-SPECIFIC ERRORS WHEN TURNED OFF
+								// CLEAR TWIN-SPECIFIC ERRORS WHEN TURNED OFF
 								if (!hasTwin) {
 									setFormErrors(prev => {
 										const updated = { ...prev };
@@ -1366,8 +622,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 									});
 								}
 							}}
-
-
 						>
 							<option value={true}>Yes</option>
 							<option value={false}>No</option>
@@ -1409,7 +663,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Disability</p>
-
 					<div className="col-md-4 col-sm-12 mt-2">
 						<label htmlFor="disability" className="form-label">Person with Disability? <span className="text-danger">*</span></label>
 						<select
@@ -1418,7 +671,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							value={formData?.isDisabledPerson}
 							onChange={(e) => {
 								const isDisabled = e.target.value === "true";
-
 								setFormData(prev => ({
 									...prev,
 									isDisabledPerson: isDisabled,
@@ -1429,16 +681,13 @@ const BasicDetails = ({ goNext, goBack }) => {
 										: [],
 									scribeRequirement: isDisabled ? prev.scribeRequirement : ""
 								}));
-
-								// 🔥 CLEAR ALL DISABILITY-RELATED ERRORS
+								// CLEAR ALL DISABILITY-RELATED ERRORS
 								if (!isDisabled) {
 									setFormErrors(prev => {
 										const updated = { ...prev };
-
 										delete updated.disabilities;
 										delete updated.scribeRequirement;
 										delete updated.disabilityCertificate;
-
 										Object.keys(updated).forEach(key => {
 											if (
 												key.startsWith("disabilityType_") ||
@@ -1447,13 +696,10 @@ const BasicDetails = ({ goNext, goBack }) => {
 												delete updated[key];
 											}
 										});
-
 										return updated;
 									});
 								}
 							}}
-
-
 						>
 							<option value={true}>Yes</option>
 							<option value={false}>No</option>
@@ -1480,7 +726,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 								{formErrors.scribeRequirement}
 							</div>
 						)}
-
 					</div>
 
 					<div className="col-md-4 col-sm-12 mt-2">
@@ -1500,16 +745,13 @@ const BasicDetails = ({ goNext, goBack }) => {
 									icon={faUpload}
 									className="me-2 text-secondary"
 								/>
-
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
 									Click to upload or drag and drop
 								</div>
-
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
 								</div>
-
 								{/* Hidden File Input */}
 								<input
 									id="disabilityCertificate"
@@ -1537,11 +779,9 @@ const BasicDetails = ({ goNext, goBack }) => {
 										icon={faCheckCircle}
 										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
 									/>
-
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
 											{existingDisabilityDoc.displayName ?? existingDisabilityDoc.fileName}
-
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 										{formatFileSize(certificateFile.size)}
@@ -1551,7 +791,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -1559,15 +798,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingDisabilityDoc.fileUrl, "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									{/* <img
-									src={editIcon}
-									alt="Edit"
-									style={{ width: "25px", cursor: "pointer" }}
-									onClick={handleBrowse}
-								/> */}
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -1584,7 +814,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 											}
 										}}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -1604,7 +833,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										icon={faCheckCircle}
 										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
 									/>
-
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
 											{disabilityFile?.name}
@@ -1617,7 +845,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -1625,15 +852,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(disabilityFile), "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									<img
-										src={editIcon}
-										alt="Edit"
-										style={{ width: "25px", cursor: "pointer" }}
-										onClick={handleDisabilityBrowse}
-									/>
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -1641,7 +859,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => setDisabilityFile(null)}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -1698,7 +915,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										{formErrors[`disabilityType_${index}`]}
 									</div>
 								)}
-
 							</div>
 
 							<div className="col-md-5 col-sm-12 mt-2">
@@ -1727,9 +943,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										}}
 									/>
 									<span className="">%</span>
-
-
-
 								</div>
 								{formErrors[`disabilityPercentage_${index}`] && (
 									<div className="invalid-feedback d-block">
@@ -1750,12 +963,10 @@ const BasicDetails = ({ goNext, goBack }) => {
 							)}
 						</div>
 					))}
-
 				</div>
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Ex-Service Person</p>
-
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="servicePerson" className="form-label">Ex Service Person?</label>
 						<select
@@ -1812,7 +1023,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 								{formErrors.dischargeDate}
 							</div>
 						)}
-
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
@@ -1871,16 +1081,13 @@ const BasicDetails = ({ goNext, goBack }) => {
 									icon={faUpload}
 									className="me-2 text-secondary"
 								/>
-
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
 									Click to upload or drag and drop
 								</div>
-
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
 								</div>
-
 								{/* Hidden File Input */}
 								<input
 									id="serviceCertificate"
@@ -1921,7 +1128,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -1929,15 +1135,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingServiceDoc.fileUrl, "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									{/* <img
-									src={editIcon}
-									alt="Edit"
-									style={{ width: "25px", cursor: "pointer" }}
-									onClick={handleBrowse}
-								/> */}
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -1954,7 +1151,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 											}
 										}}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -1974,7 +1170,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										icon={faCheckCircle}
 										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
 									/>
-
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
 											{serviceFile?.name}
@@ -1987,7 +1182,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
-
 									{/* View */}
 									<img
 										src={viewIcon}
@@ -1995,15 +1189,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(serviceFile), "_blank")}
 									/>
-
-									{/* Edit → triggers file re-upload */}
-									<img
-										src={editIcon}
-										alt="Edit"
-										style={{ width: "25px", cursor: "pointer" }}
-										onClick={handleServiceBrowse}
-									/>
-
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -2011,7 +1196,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => setServiceFile(null)}
 									/>
-
 								</div>
 							</div>
 						)}
@@ -2020,13 +1204,11 @@ const BasicDetails = ({ goNext, goBack }) => {
 								{formErrors.serviceCertificate}
 							</div>
 						)}
-
 					</div>
 				</div>
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Language Profiency</p>
-
 					<div className="col-md-4 col-sm-12 mt-2">
 						<label htmlFor="language1" className="form-label">Language 1 <span className="text-danger">*</span></label>
 						<select
@@ -2034,10 +1216,8 @@ const BasicDetails = ({ goNext, goBack }) => {
 							value={formData.language1}
 							onChange={handleChange}
 							className={`form-select ${formErrors.language1 ? "is-invalid" : ""}`}
-
 						>
 							<option value="">Select Language 1</option>
-
 							{getAvailableLanguages([
 								formData.language2,
 								formData.language3
@@ -2048,7 +1228,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							))}
 						</select>
 						{formErrors.language1 && <div className="invalid-feedback">{formErrors.language1}</div>}
-
 						<div className="d-flex">
 							<div className="d-flex align-items-center">
 								<input type="checkbox" id="language1Read" checked={formData?.language1Read} onChange={handleCheckbox} />
@@ -2074,7 +1253,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 							className="form-select"
 						>
 							<option value="">Select Language 2</option>
-
 							{getAvailableLanguages([
 								formData.language1,
 								formData.language3
@@ -2084,7 +1262,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 								</option>
 							))}
 						</select>
-
 						<div className="d-flex">
 							<div className="d-flex align-items-center">
 								<input type="checkbox" id="language2Read" checked={formData?.language2Read} onChange={handleCheckbox} />
@@ -2104,14 +1281,12 @@ const BasicDetails = ({ goNext, goBack }) => {
 					<div className="col-md-4 col-sm-12 mt-2">
 						<label htmlFor="language3" className="form-label">Language 3</label>
 						<select
-
 							id="language3"
 							value={formData.language3}
 							onChange={handleChange}
 							className="form-select"
 						>
 							<option value="">Select Language 3</option>
-
 							{getAvailableLanguages([
 								formData.language1,
 								formData.language2
@@ -2121,7 +1296,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 								</option>
 							))}
 						</select>
-
 						<div className="d-flex">
 							<div className="d-flex align-items-center">
 								<input type="checkbox" id="language3Read" checked={formData?.language3Read} onChange={handleCheckbox} />
@@ -2146,11 +1320,9 @@ const BasicDetails = ({ goNext, goBack }) => {
 								Are you a child/family member of those who died in 1984 riots?
 							</label>
 						</div>
-
 						<div>
 							<input type="radio" id="riotVictimFamily" name="riotVictimFamily" value="Yes" checked={formData?.riotVictimFamily === "Yes"} onChange={handleRadio} />
 							<label htmlFor="riotYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-
 							<input type="radio" id="riotVictimFamily" name="riotVictimFamily" value="No" checked={formData?.riotVictimFamily === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
 							<label htmlFor="riotNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
 						</div>
@@ -2162,11 +1334,9 @@ const BasicDetails = ({ goNext, goBack }) => {
 								Whether serving in Govt./quasi Govt./Public Sector Undertaking?
 							</label>
 						</div>
-
 						<div>
 							<input type="radio" id="servingInGovt" name="servingInGovt" value="Yes" checked={formData?.servingInGovt === "Yes"} onChange={handleRadio} />
 							<label htmlFor="psuYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-
 							<input type="radio" id="servingInGovt" name="servingInGovt" value="No" checked={formData?.servingInGovt === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
 							<label htmlFor="psuNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
 						</div>
@@ -2178,11 +1348,9 @@ const BasicDetails = ({ goNext, goBack }) => {
 								Do you belong to Religious Minority Community?
 							</label>
 						</div>
-
 						<div>
 							<input type="radio" id="minorityCommunity" name="minorityCommunity" value="Yes" checked={formData?.minorityCommunity === "Yes"} onChange={handleRadio} />
 							<label htmlFor="rmcYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-
 							<input type="radio" id="minorityCommunity" name="minorityCommunity" value="No" checked={formData?.minorityCommunity === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
 							<label htmlFor="rmcNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
 						</div>
@@ -2194,11 +1362,9 @@ const BasicDetails = ({ goNext, goBack }) => {
 								Any disciplinary action in any of your previous/current employment?
 							</label>
 						</div>
-
 						<div>
 							<input type="radio" id="disciplinaryAction" name="disciplinaryAction" value="Yes" checked={formData?.disciplinaryAction === "Yes"} onChange={handleRadio} />
 							<label htmlFor="disciplineActionYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-
 							<input type="radio" id="disciplinaryAction" name="disciplinaryAction" value="No" checked={formData?.disciplinaryAction === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
 							<label htmlFor="disciplineActionNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
 						</div>
@@ -2223,7 +1389,6 @@ const BasicDetails = ({ goNext, goBack }) => {
 						</div>
 					</div>
 				</div>
-
 			</form >
 		</div >
 	)

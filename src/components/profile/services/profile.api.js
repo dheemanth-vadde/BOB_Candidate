@@ -1,41 +1,27 @@
 import axios from "axios";
-
- //const BASE_URL = "http://192.168.20.111:8082/api/v1/candidate";
-const BASE_URL = "https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/candidate";
-
-// Axios Instance
-const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "X-Client": "candidate",
-    "Content-Type": "application/json",
-  },
-  timeout: 15000,
-});
-
-// ---------------- PROFILE APIs ----------------
+import { candidateApi } from "../../../services/apiService";
 
 // Basic Details APIs
 export const getBasicDetails = (candidateId) => {
-  return api.get(`/profile/get-details/${candidateId}`);
+  return candidateApi.get(`/profile/get-details/${candidateId}`);
 };
 
 export const postBasicDetails = (candidateId, payload) => {
-  return api.post(`/profile/save-profile-details/${candidateId}`, payload);
+  return candidateApi.post(`/profile/save-profile-details/${candidateId}`, payload);
 };
 
 // Address Details APIs
 export const getAddressDetails = (candidateId) => {
-  return api.get(`/address/get-address/${candidateId}`);
+  return candidateApi.get(`/address/get-address/${candidateId}`);
 };
 
 export const postAddressDetails = (candidateId, payload) => {
-  return api.post(`/address/save-address/${candidateId}`, payload);
+  return candidateApi.post(`/address/save-address/${candidateId}`, payload);
 };
 
 // Education Details APIs
 export const getEducationDetails = (candidateId) => {
-  return api.get(`/education/get-edu-details/${candidateId}`);
+  return candidateApi.get(`/education/get-edu-details/${candidateId}`);
 };
 
 export const postEducationDetails = (
@@ -57,7 +43,7 @@ export const postEducationDetails = (
     })
   );
 
-  return api.post(
+  return candidateApi.post(
     `/education/save-edu-details/${candidateId}/${docCode}`,
     formData,
     {
@@ -71,7 +57,7 @@ export const postEducationDetails = (
 
 // Experience Details APIs
 export const getExperienceDetails = (candidateId) => {
-  return api.get(`/experience/get-exp-details/${candidateId}`);
+  return candidateApi.get(`/experience/get-exp-details/${candidateId}`);
 };
 
 // Experience Details APIs
@@ -93,7 +79,7 @@ export const postExperienceDetails = (
     })
   );
 
-  return api.post(
+  return candidateApi.post(
     `/experience/save-exp-details/${candidateId}`,
     formData,
     {
@@ -107,7 +93,7 @@ export const postExperienceDetails = (
 
 // Experience Details APIs
 export const deleteExperienceDetails = (workExperienceId) => {
-  return api.delete(
+  return candidateApi.delete(
     `/experience/delete-exp/${workExperienceId}`,
     {
       headers: {
@@ -119,11 +105,11 @@ export const deleteExperienceDetails = (workExperienceId) => {
 
 // Document Details APIs
 export const getDocumentDetails = (candidateId) => {
-  return api.get(`/documents/get-doc/${candidateId}`);
+  return candidateApi.get(`/documents/get-doc/${candidateId}`);
 };
 
 export const getDocumentDetailsByCode = (candidateId, docCode) => {
-  return api.get(`/documents/get-doc-by-doccode/${candidateId}/${docCode}`);
+  return candidateApi.get(`/documents/get-doc-by-doccode/${candidateId}/${docCode}`);
 };
 
 // Document Upload API
@@ -144,7 +130,7 @@ export const postDocumentDetails = (
   const formData = new FormData();
   formData.append("documents", file); // key name MUST match backend
   const Url = isOther ? `/documents/upload-other/${candidateId}/${documentName}` : `/documents/upload/${candidateId}/${documentId}`;
-  return api.post(
+  return candidateApi.post(
     Url,
     formData,
     {
@@ -171,7 +157,7 @@ export const ValidateDocument = (
   const formData = new FormData();
   formData.append("file", file); // key name MUST match backend
   const Url = `/validate-document/validate/${documentName}`;
-  return api.post(
+  return candidateApi.post(
     Url,
     formData,
     {
@@ -189,7 +175,7 @@ export const deleteDocument = (candidateId, documentId) => {
     throw new Error("candidateId and documentId are required");
   }
 
-  return api.delete(
+  return candidateApi.delete(
     `/documents/delete-doc/${candidateId}/${documentId}`,
     {
       headers: {
@@ -204,7 +190,7 @@ export const parseResumeDetails = (candidateId, resumeFile) => {
   const formData = new FormData();
   formData.append("resume", resumeFile);
 
-  return api.post(
+  return candidateApi.post(
     `/resume/upload/${candidateId}`,
     formData,
     {
@@ -218,12 +204,12 @@ export const parseResumeDetails = (candidateId, resumeFile) => {
 };
 
 export const getResumeDetails = (candidateId) => {
-  return api.get(`/resume/get-resume-details/${candidateId}`);
+  return candidateApi.get(`/resume/get-resume-details/${candidateId}`);
 };
 
 // GET work status (isFresher)
 export const getWorkStatus = (candidateId) => {
-  return api.get(`/profile/get-work-status/${candidateId}`, {
+  return candidateApi.get(`/profile/get-work-status/${candidateId}`, {
     headers: {
       "X-Client": "candidate",
     },
@@ -232,7 +218,7 @@ export const getWorkStatus = (candidateId) => {
 
 // POST work status (isFresher)
 export const postWorkStatus = (candidateId, isFresher) => {
-  return api.post(
+  return candidateApi.post(
     `/profile/save-work-status/${candidateId}`,
     null,
     {
@@ -249,7 +235,7 @@ export const saveProfileComplete = (candidateId, isProfileCompleted = true) => {
     throw new Error("candidateId is required");
   }
 
-  return api.post(
+  return candidateApi.post(
     `/candidate/save-profile-complete/${candidateId}`,
     null,
     {

@@ -113,7 +113,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
           candidateId,
           documentCode
         );
-        const doc = res?.data?.data;
+        const doc = res?.data;
         if (!doc) return;
         const url =
           doc.fileUrl ||
@@ -369,7 +369,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
               color: "#fff"
             }}
             onClick={handleContinue}
-            disabled={loading || (!idProofFile && !idProofPublicUrl)}
+            disabled={loading || ocrLoading || (!idProofFile && !idProofPublicUrl)}
           >
             {loading && <FontAwesomeIcon icon={faSpinner} spin />} {loading ? "Processing..." : "Save & Next"}
           </button>

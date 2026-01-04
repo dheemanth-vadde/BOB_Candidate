@@ -65,7 +65,8 @@ const Login = () => {
       navigate("/otp-verification", {
         state: {
           email: email  // send email for OTP validation
-        }
+        },
+        replace: true
       });
 
     } catch (err) {

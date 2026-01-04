@@ -219,7 +219,7 @@ const Register = () => {
             <button
               onClick={() => {
                 setShowVerificationModal(false);
-                navigate("/login");   // redirect ONLY after closing modal
+                navigate("/login", {replace: true});   // redirect ONLY after closing modal
               }}
               className="ok-btn"
             >

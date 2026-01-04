@@ -26,16 +26,9 @@ const EducationForm = ({
 }) => {
   const user = useSelector((state) => state?.user?.user?.data);
   const candidateId = user?.user?.id;
-  // const documentTypes = useSelector(
-  //   (state) => state.documentTypes?.list || []
-  // );
-  // const boardDoc = documentTypes.find(
-  //   (doc) => doc.docCode === 'PAYSLIP'
-  // );
   const [certificateFile, setCertificateFile] = useState(null);
   const [existingDocument, setExistingDocument] = useState(null);
   const [formErrors, setFormErrors] = useState({});
-
   const [formData, setFormData] = useState({
     university: "",
     college: "",
@@ -51,11 +44,9 @@ const EducationForm = ({
 
   useEffect(() => {
     if (!existingData) return;
-
     if (existingData?.document) {
       setExistingDocument(existingData.document);
     }
-
     setFormData(prev => ({
       ...prev,
       ...existingData
@@ -69,18 +60,14 @@ const EducationForm = ({
   }, [existingData]);
 
   useEffect(() => {
-    // 🔥 DO NOT override if GET data exists
+    // DO NOT override if GET data exists
     if (existingData) return;
-
     const fixedId = fixedEducationLevelId || fixedDocumentTypeId;
     if (!fixedId || !masterData.educationLevels.length) return;
-
     const selected = masterData.educationLevels.find(
       el => el.documentTypeId === fixedId
     );
-
     if (!selected) return;
-
     setFormData(prev => ({
       ...prev,
       educationLevel: fixedId,
@@ -95,7 +82,6 @@ const EducationForm = ({
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-
     // Clear the error for the current field when user starts typing/selecting
     setFormErrors(prev => ({
       ...prev,
@@ -115,13 +101,11 @@ const EducationForm = ({
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     // Clear any previous file error
     setFormErrors(prev => ({
       ...prev,
       certificateFile: undefined
     }));
-
     // Optional validation
     if (file.size > 2 * 1024 * 1024) {
       setFormErrors(prev => ({
@@ -130,7 +114,6 @@ const EducationForm = ({
       }));
       return;
     }
-
     setCertificateFile(file);
   };
 
@@ -144,7 +127,6 @@ const EducationForm = ({
   const validateForm = () => {
     const errors = {};
     let isValid = true;
-
     // Required fields validation
     const requiredFields = [
       { key: 'educationLevel', label: 'Education Level' },
@@ -156,14 +138,12 @@ const EducationForm = ({
       ...(showSpecialization ? [{ key: 'specialization', label: 'Specialization' }] : []),
       { key: 'educationType', label: 'Education Type' }
     ];
-
     requiredFields.forEach(field => {
       if (!formData[field.key]?.toString().trim()) {
-        errors[field.key] = `This feild is required`;
+        errors[field.key] = `This field is required`;
         isValid = false;
       }
     });
-
     // Date range validation
     if (formData.from && formData.to) {
       const { isValid: isDateValid, error } = validateEndDateAfterStart(
@@ -175,20 +155,17 @@ const EducationForm = ({
         isValid = false;
       }
     }
-
     // Certificate file validation
     if (!certificateFile && !existingDocument) {
       errors.certificateFile = "Certificate file is required";
       isValid = false;
     }
-
     setFormErrors(errors);
     return { isValid, errors };
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const { isValid } = validateForm();
     if (!isValid) {
       // Scroll to the first error
@@ -198,20 +175,16 @@ const EducationForm = ({
       }
       return;
     }
-
     try {
-
       // Get the docCode from masterData based on the selected education level
       const selectedEducationLevel = masterData.educationLevels.find(
         level => level.documentTypeId === formData.educationLevel
       );
-
       const docCode = selectedEducationLevel?.docCode;
       if (!docCode) {
         toast.error("Education level docCode not found");
         return;
       }
-
       // Validate the document before uploading
       try {
         await profileApi.ValidateDocument(docCode, certificateFile);
@@ -219,13 +192,11 @@ const EducationForm = ({
         toast.error("Invalid Certificate");
         return;
       }
-      
       const payload = mapEducationFormToApi({
         formData,
         candidateId,
         fixedEducationLevelId,
         educationId,
-
       });
       console.log(payload)
       await profileApi.postEducationDetails(
@@ -243,12 +214,11 @@ const EducationForm = ({
   };
 
   if (!masterData) {
-    return null; // ⬅️ THIS LINE FIXES YOUR CRASH
+    return null; // THIS LINE FIXES CRASHES
   }
 
   return (
     <form className="row g-4 formfields pt-2" onSubmit={handleSubmit}>
-
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">
           Education Level <span className="text-danger">*</span>
@@ -268,21 +238,17 @@ const EducationForm = ({
               documentTypeId,
               masterData.educationLevels
             );
-
             // Clear error when user selects an option
             setFormErrors(prev => ({
               ...prev,
               educationLevel: undefined
             }));
-
             setFormData(prev => ({
               ...prev,
               educationLevel: documentTypeId,
               educationDocCode: docCode
             }));
-
             if (!educationId || !onEducationLevelChange || !selected) return;
-
             onEducationLevelChange(
               educationId,
               selected.documentName
@@ -470,41 +436,6 @@ const EducationForm = ({
         )}
       </div>
 
-      {/* File Upload */}
-      {/* <div className="col-md-4 col-sm-12 mt-2">
-        <label className="form-label">Education Certificate <span className="text-danger">*</span></label>
-
-        <div
-          className="border rounded d-flex flex-column align-items-center justify-content-center"
-          style={{ minHeight: "100px", cursor: "pointer" }}
-          onClick={() => document.getElementById("educationCertInput").click()}
-        >
-          <FontAwesomeIcon icon={faUpload} className="me-2 text-secondary" />
-
-          <div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-            Click to upload or drag and drop
-          </div>
-
-          <div className="text-muted" style={{ fontSize: "12px" }}>
-            Max: 2MB picture
-          </div>
-
-          <input
-            id="educationCertInput"
-            type="file"
-            accept=".jpg,.jpeg,.png,.pdf"
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-        </div>
-
-        {certificateFile && (
-          <small className="text-success mt-1 d-block">
-            Selected: {certificateFile.name}
-          </small>
-        )}
-      </div> */}
-
       <div className="col-md-4 col-sm-12 mt-2">
         <label htmlFor="eduCert" className="form-label">Education Certificate <span className="text-danger">*</span></label>
         {!certificateFile && !existingDocument && (
@@ -522,16 +453,13 @@ const EducationForm = ({
               icon={faUpload}
               className="me-2 text-secondary"
             />
-
             {/* Upload Text */}
             <div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
               Click to upload or drag and drop
             </div>
-
             <div className="text-muted" style={{ fontSize: "12px" }}>
               Max: 2MB picture
             </div>
-
             {/* Hidden File Input */}
             <input
               id="educationCertInput"
@@ -558,11 +486,9 @@ const EducationForm = ({
                 icon={faCheckCircle}
                 style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
               />
-
               <div>
                 <div style={{ fontWeight: 600, color: "#42579f" }}>
                   {existingDocument.displayName ?? existingDocument.fileName}
-
                 </div>
                 {/* <div className="text-muted" style={{ fontSize: "12px" }}>
                   {formatFileSize(certificateFile.size)}
@@ -572,7 +498,6 @@ const EducationForm = ({
 
             {/* RIGHT SIDE: View / Edit / Delete */}
             <div className="d-flex gap-2">
-
               {/* View */}
               <img
                 src={viewIcon}
@@ -580,15 +505,6 @@ const EducationForm = ({
                 style={{ width: "25px", cursor: "pointer" }}
                 onClick={() => window.open(existingDocument.fileUrl, "_blank")}
               />
-
-              {/* Edit → triggers file re-upload */}
-              {/* <img
-                src={editIcon}
-                alt="Edit"
-                style={{ width: "25px", cursor: "pointer" }}
-                onClick={handleBrowse}
-              /> */}
-
               {/* Delete */}
               <img
                 src={deleteIcon}
@@ -596,7 +512,6 @@ const EducationForm = ({
                 style={{ width: "25px", cursor: "pointer" }}
                 onClick={() => setExistingDocument(null)}
               />
-
             </div>
           </div>
         )}
@@ -616,7 +531,6 @@ const EducationForm = ({
                 icon={faCheckCircle}
                 style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
               />
-
               <div>
                 <div style={{ fontWeight: 600, color: "#42579f" }}>
                   {certificateFile?.name}
@@ -629,7 +543,6 @@ const EducationForm = ({
 
             {/* RIGHT SIDE: View / Edit / Delete */}
             <div className="d-flex gap-2">
-
               {/* View */}
               <img
                 src={viewIcon}
@@ -637,15 +550,6 @@ const EducationForm = ({
                 style={{ width: "25px", cursor: "pointer" }}
                 onClick={() => window.open(URL.createObjectURL(certificateFile), "_blank")}
               />
-
-              {/* Edit → triggers file re-upload */}
-              {/* <img
-                src={editIcon}
-                alt="Edit"
-                style={{ width: "25px", cursor: "pointer" }}
-                onClick={handleBrowse}
-              /> */}
-
               {/* Delete */}
               <img
                 src={deleteIcon}
@@ -653,7 +557,6 @@ const EducationForm = ({
                 style={{ width: "25px", cursor: "pointer" }}
                 onClick={() => setCertificateFile(null)}
               />
-
             </div>
           </div>
         )}

@@ -33,7 +33,7 @@ const EducationDetails = ({ goNext, goBack }) => {
           profileApi.getEducationDetails(candidateId),
           masterApi.getMasterData()
         ]);
-        const list = eduRes?.data?.data || [];
+        const list = eduRes?.data || [];
         const mandatoryQualifications = masterRes?.data?.data?.mandatoryQualification || [];
         const raw = masterRes?.data?.data || {};
         setMasterData({
