@@ -102,13 +102,13 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
                       >
                         <div className="bob-photo-box">
                           <img
-                            src={photoUrl}
+                            src={photoUrl || logo_Bob }
                             alt="Applicant Photo"
                             className="img-fluid img1"
                           />
 
                           <img
-                             src={signatureUrl}
+                             src={signatureUrl || sign}
                               alt="Signature"
                               className="img-fluid img2"
                           />
