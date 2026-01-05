@@ -190,7 +190,7 @@ useEffect(() => {
 
 
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered backdrop="static">
+    <Modal show={show} onHide={onHide} size="lg" centered backdrop="static" dialogClassName="track-application-modal">
       <Modal.Header closeButton>
         <Modal.Title>
           Track Application Status

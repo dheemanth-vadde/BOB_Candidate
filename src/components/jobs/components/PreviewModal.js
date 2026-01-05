@@ -45,6 +45,13 @@ const location3 = getLocation(masterData, preferences.location3);
 if (!previewData) {
     return null;
   }
+// ✅ PHOTO
+const photoUrl =
+  previewData.documents?.photo?.[0]?.url || null;
+
+// ✅ SIGNATURE
+const signatureUrl =
+  previewData.documents?.signature?.[0]?.url || null;
 
 
   console.log("Stored preference:", preferenceData);
@@ -350,7 +357,7 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
           return (
             <tr key={index}>
               {/* LEFT DOCUMENT */}
-              <td>{doc.name}</td>
+              <td>{doc.displayname ? doc.displayname : doc.name}</td>
               <td>
                 <a
                   href={doc.url}
@@ -366,10 +373,10 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
               {/* RIGHT DOCUMENT */}
               {nextDoc ? (
                 <>
-                  <td>{nextDoc.name}</td>
+                  <td>{nextDoc.displayname ? nextDoc.displayname : nextDoc.name}</td>
                   <td>
                      <a
-                  href={doc.url}
+                  href={nextDoc.url}
                   target="_blank"
                   rel="noreferrer"
                  

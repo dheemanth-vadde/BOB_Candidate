@@ -80,12 +80,12 @@ const RequestHistory = ({ applicationId, requestTypes = [] }) => {
                     {msg.sender_type === "candidate" ? "C" : "R"}
                   </div>
                   <div>
-                    <strong>
+                    <span className="sender-type">
                       {msg.sender_type === "candidate"
                         ? "Request raised by Candidate"
                         : "Response from Recruiter"}
-                    </strong>
-                    <p>{msg.message}</p>
+                    </span>
+                    <p><span className="comments-label">Comments: </span>{msg.message}</p>
 
                     {msg.attachment && (
                       <a

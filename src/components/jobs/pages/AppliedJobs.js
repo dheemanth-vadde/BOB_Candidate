@@ -9,7 +9,7 @@ import "../../../css/Appliedjobs.css";
 import apiService from "../../../services/apiService";
 import TrackApplicationModal from "../../jobs/components/TrackApplicationModal";
 import axios from "axios";
-import jobsApiService  from "../services/jobsApiService";
+import jobsApiService from "../services/jobsApiService";
 import OfferLetterModal from "../../jobs/components/OfferLetterModal";
 import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
 import PreviewModal from "../components/PreviewModal";
@@ -27,103 +27,103 @@ const AppliedJobs = () => {
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [offerData, setOfferData] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
-    const [masterData,setMasterData]=useState([{}]);
-const [showPreview, setShowPreview] = useState(false);
-const previewRef = useRef();
-const [previewData, setPreviewData] = useState(null);
+  const [masterData, setMasterData] = useState([{}]);
+  const [showPreview, setShowPreview] = useState(false);
+  const previewRef = useRef();
+  const [previewData, setPreviewData] = useState(null);
 
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
   const candidateId = userData?.data?.user?.id;
 
   const preferenceData = useSelector(
-  (state) => state.preference.preferenceData
-);
-const preferences = preferenceData?.preferences || {};
-const fetchMasterData = async () => {
-  try {
-    const masterResponse = await jobsApiService.getMasterData();
-    const mappedMasterData = mapMasterDataApi(masterResponse);
+    (state) => state.preference.preferenceData
+  );
+  const preferences = preferenceData?.preferences || {};
+  const fetchMasterData = async () => {
+    try {
+      const masterResponse = await jobsApiService.getMasterData();
+      const mappedMasterData = mapMasterDataApi(masterResponse);
 
-    if (
-      !mappedMasterData ||
-      !Object.keys(mappedMasterData).length
-    ) {
-      console.warn("Master data empty");
+      if (
+        !mappedMasterData ||
+        !Object.keys(mappedMasterData).length
+      ) {
+        console.warn("Master data empty");
+        return null;
+      }
+
+      setMasterData(mappedMasterData);
+      return mappedMasterData; // ✅ IMPORTANT
+    } catch (error) {
+      console.error("Error fetching master data:", error);
       return null;
     }
+  };
+  // const handleDownloadApplication = async (job) => {
+  //   try {
+  //     setLoading(true);
 
-    setMasterData(mappedMasterData);
-    return mappedMasterData; // ✅ IMPORTANT
-  } catch (error) {
-    console.error("Error fetching master data:", error);
-    return null;
-  }
-};
-const handleDownloadApplication = async (job) => {
-  try {
-    setLoading(true);
+  //     try {
+  //       const response = await jobsApiService.getAllDetails(candidateId);
 
-     try {
-        const response = await jobsApiService.getAllDetails(candidateId);
+  //       const mappedPreviewData = mapCandidateToPreview(
+  //         response.data,
+  //         masterData        // ✅ PASS MASTERS HERE
+  //       );
 
-        const mappedPreviewData = mapCandidateToPreview(
-          response.data,
-          masterData        // ✅ PASS MASTERS HERE
-        );
+  //       setPreviewData(mappedPreviewData);
+  //       setSelectedJob(job);
+  //       setShowPreview(true);
+  //     } catch (error) {
+  //       console.error("Failed to fetch candidate preview", error);
+  //       toast.error("Unable to load candidate profile");
+  //     }
 
-        setPreviewData(mappedPreviewData);
-        setSelectedJob(job);
-    setShowPreview(true);
-      } catch (error) {
-        console.error("Failed to fetch candidate preview", error);
-        toast.error("Unable to load candidate profile");
-      }
-    
 
-  } catch (err) {
-    console.error(err);
-    alert("Unable to load application preview");
-  } finally {
-    setLoading(false);
-  }
-};
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Unable to load application preview");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-const fetchAppliedJobs = async (master) => {
-  if (!candidateId || !master) return;
+  const fetchAppliedJobs = async (master) => {
+    if (!candidateId || !master) return;
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const jobsResponse = await jobsApiService.getAppliedJobs(candidateId);
+      const jobsResponse = await jobsApiService.getAppliedJobs(candidateId);
 
-    const jobsData = Array.isArray(jobsResponse?.data)
-      ? jobsResponse.data
-      : [];
+      const jobsData = Array.isArray(jobsResponse?.data)
+        ? jobsResponse.data
+        : [];
 
-    const mappedJobs = mapAppliedJobsApiToList(jobsData, master);
-    setAppliedJobs(mappedJobs);
+      const mappedJobs = mapAppliedJobsApiToList(jobsData, master);
+      setAppliedJobs(mappedJobs);
 
-  } catch (error) {
-    console.error("Error fetching applied jobs:", error);
-    setAppliedJobs([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-useEffect(() => {
-  if (!candidateId) return;
-
-  const init = async () => {
-    const master = await fetchMasterData();
-    if (master) {
-      fetchAppliedJobs(master);
+    } catch (error) {
+      console.error("Error fetching applied jobs:", error);
+      setAppliedJobs([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  init();
-}, [candidateId]);
+  useEffect(() => {
+    if (!candidateId) return;
+
+    const init = async () => {
+      const master = await fetchMasterData();
+      if (master) {
+        fetchAppliedJobs(master);
+      }
+    };
+
+    init();
+  }, [candidateId]);
 
 
 
@@ -142,92 +142,89 @@ useEffect(() => {
     return matchesDept && matchesLoc && matchesSearch;
   });
 
-  // ✅ Handlers
-  const handleDepartmentChange = (id) => {
-    setSelectedDepartments((prev) =>
-      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
-    );
-  };
+ 
 
-  const handleLocationChange = (id) => {
-    setSelectedLocations((prev) =>
-      prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]
-    );
-  };
+  // const handleDirectDownload = async (job) => {
+  //   try {
+  //     setLoading(true);
 
-const handleDirectDownload = async (job) => {
-  try {
-    setLoading(true);
+  //     const response = await jobsApiService.getAllDetails(candidateId);
 
-    const response = await jobsApiService.getAllDetails(candidateId);
+  //     const mappedPreviewData = mapCandidateToPreview(
+  //       response.data,
+  //       masterData
+  //     );
 
-    const mappedPreviewData = mapCandidateToPreview(
-      response.data,
-      masterData
-    );
+  //     // 1️⃣ Set data
+  //     setSelectedJob(job);
+  //     setPreviewData(mappedPreviewData);
 
-    // 1️⃣ Set data
-    setSelectedJob(job);
-    setPreviewData(mappedPreviewData);
+  //     // 2️⃣ Wait for React to paint
+  //     requestAnimationFrame(() => {
+  //       requestAnimationFrame(() => {
+  //         if (!previewRef.current) {
+  //           console.error("Preview ref not ready");
+  //           return;
+  //         }
+  //         console.log("Preview HTML:", previewRef.current.innerHTML);
+  //         console.log("Preview height:", previewRef.current.offsetHeight);
+  //         html2pdf()
+  //           .from(previewRef.current)
+  //           .set({
+  //             margin: 10,
+  //             filename: `Application_${job.requisition_code}.pdf`,
+  //             image: { type: "jpeg", quality: 0.98 },
+  //             html2canvas: { scale: 2, useCORS: true },
+  //             jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+  //           })
+  //           .save();
+  //       });
+  //     });
 
-    // 2️⃣ Wait for React to paint
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!previewRef.current) {
-          console.error("Preview ref not ready");
-          return;
-        }
-console.log("Preview HTML:", previewRef.current.innerHTML);
-console.log("Preview height:", previewRef.current.offsetHeight);
-        html2pdf()
-          .from(previewRef.current)
-          .set({
-            margin: 10,
-            filename: `Application_${job.requisition_code}.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-          })
-          .save();
-      });
-    });
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Unable to download application");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Unable to download application");
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleViewOffer = async (job) => {
+    try {
+      if (!job?.application_id) {
+        toast.error("Application ID missing");
+        return;
+      }
 
-const handleViewOffer = async (job) => {
-  try {
-    if (!job?.application_id) {
-      toast.error("Application ID missing");
-      return;
+      setLoading(true);
+
+      const res = await jobsApiService.getOfferLetterByApplicationId(
+        job.application_id
+      );
+
+      if (!res?.success || !res?.data) {
+        toast.error("Offer letter not found");
+        return;
+      }
+
+      setOfferData(res.data);       // ✅ store API response
+      setShowOfferModal(true);      // ✅ open modal
+
+    } catch (err) {
+      console.error("Failed to fetch offer letter", err);
+      toast.error("Unable to load offer letter");
+    } finally {
+      setLoading(false);
     }
+  };
+  const formatStatusLabel = (status) => {
+    if (!status) return "Applied";
 
-    setLoading(true);
-
-    const res = await jobsApiService.getOfferLetterByApplicationId(
-      job.application_id
-    );
-
-    if (!res?.success || !res?.data) {
-      toast.error("Offer letter not found");
-      return;
-    }
-
-    setOfferData(res.data);       // ✅ store API response
-    setShowOfferModal(true);      // ✅ open modal
-
-  } catch (err) {
-    console.error("Failed to fetch offer letter", err);
-    toast.error("Unable to load offer letter");
-  } finally {
-    setLoading(false);
-  }
-};
+    return status
+      .replace(/_/g, " ")          // Offer_Accepted → Offer Accepted
+      .toLowerCase()
+      .replace(/\b\w/g, char => char.toUpperCase()); // Title Case
+  };
 
   return (
 
@@ -276,84 +273,85 @@ const handleViewOffer = async (job) => {
             </span>
 
             <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
-              {job.application_status || "Applied"}
+              {/* {job.application_status || "Applied"} */}
+              {formatStatusLabel(job.application_status)}
             </span>
           </div>
 
           {/* Grid Info */}
           {/* ===== META DATA – SINGLE FLEX ROW ===== */}
           {/* ===== META ROW 1 ===== */}
-{/* ===== META ROW 1 ===== */}
-<div className="job-meta-grid row-1">
-  <div className="meta-item">
-    <span className="label">Reference No:</span>
-    <span className="value">{job.requisition_code}</span>
-  </div>
+          {/* ===== META ROW 1 ===== */}
+          <div className="job-meta-grid row-1">
+            <div className="meta-item">
+              <span className="label">Reference No:</span>
+              <span className="value">{job.requisition_code}</span>
+            </div>
 
-  <div className="meta-item">
-    <span className="label">Eligibility Age:</span>
-    <span className="value">
-      {job.eligibility_age_min} – {job.eligibility_age_max} years
-    </span>
-  </div>
+            <div className="meta-item">
+              <span className="label">Eligibility Age:</span>
+              <span className="value">
+                {job.eligibility_age_min} – {job.eligibility_age_max} years
+              </span>
+            </div>
 
-  <div className="meta-item">
-    <span className="label">Applied On:</span>
-    <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
-  </div>
+            <div className="meta-item">
+              <span className="label">Applied On:</span>
+              <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
+            </div>
 
-  <div className="meta-item">
-    <span className="label">Employment Type:</span>
-    <span className="value">{job.employment_type}</span>
-  </div>
-</div>
+            <div className="meta-item">
+              <span className="label">Employment Type:</span>
+              <span className="value">{job.employment_type}</span>
+            </div>
+          </div>
 
-{/* ===== META ROW 2 ===== */}
-<div className="job-meta-grid row-2">
-  <div className="meta-item">
-    <span className="label">Department:</span>
-    <span className="value">{job.dept_name}</span>
-  </div>
+          {/* ===== META ROW 2 ===== */}
+          <div className="job-meta-grid row-2">
+            <div className="meta-item">
+              <span className="label">Department:</span>
+              <span className="value">{job.dept_name}</span>
+            </div>
 
-  <div className="meta-item">
-    <span className="label">Experience:</span>
-    <span className="value">{job.mandatory_experience} years</span>
-  </div>
+            <div className="meta-item">
+              <span className="label">Experience:</span>
+              <span className="value">{job.mandatory_experience} years</span>
+            </div>
 
-  <div className="meta-item">
-    <span className="label">Vacancies:</span>
-    <span className="value">{job.no_of_vacancies}</span>
-  </div>
-</div>
+            <div className="meta-item">
+              <span className="label">Vacancies:</span>
+              <span className="value">{job.no_of_vacancies}</span>
+            </div>
+          </div>
 
-{/* ===== META ROW 3 ===== */}
-<div className="job-meta-grid row-3">
-  <div className="meta-item">
-    <span className="label">Qualification:</span>
-    <span className="value">{job.mandatory_qualification}</span>
-  </div>
-</div>
+          {/* ===== META ROW 3 ===== */}
+          <div className="job-meta-grid row-3">
+            <div className="meta-item">
+              <span className="label">Qualification:</span>
+              <span className="value">{job.mandatory_qualification}</span>
+            </div>
+          </div>
 
           {/* Footer */}
           <div className="job-footer">
-           {(
-  job.application_status === "Offered" ||
-  job.application_status === "Offer_Accepted" ||
-  job.application_status === "Offer_Rejected"
-) && (
-  <>
-    <button
-      className="footer-link"
-      onClick={() => handleViewOffer(job)}
-    >
-      View Offer
-    </button>
+            {(
+              job.application_status === "Offered" ||
+              job.application_status === "Offer_Accepted" ||
+              job.application_status === "Offer_Rejected"
+            ) && (
+                <>
+                  <button
+                    className="footer-link"
+                    onClick={() => handleViewOffer(job)}
+                  >
+                    View Offer
+                  </button>
 
-    <span className="footer-separator">|</span>
-  </>
-)}
+                  <span className="footer-separator">|</span>
+                </>
+              )}
 
-        {/* <button
+            {/* <button
           className="footer-link download-link"
            onClick={() => handleDirectDownload(job)}
         >
@@ -379,17 +377,17 @@ const handleViewOffer = async (job) => {
       <OfferLetterModal
         show={showOfferModal}
         onHide={() => setShowOfferModal(false)}
-         offerData={offerData}
-           onDecisionSuccess={() => fetchAppliedJobs(masterData)} 
+        offerData={offerData}
+        onDecisionSuccess={() => fetchAppliedJobs(masterData)}
       />
-      
-<ApplicationDownload
-  ref={previewRef}
-  previewData={previewData}
-  selectedJob={selectedJob}
-  masterData={masterData}
-  preferences={{preferences}}
-/>
+
+      <ApplicationDownload
+        ref={previewRef}
+        previewData={previewData}
+        selectedJob={selectedJob}
+        masterData={masterData}
+        preferences={{ preferences }}
+      />
 
     </div>
   );
