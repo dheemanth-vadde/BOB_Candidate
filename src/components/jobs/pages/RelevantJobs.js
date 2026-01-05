@@ -27,6 +27,7 @@ import PaymentModal from "../components/PaymentModal";
 import jobsApiService from "../services/jobsApiService";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ValidationErrorModal from "../components/ValidationErrorModal";
+import masterApi from "../../../services/master.api";
 
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
@@ -73,6 +74,11 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   ];
   const ITEMS_PER_PAGE = 5; // change if needed
   const [currentPage, setCurrentPage] = useState(1);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [infoDocs, setInfoDocs] = useState([]);
+  const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
+
+
 
   const dispatch = useDispatch();
 
@@ -141,6 +147,28 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
       setLoading(false);
     }
   };
+
+  const fetchInfoDocuments = async (type) => {
+  try {
+    const res = await masterApi.getGenericDocuments();
+
+    const filtered = (res.data?.data || []).filter(
+      (doc) => doc.type?.toLowerCase() === type
+    );
+
+    if (filtered.length === 0) {
+      toast.info("No documents available");
+      return;
+    }
+
+    setInfoDocs(filtered);
+    setActiveInfoType(type);
+    setShowInfoModal(true);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load documents");
+  }
+};
 
   useEffect(() => {
     fetchRequisitions();
@@ -607,18 +635,31 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
               </div>
             </div>
 
-            <div className="applied-search">
-
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search by Job title or Req code..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <span className="search-icon">
-                <FontAwesomeIcon icon={faSearch} />
-              </span>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                className="info_btn"
+                onClick={() => fetchInfoDocuments("annexures")}
+              >
+                Annexures Information
+              </button>
+              <button
+                className="info_btn"
+                onClick={() => fetchInfoDocuments("generic")}
+              >
+                Generic Information
+              </button>
+              <div className="applied-search">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by Job title or Req code..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className="search-icon">
+                  <FontAwesomeIcon icon={faSearch} />
+                </span>
+              </div>
             </div>
           </div>
           {paginatedJobs.map((job) => (
@@ -820,6 +861,36 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
           </ul>
         </div>
       )}
+
+      <Modal
+        show={showInfoModal}
+        onHide={() => setShowInfoModal(false)}
+        size="xl"
+        centered
+        dialogClassName="info-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {activeInfoType === "annexures"
+              ? "Annexure Information"
+              : "Generic Information"}
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body className="info-modal-body">
+          {infoDocs.map((doc) => (
+            <div key={doc.id} className="pdf-wrapper">
+              <div className="pdf-title">{doc.fileName}</div>
+
+              <iframe
+                src={doc.fileUrl}
+                title={doc.fileName}
+                className="pdf-iframe"
+              />
+            </div>
+          ))}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

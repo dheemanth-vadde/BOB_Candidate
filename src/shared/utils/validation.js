@@ -177,3 +177,10 @@ export const validateNonEmptyText = (value) => {
 
   return { isValid: true };
 };
+
+export const isStrongPassword = (password) => {
+  const strongPasswordRegex =
+    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+=\-]).{8,}$/;
+  return strongPasswordRegex.test(password);
+};
+

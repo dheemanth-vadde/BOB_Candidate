@@ -36,9 +36,16 @@ export const getDocumentTypes = () => {
   return api.get(`/v1/master/document-types/all`);
 };
 
+export const getGenericDocuments = () => {
+  return api.get(
+    "/v1/master/rec-generic-documents/unique-document-types"
+  );
+};
+
 export default {
   getMasterData,
   getDocumentTypes,
   getChatFAQReply,
-  getChatQueryReply
+  getChatQueryReply,
+  getGenericDocuments
 };

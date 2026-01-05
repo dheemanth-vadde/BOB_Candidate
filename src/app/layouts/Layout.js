@@ -7,7 +7,9 @@ import { clearUser } from "../../components/auth/store/userSlice";
 export default function Layout() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.authUser?.access_token);
+  // const user = useSelector((state) => state.user.authUser?.access_token);
+  const userData = useSelector((state) => state?.user?.user?.data);
+  const user = userData?.accessToken;
   // console.log("Layout user:", user);
   // const loggedIn = !!localStorage.getItem("access_token");
 
