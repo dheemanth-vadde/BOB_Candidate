@@ -1,4 +1,4 @@
-import React,{ useState } from "react";
+import React, { useState } from "react";
 import { Modal, Accordion } from "react-bootstrap";
 import "../../../css/PreviewModal.css";
 import logo_Bob from "../../../assets/bob-logo.png";
@@ -12,53 +12,56 @@ const PreviewModal = ({
   show,
   onHide,
   previewData,
-  onBack,
   onEditProfile,
   onProceedToPayment,
   selectedJob,
-  masterData
+  masterData,
+onBack,
+  applyForm,              // ✅ NEW
+  onApplyFormChange       // ✅ NEW
 }) => {
-
+console.log("Master Data111:", masterData);
+console.log("selected Job11:", selectedJob);
   const [declarations, setDeclarations] = useState({
     decl1: false,
     decl2: false,
     decl3: false,
   });
- const allChecked =
+  const allChecked =
     declarations.decl1 &&
     declarations.decl2 &&
     declarations.decl3;
-  
+
   const preferenceData = useSelector(
     (state) => state.preference.preferenceData
   );
   const preferences = preferenceData?.preferences || {};
 
   const state1 = getState(masterData, preferences.state1);
-const location1 = getLocation(masterData, preferences.location1);
+  const location1 = getLocation(masterData, preferences.location1);
 
-const state2 = getState(masterData, preferences.state2);
-const location2 = getLocation(masterData, preferences.location2);
+  const state2 = getState(masterData, preferences.state2);
+  const location2 = getLocation(masterData, preferences.location2);
 
-const state3 = getState(masterData, preferences.state3);
-const location3 = getLocation(masterData, preferences.location3);
-if (!previewData) {
+  const state3 = getState(masterData, preferences.state3);
+  const location3 = getLocation(masterData, preferences.location3);
+  if (!previewData) {
     return null;
   }
-// ✅ PHOTO
-const photoUrl =
-  previewData.documents?.photo?.[0]?.url || null;
+  // ✅ PHOTO
+  const photoUrl =
+    previewData.documents?.photo?.[0]?.url || null;
 
-// ✅ SIGNATURE
-const signatureUrl =
-  previewData.documents?.signature?.[0]?.url || null;
+  // ✅ SIGNATURE
+  const signatureUrl =
+    previewData.documents?.signature?.[0]?.url || null;
   console.log("Photo URL:", photoUrl);
   console.log("Signature URL:", signatureUrl);
 
 
   console.log("Stored preference:", preferenceData);
   console.log("Preview previewData:", previewData);
-const allDocuments = Object.values(previewData.documents || {}).flat();
+  const allDocuments = Object.values(previewData.documents || {}).flat();
   return (
     <Modal
       show={show}
@@ -71,11 +74,11 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
         {/* ===== HEADER ===== */}
         <div className="bob-header">
           <div className="title_pre">
-                 <span>{selectedJob?.requisition_code} - {selectedJob?.requisition_title}</span>
+            <span>{selectedJob?.requisition_code} - {selectedJob?.requisition_title}</span>
           </div>
           <div className="bob-header-title">
             {selectedJob?.position_title ||
-            "Deputy Manager : Product - ONDC (Open Network for Digital Commerce)"}
+              "Deputy Manager : Product - ONDC (Open Network for Digital Commerce)"}
           </div>
         </div>
 
@@ -90,7 +93,7 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
                   <tbody>
                     <tr>
                       <td className="fw-med" style={{ width: "20%" }}>Full Name</td>
-                      <td  className="fw-reg" colSpan={4} style={{ width: "60%" }}>
+                      <td className="fw-reg" colSpan={4} style={{ width: "60%" }}>
                         {previewData.personalDetails.fullName}
                       </td>
 
@@ -102,15 +105,15 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
                       >
                         <div className="bob-photo-box">
                           <img
-                            src={photoUrl || logo_Bob }
+                            src={photoUrl || logo_Bob}
                             alt="Applicant Photo"
                             className="img-fluid img1"
                           />
 
                           <img
-                             src={signatureUrl || sign}
-                              alt="Signature"
-                              className="img-fluid img2"
+                            src={signatureUrl || sign}
+                            alt="Signature"
+                            className="img-fluid img2"
                           />
                         </div>
                         {/* <div className="bob-photo-box1">
@@ -178,9 +181,10 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
 
                     <tr>
                       <td className="fw-med">Exam Center</td>
-                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "-"}</td>
+                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "-"}</td> 
                       <td className="fw-med">Nationality</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality_name}</td>
+                    
                     </tr>
 
                     <tr>
@@ -200,23 +204,25 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
                     <tr>
                       <td className="fw-med">Current CTC</td>
                       <td className="fw-reg" colSpan={2}>{previewData.experienceSummary?.currentCtc || "-"}</td>
-                      <td className="fw-med">Expected CTC</td>
-                      <td className="fw-reg" colSpan={2}>{preferences.ctc ? `₹${Number(preferences.ctc).toLocaleString()}` : "-"}</td>
+                      <td className="fw-med">Social Media Profile links</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.socialMediaProfileLink}</td>
+                      {/* <td className="fw-med">Expected CTC</td>
+                      <td className="fw-reg" colSpan={2}>{preferences.ctc ? `₹${Number(preferences.ctc).toLocaleString()}` : "-"}</td> */}
                     </tr>
 
-                    <tr>
+                    {/* <tr>
                       <td className="fw-med">Location Preference 1</td>
                       <td className="fw-reg" colSpan={2}>{state1?.state_name || "-"}</td>
                       <td className="fw-med">Location Preference 2</td>
                       <td className="fw-reg" colSpan={2}>{state2?.state_name || "-"}</td>
-                    </tr>
+                    </tr> */}
 
-                    <tr>
-                      <td className="fw-med">Location Preference 3</td>
-                      <td className="fw-reg" colSpan={2}>{state3?.state_name || "-"}</td>
+                    {/*<tr>
+                       <td className="fw-med">Location Preference 3</td>
+                      <td className="fw-reg" colSpan={2}>{state3?.state_name || "-"}</td> 
                       <td className="fw-med">Social Media Profile links</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.socialMediaProfileLink}</td>
-                    </tr>
+                    </tr>*/}
 
                     <tr>
                       <td className="fw-med">Already secured regular employment under the Central Govt. in civil post?</td>
@@ -295,7 +301,7 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
             <Accordion.Header>Experience Details</Accordion.Header>
             <Accordion.Body>
               {/* Experience Summary Cards */}
-              
+
 
               {/* Experience Table */}
               <div className="table-responsive">
@@ -330,150 +336,252 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
               </div>
             </Accordion.Body>
           </Accordion.Item>
-           {/* === DOCUMENT DETAILS === */}
-        <Accordion.Item eventKey="3">
-  <Accordion.Header>Documents Details</Accordion.Header>
-  <Accordion.Body>
-    <table className="table table-bordered bob-table">
-      <thead className="table-header">
-        <tr>
-          <th>File Type</th>
-          <th>Action</th>
-          <th>File Type</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {allDocuments.length === 0 && (
-          <tr>
-            <td colSpan="4" className="text-center">
-              No documents available
-            </td>
-          </tr>
-        )}
+          {/* === DOCUMENT DETAILS === */}
+          <Accordion.Item eventKey="3">
+            <Accordion.Header>Documents Details</Accordion.Header>
+            <Accordion.Body>
+              <table className="table table-bordered bob-table">
+                <thead className="table-header">
+                  <tr>
+                    <th>File Type</th>
+                    <th>Action</th>
+                    <th>File Type</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allDocuments.length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="text-center">
+                        No documents available
+                      </td>
+                    </tr>
+                  )}
 
-        {allDocuments.map((doc, index) => {
-          if (index % 2 !== 0) return null; // process in pairs only
+                  {allDocuments.map((doc, index) => {
+                    if (index % 2 !== 0) return null; // process in pairs only
 
-          const nextDoc = allDocuments[index + 1];
+                    const nextDoc = allDocuments[index + 1];
 
-          return (
-            <tr key={index}>
-              {/* LEFT DOCUMENT */}
-              <td>{doc.displayname ? doc.displayname : doc.name}</td>
-              <td>
-                <a
-                  href={doc.url}
-                  target="_blank"
-                  rel="noreferrer"
-                 
-                >
-                  <img src={viewIcon}  	alt="View"
-										style={{ width: "25px", cursor: "pointer" }}/>
-                </a>
-              </td>
+                    return (
+                      <tr key={index}>
+                        {/* LEFT DOCUMENT */}
+                        <td>{doc.displayname ? doc.displayname : doc.name}</td>
+                        <td>
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noreferrer"
 
-              {/* RIGHT DOCUMENT */}
-              {nextDoc ? (
-                <>
-                  <td>{nextDoc.displayname ? nextDoc.displayname : nextDoc.name}</td>
-                  <td>
-                     <a
-                  href={nextDoc.url}
-                  target="_blank"
-                  rel="noreferrer"
-                 
-                >
-                  <img src={viewIcon}  	alt="View"
-										style={{ width: "25px", cursor: "pointer" }}/>
-                </a>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td>-</td>
-                  <td>-</td>
-                </>
-              )}
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  </Accordion.Body>
-</Accordion.Item>
+                          >
+                            <img src={viewIcon} alt="View"
+                              style={{ width: "25px", cursor: "pointer" }} />
+                          </a>
+                        </td>
 
+                        {/* RIGHT DOCUMENT */}
+                        {nextDoc ? (
+                          <>
+                            <td>{nextDoc.displayname ? nextDoc.displayname : nextDoc.name}</td>
+                            <td>
+                              <a
+                                href={nextDoc.url}
+                                target="_blank"
+                                rel="noreferrer"
+
+                              >
+                                <img src={viewIcon} alt="View"
+                                  style={{ width: "25px", cursor: "pointer" }} />
+                              </a>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td>-</td>
+                            <td>-</td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </Accordion.Body>
+          </Accordion.Item>
+          {selectedJob?.is_location_preference_enabled === true && (
+          <Accordion.Item eventKey="4">
+            <Accordion.Header>
+              Add Preference
+            </Accordion.Header>
+
+            <Accordion.Body>
+              <div className="row g-3">
+
+                  {/* LOCATION PREFERENCES */}
+                  {selectedJob?.is_location_preference_enabled && (
+                    <>
+                      {[1, 2, 3].map((i) => (
+                        <React.Fragment key={i}>
+                          <div className="col-md-3">
+                            <label className="form-label">
+                              State Preference {i}
+                            </label>
+                            <select
+                              className="form-control"
+                              value={applyForm[`state${i}`]}
+                              onChange={(e) => {
+                                onApplyFormChange(`state${i}`, e.target.value);
+                                onApplyFormChange(`location${i}`, "");
+                              }}
+                            >
+                              <option value="">Select State</option>
+                              {masterData.states
+                                .filter(s =>
+                                  selectedJob?.state_id_array?.includes(s.state_id)
+                                )
+                                .map(s => (
+                                  <option key={s.state_id} value={s.state_id}>
+                                    {s.state_name}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+
+                          <div className="col-md-3">
+                            <label className="form-label">
+                              Location Preference {i}
+                            </label>
+                            <select
+                              className="form-control"
+                              value={applyForm[`location${i}`]}
+                              disabled={!applyForm[`state${i}`]}
+                              onChange={(e) =>
+                                onApplyFormChange(`location${i}`, e.target.value)
+                              }
+                            >
+                              <option value="">Select Location</option>
+                              {masterData.cities
+                                .filter(c => c.state_id === applyForm[`state${i}`])
+                                .map(c => (
+                                  <option key={c.city_id} value={c.city_id}>
+                                    {c.city_name}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                        </React.Fragment>
+                      ))}
+                    </>
+                  )}
+
+                  {/* EXPECTED CTC */}
+                  {selectedJob?.employment_type?.toLowerCase() === "contract" && (
+                    <div className="col-md-3">
+                      <label className="form-label">
+                        Expected CTC (in Lakhs)
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={applyForm.ctc}
+                        onChange={(e) =>
+                          onApplyFormChange("ctc", e.target.value)
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {/* INTERVIEW CENTER */}
+                  <div className="col-md-3">
+                    <label className="form-label">
+                      Exam / Interview Center
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={applyForm.examCenter}
+                      onChange={(e) =>
+                        onApplyFormChange("examCenter", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+            </Accordion.Body>
+          </Accordion.Item>
+
+          )}
         </Accordion>
 
-       
+
 
         {/* ===== DECLARATION + BUTTONS ===== */}
         <div className="mt-4 text-center">
-          <div className="captcha-box mb-3">
+          {/* <div className="captcha-box mb-3">
             <span className="captcha-text">X A Y 2 U</span>
             <input type="text" className="captcha-input" />
-          </div>
+          </div> */}
 
           <div className="declaration-box text-start">
-  <div className="form-check mb-2">
-    <input
-      type="checkbox"
-      className="form-check-input"
-      id="decl1"
-      checked={declarations.decl1}
-      onChange={(e) =>
-        setDeclarations((prev) => ({
-          ...prev,
-          decl1: e.target.checked,
-        }))
-      }
-    />
-    <label htmlFor="decl1" className="form-check-label decl">
-      I acknowledge that any misrepresentation, omission, or furnishing of
-      incorrect information may render my application liable for rejection
-      at any stage of the recruitment process.
-    </label>
-  </div>
+            <div className="form-check mb-2">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="decl1"
+                checked={declarations.decl1}
+                onChange={(e) =>
+                  setDeclarations((prev) => ({
+                    ...prev,
+                    decl1: e.target.checked,
+                  }))
+                }
+              />
+              <label htmlFor="decl1" className="form-check-label decl">
+                I acknowledge that any misrepresentation, omission, or furnishing of
+                incorrect information may render my application liable for rejection
+                at any stage of the recruitment process.
+              </label>
+            </div>
 
-  <div className="form-check mb-2">
-    <input
-      type="checkbox"
-      className="form-check-input"
-      id="decl2"
-      checked={declarations.decl2}
-      onChange={(e) =>
-        setDeclarations((prev) => ({
-          ...prev,
-          decl2: e.target.checked,
-        }))
-      }
-    />
-    <label htmlFor="decl2" className="form-check-label decl">
-      I further confirm that all documents uploaded in this application
-      have been provided voluntarily and as per my own understanding.
-    </label>
-  </div>
+            <div className="form-check mb-2">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="decl2"
+                checked={declarations.decl2}
+                onChange={(e) =>
+                  setDeclarations((prev) => ({
+                    ...prev,
+                    decl2: e.target.checked,
+                  }))
+                }
+              />
+              <label htmlFor="decl2" className="form-check-label decl">
+                I further confirm that all documents uploaded in this application
+                have been provided voluntarily and as per my own understanding.
+              </label>
+            </div>
 
-  <div className="form-check">
-    <input
-      type="checkbox"
-      className="form-check-input"
-      id="decl3"
-      checked={declarations.decl3}
-      onChange={(e) =>
-        setDeclarations((prev) => ({
-          ...prev,
-          decl3: e.target.checked,
-        }))
-      }
-    />
-    <label htmlFor="decl3" className="form-check-label decl">
-      I declare that I possess the requisite work experience for this post,
-      as stipulated in the terms of the advertisement, and undertake to
-      submit necessary documents/testimonials in support of the same.
-    </label>
-  </div>
-</div>
+            <div className="form-check">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="decl3"
+                checked={declarations.decl3}
+                onChange={(e) =>
+                  setDeclarations((prev) => ({
+                    ...prev,
+                    decl3: e.target.checked,
+                  }))
+                }
+              />
+              <label htmlFor="decl3" className="form-check-label decl">
+                I declare that I possess the requisite work experience for this post,
+                as stipulated in the terms of the advertisement, and undertake to
+                submit necessary documents/testimonials in support of the same.
+              </label>
+            </div>
+          </div>
 
 
           {/* Footer Buttons */}
@@ -497,13 +605,13 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
                 Edit Profile Details
               </button> */}
               {onProceedToPayment && (
-              <button
-                className="btn btn-bob-orange"
-                 disabled={!allChecked}
-                onClick={onProceedToPayment}
-              >
-                Proceed for Payment
-              </button>
+                <button
+                  className="btn btn-bob-orange"
+                  disabled={!allChecked}
+                  onClick={onProceedToPayment}
+                >
+                  Proceed for Payment
+                </button>
               )}
             </div>
           </div>

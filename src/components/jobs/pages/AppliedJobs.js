@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import html2pdf from "html2pdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSearch,faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import Razorpay from "../../integrations/payments/Razorpay";
 import { mapAppliedJobsApiToList } from "../../jobs/mappers/appliedjobMapper";
@@ -259,9 +259,25 @@ const AppliedJobs = () => {
       )}
 
       {/* ===== APPLIED JOBS LIST ===== */}
-      {!loading && filteredJobs.length === 0 && (
+      {/* {!loading && filteredJobs.length === 0 && (
         <p className="text-muted">No applied jobs found.</p>
-      )}
+      )} */}
+
+              {!loading && filteredJobs.length === 0 && (
+                  <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
+                    <div className="text-center">
+                      <FontAwesomeIcon
+                        icon={faCheckCircle}
+                        size="3x"
+                        className="text-muted mb-3"
+                      />
+                      <h5 className="text-muted">No applied jobs found</h5>
+                      <p className="text-muted small">
+                        Please apply to jobs in Current Opportunities.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
       {filteredJobs.map((job) => (
         <div className="applied-job-card mb-3" key={job.position_id}>
