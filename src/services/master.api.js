@@ -25,6 +25,11 @@ export const getChatFAQReply = (question) => {
     params: { question },
   });
 };
+export const getChatQueryReply = (question, candidateId) => {
+  return api.get(`/v1/master/chatbot/getChatQueryReply`, {
+    params: { question, candidateId }
+  });
+};
 
 
 export const getDocumentTypes = () => {
@@ -34,5 +39,6 @@ export const getDocumentTypes = () => {
 export default {
   getMasterData,
   getDocumentTypes,
-  getChatFAQReply
+  getChatFAQReply,
+  getChatQueryReply
 };
