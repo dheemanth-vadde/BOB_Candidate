@@ -337,7 +337,12 @@ color: #162B75 ;
   background: #fff;
   padding: 15px;
 }
-
+/* Restore dropdown appearance ONLY for select */
+select.form-control {
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+}
 /* === Responsive === */
 @media (max-width: 991px) {
 

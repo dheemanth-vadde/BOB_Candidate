@@ -11,7 +11,7 @@ import { Modal } from "react-bootstrap";
 import "../../../css/Relevantjobs.css";
 import { toast } from "react-toastify";
 import PreviewModal from "../components/PreviewModal";
-import PreferenceModal from "../components/PreferenceModal";
+//import PreferenceModal from "../components/PreferenceModal";
 import apiService from "../../../services/apiService";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -42,7 +42,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [requisitions, setRequisitions] = useState([]);
   const [selectedRequisition, setSelectedRequisition] = useState("");
-  const [showPreferenceModal, setShowPreferenceModal] = useState(false);
+  //const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [masterData, setMasterData] = useState([{}]);
@@ -117,36 +117,43 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   };
 
   // ✅ Fetch jobs
-  const fetchJobs = async () => {
+ const fetchJobs = async () => {
+  try {
+    setLoading(true);
+
+    // 1️⃣ Always load master data
+    const masterRes = await jobsApiService.getMasterData();
+    const mappedMasterData = mapMasterDataApi(masterRes);
+
+    setDepartments(mappedMasterData.departments || []);
+    setStates(mappedMasterData.states || []);
+    setLocations(mappedMasterData.cities || []);
+    setMasterData(mappedMasterData);
+
+    // 2️⃣ Load jobs separately
+    let jobsData = [];
     try {
-
-
-      const [jobsRes, masterRes] = await Promise.all([
-        jobsApiService.getJobPositions(candidateId),
-        jobsApiService.getMasterData(),
-      ]);
-      const jobsData = jobsRes?.data || [];
-
-
-      const mappedMasterData = mapMasterDataApi(masterRes);
-      console.log("mappedMasterData", mappedMasterData);
-
-      setDepartments(mappedMasterData.departments);
-      setStates(mappedMasterData.states);
-      setLocations(mappedMasterData.cities);
-      setMasterData(mappedMasterData);
-      const locations = mappedMasterData.cities || [];
-      // ✅ Convert new nested structure to old flat model
-      const mappedJobs = mapJobsApiToList(jobsData, mappedMasterData);
-      console.log("mapedjobs", mappedJobs)
-      setJobs(mappedJobs); // use the mapped flat array
-      setIsMasterReady(true);
-    } catch (err) {
-      console.error("Error fetching jobs:", err);
-    } finally {
-      setLoading(false);
+      const jobsRes = await jobsApiService.getJobPositions(candidateId);
+      jobsData = jobsRes?.data || [];
+    } catch (jobErr) {
+      // ✅ 404 is OK → means no jobs
+      if (jobErr?.response?.status !== 404) {
+        throw jobErr; // real error
+      }
     }
-  };
+
+    const mappedJobs = mapJobsApiToList(jobsData, mappedMasterData);
+    setJobs(mappedJobs);
+
+    setIsMasterReady(true);
+  } catch (err) {
+    console.error("Error fetching data:", err);
+    toast.error("Failed to load data");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchInfoDocuments = async (type) => {
   try {
@@ -291,7 +298,8 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
         examCenter: "",
       });
 
-      setShowPreferenceModal(true);
+     // setShowPreferenceModal(true);
+        setShowPreviewModal(true);
     } catch (err) {
       setValidationErrorMsg("Unable to validate profile. Please try again.");
       setShowValidationErrorModal(true);
@@ -324,7 +332,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
       const response = await jobsApiService.applyToJob(payload);
       if (response?.success) {
         toast.success("Job applied Successfully");
-        setShowPreferenceModal(false);
+        //setShowPreferenceModal(false);
         setShowPaymentModal(false);
         setActiveTab("applied-jobs"); // ✅ correct
 
@@ -356,7 +364,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
       examCenter: "",
     });
 
-    setShowPreferenceModal(true);
+    //setShowPreferenceModal(true);
   };
 
   const handleKnowMore = (job) => {
@@ -365,7 +373,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   };
 
   const handleClosePreferenceModal = () => {
-    setShowPreferenceModal(false);
+    //setShowPreferenceModal(false);
     setApplyForm({
       state1: "",
       location1: "",
@@ -464,7 +472,42 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     setSelectedExperience([]);
     setSearchTerm("");
   };
-  const handlePreviewClick = () => {
+  // const handlePreviewClick = () => {
+  //   let isCtcRequired = false;
+
+  //   if (selectedJob?.employment_type === "Contract") {
+  //     isCtcRequired = true;
+  //   }
+
+  //   if (isCtcRequired && !applyForm.ctc) {
+  //     toast.error("Please enter Expected CTC");
+  //     return;
+  //   }
+
+  //   if (!applyForm.examCenter) {
+  //     toast.error("Please enter Interview Center");
+  //     return;
+  //   }
+
+  //   if (!previewData) {
+  //     toast.error("Candidate data not loaded yet");
+  //     return;
+  //   }
+
+  //   dispatch(
+  //     savePreference({
+  //       jobId: selectedJob.position_id,
+  //       requisitionId: selectedJob.requisition_id,
+  //       preferences: applyForm,
+  //     })
+  //   );
+
+  //   //setShowPreferenceModal(false);
+  //   setShowPreviewModal(true);
+  // };
+  const handleProceedToPayment = () => {
+
+
     let isCtcRequired = false;
 
     if (selectedJob?.employment_type === "Contract") {
@@ -494,10 +537,6 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
       })
     );
 
-    setShowPreferenceModal(false);
-    setShowPreviewModal(true);
-  };
-  const handleProceedToPayment = () => {
     setShowPreviewModal(false);   // close preview
     setShowPaymentModal(true);    // open payment modal
   };
@@ -662,6 +701,22 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
               </div>
             </div>
           </div>
+           {/* ================= EMPTY STATE (ADDED) ================= */}
+          {filteredJobs.length === 0 && (
+            <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
+              <div className="text-center">
+                <FontAwesomeIcon
+                  icon={faCheckCircle}
+                  size="3x"
+                  className="text-muted mb-3"
+                />
+                <h5 className="text-muted">No current opportunities</h5>
+                <p className="text-muted small">
+                  Please check back later or adjust your filters.
+                </p>
+              </div>
+            </div>
+          )}
           {paginatedJobs.map((job) => (
             <div className="col-md-12 mb-4" key={job.position_id}>
               <div
@@ -735,7 +790,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
 
       {/* ✅ Add Preference Modal */}
 
-      <PreferenceModal
+      {/* <PreferenceModal
         show={showPreferenceModal}
         onHide={handleClosePreferenceModal}
         selectedJob={selectedJob}
@@ -761,7 +816,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
         //   setShowPreviewModal(true);
         // }}
         onPreview={handlePreviewClick}
-      />
+      /> */}
 
       {/* ✅ Original Know More Modal (unchanged) */}
       <KnowMoreModal
@@ -772,7 +827,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
 
 
       {/* Preview Modal */}
-      <PreviewModal
+      {/* <PreviewModal
         show={showPreviewModal}
         onHide={() => setShowPreviewModal(false)}
         previewData={previewData}
@@ -789,15 +844,40 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
           // 2️⃣ Close preview modal
           setShowPreviewModal(false);
 
-
-
-          //toast.info("Redirecting to Basic Details...");
         }}
 
         onProceedToPayment={handleProceedToPayment}
         selectedJob={selectedJob}
         masterData={masterData}
+      /> */}
+      <PreviewModal
+        show={showPreviewModal}
+        onHide={() => setShowPreviewModal(false)}
+        previewData={previewData}
+        selectedJob={selectedJob}
+        masterData={masterData}
+
+        applyForm={applyForm}
+        onApplyFormChange={(name, value) =>
+          setApplyForm(prev => ({ ...prev, [name]: value }))
+        }
+        onProceedToPayment={handleProceedToPayment}
+        onEditProfile={() => {
+          // 1️⃣ Set step to "Basic Details"
+          localStorage.setItem("activeStep", "2");
+
+          // 2️⃣ Switch to PROFILE menu (info tab)
+          setActiveTab("info");
+          // 2️⃣ Close preview modal
+          setShowPreviewModal(false);
+
+        }}
+         onBack={() => {
+          setShowPreviewModal(false);
+          setShowApplyModal(true);
+        }}
       />
+
       <PaymentModal
         show={showPaymentModal}
         onHide={() => setShowPaymentModal(false)}
