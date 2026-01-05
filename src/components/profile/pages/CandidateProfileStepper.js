@@ -26,12 +26,22 @@ const CandidateProfileStepper = ({
   const serverData = useSelector((state) => state?.user?.user?.data); // matches other components
   const computeInitialStep = () => {
     if (!serverData) return 0;
+
     const srvUser = serverData?.user;
-    if (srvUser?.isProfileCompleted) return 2; // Basic Details index
-    const cs = parseInt(srvUser?.currentStep, 10);
-    if (!isNaN(cs) && cs >= 1 && cs <= steps.length) return cs - 1;
+
+    // ✅ HARD OVERRIDE
+    if (srvUser?.isProfileCompleted === true) {
+      return 2; // Basic Details
+    }
+
+    const cs = Number(srvUser?.currentStep);
+    if (!Number.isNaN(cs) && cs >= 1 && cs <= steps.length) {
+      return cs - 1;
+    }
+
     return 0;
   };
+
 
   const [activeStep, setActiveStep] = useState(computeInitialStep);
 

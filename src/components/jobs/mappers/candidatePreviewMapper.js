@@ -42,6 +42,7 @@ const documents = apiData?.documentDetails || [];
       id: d.id,
       name: d.fileName,
       url: d.fileUrl,
+      displayname:d.displayName
     }));
 
   return {

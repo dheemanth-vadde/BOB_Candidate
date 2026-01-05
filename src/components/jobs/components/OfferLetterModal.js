@@ -40,9 +40,9 @@ const handleDecision = async (accepted) => {
 };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered>
+    <Modal show={show} onHide={onHide} size="lg" centered dialogClassName="offer-modal">
       <Modal.Header closeButton>
-        <Modal.Title>Offer Letter</Modal.Title>
+        <Modal.Title className="lettertitle">Offer Letter</Modal.Title>
       </Modal.Header>
 
       <Modal.Body style={{ height: "75vh", padding: 0 }}>
@@ -59,7 +59,7 @@ const handleDecision = async (accepted) => {
 
   {/* COMMENTS */}
   <div className="w-100 mb-3">
-    <label className="form-label fw-semibold">Comments</label>
+    <label className="form-label comments-label">Comments</label>
     <textarea
       className="form-control"
       rows={3}

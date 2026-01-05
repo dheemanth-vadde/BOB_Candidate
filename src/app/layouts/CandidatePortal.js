@@ -30,6 +30,17 @@ const CandidatePortal = () => {
   useEffect(() => {
     dispatch(fetchDocumentTypes());
   }, [dispatch]);
+    useEffect(() => {
+    const onNavigateToTab = (e) => {
+      const tab = e?.detail?.tab;
+      if (!tab) return;
+      // setActiveTab to whatever tab name is sent by the chatbot
+      setActiveTab(tab);
+    };
+
+    window.addEventListener('navigate-to-tab', onNavigateToTab);
+    return () => window.removeEventListener('navigate-to-tab', onNavigateToTab);
+  }, []);
 
   useEffect(() => {
     if (!candidateId) return;

@@ -13,6 +13,7 @@ import CryptoJS from "crypto-js";
 import JSEncrypt from "jsencrypt";
 import { toast } from "react-toastify";
 import authApi from "../services/auth.api";
+import { isStrongPassword } from "../../../shared/utils/validation";
 
 const ChangePassword = () => {
   const [publicKey, setPublicKey] = useState("");
@@ -52,6 +53,23 @@ const ChangePassword = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!password || !confirmPassword) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (!isStrongPassword(password)) {
+      toast.error(
+        "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character"
+      );
+      return;
+    }
 
     if (!publicKey) {
       toast.error("Public key not loaded yet!");

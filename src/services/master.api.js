@@ -25,14 +25,27 @@ export const getChatFAQReply = (question) => {
     params: { question },
   });
 };
+export const getChatQueryReply = (question, candidateId) => {
+  return api.get(`/v1/master/chatbot/getChatQueryReply`, {
+    params: { question, candidateId }
+  });
+};
 
 
 export const getDocumentTypes = () => {
   return api.get(`/v1/master/document-types/all`);
 };
 
+export const getGenericDocuments = () => {
+  return api.get(
+    "/v1/master/rec-generic-documents/unique-document-types"
+  );
+};
+
 export default {
   getMasterData,
   getDocumentTypes,
-  getChatFAQReply
+  getChatFAQReply,
+  getChatQueryReply,
+  getGenericDocuments
 };

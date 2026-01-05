@@ -13,9 +13,9 @@ const CustomChatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
 
-  const user = useSelector((state) => state.user.user);
-  const candidateId = user?.candidate_id;
-  console.log("id:", candidateId)
+  const userState = useSelector((state) => state.user);
+  const candidateId = userState?.user?.data?.user?.id;
+
 
   const startNewChat = () => {
     setMessages(initialMessages);
@@ -48,7 +48,7 @@ const CustomChatbot = () => {
       const res = await masterApi.getChatFAQReply(question);
 
       if (res.data?.success && res.data?.data) {
-        return JSON.parse(res.data.data); // ✅ correct
+        return JSON.parse(res.data.data); 
       }
 
       return [];
@@ -62,13 +62,8 @@ const CustomChatbot = () => {
     try {
       const res = await masterApi.getChatQueryReply(question, candidateId);
 
-      if (res.success) {
-        try {
-          return JSON.parse(res.data);   // API returns stringified JSON
-        } catch (err) {
-          console.error("JSON parse error:", err);
-          return [];
-        }
+      if (res?.data?.success && res?.data?.data) {
+        return JSON.parse(res.data.data); 
       }
 
       return [];
@@ -77,6 +72,7 @@ const CustomChatbot = () => {
       return [];
     }
   };
+
 
   function formatStatus(list) {
     if (!Array.isArray(list) || list.length === 0) {
@@ -98,7 +94,7 @@ const CustomChatbot = () => {
     return list
       .map((item, index) =>
         `${index + 1}. Position: ${item.positionTitle}
-          Experience Required: ${item.mandatoryExperience} Years
+          Experience Required: ${item.mandatoryExperience}
           Qualification: ${item.mandatoryQualification}
           ---`
       )
@@ -129,7 +125,7 @@ const CustomChatbot = () => {
 
     setExpectedInputType(null);
 
-    // ⭐ GLOBAL BACK HANDLER (Version 2 feature)
+    //  GLOBAL BACK HANDLER (Version 2 feature)
     if (option.type === 'back' || option.text === 'Back to Main Menu') {
       addOptionsMessage(options.main.text, options.main.options);
       return;
@@ -191,7 +187,7 @@ const CustomChatbot = () => {
             { id: Date.now(), text: "No data found. Try again.", sender: "bot" }
           ]);
 
-          // ⭐ FALLBACK STILL SHOWS BACK OPTION
+          //  FALLBACK STILL SHOWS BACK OPTION
           addOptionsMessage("What would you like to do next?", [
             { text: "Back to Main Menu", type: "back" }
           ]);
@@ -200,22 +196,8 @@ const CustomChatbot = () => {
 
       case 'response':
         const apiList = await fetchChatbotReply(option.text);
-
-        // if (apiList && apiList.length > 0) {
-        //   const formattedRes = apiList.map(item => ({
-        //     text: item,
-        //     type: "response"
-        //   }));
-
-        //   //  ADD BACK OPTION
-        //   formattedRes.push({ text: 'Back to Main Menu', type: 'back' });
-
-        //   addOptionsMessage("Here are the relevant responses:", formattedRes);
-        // }
         if (apiList && apiList.length > 0) {
           const combinedText = apiList.join("\n");
-
-          // Show final answer as plain bot message
           setMessages(prev => [
             ...prev,
             {
@@ -239,7 +221,7 @@ const CustomChatbot = () => {
         }
         break;
 
-      case 'input':
+      case 'input': {
         let inputType = "";
 
         if (option.text.toLowerCase().includes("application")) {
@@ -248,25 +230,16 @@ const CustomChatbot = () => {
           inputType = "jobOpportunities";
         }
 
-        setMessages(prev => [
-          ...prev,
-          {
-            id: Date.now(),
-            text: option.placeholder || 'Please enter the required information:',
-            sender: 'bot'
-          }
-        ]);
+        // ✅ DIRECTLY trigger API cases
+        if (inputType === "applicationStatus" || inputType === "jobOpportunities") {
+          handleOptionClick({ type: inputType });
+          return;
+        }
 
         setExpectedInputType(inputType);
-
-        setTimeout(() => {
-          addSilentOptions([
-            ...options[inputType].options,
-            { text: "Back to Main Menu", type: "back" }
-          ]);
-        }, 300);
-
         break;
+      }
+
 
 
       case "applicationStatus":
@@ -326,10 +299,20 @@ const CustomChatbot = () => {
           { id: Date.now(), text: "Below are the job opportunities…", sender: "bot" }
         ]);
 
+        if (!candidateId) {
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), text: "User session not ready. Please wait or re-login.", sender: "bot" }
+          ]);
+          addSilentOptions([{ text: "Back to Main Menu", type: "back" }]);
+          return;
+        }
+
         const jobsList = await fetchApplicationStatus(
           "Current job opportunities",
           candidateId
         );
+
 
         if (jobsList.length > 0) {
           const formattedJobs = formatJobOpportunities(jobsList);
@@ -369,7 +352,6 @@ const CustomChatbot = () => {
         break;
 
       default:
-        console.log("Unhandled option:", option);
         if (option.text.includes('status')) {
           addOptionsMessage('Check your application status:', [
             ...options.applicationStatus.options,
@@ -457,7 +439,7 @@ const CustomChatbot = () => {
         const rest = match[2] || '';
         return (
           <div key={idx} className="message-line">
-            <strong>{label}</strong> {rest}
+            <b>{label}</b><br></br> {rest}
           </div>
         );
       }

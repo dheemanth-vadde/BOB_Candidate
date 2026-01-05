@@ -19,8 +19,24 @@ const userSlice = createSlice({
       state.user = null;
       state.authUser = null;
     },
+
+    // ✅ ADD THIS
+    markProfileCompleted(state) {
+      if (!state.user?.data?.user) return;
+
+      state.user.data.user.isProfileCompleted = true;
+
+      // 🔥 IMPORTANT: currentStep is meaningless after completion
+      state.user.data.user.currentStep = null;
+    },
   },
 });
 
-export const { setUser, setAuthUser, clearUser } = userSlice.actions;
+export const {
+  setUser,
+  setAuthUser,
+  clearUser,
+  markProfileCompleted
+} = userSlice.actions;
+
 export default userSlice.reducer;

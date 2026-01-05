@@ -72,9 +72,10 @@
 .bob-table td,
 .bob-table th {
   padding: 6px 8px !important;
-  font-size: 12.5px;
+  font-size: 0.875rem;
+  font-weight:300;
   vertical-align: middle !important;
-  color: #222;
+  color: #000 !important;
   border: 1px solid #ddd !important;
   line-height: 1.4;
 }

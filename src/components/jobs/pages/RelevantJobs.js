@@ -24,11 +24,12 @@ import { savePreference } from "../store/preferenceSlice";
 import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 import filtericon from "../../../assets/filter-icon.png";
 import PaymentModal from "../components/PaymentModal";
-import jobsApiService  from "../services/jobsApiService";
+import jobsApiService from "../services/jobsApiService";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ValidationErrorModal from "../components/ValidationErrorModal";
+import masterApi from "../../../services/master.api";
 
-const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
+const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -44,7 +45,7 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [masterData,setMasterData]=useState([{}]);
+  const [masterData, setMasterData] = useState([{}]);
   const [selectedStates, setSelectedStates] = useState([]);
   const navigate = useNavigate();
   const [isMasterReady, setIsMasterReady] = useState(false);
@@ -61,8 +62,8 @@ const RelevantJobs = ({ candidateData = {} ,setActiveTab}) => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState([]);
   const [showPreCheckModal, setShowPreCheckModal] = useState(false);
-const [showValidationErrorModal, setShowValidationErrorModal] = useState(false);
-const [validationErrorMsg, setValidationErrorMsg] = useState("");
+  const [showValidationErrorModal, setShowValidationErrorModal] = useState(false);
+  const [validationErrorMsg, setValidationErrorMsg] = useState("");
   const experienceOptions = [
     { label: "1-2 years", min: 1, max: 2 },
     { label: "3-4 years", min: 3, max: 4 },
@@ -73,6 +74,11 @@ const [validationErrorMsg, setValidationErrorMsg] = useState("");
   ];
   const ITEMS_PER_PAGE = 5; // change if needed
   const [currentPage, setCurrentPage] = useState(1);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [infoDocs, setInfoDocs] = useState([]);
+  const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
+
+
 
   const dispatch = useDispatch();
 
@@ -91,43 +97,8 @@ const [validationErrorMsg, setValidationErrorMsg] = useState("");
 
 
   const candidateId = user?.data?.user?.id;
-console.log("candidateddd",candidateId)
-  // useEffect(() => {
-  //   const fetchAppliedJobs = async () => {
-  //     if (!candidateId) return;
+  console.log("candidateddd", candidateId)
 
-  //     try {
-  //       // const response = await axios.get(`http://192.168.20.115:8082/api/v1/candidate/applied-jobs/get-applied-jobs/${candidateId}`,
-  //       //   {
-  //       //     headers: {
-  //       //       "X-Client": "candidate",
-  //       //       "Content-Type": "application/json",
-  //       //     },
-  //       //   }
-  //       // );
-  //      // const response = await jobapis.get(`/candidate/applied-jobs/get-applied-jobs/${candidateId}`);
-       
-  //       const response = await jobsApiService.getAppliedJobs(candidateId);  
-  //       console.log("appliedresponse",response)
-  //       const jobsData = response?.data?.data || [];
-  //       const mappedJobs = mapJobsApiToList(jobsData,masterData);
-
-
-  //       console.log("applied jobs", mappedJobs)
-  //       // Extract position IDs
-  //       const appliedIds = (mappedJobs).map(
-  //         (app) => app.position_id
-  //       );
-
-  //       setAppliedJobIds(appliedIds);
-  //     } catch (err) {
-  //       console.error("Failed to fetch applied jobs", err);
-  //     }
-  //   };
-
-  //   fetchAppliedJobs();
-  // }, [candidateId]);
- 
 
   // ✅ Fetch requisitions
   const fetchRequisitions = async () => {
@@ -148,7 +119,7 @@ console.log("candidateddd",candidateId)
   // ✅ Fetch jobs
   const fetchJobs = async () => {
     try {
-      
+
 
       const [jobsRes, masterRes] = await Promise.all([
         jobsApiService.getJobPositions(candidateId),
@@ -167,7 +138,7 @@ console.log("candidateddd",candidateId)
       const locations = mappedMasterData.cities || [];
       // ✅ Convert new nested structure to old flat model
       const mappedJobs = mapJobsApiToList(jobsData, mappedMasterData);
-      console.log("mapedjobs",mappedJobs)
+      console.log("mapedjobs", mappedJobs)
       setJobs(mappedJobs); // use the mapped flat array
       setIsMasterReady(true);
     } catch (err) {
@@ -176,6 +147,28 @@ console.log("candidateddd",candidateId)
       setLoading(false);
     }
   };
+
+  const fetchInfoDocuments = async (type) => {
+  try {
+    const res = await masterApi.getGenericDocuments();
+
+    const filtered = (res.data?.data || []).filter(
+      (doc) => doc.type?.toLowerCase() === type
+    );
+
+    if (filtered.length === 0) {
+      toast.info("No documents available");
+      return;
+    }
+
+    setInfoDocs(filtered);
+    setActiveInfoType(type);
+    setShowInfoModal(true);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load documents");
+  }
+};
 
   useEffect(() => {
     fetchRequisitions();
@@ -267,43 +260,43 @@ console.log("candidateddd",candidateId)
 
     return true; // ✅ Eligible
   };
-const handlePreCheckConfirm = async () => {
-  setShowPreCheckModal(false);
+  const handlePreCheckConfirm = async () => {
+    setShowPreCheckModal(false);
 
-  try {
-    //later uncomment
-    // const response = await jobsApiService.validateCandidateEligibility({
-    //   candidateId,
-    //   positionId: selectedJob.position_id,
-    // });
+    try {
+      //later uncomment
+      // const response = await jobsApiService.validateCandidateEligibility({
+      //   candidateId,
+      //   positionId: selectedJob.position_id,
+      // });
 
-    // if (!response?.success) {
-    //   setValidationErrorMsg(
-    //     response?.message ||
-    //       "Your profile does not meet the job requirements."
-    //   );
-    //   setShowValidationErrorModal(true);
-    //   return;
-    // }
+      // if (!response?.success) {
+      //   setValidationErrorMsg(
+      //     response?.message ||
+      //       "Your profile does not meet the job requirements."
+      //   );
+      //   setShowValidationErrorModal(true);
+      //   return;
+      // }
 
-    // ✅ Validation passed
-    setApplyForm({
-      state1: "",
-      location1: "",
-      state2: "",
-      location2: "",
-      state3: "",
-      location3: "",
-      ctc: "",
-      examCenter: "",
-    });
+      // ✅ Validation passed
+      setApplyForm({
+        state1: "",
+        location1: "",
+        state2: "",
+        location2: "",
+        state3: "",
+        location3: "",
+        ctc: "",
+        examCenter: "",
+      });
 
-    setShowPreferenceModal(true);
-  } catch (err) {
-    setValidationErrorMsg("Unable to validate profile. Please try again.");
-    setShowValidationErrorModal(true);
-  }
-};
+      setShowPreferenceModal(true);
+    } catch (err) {
+      setValidationErrorMsg("Unable to validate profile. Please try again.");
+      setShowValidationErrorModal(true);
+    }
+  };
   const handleConfirmApply = async () => {
     if (!selectedJob || !candidateId) return;
 
@@ -328,23 +321,13 @@ const handlePreCheckConfirm = async () => {
         interviewCenter: applyForm.examCenter || "",
       };
 
-      // const response = await axios.post(
-      //   "http://192.168.20.111:8082/api/v1/candidate/applications/apply/job",
-      //   payload,
-      //   {
-      //     headers: {
-      //       "X-Client": "candidate",
-      //       "Content-Type": "application/json",
-      //     },
-      //   }
-      // );
       const response = await jobsApiService.applyToJob(payload);
       if (response?.success) {
         toast.success("Job applied Successfully");
         setShowPreferenceModal(false);
         setShowPaymentModal(false);
         setActiveTab("applied-jobs"); // ✅ correct
-        
+
       } else {
         toast.error(response?.message || "Failed to apply for the job");
       }
@@ -427,8 +410,8 @@ const handlePreCheckConfirm = async () => {
         const exp = Number(job.mandatory_experience || 0);
         return exp >= range.min && exp <= range.max;
       });
-      console.log("selected states",selectedStates,job.state_id)
-console.log("matchesState",matchesState)
+    console.log("selected states", selectedStates, job.state_id)
+    console.log("matchesState", matchesState)
     return (
       matchesDepartment &&
       matchesState &&          // ✅ ADDED
@@ -461,13 +444,13 @@ console.log("matchesState",matchesState)
   // };
 
   const handleStateChange = (stateId) => {
-  setSelectedStates((prev) =>
-    prev.includes(stateId)
-      ? prev.filter((id) => id !== stateId)
-      : [...prev, stateId]
-  );
-};
- 
+    setSelectedStates((prev) =>
+      prev.includes(stateId)
+        ? prev.filter((id) => id !== stateId)
+        : [...prev, stateId]
+    );
+  };
+
   const handleExperienceChange = (range) => {
     setSelectedExperience((prev) =>
       prev.some((r) => r.label === range.label)
@@ -497,7 +480,7 @@ console.log("matchesState",matchesState)
       toast.error("Please enter Interview Center");
       return;
     }
-   
+
     if (!previewData) {
       toast.error("Candidate data not loaded yet");
       return;
@@ -519,16 +502,16 @@ console.log("matchesState",matchesState)
     setShowPaymentModal(true);    // open payment modal
   };
   if (loading) {
-  return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading...</span>
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
   return (
-    
+
     <div className="mx-4 my-3 relevant">
 
 
@@ -652,18 +635,31 @@ console.log("matchesState",matchesState)
               </div>
             </div>
 
-            <div className="applied-search">
-
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search by Job title or Req code..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <span className="search-icon">
-                <FontAwesomeIcon icon={faSearch} />
-              </span>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                className="info_btn"
+                onClick={() => fetchInfoDocuments("annexures")}
+              >
+                Annexures Information
+              </button>
+              <button
+                className="info_btn"
+                onClick={() => fetchInfoDocuments("generic")}
+              >
+                Generic Information
+              </button>
+              <div className="applied-search">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by Job title or Req code..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className="search-icon">
+                  <FontAwesomeIcon icon={faSearch} />
+                </span>
+              </div>
             </div>
           </div>
           {paginatedJobs.map((job) => (
@@ -715,10 +711,10 @@ console.log("matchesState",matchesState)
 
                     <button
                       className="btn btn-sm btn-outline-primary hovbtn"
-                       onClick={() => {
-                          setSelectedJob(job);
-                          setShowPreCheckModal(true);
-                        }}
+                      onClick={() => {
+                        setSelectedJob(job);
+                        setShowPreCheckModal(true);
+                      }}
                     >
                       Apply Now
                     </button>
@@ -784,8 +780,8 @@ console.log("matchesState",matchesState)
           setShowPreviewModal(false);
           setShowApplyModal(true);
         }}
-         onEditProfile={() => {
-                    // 1️⃣ Set step to "Basic Details"
+        onEditProfile={() => {
+          // 1️⃣ Set step to "Basic Details"
           localStorage.setItem("activeStep", "2");
 
           // 2️⃣ Switch to PROFILE menu (info tab)
@@ -793,14 +789,14 @@ console.log("matchesState",matchesState)
           // 2️⃣ Close preview modal
           setShowPreviewModal(false);
 
-        
+
 
           //toast.info("Redirecting to Basic Details...");
         }}
 
         onProceedToPayment={handleProceedToPayment}
         selectedJob={selectedJob}
-          masterData={masterData}
+        masterData={masterData}
       />
       <PaymentModal
         show={showPaymentModal}
@@ -865,6 +861,36 @@ console.log("matchesState",matchesState)
           </ul>
         </div>
       )}
+
+      <Modal
+        show={showInfoModal}
+        onHide={() => setShowInfoModal(false)}
+        size="xl"
+        centered
+        dialogClassName="info-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {activeInfoType === "annexures"
+              ? "Annexure Information"
+              : "Generic Information"}
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body className="info-modal-body">
+          {infoDocs.map((doc) => (
+            <div key={doc.id} className="pdf-wrapper">
+              <div className="pdf-title">{doc.fileName}</div>
+
+              <iframe
+                src={doc.fileUrl}
+                title={doc.fileName}
+                className="pdf-iframe"
+              />
+            </div>
+          ))}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

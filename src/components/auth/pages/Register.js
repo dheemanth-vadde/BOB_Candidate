@@ -11,6 +11,7 @@ import JSEncrypt from "jsencrypt";
 import { toast } from "react-toastify";
 import authApi from "../services/auth.api";
 import TurnstileWidget from "../../integrations/Cpatcha/TurnstileWidget";
+import { isStrongPassword } from "../../../shared/utils/validation";
 
 const Register = () => {
   const [publicKey, setPublicKey] = useState("");
@@ -62,8 +63,16 @@ const Register = () => {
     if (!name || !email || !phone || !password || !confirmPassword || !dob) {
       return alert("All fields are required");
     }
+
     if (password !== confirmPassword) {
       return alert("Passwords do not match");
+    }
+
+    if (!isStrongPassword(password)) {
+      toast.error(
+        "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character"
+      );
+      return;
     }
 
     if (!publicKey) {
@@ -89,9 +98,10 @@ const Register = () => {
       console.error(err);
 
       if (err.response) {
+        console.log(err.response)
         // Example: API returns 409 Conflict if user exists
         if (err.response.status === 400) {
-          toast.error("User already exists. Please login instead.");
+          toast.error(err.response.data.message);
         } else {
           // Or check message returned by backend
           const msg = err.response.data?.message || "Registration/Login failed";
