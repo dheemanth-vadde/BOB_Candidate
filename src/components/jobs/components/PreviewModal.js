@@ -52,6 +52,8 @@ const photoUrl =
 // ✅ SIGNATURE
 const signatureUrl =
   previewData.documents?.signature?.[0]?.url || null;
+  console.log("Photo URL:", photoUrl);
+  console.log("Signature URL:", signatureUrl);
 
 
   console.log("Stored preference:", preferenceData);
@@ -100,14 +102,15 @@ const allDocuments = Object.values(previewData.documents || {}).flat();
                       >
                         <div className="bob-photo-box">
                           <img
-                            src={logo_Bob}
-                            alt="Applicant"
+                            src={photoUrl}
+                            alt="Applicant Photo"
                             className="img-fluid img1"
                           />
+
                           <img
-                            src={sign}
-                            alt="Applicant"
-                            className="img-fluid img2"
+                             src={signatureUrl}
+                              alt="Signature"
+                              className="img-fluid img2"
                           />
                         </div>
                         {/* <div className="bob-photo-box1">
