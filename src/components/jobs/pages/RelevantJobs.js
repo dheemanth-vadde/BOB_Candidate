@@ -679,7 +679,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("annexures")}
               >
-                Annexures Information
+                Annexure Forms
               </button>
               <button
                 className="info_btn"
@@ -952,7 +952,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
         <Modal.Header closeButton>
           <Modal.Title>
             {activeInfoType === "annexures"
-              ? "Annexure Information"
+              ? "Annexure Form"
               : "Generic Information"}
           </Modal.Title>
         </Modal.Header>
