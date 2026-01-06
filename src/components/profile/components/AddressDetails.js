@@ -39,6 +39,14 @@ const AddressDetails = ({ goNext, goBack }) => {
 		cities: [],
 		pincodes: []
 	});
+	const EMPTY_ADDRESS = {
+		line1: "",
+		line2: "",
+		city: "",
+		district: "",
+		state: "",
+		pincode: ""
+	};
 
 	useEffect(() => {
 		async function loadMasters() {
@@ -279,6 +287,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 			}));
 		} else {
 			// Clear any existing errors when unchecking
+			setPermAddress({ ...EMPTY_ADDRESS });
 			setFormErrors(prev => ({
 				...prev,
 				permAddress: {}

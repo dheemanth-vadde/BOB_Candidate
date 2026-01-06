@@ -18,7 +18,7 @@ const UploadField = forwardRef(({
   onCustomNameChange,
   onBrowse,
   onChange,
-  onDeleted,
+  onDelete,
   disabled = false
 }, ref) => {
   const user = useSelector((state) => state?.user?.user?.data);
@@ -45,7 +45,7 @@ const UploadField = forwardRef(({
         await profileApi.deleteDocument(candidateId, file.documentTypeId);
       }
       // refresh parent state from backend
-      onDeleted?.();
+      onDelete?.();
     } catch (err) {
       console.error("Delete failed", err);
     }

@@ -135,8 +135,8 @@ const Login = () => {
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: 'absolute',
-                right: '15px',
-                top: '47%',
+                right: formErrors.password ? '30px' : '15px',
+                top: '49%',
                 transform: 'translateY(-50%)',
                 cursor: 'pointer',
                 color: '#666',

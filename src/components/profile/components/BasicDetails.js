@@ -9,6 +9,7 @@ import { useBasicDetails } from '../hooks/basicHooks';
 import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import Loader from './Loader';
 
 const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -65,11 +66,15 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		calculateServicePeriodInMonths,
 		parsedClass,
 		handleNameKeyDown,
-		getAvailableDisabilityTypes
+		getAvailableDisabilityTypes,
+		loading
 	} = useBasicDetails({ goNext, goBack, parsedData });
 
 	return (
 		<div>
+			{loading && (
+				<Loader />
+			)}
 			<form className="row g-4 formfields"
 				onSubmit={handleSubmit}
 			>
@@ -508,8 +513,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-6 col-sm-12 mt-2">
 						<label htmlFor="communityCertificate" className="form-label">
-							Upload Certificate
-							{!isGeneralCategory && <span className="text-danger">*</span>}
+							Upload Certificate {!isGeneralCategory && <span className="text-danger">*</span>}
 						</label>
 						{!communityFile && !existingCommunityDoc && (
 							<div

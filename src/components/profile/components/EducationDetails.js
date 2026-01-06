@@ -5,6 +5,8 @@ import profileApi from "../services/profile.api";
 import { getEducationLevelIdFromQualification, mapEducationApiToUi } from "../mappers/EducationMapper";
 import { useSelector } from "react-redux";
 import masterApi from '../../../services/master.api';
+import { toast } from "react-toastify";
+import Loader from "./Loader";
 
 const EducationDetails = ({ goNext, goBack }) => {
   const EMPTY_MASTER_DATA = {
@@ -22,52 +24,91 @@ const EducationDetails = ({ goNext, goBack }) => {
     graduation: "f920024c-8a0b-49e2-98cb-17bcc9bea890",
     postGraduation: "9b1cb3f5-a037-4468-8eb5-076968e7a84e"
   };
+  const MANDATORY_LEVEL_IDS = [
+    STATIC_EDUCATION_LEVEL_MAP.tenth,
+    STATIC_EDUCATION_LEVEL_MAP.intermediate
+  ];
   const [hasApiEducations, setHasApiEducations] = useState(false);
   const [educations, setEducations] = useState([]);
   const [masterData, setMasterData] = useState(EMPTY_MASTER_DATA);
+  const [loading, setLoading] = useState(false);
+
+  const fetchEducationDetails = async () => {
+    setLoading(true);
+    try {
+      const [eduRes, masterRes] = await Promise.all([
+        profileApi.getEducationDetails(candidateId),
+        masterApi.getMasterData()
+      ]);
+
+      const list = eduRes?.data || [];
+      const raw = masterRes?.data?.data || {};
+      const mandatoryQualifications = raw.mandatoryQualification || [];
+
+      setMasterData({
+        educationLevels: raw.educationLevels || [],
+        boards: raw.mandatoryQualification || [],
+        specializations: raw.specializationMaster || [],
+        educationTypes: raw.educationTypeMaster || []
+      });
+
+      if (!list.length) {
+        setHasApiEducations(false);
+        setEducations([]);
+        return;
+      }
+
+      setHasApiEducations(true);
+
+      const mapped = list.map(item => {
+        const qualificationId = item.education.educationQualificationsId;
+        const levelId = getEducationLevelIdFromQualification(
+          qualificationId,
+          mandatoryQualifications
+        );
+
+        return {
+          uiId: crypto.randomUUID(),
+          educationId: item.education.educationId,
+          educationLevelId: levelId,
+          label: getEducationLabelFromQualification(
+            qualificationId,
+            mandatoryQualifications,
+            raw.educationLevels
+          ),
+          data: mapEducationApiToUi(item, mandatoryQualifications)
+        };
+      });
+
+      setEducations(mapped);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load education details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [eduRes, masterRes] = await Promise.all([
-          profileApi.getEducationDetails(candidateId),
-          masterApi.getMasterData()
-        ]);
-        const list = eduRes?.data || [];
-        const mandatoryQualifications = masterRes?.data?.data?.mandatoryQualification || [];
-        const raw = masterRes?.data?.data || {};
-        setMasterData({
-          educationLevels: raw.educationLevels || [],
-          boards: raw.mandatoryQualification || [],
-          specializations: raw.specializationMaster || [],
-          educationTypes: raw.educationTypeMaster || []
-        });
-        if (list.length === 0) {
-          setHasApiEducations(false);
-          return;
-        }
-        setHasApiEducations(true);
-        const educationLevels = raw.educationLevels || [];
-        const mapped = list.map(item => {
-          const qualificationId = item.education.educationQualificationsId;
-          return {
-            uiId: crypto.randomUUID(),
-            educationId: item.education.educationId,
-            label: getEducationLabelFromQualification(
-              qualificationId,
-              mandatoryQualifications,
-              educationLevels
-            ),
-            data: mapEducationApiToUi(item, mandatoryQualifications)
-          };
-        });
-        setEducations(mapped);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchAll();
+    fetchEducationDetails();
   }, [candidateId]);
+
+  const handleSaveAndNext = () => {
+    const savedLevelIds = educations
+      .map(e => e.educationLevelId)
+      .filter(Boolean);
+
+    const missing = MANDATORY_LEVEL_IDS.filter(
+      id => !savedLevelIds.includes(id)
+    );
+
+    if (missing.length > 0) {
+      toast.error("Please fill Board details");
+      return;
+    }
+
+    goNext();
+  };
 
   const getEducationLabelFromQualification = (
     educationQualificationsId,
@@ -101,6 +142,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     educationId={edu.educationId}
                     existingData={edu.data}
                     masterData={masterData}
+                    refreshEducation={fetchEducationDetails}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -117,7 +159,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.tenth}
                     disableEducationLevel
                     // showDegree={false}
-                    showSpecialization={false}
+                    // showSpecialization={false}
                     masterData={masterData}
                   />
                 </Accordion.Body>
@@ -167,6 +209,7 @@ const EducationDetails = ({ goNext, goBack }) => {
             </>
           )}
         </Accordion>
+
       <div className="d-flex justify-content-center">
         <button
           className="btn blue-button"
@@ -205,11 +248,15 @@ const EducationDetails = ({ goNext, goBack }) => {
             borderRadius: "4px",
             color: "#fff"
           }}
-          onClick={goNext}
+          onClick={handleSaveAndNext}
         >
           Save and Next
         </button>
       </div>
+
+      {loading && (
+				<Loader />
+			)}
 
     </div>
   );

@@ -208,7 +208,7 @@ const Register = () => {
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: "absolute",
-                right: "10px",
+                right: formErrors.password ? "30px" : "10px",
                 top: "49%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
@@ -234,7 +234,7 @@ const Register = () => {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               style={{
                 position: "absolute",
-                right: "10px",
+                right: formErrors.password ? "30px" : "10px",
                 top: "49%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",

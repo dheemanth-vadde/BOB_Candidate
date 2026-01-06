@@ -247,3 +247,7 @@ export const validateFile = ({
 
   return true;
 };
+export const isValidCollegeName = (value = "") => {
+  const trimmed = value.trim();
+  return /^[A-Za-z ]+$/.test(trimmed);
+};

@@ -55,22 +55,22 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		}
 	}, [formData.working]);
 
-	useEffect(() => {
-		if (!formData.working || !formData.from) return;
-		const interval = setInterval(() => {
-			setFormData(prev => ({
-				...prev,
-				experience: calculateExperienceDays(prev.from, null)
-			}));
-		}, 24 * 60 * 60 * 1000); // every day
-		return () => clearInterval(interval);
-	}, [formData.working, formData.from]);
+	// useEffect(() => {
+	// 	if (!formData.working || !formData.from) return;
+	// 	const interval = setInterval(() => {
+	// 		setFormData(prev => ({
+	// 			...prev,
+	// 			experience: calculateExperienceDays(prev.from, null)
+	// 		}));
+	// 	}, 24 * 60 * 60 * 1000); // every day
+	// 	return () => clearInterval(interval);
+	// }, [formData.working, formData.from]);
 
 	useEffect(() => {
 		const fetchWorkStatus = async () => {
 			try {
 				const res = await profileApi.getWorkStatus(candidateId);
-				const fresherStatus = Boolean(res?.data?.data);
+				const fresherStatus = Boolean(res?.data);
 				setIsFresher(fresherStatus);
 			} catch (err) {
 				console.error("Failed to fetch work status", err);
@@ -184,8 +184,23 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	const handleSaveExperience = async () => {
 		if (!validateForm()) return;
 
+		const effectiveToDate = formData.working
+			? new Date().toISOString().split("T")[0]
+			: formData.to;
+
+		const experienceDays = calculateExperienceDays(
+			formData.from,
+			effectiveToDate
+		);
+
+		const normalizedFormData = {
+			...formData,
+			to: formData.working ? null : formData.to,
+			experience: experienceDays
+		};
+
 		try {
-			const basePayload = mapExperienceDetailsFormToApi(formData, candidateId);
+			const basePayload = mapExperienceDetailsFormToApi(normalizedFormData, candidateId);
 
 			const payload = isEditMode
 				? { ...basePayload, workExperienceId: editingRow.workExperienceId }
@@ -500,7 +515,13 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 						{/* Existing document */}
 						{existingDocument && !certificateFile && (
-							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center">
+							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
+								style={{
+									border: "2px solid #bfc8e2",
+									borderRadius: "8px",
+									background: "#f7f9fc"
+								}}
+							>
 								<div className="d-flex align-items-center">
 									<FontAwesomeIcon
 										icon={faCheckCircle}
@@ -522,7 +543,13 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 						{/* New uploaded file */}
 						{certificateFile && (
-							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center">
+							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
+								style={{
+									border: "2px solid #bfc8e2",
+									borderRadius: "8px",
+									background: "#f7f9fc"
+								}}
+							>
 								<div className="d-flex align-items-center">
 									<FontAwesomeIcon
 										icon={faCheckCircle}

@@ -41,6 +41,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	const disabilityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "DISABILITY"));
 	const serviceDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "SERVICE"));
 	const birthDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT"));
+	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		firstName: "",
 		middleName: "",
@@ -172,27 +173,35 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 	useEffect(() => {
 		const fetchMasterData = async () => {
-			const res = await masterApi.getMasterData();
-			const data = res?.data?.data;
-			setMasterData({
-				genders: data.genderMasters || [],
-				maritalStatus: data.maritalStatusMaster || [],
-				religions: data.religionMaster || [],
-				reservationCategories: data.reservationCategories || [],
-				countries: data.countries || [],
-				states: data.states || [],
-				districts: data.districts || [],
-				cities: data.cities || [],
-				pincodes: data.pincodes || [],
-				disabilityCategories: data.disabilityCategories || [],
-				languages: data.languageMasters || []
-			});
+			setLoading(true);
+			try {
+				const res = await masterApi.getMasterData();
+				const data = res?.data?.data;
+				setMasterData({
+					genders: data.genderMasters || [],
+					maritalStatus: data.maritalStatusMaster || [],
+					religions: data.religionMaster || [],
+					reservationCategories: data.reservationCategories || [],
+					countries: data.countries || [],
+					states: data.states || [],
+					districts: data.districts || [],
+					cities: data.cities || [],
+					pincodes: data.pincodes || [],
+					disabilityCategories: data.disabilityCategories || [],
+					languages: data.languageMasters || []
+				});
+			} catch (error) {
+				console.error("Failed to fetch master data", error);
+			} finally {
+				setLoading(false);
+			}
 		};
 		fetchMasterData();
 	}, []);
 
 	useEffect(() => {
 		const fetchBasicDetails = async () => {
+			setLoading(true);
 			try {
 				const res = await profileApi.getBasicDetails(candidateId);
 				const apiData = res?.data;
@@ -230,6 +239,8 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 			} catch (error) {
 				console.error("Failed to fetch basic details", error);
+			} finally {
+				setLoading(false);
 			}
 		};
 		fetchBasicDetails();
@@ -256,49 +267,73 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 	useEffect(() => {
 		if (!candidateId || !communityDoc?.docCode) return;
-		profileApi
-			.getDocumentDetailsByCode(candidateId, communityDoc.docCode)
-			.then(res => setExistingCommunityDoc(res?.data || null))
-			.catch(console.error);
+		const fetchCommunity = async () => {
+			setLoading(true);
+			try {
+				const res = await profileApi
+					.getDocumentDetailsByCode(candidateId, communityDoc.docCode);
+				setExistingCommunityDoc(res?.data || null);
+			} catch (err) {
+				console.error(err);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchCommunity();
 	}, [candidateId, communityDoc?.docCode]);
 
 	useEffect(() => {
 		if (!candidateId || !birthDoc?.docCode) return;
 
-		profileApi
-			.getDocumentDetailsByCode(candidateId, birthDoc.docCode)
-			.then(res => {
+		const fetchBirth = async () => {
+			setLoading(true);
+			try {
+				const res = await profileApi
+					.getDocumentDetailsByCode(candidateId, birthDoc.docCode);
 				setExistingBirthDoc(res?.data || null);
-			})
-			.catch(err => {
+			} catch (err) {
 				console.error("Birth cert fetch failed", err);
-			});
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchBirth();
 	}, [candidateId, birthDoc?.docCode]);
 
 	useEffect(() => {
 		if (!candidateId || !disabilityDoc?.docCode) return;
 
-		profileApi
-			.getDocumentDetailsByCode(candidateId, disabilityDoc.docCode)
-			.then(res => {
+		const fetchDisability = async () => {
+			setLoading(true);
+			try {
+				const res = await profileApi
+					.getDocumentDetailsByCode(candidateId, disabilityDoc.docCode);
 				setExistingDisabilityDoc(res?.data || null);
-			})
-			.catch(err => {
+			} catch (err) {
 				console.error("Disability Certificate fetch failed", err);
-			});
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchDisability();
 	}, [candidateId, disabilityDoc?.docCode]);
 
 	useEffect(() => {
 		if (!candidateId || !serviceDoc?.docCode) return;
 
-		profileApi
-			.getDocumentDetailsByCode(candidateId, serviceDoc.docCode)
-			.then(res => {
+		const fetchService = async () => {
+			setLoading(true);
+			try {
+				const res = await profileApi
+					.getDocumentDetailsByCode(candidateId, serviceDoc.docCode);
 				setExistingServiceDoc(res?.data || null);
-			})
-			.catch(err => {
+			} catch (err) {
 				console.error("Service Certificate fetch failed", err);
-			});
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchService();
 	}, [candidateId, serviceDoc?.docCode]);
 
 	const selectedCategory = masterData?.reservationCategories?.find(
@@ -353,14 +388,19 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			return;
 		}
 
-		const validateresoponse = await validateDoc("COMMUNITY_CERT", file);
-		if (!validateresoponse || validateresoponse?.data?.success === false) {
-			toast.error(validateresoponse?.data?.message || "Invalid Community Certificate");
-			input.value = "";
-			return;
+		setLoading(true);
+		try {
+			const validateresoponse = await validateDoc("COMMUNITY_CERT", file);
+			if (!validateresoponse || validateresoponse?.data?.success === false) {
+				toast.error(validateresoponse?.data?.message || "Invalid Community Certificate");
+				input.value = "";
+				return;
+			}
+			setCommunityFile(file);
+			clearFieldError("communityCertificate");
+		} finally {
+			setLoading(false);
 		}
-		setCommunityFile(file);
-		clearFieldError("communityCertificate");
 		input.value = "";
 	};
 	const handleCommunityBrowse = () => {
@@ -375,15 +415,20 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			input.value = "";
 			return;
 		}
-		const validateresoponse = await validateDoc("DISABILITY", file);
-		if (!validateresoponse || validateresoponse?.data?.success === false) {
-			toast.error(validateresoponse?.data?.message || "Invalid Disability Certificate");
-			input.value = "";
-			return;
-		}
 
-		setDisabilityFile(file);
-		input.value = "";
+		setLoading(true);
+		try {
+			const validateresoponse = await validateDoc("DISABILITY", file);
+			if (!validateresoponse || validateresoponse?.data?.success === false) {
+				toast.error(validateresoponse?.data?.message || "Invalid Disability Certificate");
+				input.value = "";
+				return;
+			}
+
+			setDisabilityFile(file);
+		} finally {
+			setLoading(false);
+		}
 		setFormErrors(prev => {
 			const updated = { ...prev };
 			delete updated.disabilityCertificate;
@@ -427,15 +472,21 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			input.value = "";
 			return;
 		}
-		const validateresoponse = await validateDoc("BIRTH_CERT", file);
-		if (!validateresoponse || validateresoponse?.data?.success === false) {
-			toast.error(validateresoponse?.data?.message || "Invalid Birth Certificate");
-			input.value = "";
-			return;
-		}
 
-		setBirthFile(file);
-		clearFieldError("birthCertificate");
+		setLoading(true);
+		try {
+			const validateresoponse = await validateDoc("BIRTH_CERT", file);
+			if (!validateresoponse || validateresoponse?.data?.success === false) {
+				toast.error(validateresoponse?.data?.message || "Invalid Birth Certificate");
+				input.value = "";
+				return;
+			}
+
+			setBirthFile(file);
+			clearFieldError("birthCertificate");
+		} finally {
+			setLoading(false);
+		}
 		// Clear input so selecting the same file again triggers onChange
 		input.value = "";
 	};
@@ -693,6 +744,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		}
 
 		// Rest of your form submission logic...
+		setLoading(true);
 		try {
 			const payload = mapBasicDetailsFormToApi({
 				formData: cleanedFormData,
@@ -725,6 +777,8 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		} catch (err) {
 			console.error(err);
 			toast.error("Failed to save basic details");
+		} finally {
+			setLoading(false);
 		}
 	};
 	const calculateServicePeriodInMonths = (start, end) => {
@@ -893,6 +947,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		calculateServicePeriodInMonths,
 		parsedClass,
 		handleNameKeyDown,
-		getAvailableDisabilityTypes
+		getAvailableDisabilityTypes,
+		loading
 	};
 };
