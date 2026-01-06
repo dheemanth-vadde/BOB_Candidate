@@ -749,3 +749,6 @@ font-family: 'poppins';
   color: rgb(255, 112, 67);
   font-size: 0.875rem;
 }
+.uploadcertification {
+	background-color: var(--bs-secondary-bg);
+}

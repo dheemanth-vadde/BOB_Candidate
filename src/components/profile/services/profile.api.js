@@ -246,9 +246,101 @@ export const saveProfileComplete = (candidateId, isProfileCompleted = true) => {
     }
   );
 };
+// Certification APIs
+export const getHasCertification = (candidateId) => {
+  if (!candidateId) {
+    throw new Error("candidateId is required");
+  }
 
+  return candidateApi.get(
+    `/certifications/get-has-cert/${candidateId}`,
+    {
+      headers: {
+        "X-Client": "candidate",
+      },
+    }
+  );
+};
+// Save hasCertification flag
+export const saveHasCertification = (candidateId, hasCertification) => {
+  if (!candidateId) {
+    throw new Error("candidateId is required");
+  }
 
+  return candidateApi.post(
+    `/certifications/save-has-cert/${candidateId}`,
+    null,
+    {
+      params: { hasCertification },
+      headers: {
+        "X-Client": "candidate",
+      },
+    }
+  );
+};
+export const saveCertification = (
+  candidateId,
+  certificationPayload,
+  file
+) => {
+  const formData = new FormData();
 
+  // file part (same as experience)
+  if (file) {
+    formData.append("file", file);
+  }
+
+  // DTO part (same pattern as workExperience)
+  formData.append(
+    "certificationsDTO",
+    new Blob([JSON.stringify(certificationPayload)], {
+      type: "application/json",
+    })
+  );
+
+  return candidateApi.post(
+    `/certifications/save-cert-details/${candidateId}`,
+    formData,
+    {
+      headers: {
+        "X-Client": "candidate",
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+// ✅ Get certification details
+export const getCertifications = (candidateId) => {
+  if (!candidateId) {
+    throw new Error("candidateId is required");
+  }
+
+  return candidateApi.get(
+    `/certifications/get-cert-details/${candidateId}`,
+    {
+      headers: {
+        "X-Client": "candidate",
+      },
+    }
+  );
+};
+
+// ✅ Delete certification
+export const deleteCertification = (certificationId) => {
+  if (!certificationId) {
+    throw new Error("certificationId is required");
+  }
+
+  return candidateApi.delete(
+    `/certifications/delete-cert-details/${certificationId}`,
+    {
+      headers: {
+        "X-Client": "candidate",
+      },
+    }
+  );
+};
 
 
 // Export all
@@ -271,5 +363,10 @@ export default {
   getWorkStatus,
   postWorkStatus,
   ValidateDocument,
-  saveProfileComplete
+  saveProfileComplete,
+  getHasCertification,
+  saveHasCertification,
+  saveCertification,
+  getCertifications,
+  deleteCertification
 };
