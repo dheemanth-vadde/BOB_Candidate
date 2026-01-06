@@ -47,6 +47,7 @@ export const mapAppliedJobApiToModel = (apiJob, masters = {}) => {
     requisition_id: requisitionsDTO?.id || "",
     position_title: masterPositionsDTO?.positionName || "",
     position_code: masterPositionsDTO?.positionCode || "",
+ 
     requisition_code: requisitionsDTO?.requisitionCode || "",
     requisition_title: requisitionsDTO?.requisitionTitle || "",
 
@@ -132,7 +133,7 @@ export const mapAppliedJobApiToModel = (apiJob, masters = {}) => {
     application_status: candidateApplicationDTO?.applicationStatus || "",
     application_date: candidateApplicationDTO?.applicationDate || "",
     application_updated_date: candidateApplicationDTO?.updatedDate || null,
-
+    reference_number: candidateApplicationDTO?.referenceNumber || "",
     /* =========================
        🆕 STATE DISTRIBUTION META
     ========================= */

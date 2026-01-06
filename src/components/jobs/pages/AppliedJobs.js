@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import html2pdf from "html2pdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch,faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faSearch,faCheckCircle,faCalendarAlt,
+  faCalendarTimes } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import Razorpay from "../../integrations/payments/Razorpay";
 import { mapAppliedJobsApiToList } from "../../jobs/mappers/appliedjobMapper";
@@ -88,6 +89,14 @@ const AppliedJobs = () => {
   //     setLoading(false);
   //   }
   // };
+  const formatDate = (date) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 
   const fetchAppliedJobs = async (master) => {
     if (!candidateId || !master) return;
@@ -231,7 +240,7 @@ const AppliedJobs = () => {
     <div className="applied-jobs-page px-4 py-3">
 
       {/* ===== PAGE HEADER ===== */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-2">
         <span className="mb-0 appliedheader">Job Applications</span>
 
         {/* Search Bar */}
@@ -284,9 +293,26 @@ const AppliedJobs = () => {
 
           {/* Header */}
           <div className="applied-job-header">
-            <span className="jobtitle">
-              {job.requisition_code} - {job.position_title}
-            </span>
+            <div className="req-date-row">
+              <span className="req-code">
+                {job.requisition_code}
+              </span>
+            
+              <span className="date-item">
+                <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+                Start: {formatDate(job.registration_start_date)}
+              </span>
+            
+              <span className="date-divider">|</span>
+            
+              <span className="date-item">
+                <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+                End: {formatDate(job.registration_end_date)}
+              </span>
+               <h6 className="job-title titlecolor">
+                       {job.position_title}
+                    </h6>
+            </div>
 
             <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
               {/* {job.application_status || "Applied"} */}
@@ -301,7 +327,7 @@ const AppliedJobs = () => {
           <div className="job-meta-grid row-1">
             <div className="meta-item">
               <span className="label">Reference No:</span>
-              <span className="value">{job.requisition_code}</span>
+              <span className="value"> {job?.reference_number?.trim() ? job.reference_number : "-"}</span>
             </div>
 
             <div className="meta-item">

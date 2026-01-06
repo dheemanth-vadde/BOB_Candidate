@@ -5,14 +5,15 @@ import jobsApiService  from "../services/jobsApiService";
 const OfferLetterModal = ({ show, onHide, offerData, onDecisionSuccess }) => {
     const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(false);
+  const [commentError, setCommentError] = useState("");
   if (!offerData) return null;
 const handleDecision = async (accepted) => {
   try {
-   if (!accepted && !comments.trim()) {
-      toast.error("Please enter comments before rejecting the offer");
+  if (!accepted && !comments.trim()) {
+      setCommentError("Please enter comments before rejecting the offer");
       return;
     }
-
+ setCommentError("");
     setLoading(true);
 
     const payload = {
@@ -92,8 +93,16 @@ const handleDecision = async (accepted) => {
       rows={3}
       placeholder="Enter comments..."
       value={comments}
-      onChange={(e) => setComments(e.target.value)}
+     onChange={(e) => {
+      setComments(e.target.value);
+      if (commentError) setCommentError(""); // ✅ clear error while typing
+    }}
     />
+      {commentError && (
+        <div className="invalid-feedback d-block">
+          {commentError}
+        </div>
+      )}
   </div>
 
   {/* ACTION BUTTONS */}

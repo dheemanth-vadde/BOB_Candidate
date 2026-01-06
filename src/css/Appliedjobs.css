@@ -78,7 +78,44 @@ display: flex;
 font-weight: 500;
   color: #162B75;
 }
+.req-code {
+  color:  rgb(255, 112, 67) ;
+  font-weight: 500;
+  font-size: 1rem;
+}
 
+/* Date text */
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #1b2a6b;
+}
+
+/* Calendar icons */
+.date-icon {
+  font-size: 0.75rem;
+  color: #1b2a6b;
+}
+
+/* Divider */
+.date-divider {
+  color: #1b2a6b;
+  font-weight: 600;
+}
+ .job-title{
+  	color: rgb(255, 112, 67) ;
+  font-size: 1rem;
+  width: 75%;
+  float: left;
+    margin-bottom: 10px;
+    font-weight: 500 !important;
+  }
+  .titlecolor{
+    
+      color: #162B75;
+  }
 /* =========================================================
    STATUS BADGES
 ========================================================= */

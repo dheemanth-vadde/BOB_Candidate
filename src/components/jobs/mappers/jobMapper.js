@@ -71,6 +71,7 @@ const stateNames = stateIds
     ========================= */
     description: masterPositionsDTO?.positionDescription || "",
     roles_responsibilities: positionsDTO?.rolesResponsibilities || "",
+    contract_period:"2 years",
 
     /* =========================
        JOB DETAILS

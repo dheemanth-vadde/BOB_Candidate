@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 import {
   faCheckCircle,
   faSearch,
-  faLightbulb
+  faLightbulb,
+   faCalendarAlt,
+  faCalendarTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "react-bootstrap";
 import "../../../css/Relevantjobs.css";
@@ -49,6 +51,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [selectedStates, setSelectedStates] = useState([]);
   const navigate = useNavigate();
   const [isMasterReady, setIsMasterReady] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const [applyForm, setApplyForm] = useState({
     state1: "",
     location1: "",
@@ -72,6 +75,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     { label: "9-10 years", min: 9, max: 10 },
     { label: "11+ years", min: 11, max: Infinity },
   ];
+  const [interviewCentres, setInterviewCentres] = useState([]);
   const ITEMS_PER_PAGE = 5; // change if needed
   const [currentPage, setCurrentPage] = useState(1);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -154,7 +158,51 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   }
 };
 
+const fetchInterviewCentres = async () => {
+  try {
+  //  const res = await masterApi.getInterviewCentres(); // 🔁 adjust method name if needed
+const res= {
 
+  "success": true,
+
+  "message": "All request types fetched successfully",
+
+  "data": [
+
+    {
+
+      "IntervieCentre": "Interview Reschedule",
+
+      "id": "5175e8a8-64d7-4cce-855d-18b33b1c8c02"
+
+    },
+
+    {
+
+      "IntervieCentre": "Other Request",
+
+      "id": "d7bf6078-cf7c-4733-b23a-3c7a88f754f7"
+
+    },
+
+    {
+
+      "IntervieCentre": "Interview Mode Change",
+
+      "id": "6ac65934-5606-4364-b07f-3f4a9a38fead"
+
+    }
+
+  ]
+
+};
+    const centres = res?.data || [];
+    setInterviewCentres(centres);
+  } catch (err) {
+    console.error("Failed to load interview centres", err);
+    toast.error("Failed to load interview centres");
+  }
+};
   const fetchInfoDocuments = async (type) => {
   try {
     const res = await masterApi.getGenericDocuments();
@@ -180,6 +228,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   useEffect(() => {
     fetchRequisitions();
     fetchJobs();
+    fetchInterviewCentres();   
   }, []);
   useEffect(() => {
     if (!candidateId || !isMasterReady) return;
@@ -220,6 +269,15 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
 
     return age;
   };
+  const formatDate = (date) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
   const calculateExperienceYears = (totalExpString) => {
     if (!totalExpString) return 0;
 
@@ -442,7 +500,18 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
         : [...prev, deptId]
     );
   };
+const isApplicationOpen = (endDate) => {
+  if (!endDate) return false;
 
+  const today = new Date();
+  const end = new Date(endDate);
+
+  // Normalize time (important)
+  today.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+
+  return today <= end;
+};
   // const handleLocationChange = (locationId) => {
   //   setSelectedLocations((prev) =>
   //     prev.includes(locationId)
@@ -506,28 +575,30 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   //   setShowPreviewModal(true);
   // };
   const handleProceedToPayment = () => {
+    const errors = {};
 
-
-    let isCtcRequired = false;
-
-    if (selectedJob?.employment_type === "Contract") {
-      isCtcRequired = true;
-    }
+    const isCtcRequired =
+      selectedJob?.employment_type?.toLowerCase() === "contract";
 
     if (isCtcRequired && !applyForm.ctc) {
-      toast.error("Please enter Expected CTC");
-      return;
+      errors.ctc = "Expected CTC is required";
     }
 
     if (!applyForm.examCenter) {
-      toast.error("Please enter Interview Center");
-      return;
+      errors.examCenter = "Interview Center is required";
     }
 
     if (!previewData) {
       toast.error("Candidate data not loaded yet");
       return;
     }
+    if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        return;
+      }
+
+      // ✅ Clear errors
+      setFormErrors({});
 
     dispatch(
       savePreference({
@@ -730,8 +801,26 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
               >
                 <div className="card-body job-main-header-sec">
                   <div className="left_content">
-                    <h6 className="job-title">
-                      {job.requisition_code} - {job.position_title}
+                    {/* ===== Requisition code + dates row ===== */}
+<div className="req-date-row">
+  <span className="req-code">
+    {job.requisition_code}
+  </span>
+
+  <span className="date-item">
+    <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+    Start: {formatDate(job.registration_start_date)}
+  </span>
+
+  <span className="date-divider">|</span>
+
+  <span className="date-item">
+    <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+    End: {formatDate(job.registration_end_date)}
+  </span>
+</div>
+                    <h6 className="job-title titlecolor">
+                       {job.position_title}
                     </h6>
                     <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Employment Type:</span>{" "}
@@ -749,9 +838,13 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
                       <span className="subtitle">Department:</span>{" "}
                       {job.dept_name}
                     </p>
-                    <p className="mb-1 text-mutedd small size35">
+                    {/* <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Location:</span>{" "}
                       {job.state_name}
+                    </p> */}
+                    <p className="mb-1 text-mutedd small size35">
+                      <span className="subtitle">Contract Period:</span>{" "}
+                      {job.contract_period}
                     </p>
                     <p className="mb-1 text-mutedd small size30">
                       <span className="subtitle">Vacancies:</span>{" "}
@@ -761,9 +854,13 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
                       <span className="subtitle">Qualification:</span>{" "}
                       {job.mandatory_qualification}
                     </p>
+                    <p className="mb-1 text-mutedd small qualification">
+                      <span className="subtitle">Location:</span>{" "}
+                      {job.state_name}
+                    </p> 
                   </div>
                   <div className="justify-content-between align-items-center apply_btn">
-
+{isApplicationOpen(job.registration_end_date) ? (
                     <button
                       className="btn btn-sm btn-outline-primary hovbtn"
                       onClick={() => {
@@ -772,7 +869,11 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
                       }}
                     >
                       Apply Now
-                    </button>
+                    </button> ) : (
+                      <span className="text-danger fw-semibold small">
+                        Application Closed
+                      </span>
+                    )}
                     <button
                       className="btn btn-sm knowntb"
                       onClick={() => handleKnowMore(job)}
@@ -876,6 +977,10 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
           setShowPreviewModal(false);
           setShowApplyModal(true);
         }}
+         formErrors={formErrors}                 // ✅ PASS ERRORS
+         setFormErrors={setFormErrors}           // ✅ PASS SETTER
+           interviewCentres={interviewCentres} 
+
       />
 
       <PaymentModal

@@ -18,7 +18,10 @@ const PreviewModal = ({
   masterData,
 onBack,
   applyForm,              // ✅ NEW
-  onApplyFormChange       // ✅ NEW
+  onApplyFormChange,       // ✅ NEW
+  formErrors,
+  setFormErrors,
+  interviewCentres
 }) => {
 console.log("Master Data111:", masterData);
 console.log("selected Job11:", selectedJob);
@@ -422,7 +425,7 @@ console.log("selected Job11:", selectedJob);
                     <>
                       {[1, 2, 3].map((i) => (
                         <React.Fragment key={i}>
-                          <div className="col-md-3">
+                          <div className="col-md-4">
                             <label className="form-label">
                               State Preference {i}
                             </label>
@@ -447,7 +450,7 @@ console.log("selected Job11:", selectedJob);
                             </select>
                           </div>
 
-                          <div className="col-md-3">
+                          <div className="col-md-4">
                             <label className="form-label">
                               Location Preference {i}
                             </label>
@@ -475,36 +478,66 @@ console.log("selected Job11:", selectedJob);
                   )}
 
                   {/* EXPECTED CTC */}
-                  {selectedJob?.employment_type?.toLowerCase() === "contract" && (
-                    <div className="col-md-3">
+                   {selectedJob?.employment_type?.toLowerCase() === "contract" && ( 
+                    <div className="col-md-4">
                       <label className="form-label">
-                        Expected CTC (in Lakhs)
+                        Expected CTC (in Lakhs) <span className="text-danger">*</span>
                       </label>
                       <input
                         type="text"
                         className="form-control"
                         value={applyForm.ctc}
-                        onChange={(e) =>
-                          onApplyFormChange("ctc", e.target.value)
-                        }
+                        onChange={(e) => {
+                            onApplyFormChange("ctc", e.target.value);
+                            setFormErrors(prev => ({ ...prev, ctc: "" }));
+                          }}
                       />
+                      {formErrors?.ctc && (
+                        <div className="invalid-feedback d-block">
+                          {formErrors.ctc}
+                        </div>
+                      )}
                     </div>
-                  )}
+                )} 
 
                   {/* INTERVIEW CENTER */}
-                  <div className="col-md-3">
+                 <div className="col-md-4">
                     <label className="form-label">
-                      Exam / Interview Center
+                      Exam / Interview Center <span className="text-danger">*</span>
                     </label>
-                    <input
-                      type="text"
-                      className="form-control"
+
+                    <select
+                      className={`form-control ${
+                        formErrors.examCenter ? "is-invalid" : ""
+                      }`}
                       value={applyForm.examCenter}
-                      onChange={(e) =>
-                        onApplyFormChange("examCenter", e.target.value)
-                      }
-                    />
+                      onChange={(e) => {
+                        onApplyFormChange("examCenter", e.target.value);
+
+                        // clear error on change
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          examCenter: null,
+                        }));
+                      }}
+                    >
+                      <option value="">Select Interview Center</option>
+
+                      {interviewCentres.map((centre) => (
+                        <option key={centre.id} value={centre.id}>
+                          {centre.IntervieCentre}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* ❌ Error message */}
+                    {formErrors.examCenter && (
+                      <div className="invalid-feedback d-block">
+                        {formErrors.examCenter}
+                      </div>
+                    )}
                   </div>
+
                 </div>
 
             </Accordion.Body>
