@@ -4,6 +4,7 @@ import React from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
+import bulbIcon from '../../../assets/bulb-icon.png';
 import { useBasicDetails } from '../hooks/basicHooks';
 import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
@@ -61,7 +62,10 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		handleRadio,
 		handleCheckbox,
 		handleSubmit,
-		calculateServicePeriodInMonths
+		calculateServicePeriodInMonths,
+		parsedClass,
+		handleNameKeyDown,
+		getAvailableDisabilityTypes
 	} = useBasicDetails({ goNext, goBack, parsedData });
 
 	return (
@@ -70,26 +74,35 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 				onSubmit={handleSubmit}
 			>
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
-					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Personal Details</p>
+					<div className='d-flex justify-content-between align-items-center mt-2'>
+						<div>
+							<p className="tab_headers" style={{ marginBottom: '0px' }}>Personal Details</p>
+						</div>
+						<div className='d-flex'>
+							<img src={bulbIcon} style={{ width: '20px', height: '20px', marginTop: '10px', marginRight: '5px' }}/>
+							<p className='orange_text mt-2'>Resume details have been auto-applied in the highlighted fields.</p>
+						</div>
+					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="firstName" className="form-label">First Name <span className="text-danger">*</span></label>
 						<input
 							type="text"
-							className={`form-control ${formErrors.firstName ? 'is-invalid' : ''}`}
+							className={`form-control ${parsedClass("firstName")} ${formErrors.firstName ? 'is-invalid' : ''}`}
 							id="firstName"
 							value={formData.firstName || ''}
 							onChange={handleChange}
+							onKeyDown={handleNameKeyDown}
 						/>
 						{formErrors.firstName && <div className="invalid-feedback">{formErrors.firstName}</div>}
 					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="middleName" className="form-label">Middle Name</label>
-						<input type="text" className="form-control" id="middleName" value={formData?.middleName} onChange={handleChange} />
+						<input type="text" className={`form-control ${parsedClass("middleName")}`} id="middleName" value={formData?.middleName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="lastName" className="form-label">Last Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} />
+						<input type="text" className={`form-control ${parsedClass("lastName")} ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 						{formErrors.lastName && <div className="invalid-feedback">{formErrors.lastName}</div>}
 					</div>
 
@@ -112,7 +125,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="fullNameSSC" className="form-label">Full Name as per SSC/Birth certificate <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} />
+						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 						{formErrors.fullNameSSC && <div className="invalid-feedback">{formErrors.fullNameSSC}</div>}
 					</div>
 
@@ -136,7 +149,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
-						<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} />
+						<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} max={new Date().toISOString().split("T")[0]} />
 
 						{isDobMismatch && (
 							<small className="text-danger">
@@ -310,7 +323,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="motherName" className="form-label">Mother Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} />
+						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 						{formErrors.motherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.motherName}
@@ -320,7 +333,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="fatherName" className="form-label">Father Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} />
+						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 						{formErrors.fatherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.fatherName}
@@ -330,12 +343,33 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="spouseName" className="form-label">Spouse Name</label>
-						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} />
+						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="contactNumber" className="form-label">Contact Number <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.contactNumber ? 'is-invalid' : ''}`} id="contactNumber" value={formData?.contactNumber} onChange={handleChange} />
+						<input
+							type="text"
+							className={`form-control ${formErrors.contactNumber ? 'is-invalid' : ''}`}
+							id="contactNumber"
+							maxLength={10}
+							inputMode="numeric"
+							pattern="[0-9]*"
+							value={formData?.contactNumber}
+							onChange={handleChange}
+							onKeyDown={(e) => {
+								// Allow control keys
+								if (
+									["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+								) {
+									return;
+								}
+								// Block non-numeric keys
+								if (!/^\d$/.test(e.key)) {
+									e.preventDefault();
+								}
+							}}
+						/>
 						{formErrors.contactNumber && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.contactNumber}
@@ -345,7 +379,28 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="altNumber" className="form-label">Alternative Number</label>
-						<input type="text" className="form-control" id="altNumber" value={formData?.altNumber} onChange={handleChange} />
+						<input
+							type="text"
+							className="form-control"
+							id="altNumber"
+							maxLength={10}
+							inputMode="numeric"
+							pattern="[0-9]*"
+							value={formData?.altNumber}
+							onChange={handleChange}
+							onKeyDown={(e) => {
+								// Allow control keys
+								if (
+									["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+								) {
+									return;
+								}
+								// Block non-numeric keys
+								if (!/^\d$/.test(e.key)) {
+									e.preventDefault();
+								}
+							}}
+						/>
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
@@ -425,7 +480,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="caste" className="form-label">Community/Caste <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} />
+						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 						{formErrors.caste && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.caste}
@@ -637,6 +692,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							disabled={!formData?.twinSibling}
 							value={formData?.siblingName}
 							onChange={handleChange}
+							onKeyDown={handleNameKeyDown}
 						/>
 						{formErrors.siblingName && <div className="invalid-feedback">{formErrors.siblingName}</div>}
 					</div>
@@ -903,7 +959,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 										}`}
 								>
 									<option value="">Select Disability Type</option>
-									{masterData?.disabilityCategories.map(d => (
+									{getAvailableDisabilityTypes(index).map(d => (
 										<option key={d.disabilityCategoryId} value={d.disabilityCategoryId}>
 											{d.disabilityName}
 										</option>
@@ -996,6 +1052,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							disabled={!formData?.isExService}
 							value={formData?.serviceEnrollment}
 							onChange={handleChange}
+							max={new Date().toISOString().split("T")[0]}
 						/>
 
 						{formErrors.serviceEnrollment && (
@@ -1016,6 +1073,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							value={formData?.dischargeDate}
 							onChange={handleChange}
 							min={formData.serviceEnrollment || undefined}
+							max={new Date().toISOString().split("T")[0]}
 						/>
 
 						{formErrors.dischargeDate && (

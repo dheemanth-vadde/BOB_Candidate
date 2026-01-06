@@ -22,6 +22,7 @@ const Login = () => {
   const [unverifiedUserId, setUnverifiedUserId] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +34,16 @@ const Login = () => {
 
   const hashPassword = (password) => {
     return CryptoJS.SHA256(password).toString(); // hex string
+  }
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    setFormErrors(prev => ({ ...prev, email: "" }));
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    setFormErrors(prev => ({ ...prev, password: "" }));
   };
 
   const encryptCredentials = (email, password, publicKey) => {
@@ -47,6 +58,15 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    const errors = {};
+    if (!email.trim()) errors.email = "Email is required";
+    if (!password.trim()) errors.password = "Password is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
 
     if (!publicKey) {
       toast.error("Public key not loaded yet!");
@@ -94,21 +114,20 @@ const Login = () => {
           <input
             type="email"
             value={email}
-            required
+            onChange={handleEmailChange}
+            className={`form-control text-muted ${formErrors.email ? 'is-invalid' : 'mb-4'}`}
             placeholder="Enter email"
-            onChange={(e) => setEmail(e.target.value)}
-            className="mb-4 text-muted"
           />
+          {formErrors.email && <div className="invalid-feedback mb-4">{formErrors.email}</div>}
 
           <label>Password:</label>
           <div style={{ position: 'relative' }}>
             <input
               type={showPassword ? "text" : "password"}
               value={password}
-              required
+              onChange={handlePasswordChange}
+              className={`form-control text-muted ${formErrors.password ? 'is-invalid' : ''}`}
               placeholder="Enter password"
-              onChange={(e) => setPassword(e.target.value)}
-              className="text-muted"
               style={{ paddingRight: '40px', marginBottom: '0.25rem' }}
             />
             <FontAwesomeIcon
@@ -117,7 +136,7 @@ const Login = () => {
               style={{
                 position: 'absolute',
                 right: '15px',
-                top: '45%',
+                top: '47%',
                 transform: 'translateY(-50%)',
                 cursor: 'pointer',
                 color: '#666',
@@ -126,9 +145,10 @@ const Login = () => {
               title={showPassword ? 'Hide password' : 'Show password'}
             />
           </div>
+          {formErrors.password && <div className="invalid-feedback d-block">{formErrors.password}</div>}
 
           <p className="forgot-link mb-4">
-            <Link className="" to="/forgot-password">Forgot Password?</Link>
+            <Link className="" to="/forgot-password" replace>Forgot Password?</Link>
           </p>
 
           {unverifiedUserId && (
@@ -153,7 +173,7 @@ const Login = () => {
           </button>
 
           <p className="register-link">
-            New User? <Link to="/register">Register Here</Link>
+            New User? <Link to="/register" replace>Register Here</Link>
           </p>
         </form>
       </div>

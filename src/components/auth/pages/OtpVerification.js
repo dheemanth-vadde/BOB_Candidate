@@ -131,7 +131,7 @@ const OtpVerification = () => {
             ))}
           </div>
 
-          <p className="forgot-link mb-4" onClick={resendOtp}>Resend OTP</p>
+          <p className="forgot-link mb-4 mt-2" onClick={resendOtp}>Resend OTP</p>
 
           <button className="login-button" type="submit" disabled={loading}>
             {loading ? "Verifying..." : "Verify OTP"}

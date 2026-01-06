@@ -150,7 +150,7 @@ const ChangePassword = () => {
               style={{
                 position: "absolute",
                 right: "15px",
-                top: "35%",
+                top: "48%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
                 color: "#666"
@@ -162,7 +162,7 @@ const ChangePassword = () => {
             <Link className="" to="/forgot-password">Forgot Password?</Link>
           </p> */}
 
-          <button className="login-button" type="submit" disabled={loading}>
+          <button className="login-button mt-4" type="submit" disabled={loading}>
             {loading ? "Updating..." : "Update Password"}
           </button>
 

@@ -10,6 +10,8 @@ import viewIcon from '../../../assets/view-icon.png';
 import profileApi from '../services/profile.api';
 import { createWorker } from 'tesseract.js';
 import { setExtractedData, clearExtractedData } from '../store/idProofSlice';
+import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
+import { toast } from 'react-toastify';
 
 const normalize = (s) =>
   s
@@ -62,6 +64,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
   console.log(aadhaarDoc)
   const documentId = aadhaarDoc?.documentTypeId;
   const documentCode = aadhaarDoc?.docCode;
+  const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png", "doc", "docx"];
   const [idProofFile, setIdProofFile] = useState(null);
   const [idProofPublicUrl, setIdProofPublicUrl] = useState("");
   const [parsedIdProofData, setParsedIdProofData] = useState(null);
@@ -150,22 +153,29 @@ const UploadIdProof = ({ goNext, goBack }) => {
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    console.log('File selected:', file);
-    if (file) {
-      console.log('File type:', file.type);
-      setIdProofFile(file);
-      setUploadedFileName(file.name);
-      // if user selected a new file, clear previously stored public url
-      setIdProofPublicUrl("");
-      dispatch(clearExtractedData());
+    if (!file) return;
 
-      // Perform OCR if it's an image
-      if (file.type.startsWith("image/")) {
-        await performOCRFromBlob(file);
-      }
-      // else {
-      //   dispatch(clearExtractedData());
-      // }
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      toast.error("Invalid file type. Only PDF, JPG, PNG, DOC, DOCX are allowed.");
+      e.target.value = ""; // reset input
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast.error("File size exceeds 2MB. Please upload a smaller file.");
+      e.target.value = "";
+      return;
+    }
+
+    setIdProofFile(file);
+    setUploadedFileName(file.name);
+    setIdProofPublicUrl("");
+    dispatch(clearExtractedData());
+
+    if (file.type.startsWith("image/")) {
+      await performOCRFromBlob(file);
     }
   };
 

@@ -4,11 +4,11 @@ import profileApi from '../services/profile.api';
 import { mapBasicDetailsApiToForm, mapBasicDetailsFormToApi } from '../mappers/BasicMapper';
 import masterApi from '../../../services/master.api';
 import { toast } from 'react-toastify';
-import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
+import { isAllowedNameChar, isValidName, sanitizeName, validateEndDateAfterStart, validateFile, validateNonEmptyText } from '../../../shared/utils/validation';
 
 const normalizeName = (name = "") =>
 	name
-		.toLowerCase()
+		// .toLowerCase()
 		.replace(/\s+/g, " ")
 		.trim();
 
@@ -129,6 +129,18 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		fullNameAadhar: false,
 		dob: false
 	});
+	const [parsedFields, setParsedFields] = useState({});
+	const NAME_FIELDS = new Set([
+		"firstName",
+		"middleName",
+		"lastName",
+		"fullNameSSC",
+		"motherName",
+		"fatherName",
+		"spouseName",
+		"siblingName",
+		"caste"
+	]);
 
 	const isNameMismatch =
 		touched.fullNameAadhar &&
@@ -146,6 +158,17 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	console.log("IS NEW UPLOAD:", isNewAadhaarUpload);
 
 	const [isAadhaarLocked, setIsAadhaarLocked] = useState(false);
+
+	const getAvailableDisabilityTypes = (currentIndex) => {
+		const selectedIds = formData.disabilities
+			.filter((_, i) => i !== currentIndex)
+			.map(d => d.disabilityCategoryId)
+			.filter(Boolean);
+
+		return masterData.disabilityCategories.filter(
+			d => !selectedIds.includes(d.disabilityCategoryId)
+		);
+	};
 
 	useEffect(() => {
 		const fetchMasterData = async () => {
@@ -181,6 +204,9 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				setFormData(prev => ({
 					...prev,
 					...mappedForm,
+					firstName: prev.firstName || mappedForm.firstName,
+					middleName: prev.middleName || mappedForm.middleName,
+					lastName: prev.lastName || mappedForm.lastName,
 					// 👇 Use extracted Aadhaar name if available, else DB data
 					fullNameAadhar: aadhaarName || mappedForm.fullNameAadhar
 				}));
@@ -190,12 +216,35 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 					Boolean(aadhaarName || mappedForm.fullNameAadhar)
 				);
 
+				setParsedFields(prev => {
+					const updated = { ...prev };
+
+					["firstName", "middleName", "lastName"].forEach(k => {
+						if (mappedForm[k] && formData[k] === mappedForm[k]) {
+						delete updated[k];
+						}
+					});
+
+					return updated;
+				});
+
 			} catch (error) {
 				console.error("Failed to fetch basic details", error);
 			}
 		};
 		fetchBasicDetails();
 	}, [candidateId]);
+
+	const parsedClass = (field) => parsedFields[field] ? "border-primary" : "";
+
+	const clearFieldError = (field) => {
+		setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated[field];
+			return updated;
+		});
+	};
+
 	useEffect(() => {
 		if (!aadhaarName || !isNewAadhaarUpload) return;
 		setFormData(prev => ({
@@ -294,11 +343,16 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		const input = e.currentTarget || e.target;
 		const file = input.files && input.files[0];
 		if (!file) return;
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
+		// if (file.size > 2 * 1024 * 1024) {
+		// 	toast.error("File size must be under 2MB");
+		// 	input.value = "";
+		// 	return;
+		// }
+		if (!validateFile({ file, errorPrefix: "Community Certificate" })) {
 			input.value = "";
 			return;
 		}
+
 		const validateresoponse = await validateDoc("COMMUNITY_CERT", file);
 		if (!validateresoponse || validateresoponse?.data?.success === false) {
 			toast.error(validateresoponse?.data?.message || "Invalid Community Certificate");
@@ -306,6 +360,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			return;
 		}
 		setCommunityFile(file);
+		clearFieldError("communityCertificate");
 		input.value = "";
 	};
 	const handleCommunityBrowse = () => {
@@ -316,8 +371,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		const input = e.currentTarget || e.target;
 		const file = input.files && input.files[0];
 		if (!file) return;
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
+		if (!validateFile({ file, errorPrefix: "Disability Certificate" })) {
 			input.value = "";
 			return;
 		}
@@ -342,11 +396,12 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	};
 
 	const handleServiceFileChange = (e) => {
+		const input = e.currentTarget || e.target;
 		const file = e.target.files[0];
 		if (!file) return;
 
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
+		if (!validateFile({ file, errorPrefix: "Service Certificate" })) {
+			input.value = "";
 			return;
 		}
 
@@ -368,8 +423,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		const input = e.currentTarget || e.target;
 		const file = input.files && input.files[0];
 		if (!file) return;
-		if (file.size > 2 * 1024 * 1024) {
-			toast.error("File size must be under 2MB");
+		if (!validateFile({ file, errorPrefix: "Birth Certificate" })) {
 			input.value = "";
 			return;
 		}
@@ -381,6 +435,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		}
 
 		setBirthFile(file);
+		clearFieldError("birthCertificate");
 		// Clear input so selecting the same file again triggers onChange
 		input.value = "";
 	};
@@ -403,22 +458,60 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		return (kb / 1024).toFixed(1) + " MB";
 	};
 
+	const handleNameKeyDown = (e) => {
+		const { key } = e;
+		// Allow control/navigation keys
+		if (
+			key === "Backspace" ||
+			key === "Delete" ||
+			key === "ArrowLeft" ||
+			key === "ArrowRight" ||
+			key === "Tab"
+		) {
+			return;
+		}
+		// Block everything except letters + space
+		if (!isAllowedNameChar(key)) {
+			e.preventDefault();
+		}
+	};
+
 	const handleChange = (e) => {
 		const { id, value } = e.target;
-		setFormData((prev) => ({
+		let updatedValue = value;
+
+		if (NAME_FIELDS.has(id)) {
+			updatedValue = value; // allow spaces while typing
+		}
+
+		setFormData(prev => ({
 			...prev,
-			[id]: value
+			[id]: updatedValue
 		}));
-		setFormErrors(prev => ({
-			...prev,
-			[id]: ""
-		}));
+
+		setParsedFields(prev => {
+			if (!prev[id]) return prev;
+			const updated = { ...prev };
+			delete updated[id];
+			return updated;
+		});
+
 		if (id === "fullNameAadhar" || id === "dob") {
 			setTouched(prev => ({
 				...prev,
 				[id]: true
 			}));
 		}
+	};
+
+	const trimNameFields = (data) => {
+		const trimmed = { ...data };
+		NAME_FIELDS.forEach(field => {
+			if (trimmed[field]) {
+			trimmed[field] = trimmed[field].trim().replace(/\s+/g, " ");
+			}
+		});
+		return trimmed;
 	};
 
 	const handleDisabilityChange = (index, field, value) => {
@@ -447,7 +540,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 	const addDisability = () => {
 		const lastDis = formData.disabilities[formData.disabilities.length - 1];
-		const newDis = lastDis ? { ...lastDis } : { disabilityCategoryId: "", disabilityPercentage: "" };
+		const newDis = { disabilityCategoryId: "", disabilityPercentage: "" };
 		setFormData(prev => ({
 			...prev,
 			disabilities: [...prev.disabilities, newDis]
@@ -487,6 +580,14 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const errors = {};
+		const cleanedFormData = { ...formData };
+		NAME_FIELDS.forEach(field => {
+			if (cleanedFormData[field]) {
+			cleanedFormData[field] = cleanedFormData[field]
+				.trim()
+				.replace(/\s+/g, " ");
+			}
+		});
 
 		// Required fields validation
 		const requiredFields = [
@@ -497,78 +598,91 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 		// Check required fields
 		requiredFields.forEach(field => {
-			if (!formData[field]?.toString().trim()) {
+			if (!cleanedFormData[field]?.toString().trim()) {
 				errors[field] = "This field is required";
 			}
 		});
 
-		// Twin sibling validation
-		if (formData.twinSibling && !formData.siblingName?.trim()) {
-			errors.siblingName = "Please add twin sibling's name";
-		}
-		if (formData.twinSibling && !formData.twinGender) {
-			errors.twinGender = "This field is required";
-		}
+		// ---------------- NAME VALIDATION ----------------
+  const NAME_ERROR = "Only alphabets and spaces are allowed";
+  NAME_FIELDS.forEach(field => {
+    const value = cleanedFormData[field];
+    if (value && !isValidName(value)) {
+      errors[field] = NAME_ERROR;
+    }
+  });
 
-		// Disability validations
-		if (formData.isDisabledPerson) {
-			if (formData.disabilities.length === 0) {
-				errors.disabilities = "This field is required";
-			} else {
-				formData.disabilities.forEach((dis, index) => {
-					if (!dis.disabilityCategoryId) {
-						errors[`disabilityType_${index}`] = "Please select a disability type";
-					}
-					if (!dis.disabilityPercentage) {
-						errors[`disabilityPercentage_${index}`] = "Please enter a disability percentage";
-					}
-				});
-			}
+  // ---------------- TWIN SIBLING ----------------
+  if (cleanedFormData.twinSibling) {
+    if (!cleanedFormData.siblingName?.trim()) {
+      errors.siblingName = "Please add twin sibling's name";
+    }
+    if (!cleanedFormData.twinGender) {
+      errors.twinGender = "This field is required";
+    }
+  }
 
-			if (formData.scribeRequirement === undefined) {
-				errors.scribeRequirement = "This field is required";
-			}
+  // ---------------- DISABILITY ----------------
+  if (cleanedFormData.isDisabledPerson) {
+    if (cleanedFormData.disabilities.length === 0) {
+      errors.disabilities = "This field is required";
+    } else {
+      cleanedFormData.disabilities.forEach((dis, index) => {
+        if (!dis.disabilityCategoryId) {
+          errors[`disabilityType_${index}`] = "Please select a disability type";
+        }
+        if (!dis.disabilityPercentage) {
+          errors[`disabilityPercentage_${index}`] =
+            "Please enter a disability percentage";
+        }
+      });
+    }
 
-			if (!disabilityFile && !existingDisabilityDoc) {
-				errors.disabilityCertificate = "This field is required";
-			}
-		}
+    if (!cleanedFormData.scribeRequirement) {
+      errors.scribeRequirement = "This field is required";
+    }
 
-		// Ex-service validations
-		// Ex-Service validations
-		if (formData.isExService) {
-			if (!formData.serviceEnrollment) {
-				errors.serviceEnrollment = "This field is required";
-			}
+    if (!disabilityFile && !existingDisabilityDoc) {
+      errors.disabilityCertificate = "This field is required";
+    }
+  }
 
-			if (!formData.dischargeDate) {
-				errors.dischargeDate = "This field is required";
-			}
+  // ---------------- EX-SERVICE ----------------
+  if (cleanedFormData.isExService) {
+    if (!cleanedFormData.serviceEnrollment) {
+      errors.serviceEnrollment = "This field is required";
+    }
 
-			// Date order validation (only if both exist)
-			if (formData.serviceEnrollment && formData.dischargeDate) {
-				const { isValid, error } = validateEndDateAfterStart(
-					formData.serviceEnrollment,
-					formData.dischargeDate
-				);
-				if (!isValid) {
-					errors.dischargeDate = error;
-				}
-			}
+    if (!cleanedFormData.dischargeDate) {
+      errors.dischargeDate = "This field is required";
+    }
 
-			if (!serviceFile && !existingServiceDoc) {
-				errors.serviceCertificate = "This field is required";
-			}
-		}
+    if (
+      cleanedFormData.serviceEnrollment &&
+      cleanedFormData.dischargeDate
+    ) {
+      const { isValid, error } = validateEndDateAfterStart(
+        cleanedFormData.serviceEnrollment,
+        cleanedFormData.dischargeDate
+      );
+      if (!isValid) {
+        errors.dischargeDate = error;
+      }
+    }
 
-		// Document validations
-		if (!isGeneralCategory && !communityFile && !existingCommunityDoc) {
-			errors.communityCertificate = "This field is required";
-		}
+    if (!serviceFile && !existingServiceDoc) {
+      errors.serviceCertificate = "This field is required";
+    }
+  }
 
-		if (!birthFile && !existingBirthDoc) {
-			errors.birthCertificate = "This field is required";
-		}
+  // ---------------- DOCUMENTS ----------------
+  if (!isGeneralCategory && !communityFile && !existingCommunityDoc) {
+    errors.communityCertificate = "This field is required";
+  }
+
+  if (!birthFile && !existingBirthDoc) {
+    errors.birthCertificate = "This field is required";
+  }
 
 		// If there are errors, set them and return
 		if (Object.keys(errors).length > 0) {
@@ -581,7 +695,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		// Rest of your form submission logic...
 		try {
 			const payload = mapBasicDetailsFormToApi({
-				formData,
+				formData: cleanedFormData,
 				candidateId,
 				createdBy,
 				candidateProfileId,
@@ -703,21 +817,29 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	}, [aadhaarName]);
 
 	useEffect(() => {
-		if (parsedData?.personal?.name) {
-			const name = parsedData.personal.name.trim();
-			const parts = name.split(/\s+/);
-			let firstName = '', middleName = '', lastName = '';
-			if (parts.length >= 1) firstName = parts[0];
-			if (parts.length >= 2) lastName = parts[parts.length - 1];
-			if (parts.length >= 3) middleName = parts.slice(1, -1).join(' ');
-			setFormData(prev => ({
-				...prev,
-				firstName: prev.firstName || firstName,
-				middleName: prev.middleName || middleName,
-				lastName: prev.lastName || lastName,
-			}));
-		}
-	}, [parsedData]);
+		if (!parsedData?.personal?.name) return;
+
+		const parts = parsedData.personal.name.trim().split(/\s+/);
+
+		const firstName = parts[0] || "";
+		const lastName = parts.length > 1 ? parts[parts.length - 1] : "";
+		const middleName =
+			parts.length > 2 ? parts.slice(1, -1).join(" ") : "";
+
+		setFormData(prev => ({
+			...prev,
+			firstName: prev.firstName || firstName,
+			middleName: prev.middleName || middleName,
+			lastName: prev.lastName || lastName
+		}));
+
+		setParsedFields(prev => ({
+			...prev,
+			...(firstName && !prev.firstName ? { firstName: true } : {}),
+			...(middleName && !prev.middleName ? { middleName: true } : {}),
+			...(lastName && !prev.lastName ? { lastName: true } : {})
+		}));
+		}, [parsedData]);
 
 	return {
 		formData,
@@ -768,6 +890,9 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		handleRadio,
 		handleCheckbox,
 		handleSubmit,
-		calculateServicePeriodInMonths
+		calculateServicePeriodInMonths,
+		parsedClass,
+		handleNameKeyDown,
+		getAvailableDisabilityTypes
 	};
 };

@@ -8,6 +8,8 @@ import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
 import profileApi, { parseResumeDetails } from '../services/profile.api';
+import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
+import { toast } from 'react-toastify';
 
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl, goNext, goBack, resumePublicUrl, isBasicDetailsSubmitted }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
@@ -17,6 +19,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
   const token = user?.accessToken;
   const candidateId = user?.user?.id;
   // const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
+  const ALLOWED_EXTENSIONS = ["pdf", "doc", "docx"];
   useEffect(() => {
     // If Basic Details was NOT submitted, resume must NOT exist
     if (!isBasicDetailsSubmitted) {
@@ -28,10 +31,24 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setResumeFile(file);
-      setFileName(file.name);
+    if (!file) return;
+
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      toast.error("Invalid file type. Only PDF, DOC, DOCX files are allowed.");
+      e.target.value = "";
+      return;
     }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast.error("File size exceeds 2MB. Please upload a smaller resume.");
+      e.target.value = "";
+      return;
+    }
+
+    setResumeFile(file);
+    setFileName(file.name);
   };
 
   const fileSizeInKB = resumeFile ? (resumeFile.size / 1024).toFixed(2) : null;
@@ -204,8 +221,24 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
         </div>
       </div>
 
-    </div>
+      {loading && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            zIndex: 9999
+          }}
+        >
+          <div className="text-center text-white">
+            <div className="spinner-border text-light mb-3" role="status" />
+            <div style={{ fontSize: "16px", fontWeight: 500 }}>
+              Parsing resume, please wait...
+            </div>
+          </div>
+        </div>
+      )}
 
+    </div>
   );
 };
 

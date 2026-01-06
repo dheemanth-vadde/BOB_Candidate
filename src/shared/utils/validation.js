@@ -1,5 +1,7 @@
 // utils/validation.js
 
+import { toast } from "react-toastify";
+
 export const validateWithConfirm = (value, confirmValue, options = {}) => {
   const {
     required = false,
@@ -184,3 +186,64 @@ export const isStrongPassword = (password) => {
   return strongPasswordRegex.test(password);
 };
 
+export const validatePhoneNumber = (phone) => {
+  // strictly digits only
+  if (!/^\d+$/.test(phone)) {
+    toast.error("Mobile number must contain only numbers");
+    return false;
+  }
+
+  // exactly 10 digits
+  if (phone.length !== 10) {
+    toast.error("Mobile number must be exactly 10 digits");
+    return false;
+  }
+
+  return true;
+};
+
+export const MAX_FILE_SIZE_MB = 2;
+export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+export const NAME_REGEX = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+export const sanitizeName = (value = "") => {
+  return value
+    .replace(/\s+/g, " ")   // collapse multiple spaces
+    .trim();                // remove leading/trailing spaces
+};
+
+export const isValidName = (value = "") => {
+  return NAME_REGEX.test(value);
+};
+
+export const isAllowedNameChar = (char) => {
+  return /^[A-Za-z ]$/.test(char);
+};
+
+const COMMON_ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "pdf"];
+
+export const validateFile = ({
+  file,
+  allowedExtensions = COMMON_ALLOWED_EXTENSIONS,
+  maxSizeBytes = MAX_FILE_SIZE_BYTES,
+  errorPrefix = "File"
+}) => {
+  if (!file) return false;
+
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  if (!allowedExtensions.includes(ext)) {
+    toast.error(
+      `${errorPrefix} must be of type: ${allowedExtensions.join(", ").toUpperCase()}`
+    );
+    return false;
+  }
+
+  if (file.size > maxSizeBytes) {
+    toast.error(`${errorPrefix} size must be under 2MB`);
+    return false;
+  }
+
+  return true;
+};

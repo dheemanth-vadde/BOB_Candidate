@@ -744,3 +744,8 @@ font-family: 'poppins';
   margin: 1.25rem 0 !important;
   /* border-radius: 1rem; */
 }
+
+.orange_text {
+  color: rgb(255, 112, 67);
+  font-size: 0.875rem;
+}
