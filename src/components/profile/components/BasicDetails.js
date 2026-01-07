@@ -97,17 +97,18 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							value={formData.firstName || ''}
 							onChange={handleChange}
 							onKeyDown={handleNameKeyDown}
+							placeholder='Enter your first name'
 						/>
 						{formErrors.firstName && <div className="invalid-feedback">{formErrors.firstName}</div>}
 					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="middleName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Middle Name</label>
-						<input type="text" className={`form-control ${parsedClass("middleName")}`} id="middleName" value={formData?.middleName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
+						<input type="text" className={`form-control ${parsedClass("middleName")}`} id="middleName" value={formData?.middleName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your middle name' />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="lastName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Last Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${parsedClass("lastName")} ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
+						<input type="text" className={`form-control ${parsedClass("lastName")} ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your last name' />
 						{formErrors.lastName && <div className="invalid-feedback">{formErrors.lastName}</div>}
 					</div>
 
@@ -129,8 +130,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="fullNameSSC" className="form-label">Full Name as per SSC/Birth certificate <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} />
+						<label htmlFor="fullNameSSC" className="form-label">Full Name as per 10th/Birth Certificate <span className="text-danger">*</span></label>
+						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your full name' />
 						{formErrors.fullNameSSC && <div className="invalid-feedback">{formErrors.fullNameSSC}</div>}
 					</div>
 
@@ -164,7 +165,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="birthCertificate" className="form-label">Upload Birth Certificate <span className="text-danger">*</span></label>
+						<label htmlFor="birthCertificate" className="form-label">Upload 10th/Birth Certificate <span className="text-danger">*</span></label>
 						{!birthFile && !existingBirthDoc && (
 							<div
 								className={`border rounded d-flex flex-column align-items-center justify-content-center ${formErrors.birthCertificate ? "border-danger" : ""}`}
@@ -328,7 +329,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="motherName" className="form-label">Mother Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
+						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your mother name' />
 						{formErrors.motherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.motherName}
@@ -338,7 +339,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="fatherName" className="form-label">Father Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
+						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your father name' />
 						{formErrors.fatherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.fatherName}
@@ -348,7 +349,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="spouseName" className="form-label">Spouse Name</label>
-						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
+						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your spouse name' />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
@@ -361,6 +362,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							inputMode="numeric"
 							pattern="[0-9]*"
 							value={formData?.contactNumber}
+							placeholder='Enter your contact number'
 							onChange={handleChange}
 							onKeyDown={(e) => {
 								// Allow control keys
@@ -392,6 +394,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							inputMode="numeric"
 							pattern="[0-9]*"
 							value={formData?.altNumber}
+							placeholder='Enter your alternate number'
 							onChange={handleChange}
 							onKeyDown={(e) => {
 								// Allow control keys
@@ -409,8 +412,59 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
+						<label htmlFor="cibilScore" className="form-label">
+							CIBIL Score <span className="text-danger">*</span>
+						</label>
+
+						<input
+							type="text"
+							id="cibilScore"
+							value={formData.cibilScore}
+							className={`form-control ${formErrors.cibilScore ? "is-invalid" : ""}`}
+							placeholder="Enter CIBIL score"
+							inputMode="numeric"      // mobile numeric keypad
+							maxLength={3}            // optional: CIBIL usually 300–900
+							onChange={(e) => {
+							const value = e.target.value;
+
+							// 🔥 HARD BLOCK: allow only digits
+							if (!/^\d*$/.test(value)) return;
+
+							setFormData(prev => ({
+								...prev,
+								cibilScore: value
+							}));
+
+							// clear error immediately
+							setFormErrors(prev => {
+								const updated = { ...prev };
+								delete updated.cibilScore;
+								return updated;
+							});
+							}}
+							onKeyDown={(e) => {
+							// block non-numeric keys explicitly
+							if (
+								["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+							) {
+								return;
+							}
+							if (!/^\d$/.test(e.key)) {
+								e.preventDefault();
+							}
+							}}
+						/>
+
+						{formErrors.cibilScore && (
+							<div className="invalid-feedback">
+							{formErrors.cibilScore}
+							</div>
+						)}
+					</div>
+
+					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="socialMediaLink" className="form-label">Socail Media Profile Link</label>
-						<input type="text" className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} />
+						<input type="text" className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} placeholder='Enter your social media profile link' />
 					</div>
 				</div>
 
@@ -485,7 +539,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="caste" className="form-label">Community/Caste <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} onKeyDown={handleNameKeyDown} />
+						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your community/caste' />
 						{formErrors.caste && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.caste}
@@ -697,6 +751,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							value={formData?.siblingName}
 							onChange={handleChange}
 							onKeyDown={handleNameKeyDown}
+							placeholder={`Enter your twin sibling's name`}
 						/>
 						{formErrors.siblingName && <div className="invalid-feedback">{formErrors.siblingName}</div>}
 					</div>
@@ -1089,7 +1144,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="servicePeriod" className="form-label">Service Period (in Months)</label>
-						<input type="number" className="form-control" id="servicePeriod" disabled value={formData?.servicePeriod} onChange={handleChange} />
+						<input type="number" className="form-control" id="servicePeriod" disabled value={formData?.servicePeriod} onChange={handleChange} placeholder='Enter your service period' />
 					</div>
 					<div className='col-md-6 d-flex flex-column'>
 						<div className="col-md-12 col-sm-12 d-grid">
@@ -1304,6 +1359,11 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								<label htmlFor="speak1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
 							</div>
 						</div>
+						{formErrors.language1Proficiency && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.language1Proficiency}
+							</div>
+						)}
 					</div>
 
 					<div className="col-md-4 col-sm-12 mt-2">
@@ -1338,6 +1398,11 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								<label htmlFor="speak2" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
 							</div>
 						</div>
+						{formErrors.language2Proficiency && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.language2Proficiency}
+							</div>
+						)}
 					</div>
 
 					<div className="col-md-4 col-sm-12 mt-2">
@@ -1372,6 +1437,11 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								<label htmlFor="speak1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
 							</div>
 						</div>
+						{formErrors.language3Proficiency && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.language3Proficiency}
+							</div>
+						)}
 					</div>
 				</div>
 

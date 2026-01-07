@@ -62,6 +62,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		spouseName: "",
 		contactNumber: "",
 		altNumber: "",
+		cibilScore: "",
 		socialMediaLink: "",
 
 		twinSibling: false,
@@ -77,14 +78,14 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		serviceEnrollment: "",
 		dischargeDate: "",
 		servicePeriod: "",
-		employmentSecured: "",
-		lowerPostStatus: "",
+		employmentSecured: "No",
+		lowerPostStatus: "No",
 		serviceCertificate: null,
 
-		riotVictimFamily: "",
-		servingInGovt: "",
-		minorityCommunity: "",
-		disciplinaryAction: "",
+		riotVictimFamily: "No",
+		servingInGovt: "No",
+		minorityCommunity: "No",
+		disciplinaryAction: "No",
 
 		language1: "",
 		language1Read: false,
@@ -626,6 +627,16 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			...prev,
 			[id]: checked
 		}));
+		const match = id.match(/^(language[123])/);
+		if (match) {
+			const langKey = match[1];
+
+			setFormErrors(prev => {
+			const updated = { ...prev };
+			delete updated[`${langKey}Proficiency`];
+			return updated;
+			});
+		}
 	};
 
 	const handleSubmit = async (e) => {
@@ -734,6 +745,24 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
   if (!birthFile && !existingBirthDoc) {
     errors.birthCertificate = "This field is required";
   }
+
+  const validateLanguageProficiency = (langKey) => {
+		const langSelected = cleanedFormData[langKey];
+		if (!langSelected) return; // no language selected → no validation
+
+		const read = cleanedFormData[`${langKey}Read`];
+		const write = cleanedFormData[`${langKey}Write`];
+		const speak = cleanedFormData[`${langKey}Speak`];
+
+		if (!read && !write && !speak) {
+			errors[`${langKey}Proficiency`] =
+			"Select at least one: Read, Write, or Speak";
+		}
+	};
+
+	validateLanguageProficiency("language1");
+	validateLanguageProficiency("language2");
+	validateLanguageProficiency("language3");
 
 		// If there are errors, set them and return
 		if (Object.keys(errors).length > 0) {

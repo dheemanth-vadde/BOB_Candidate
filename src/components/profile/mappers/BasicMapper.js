@@ -37,6 +37,7 @@ export const mapBasicDetailsFormToApi = ({
 
       contactNo: formData.contactNumber || "",
       altContactNo: formData.altNumber || "",
+      cibilScore: formData.cibilScore || "",
       socialMediaProfileLink: formData.socialMediaLink || "",
 
       isTwin: Boolean(formData.twinSibling),
@@ -137,6 +138,7 @@ export const mapBasicDetailsApiToForm = (apiData) => {
 
     contactNumber: profile.contactNo || "",
     altNumber: profile.altContactNo || "",
+    cibilScore: profile.cibilScore || "",
     socialMediaLink: profile.socialMediaProfileLink || "",
 
     // Twin

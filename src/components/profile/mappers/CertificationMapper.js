@@ -16,19 +16,27 @@ export const mapCertificationFormToApi = (
 
 
 export const mapCertificationApiToUi = (apiItem) => {
-  return {
-    certificationId: apiItem.certificationId,
-    issuedBy: apiItem.issuedBy,
-    certificationName: apiItem.certificationName,
-    certificationDate: apiItem.certificationDate,
-    expiryDate: apiItem.expiryDate || "",
+  const cert = apiItem?.certifications || {};
+  const doc = apiItem?.documentStore || null;
 
-    // ✅ THIS IS WHAT YOU WERE MISSING
-    certificate: apiItem.certificateFilePath
+  return {
+    // identifiers
+    certificationId: cert.certificationId,
+
+    // certification fields
+    issuedBy: cert.issuedBy || "",
+    certificationName: cert.certificationName || "",
+    certificationDate: cert.certificationDate || "",
+    expiryDate: cert.expiryDate || "",
+
+    // document (used for edit + preview)
+    certificate: doc
       ? {
-          fileUrl: apiItem.certificateFilePath,
-          fileName: apiItem.certificateFileName,
-          displayName: apiItem.certificateFileName,
+          id: doc.id,
+          fileUrl: doc.fileUrl,
+          fileName: doc.fileName,
+          displayName: doc.displayName,
+          uploadedDate: doc.uploadedDate,
         }
       : null,
   };

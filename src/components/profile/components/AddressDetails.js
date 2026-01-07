@@ -432,7 +432,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-12 col-sm-12 mt-3 d-flex align-items-center gap-2 pb-3 border-bottom">
+				<div className="col-md-12 col-sm-12 mt-4 d-flex align-items-center gap-2 pt-2 border-top">
 					<input
 						type="checkbox"
 						// className="form-control"

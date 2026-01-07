@@ -176,6 +176,16 @@ const CertificationDetails = ({ goNext, goBack }) => {
       errors.certificationDate = "Certification date cannot be in the future";
     }
 
+    if (formData.expiryDate) {
+      if (
+        new Date(formData.expiryDate) <
+        new Date(formData.certificationDate)
+      ) {
+        errors.expiryDate =
+          "Expiry date cannot be before certification date";
+      }
+    }
+
     // Expiry Date — OPTIONAL
     // if (formData.expiryDate) {
     //   if (
@@ -437,7 +447,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
           )}
         </div>
         {/* ACTIONS */}
-        <div className="d-flex justify-content-end gap-3">
+        <div className="d-flex justify-content-center gap-3">
           <button
             type="button" onClick={handleSave} disabled={!hasCertification} className={`btn blue-button ${!hasCertification ? "disabled bg-light text-muted border" : ""}`}
             style={{ cursor: !hasCertification ? "not-allowed" : "pointer" }}>

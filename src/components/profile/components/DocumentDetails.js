@@ -182,12 +182,18 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 				}
 			}
 
+			const isOther = field.docCode === "OTHERS";
+
+			const sanitizedDocumentName = isOther
+			? customNames[field.key]?.trim().replace(/\s+/g, "_")
+			: undefined;
+
 			await profileApi.postDocumentDetails(
 				candidateId,
 				field.documentId,
 				file,
-				field.docCode === "Others",
-				customNames[field.key]
+				isOther,
+				sanitizedDocumentName
 			);
 
 			return true;
