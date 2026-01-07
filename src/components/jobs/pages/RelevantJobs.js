@@ -13,10 +13,7 @@ import { Modal } from "react-bootstrap";
 import "../../../css/Relevantjobs.css";
 import { toast } from "react-toastify";
 import PreviewModal from "../components/PreviewModal";
-//import PreferenceModal from "../components/PreferenceModal";
-import apiService from "../../../services/apiService";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import KnowMoreModal from "../components/KnowMoreModal";
 import { mapJobsApiToList } from "../../jobs/mappers/jobMapper";
 import { mapRequisitionsApiToList } from "../../jobs/mappers/requisitionMapper";
@@ -77,7 +74,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     { label: "11+ years", min: 11, max: Infinity },
   ];
   const [interviewCentres, setInterviewCentres] = useState([]);
-  const PAGE_SIZE = 5; // change if needed
+  const PAGE_SIZE =10; // change if needed
   //const [currentPage, setCurrentPage] = useState(0); // backend index
   //const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -170,45 +167,6 @@ const [turnstileToken, setTurnstileToken] = useState("");
     }
   };
 
-  // ✅ Fetch jobs
-  //  const fetchJobs = async (currentPage=0) => {
-  //   try {
-  //     setLoading(true);
-
-  //     // 1️⃣ Always load master data
-  //     const masterRes = await jobsApiService.getMasterData();
-  //     const mappedMasterData = mapMasterDataApi(masterRes);
-
-  //     setDepartments(mappedMasterData.departments || []);
-  //     setStates(mappedMasterData.states || []);
-  //     setLocations(mappedMasterData.cities || []);
-  //     setMasterData(mappedMasterData);
-
-  //     // 2️⃣ Load jobs separately
-  //     let jobsData = [];
-  //     try {
-  //       const jobsRes = await jobsApiService.getJobPositions(candidateId,currentPage,PAGE_SIZE);
-  //       jobsData = jobsRes?.data || [];
-  //     } catch (jobErr) {
-  //       // ✅ 404 is OK → means no jobs
-  //       if (jobErr?.response?.status !== 404) {
-  //         throw jobErr; // real error
-  //       }
-  //     }
-
-  //     const mappedJobs = mapJobsApiToList(jobsData.content, mappedMasterData);
-  //     setJobs(mappedJobs);
-  // setTotalPages(jobsData?.totalPages || 0);
-  //     setCurrentPage(jobsData?.number || 0);
-  //     setIsMasterReady(true);
-  //   } catch (err) {
-  //     console.error("Error fetching data:", err);
-  //     toast.error("Failed to load data");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const fetchInterviewCentres = async () => {
     try {
       const res = await jobsApiService.getInterviewCentres(); // 🔁 adjust method name if needed
@@ -281,24 +239,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
     fetchCandidatePreview();
   }, [candidateId, isMasterReady]);
-  const calculateAge = (dobString) => {
-    if (!dobString) return null;
 
-    const dob = new Date(dobString);
-    const today = new Date();
-
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < dob.getDate())
-    ) {
-      age--;
-    }
-
-    return age;
-  };
   const formatDate = (date) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString("en-GB", {
@@ -308,53 +249,73 @@ const [turnstileToken, setTurnstileToken] = useState("");
     });
   };
 
-  const calculateExperienceYears = (totalExpString) => {
-    if (!totalExpString) return 0;
+  // const calculateAge = (dobString) => {
+  //   if (!dobString) return null;
 
-    // "60 Months" → 60
-    const months = parseInt(totalExpString.replace(/\D/g, ""), 10);
-    return Math.floor(months / 12);
-  };
-  const validateAgeAndExperience = (job, previewData) => {
-    // ---------- AGE ----------
-    const dob = previewData?.personalDetails?.dob;
-    const age = calculateAge(dob);
+  //   const dob = new Date(dobString);
+  //   const today = new Date();
 
-    console.log("age", age)
+  //   let age = today.getFullYear() - dob.getFullYear();
+  //   const monthDiff = today.getMonth() - dob.getMonth();
 
-    if (!age) {
-      toast.error("Date of Birth is missing in profile");
-      return false;
-    }
-    console.log("age min max", job.eligibility_age_min, job.eligibility_age_max)
-    if (
-      (job.eligibility_age_min && age < job.eligibility_age_min) ||
-      (job.eligibility_age_max && age > job.eligibility_age_max)
-    ) {
-      toast.error(
-        `Age must be between ${job.eligibility_age_min} - ${job.eligibility_age_max} years`
-      );
-      return false;
-    }
+  //   if (
+  //     monthDiff < 0 ||
+  //     (monthDiff === 0 && today.getDate() < dob.getDate())
+  //   ) {
+  //     age--;
+  //   }
 
-    // ---------- EXPERIENCE ----------
-    const totalExpYears = calculateExperienceYears(
-      previewData?.experienceSummary?.total
-    );
-    console.log("totalExpYears", totalExpYears)
-    console.log("job.mandatory_experience", job.mandatory_experience)
-    if (
-      job.mandatory_experience &&
-      totalExpYears < Number(job.mandatory_experience)
-    ) {
-      toast.error(
-        `Minimum ${job.mandatory_experience} years experience required`
-      );
-      return false;
-    }
+  //   return age;
+  // };
+  
 
-    return true; // ✅ Eligible
-  };
+  // const calculateExperienceYears = (totalExpString) => {
+  //   if (!totalExpString) return 0;
+
+  //   // "60 Months" → 60
+  //   const months = parseInt(totalExpString.replace(/\D/g, ""), 10);
+  //   return Math.floor(months / 12);
+  // };
+  // const validateAgeAndExperience = (job, previewData) => {
+  //   // ---------- AGE ----------
+  //   const dob = previewData?.personalDetails?.dob;
+  //   const age = calculateAge(dob);
+
+  //   console.log("age", age)
+
+  //   if (!age) {
+  //     toast.error("Date of Birth is missing in profile");
+  //     return false;
+  //   }
+  //   console.log("age min max", job.eligibility_age_min, job.eligibility_age_max)
+  //   if (
+  //     (job.eligibility_age_min && age < job.eligibility_age_min) ||
+  //     (job.eligibility_age_max && age > job.eligibility_age_max)
+  //   ) {
+  //     toast.error(
+  //       `Age must be between ${job.eligibility_age_min} - ${job.eligibility_age_max} years`
+  //     );
+  //     return false;
+  //   }
+
+  //   // ---------- EXPERIENCE ----------
+  //   const totalExpYears = calculateExperienceYears(
+  //     previewData?.experienceSummary?.total
+  //   );
+  //   console.log("totalExpYears", totalExpYears)
+  //   console.log("job.mandatory_experience", job.mandatory_experience)
+  //   if (
+  //     job.mandatory_experience &&
+  //     totalExpYears < Number(job.mandatory_experience)
+  //   ) {
+  //     toast.error(
+  //       `Minimum ${job.mandatory_experience} years experience required`
+  //     );
+  //     return false;
+  //   }
+
+  //   return true; // ✅ Eligible
+  // };
   const handlePreCheckConfirm = async () => {
     setShowPreCheckModal(false);
 
@@ -433,27 +394,6 @@ const [turnstileToken, setTurnstileToken] = useState("");
     }
   };
 
-
-  // ✅ Open Add Preference modal instead of Razorpay
-  const handleApplyClick = (job, previewData) => {
-
-    // const isEligible = validateAgeAndExperience(job, previewData);
-    // if (!isEligible) return;
-
-    setSelectedJob(job);
-    setApplyForm({
-      state1: "",
-      location1: "",
-      state2: "",
-      location2: "",
-      state3: "",
-      location3: "",
-      ctc: "",
-      examCenter: "",
-    });
-
-    //setShowPreferenceModal(true);
-  };
 
   const handleKnowMore = (job) => {
     setSelectedJob(job);
@@ -546,14 +486,6 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
     return today <= end;
   };
-  // const handleLocationChange = (locationId) => {
-  //   setSelectedLocations((prev) =>
-  //     prev.includes(locationId)
-  //       ? prev.filter((id) => id !== locationId)
-  //       : [...prev, locationId]
-  //   );
-  // };
-
   const handleStateChange = (stateId) => {
     setSelectedStates((prev) =>
       prev.includes(stateId)
@@ -575,39 +507,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
     setSelectedExperience([]);
     setSearchTerm("");
   };
-  // const handlePreviewClick = () => {
-  //   let isCtcRequired = false;
-
-  //   if (selectedJob?.employment_type === "Contract") {
-  //     isCtcRequired = true;
-  //   }
-
-  //   if (isCtcRequired && !applyForm.ctc) {
-  //     toast.error("Please enter Expected CTC");
-  //     return;
-  //   }
-
-  //   if (!applyForm.examCenter) {
-  //     toast.error("Please enter Interview Center");
-  //     return;
-  //   }
-
-  //   if (!previewData) {
-  //     toast.error("Candidate data not loaded yet");
-  //     return;
-  //   }
-
-  //   dispatch(
-  //     savePreference({
-  //       jobId: selectedJob.position_id,
-  //       requisitionId: selectedJob.requisition_id,
-  //       preferences: applyForm,
-  //     })
-  //   );
-
-  //   //setShowPreferenceModal(false);
-  //   setShowPreviewModal(true);
-  // };
+  
   const handleProceedToPayment = () => {
     const errors = {};
 
@@ -972,33 +872,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
       )}
       {/* ✅ Add Preference Modal */}
 
-      {/* <PreferenceModal
-        show={showPreferenceModal}
-        onHide={handleClosePreferenceModal}
-        selectedJob={selectedJob}
-        applyForm={applyForm}
-        onApplyFormChange={(name, value) =>
-          setApplyForm((prev) => ({ ...prev, [name]: value }))
-        }
-        states={states}
-        locations={locations}
-        // onPreview={() => {
-
-
-        //   // ✅ STORE preference data
-        //   dispatch(
-        //     savePreference({
-        //       jobId: selectedJob.position_id,
-        //       requisitionId: selectedJob.requisition_id,
-        //       preferences: applyForm,
-        //     })
-        //   );
-
-        //   setShowPreferenceModal(false);
-        //   setShowPreviewModal(true);
-        // }}
-        onPreview={handlePreviewClick}
-      /> */}
+      
 
       {/* ✅ Original Know More Modal (unchanged) */}
       <KnowMoreModal
@@ -1007,32 +881,6 @@ const [turnstileToken, setTurnstileToken] = useState("");
         selectedJob={selectedJob}
         masterData={masterData}
       />
-
-
-      {/* Preview Modal */}
-      {/* <PreviewModal
-        show={showPreviewModal}
-        onHide={() => setShowPreviewModal(false)}
-        previewData={previewData}
-        onBack={() => {
-          setShowPreviewModal(false);
-          setShowApplyModal(true);
-        }}
-        onEditProfile={() => {
-          // 1️⃣ Set step to "Basic Details"
-          localStorage.setItem("activeStep", "2");
-
-          // 2️⃣ Switch to PROFILE menu (info tab)
-          setActiveTab("info");
-          // 2️⃣ Close preview modal
-          setShowPreviewModal(false);
-
-        }}
-
-        onProceedToPayment={handleProceedToPayment}
-        selectedJob={selectedJob}
-        masterData={masterData}
-      /> */}
       <PreviewModal
         show={showPreviewModal}
         onHide={() => setShowPreviewModal(false)}

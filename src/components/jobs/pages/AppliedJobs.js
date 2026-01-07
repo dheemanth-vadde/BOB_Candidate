@@ -9,20 +9,15 @@ import { useSelector } from "react-redux";
 import Razorpay from "../../integrations/payments/Razorpay";
 import { mapAppliedJobsApiToList } from "../../jobs/mappers/appliedjobMapper";
 import "../../../css/Appliedjobs.css";
-import apiService from "../../../services/apiService";
 import TrackApplicationModal from "../../jobs/components/TrackApplicationModal";
 import axios from "axios";
 import jobsApiService from "../services/jobsApiService";
 import OfferLetterModal from "../../jobs/components/OfferLetterModal";
 import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
-import PreviewModal from "../components/PreviewModal";
 import { toast } from "react-toastify";
-import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 import ApplicationDownload from "../components/ApplicationDownload";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
-
-
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -38,7 +33,7 @@ const AppliedJobs = () => {
   // const [currentPage, setCurrentPage] = useState(0); // backend page index
   // const [totalPages, setTotalPages] = useState(0);
 
-  const ITEMS_PER_PAGE = 2;
+  const ITEMS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
@@ -74,34 +69,7 @@ const AppliedJobs = () => {
     searchTerm,
 
   ]);
-  // const handleDownloadApplication = async (job) => {
-  //   try {
-  //     setLoading(true);
 
-  //     try {
-  //       const response = await jobsApiService.getAllDetails(candidateId);
-
-  //       const mappedPreviewData = mapCandidateToPreview(
-  //         response.data,
-  //         masterData        // ✅ PASS MASTERS HERE
-  //       );
-
-  //       setPreviewData(mappedPreviewData);
-  //       setSelectedJob(job);
-  //       setShowPreview(true);
-  //     } catch (error) {
-  //       console.error("Failed to fetch candidate preview", error);
-  //       toast.error("Unable to load candidate profile");
-  //     }
-
-
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Unable to load application preview");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const formatDate = (date) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString("en-GB", {
@@ -161,12 +129,6 @@ const AppliedJobs = () => {
 
   // ✅ Filter logic
   const filteredJobs = appliedJobs.filter((job) => {
-    // const matchesDept =
-    //   selectedDepartments.length === 0 ||
-    //   selectedDepartments.includes(job.dept_id);
-    // const matchesLoc =
-    //   selectedLocations.length === 0 ||
-    //   selectedLocations.includes(job.location_id);
     const matchesSearch =
       job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -180,51 +142,6 @@ const AppliedJobs = () => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  // const handleDirectDownload = async (job) => {
-  //   try {
-  //     setLoading(true);
-
-  //     const response = await jobsApiService.getAllDetails(candidateId);
-
-  //     const mappedPreviewData = mapCandidateToPreview(
-  //       response.data,
-  //       masterData
-  //     );
-
-  //     // 1️⃣ Set data
-  //     setSelectedJob(job);
-  //     setPreviewData(mappedPreviewData);
-
-  //     // 2️⃣ Wait for React to paint
-  //     requestAnimationFrame(() => {
-  //       requestAnimationFrame(() => {
-  //         if (!previewRef.current) {
-  //           console.error("Preview ref not ready");
-  //           return;
-  //         }
-  //         console.log("Preview HTML:", previewRef.current.innerHTML);
-  //         console.log("Preview height:", previewRef.current.offsetHeight);
-  //         html2pdf()
-  //           .from(previewRef.current)
-  //           .set({
-  //             margin: 10,
-  //             filename: `Application_${job.requisition_code}.pdf`,
-  //             image: { type: "jpeg", quality: 0.98 },
-  //             html2canvas: { scale: 2, useCORS: true },
-  //             jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-  //           })
-  //           .save();
-  //       });
-  //     });
-
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("Unable to download application");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleViewOffer = async (job) => {
     try {
