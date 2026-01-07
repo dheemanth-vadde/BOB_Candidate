@@ -251,7 +251,7 @@ const Register = () => {
           <button type="submit" className="login-button mt-2 mb-2">Register</button>
 
           <p className="register-link mb-0">
-            Already registered? <Link to="/login">Login</Link>
+            Already registered? <Link to="/login" replace>Login</Link>
           </p>
         </form>
       </div>

@@ -752,3 +752,15 @@ font-family: 'poppins';
 .uploadcertification {
 	background-color: var(--bs-secondary-bg);
 }
+
+.experience_table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.profile_table_td {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

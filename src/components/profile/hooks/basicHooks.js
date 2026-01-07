@@ -392,7 +392,8 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		setLoading(true);
 		try {
 			const validateresoponse = await validateDoc("COMMUNITY_CERT", file);
-			if (!validateresoponse || validateresoponse?.data?.success === false) {
+			console.log(validateresoponse)
+			if (!validateresoponse || validateresoponse?.success === false) {
 				toast.error(validateresoponse?.data?.message || "Invalid Community Certificate");
 				input.value = "";
 				return;
@@ -420,7 +421,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		setLoading(true);
 		try {
 			const validateresoponse = await validateDoc("DISABILITY", file);
-			if (!validateresoponse || validateresoponse?.data?.success === false) {
+			if (!validateresoponse || validateresoponse?.success === false) {
 				toast.error(validateresoponse?.data?.message || "Invalid Disability Certificate");
 				input.value = "";
 				return;
@@ -469,28 +470,41 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		const input = e.currentTarget || e.target;
 		const file = input.files && input.files[0];
 		if (!file) return;
-		if (!validateFile({ file, errorPrefix: "Birth Certificate" })) {
+
+		if (!validateFile({ file, errorPrefix: "Birth / Board Certificate" })) {
 			input.value = "";
 			return;
 		}
 
 		setLoading(true);
 		try {
-			const validateresoponse = await validateDoc("BIRTH_CERT", file);
-			if (!validateresoponse || validateresoponse?.data?.success === false) {
-				toast.error(validateresoponse?.data?.message || "Invalid Birth Certificate");
+			let validationResponse = await validateDoc("BIRTH_CERT", file);
+
+			// If Birth Cert fails, try Board
+			if (!validationResponse || validationResponse?.success === false) {
+				validationResponse = await validateDoc("BOARD", file);
+			}
+
+			// If both fail → reject
+			if (!validationResponse || validationResponse?.success === false) {
+				toast.error(
+					validationResponse?.data?.message ||
+					"Invalid Birth Certificate or 10th Certificate"
+				);
 				input.value = "";
 				return;
 			}
 
+			// Either Birth or Board passed
 			setBirthFile(file);
 			clearFieldError("birthCertificate");
+
 		} finally {
 			setLoading(false);
+			input.value = ""; // allow re-upload of same file
 		}
-		// Clear input so selecting the same file again triggers onChange
-		input.value = "";
 	};
+
 	const validateDoc = async (documentName, file) => {
 		try {
 			const res = await profileApi.ValidateDocument(documentName, file);

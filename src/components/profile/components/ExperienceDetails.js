@@ -623,7 +623,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<table>
+				<table className='experience_table'>
 					<thead>
 						<tr>
 							<th className='profile_table_th text-center'>S.No</th>

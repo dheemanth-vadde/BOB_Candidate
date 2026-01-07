@@ -64,7 +64,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
   console.log(aadhaarDoc)
   const documentId = aadhaarDoc?.documentTypeId;
   const documentCode = aadhaarDoc?.docCode;
-  const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png", "doc", "docx"];
+  const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
   const [idProofFile, setIdProofFile] = useState(null);
   const [idProofPublicUrl, setIdProofPublicUrl] = useState("");
   const [parsedIdProofData, setParsedIdProofData] = useState(null);
