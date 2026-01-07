@@ -11,7 +11,7 @@ import JSEncrypt from "jsencrypt";
 import { toast } from "react-toastify";
 import authApi from "../services/auth.api";
 import TurnstileWidget from "../../integrations/Cpatcha/TurnstileWidget";
-import { isStrongPassword } from "../../../shared/utils/validation";
+import { isStrongPassword, validatePhoneNumber } from "../../../shared/utils/validation";
 
 const Register = () => {
   const [publicKey, setPublicKey] = useState("");
@@ -25,6 +25,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [formErrors, setFormErrors] = useState({});
   //   const [otp, setOtp] = useState("");
   // const [mfaToken, setMfaToken] = useState("");
   // const [showOtpInput, setShowOtpInput] = useState(false);
@@ -53,25 +54,37 @@ const Register = () => {
     return encrypted; // base64 encrypted string
   };
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setFormErrors(prev => ({ ...prev, [name]: "" }));
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     const { name, email, phone, password, confirmPassword, dob } = form;
 
-    if (!name || !email || !phone || !password || !confirmPassword || !dob) {
-      return alert("All fields are required");
+    const errors = {};
+
+    if (!name.trim()) errors.name = "Full Name is required";
+    if (!dob) errors.dob = "Date of Birth is required";
+    if (!email.trim()) errors.email = "Email is required";
+    if (!phone.trim()) errors.phone = "Mobile Number is required";
+    if (!password) errors.password = "Password is required";
+    if (!confirmPassword) errors.confirmPassword = "Confirm Password is required";
+
+    if (phone && !validatePhoneNumber(phone)) errors.phone = "Invalid mobile number";
+
+    if (password && !isStrongPassword(password)) {
+      errors.password = "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character";
     }
 
-    if (password !== confirmPassword) {
-      return alert("Passwords do not match");
+    if (password && confirmPassword && password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
     }
 
-    if (!isStrongPassword(password)) {
-      toast.error(
-        "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character"
-      );
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -126,48 +139,77 @@ const Register = () => {
         </div>
 
         <form onSubmit={handleRegister} className="login_form">
-          {/* <button
-            className="back-button"
-            onClick={() => navigate("/login")}
-          >
-            ← Login
-          </button> */}
-
           <label>Full Name as per Aadhar <span className="text-danger">*</span></label>
-          <input name="name" onChange={handleChange} required />
+          <input
+            name="name"
+            onChange={handleChange}
+            className={`form-control ${formErrors.name ? 'is-invalid' : ''}`}
+          />
+          {formErrors.name && <div className="invalid-feedback">{formErrors.name}</div>}
 
-          <label>Date of Birth <span className="text-danger">*</span></label>
-          <input type="date" name="dob" onChange={handleChange} required />
+          <label className="mt-3">Date of Birth <span className="text-danger">*</span></label>
+          <input
+            type="date"
+            name="dob"
+            onChange={handleChange}
+            className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`}
+            max={new Date().toISOString().split("T")[0]}
+          />
+          {formErrors.dob && <div className="invalid-feedback">{formErrors.dob}</div>}
 
-          <label>Mobile Number <span className="text-danger">*</span></label>
-          <input type="text" name="phone" onChange={handleChange} required />
+          <label className="mt-3">Mobile Number <span className="text-danger">*</span></label>
+          <input
+            type="text"
+            name="phone"
+            maxLength={10}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={form.phone}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "");
+              setForm({ ...form, phone: value });
+              setFormErrors(prev => ({ ...prev, phone: "" }));
+            }}
+            onKeyDown={(e) => {
+              // Allow control keys
+              if (
+                ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+              ) {
+                return;
+              }
+              // Block non-numeric keys
+              if (!/^\d$/.test(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            className={`form-control ${formErrors.phone ? 'is-invalid' : ''}`}
+          />
+          {formErrors.phone && <div className="invalid-feedback">{formErrors.phone}</div>}
 
-          <label>Email <span className="text-danger">*</span></label>
-          <input type="email" name="email" onChange={handleChange} required />
+          <label className="mt-3">Email <span className="text-danger">*</span></label>
+          <input
+            type="email"
+            name="email"
+            onChange={handleChange}
+            className={`form-control ${formErrors.email ? 'is-invalid' : ''}`}
+          />
+          {formErrors.email && <div className="invalid-feedback">{formErrors.email}</div>}
 
-          <label>Password <span className="text-danger">*</span></label>
+          <label className="mt-3">Password <span className="text-danger">*</span></label>
           <div style={{ position: "relative" }}>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               onChange={handleChange}
-              required
-            // style={{
-            //   borderRadius: "5px",
-            //   backgroundColor: "#fff",
-            //   border: "1px solid #ccc",
-            //   padding: "8px",
-            //   width: "100%",
-            //   paddingRight: "40px",
-            // }}
+              className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}
             />
             <FontAwesomeIcon
               icon={showPassword ? faEye : faEyeSlash}
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: "absolute",
-                right: "10px",
-                top: "35%",
+                right: formErrors.password ? "30px" : "10px",
+                top: "49%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
                 color: "#666",
@@ -176,31 +218,24 @@ const Register = () => {
               title={showPassword ? "Hide password" : "Show password"}
             />
           </div>
+          {formErrors.password && <div className="invalid-feedback d-block">{formErrors.password}</div>}
 
 
-          <label>Confirm Password <span className="text-danger">*</span></label>
+          <label className="mt-3">Confirm Password <span className="text-danger">*</span></label>
           <div style={{ position: "relative" }}>
             <input
               type={showConfirmPassword ? "text" : "password"}
               name="confirmPassword"
               onChange={handleChange}
-              required
-            // style={{
-            //   borderRadius: "5px",
-            //   backgroundColor: "#fff",
-            //   border: "1px solid #ccc",
-            //   padding: "8px",
-            //   width: "100%",
-            //   paddingRight: "40px",
-            // }}
+              className={`form-control ${formErrors.confirmPassword ? 'is-invalid' : ''}`}
             />
             <FontAwesomeIcon
               icon={showConfirmPassword ? faEye : faEyeSlash}
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               style={{
                 position: "absolute",
-                right: "10px",
-                top: "35%",
+                right: formErrors.password ? "30px" : "10px",
+                top: "49%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
                 color: "#666",
@@ -211,11 +246,12 @@ const Register = () => {
               }
             />
           </div>
+          {formErrors.confirmPassword && <div className="invalid-feedback d-block">{formErrors.confirmPassword}</div>}
           <TurnstileWidget onTokenChange={setToken} />
           <button type="submit" className="login-button mt-2 mb-2">Register</button>
 
           <p className="register-link mb-0">
-            Already registered? <Link to="/login">Login</Link>
+            Already registered? <Link to="/login" replace>Login</Link>
           </p>
         </form>
       </div>

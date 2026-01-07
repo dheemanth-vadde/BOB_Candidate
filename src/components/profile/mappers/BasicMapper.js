@@ -37,6 +37,7 @@ export const mapBasicDetailsFormToApi = ({
 
       contactNo: formData.contactNumber || "",
       altContactNo: formData.altNumber || "",
+      cibilScore: formData.cibilScore || "",
       socialMediaProfileLink: formData.socialMediaLink || "",
 
       isTwin: Boolean(formData.twinSibling),
@@ -58,6 +59,7 @@ export const mapBasicDetailsFormToApi = ({
       isPublicSectorUndertaking: formData.servingInGovt === "Yes",
       anyDisciplinaryAction: formData.disciplinaryAction === "Yes",
       isFresher: formData.isFresher ,
+      hasCertification: formData.hasCertification,
 
       email,
       registrationNo: formData.registrationNo || "",
@@ -136,6 +138,7 @@ export const mapBasicDetailsApiToForm = (apiData) => {
 
     contactNumber: profile.contactNo || "",
     altNumber: profile.altContactNo || "",
+    cibilScore: profile.cibilScore || "",
     socialMediaLink: profile.socialMediaProfileLink || "",
 
     // Twin
@@ -164,6 +167,7 @@ export const mapBasicDetailsApiToForm = (apiData) => {
     minorityCommunity: profile.minority ? "Yes" : "No",
     disciplinaryAction: profile.anyDisciplinaryAction ? "Yes" : "No",
     isFresher: profile.isFresher ,
+    hasCertification: profile.hasCertification,
 
     // Languages
     language1: languages[0]?.languageId || "",

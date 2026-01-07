@@ -5,14 +5,15 @@ import jobsApiService  from "../services/jobsApiService";
 const OfferLetterModal = ({ show, onHide, offerData, onDecisionSuccess }) => {
     const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(false);
+  const [commentError, setCommentError] = useState("");
   if (!offerData) return null;
 const handleDecision = async (accepted) => {
   try {
-   if (!accepted && !comments.trim()) {
-      toast.error("Please enter comments before rejecting the offer");
+  if (!accepted && !comments.trim()) {
+      setCommentError("Please enter comments before rejecting the offer");
       return;
     }
-
+ setCommentError("");
     setLoading(true);
 
     const payload = {
@@ -46,13 +47,40 @@ const handleDecision = async (accepted) => {
       </Modal.Header>
 
       <Modal.Body style={{ height: "75vh", padding: 0 }}>
-        <iframe
+        {/* <iframe
           src={offerData.fileUrl}   // ✅ FROM API
           title="Offer Letter"
           width="100%"
           height="100%"
           style={{ border: "none" }}
-        />
+        /> */}
+       {offerData?.fileUrl ? (
+      <object
+        data={offerData.fileUrl}
+        type="application/pdf"
+        width="100%"
+        height="100%"
+      >
+        {/* 👇 Fallback if PDF cannot render */}
+        <div className="d-flex flex-column justify-content-center align-items-center h-100">
+          <p className="text-muted mb-2">
+            Unable to display the offer letter.
+          </p>
+          <a
+            href={offerData.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline-primary btn-sm"
+          >
+            Open / Download Offer Letter
+          </a>
+        </div>
+      </object>
+    ) : (
+      <div className="d-flex justify-content-center align-items-center h-100">
+        <span className="text-muted">Loading offer letter…</span>
+      </div>
+    )}
       </Modal.Body>
 
    <Modal.Footer className="flex-column align-items-stretch">
@@ -65,8 +93,16 @@ const handleDecision = async (accepted) => {
       rows={3}
       placeholder="Enter comments..."
       value={comments}
-      onChange={(e) => setComments(e.target.value)}
+     onChange={(e) => {
+      setComments(e.target.value);
+      if (commentError) setCommentError(""); // ✅ clear error while typing
+    }}
     />
+      {commentError && (
+        <div className="invalid-feedback d-block">
+          {commentError}
+        </div>
+      )}
   </div>
 
   {/* ACTION BUTTONS */}

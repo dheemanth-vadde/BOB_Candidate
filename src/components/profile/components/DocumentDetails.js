@@ -182,12 +182,18 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 				}
 			}
 
+			const isOther = field.docCode === "OTHERS";
+
+			const sanitizedDocumentName = isOther
+			? customNames[field.key]?.trim().replace(/\s+/g, "_")
+			: undefined;
+
 			await profileApi.postDocumentDetails(
 				candidateId,
 				field.documentId,
 				file,
-				field.docCode === "Others",
-				customNames[field.key]
+				isOther,
+				sanitizedDocumentName
 			);
 
 			return true;
@@ -207,7 +213,8 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 
 		const uploadSucceeded = await uploadDocument(field, file);
 		if (uploadSucceeded) {
-			setFiles(prev => ({ ...prev, [key]: file }));
+			// Refresh from API to get updated file info
+			await fetchDocuments();
 		}
 	};
 
@@ -270,6 +277,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 									onCustomNameChange={(v) => handleCustomName(field.key, v)}
 									onBrowse={!disabled ? () => handleBrowse(field.key) : undefined}
 									onChange={!disabled ? (e) => handleFileChange(field.key, e) : undefined}
+									onDelete={() => fetchDocuments()}
 									ref={(el) => (fileInputRefs.current[field.key] = el)}
 									isInvalid={!!formErrors[field.key]}
 									disabled={disabled}
@@ -292,7 +300,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 
 				<button
 					className="btn btn-primary"
-					style={{ backgroundColor: "#ff7043", border: "none" }}
+					style={{ backgroundColor: "#ff7043", border: "none", color: 'white' }}
 					onClick={handleSubmit}
 				>
 					Submit

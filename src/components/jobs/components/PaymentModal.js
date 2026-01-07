@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal } from "react-bootstrap";
 import Razorpay from "../../integrations/payments/Razorpay";
+import "../../../css/PaymentModal.css";
 
 const PaymentModal = ({
   show,
@@ -9,34 +10,56 @@ const PaymentModal = ({
   candidateId,
   user,
   onPaymentSuccess,
+  token
 }) => {
+  const amount =
+    (selectedJob?.application_fee_paise ?? 50000) / 100;
+
   return (
-    <Modal show={show} onHide={onHide} centered>
+    <Modal
+      show={show}
+      onHide={onHide}
+      centered
+      size="md"
+      backdrop="static"
+      className="payment-modal"
+    >
       <Modal.Header closeButton>
-        <Modal.Title>Confirm Application</Modal.Title>
+        <Modal.Title>Confirm & Pay</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        <p>Please pay the required amount to apply for this job.</p>
+        <p className="payment-subtitle">
+          Please review the details and proceed with payment.
+        </p>
 
         {selectedJob && (
-          <div className="mt-3">
-            <p className="mb-1">
-              <strong>Job:</strong> {selectedJob.position_title}
-            </p>
-            <p className="mb-1">
-              <strong>Requisition:</strong>{" "}
-              {selectedJob.requisition_code}
-            </p>
-            <p className="mb-0">
-              <strong>Application Fee:</strong>{" "}
-              ₹{(selectedJob?.application_fee_paise ?? 50000) / 100}
-            </p>
+          <div className="payment-summary-card">
+            <div className="summary-row">
+              <span>Job Position</span>
+              <strong>{selectedJob.position_title}</strong>
+            </div>
+
+            <div className="summary-row">
+              <span>Requisition Code</span>
+              <strong>{selectedJob.requisition_code}</strong>
+            </div>
+
+            <div className="summary-divider" />
+
+            <div className="summary-row total-row">
+              <span>Application Fee</span>
+              <strong className="amount">₹{amount}</strong>
+            </div>
           </div>
         )}
+
+        <div className="payment-note">
+          🔒 Payments are secure and powered by Razorpay.
+        </div>
       </Modal.Body>
 
-      <Modal.Footer>
+      <Modal.Footer className="payment-footer">
         <button
           className="btn btn-outline-secondary"
           onClick={onHide}
@@ -55,6 +78,7 @@ const PaymentModal = ({
               email: user?.data?.user?.email,
               phone: user?.data?.user?.phone,
             }}
+            turnstileToken={token}
           />
         )}
       </Modal.Footer>

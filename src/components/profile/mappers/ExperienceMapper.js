@@ -22,12 +22,12 @@ export const mapExperienceApiToUi = (apiItem) => {
   const to = exp.toDate;
 
   let experienceDays = 0;
-  if (from && to) {
+  if (from) {
     const start = new Date(from);
-    const end = new Date(to);
-    experienceDays = Math.floor(
-      (end - start) / (1000 * 60 * 60 * 24)
-    );
+    const end = exp.isPresentlyWorking ? new Date() : (to ? new Date(to) : null);
+    if (end) {
+      experienceDays = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+    }
   }
 
   return {

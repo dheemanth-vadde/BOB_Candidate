@@ -16,10 +16,11 @@ export default function TurnstileWidget({ onTokenChange }) {
 
   return (
     <div style={{
-      minHeight: "90px",
       display: "flex",
       flexDirection: "column",
-      gap: "6px"
+      gap: "6px",
+      marginTop: '0.25rem',
+      marginBottom: '0.25rem'
     }}>
  
       <Turnstile

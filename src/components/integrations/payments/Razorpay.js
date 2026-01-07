@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import apiService from "../../../services/apiService";
 import jobsApiService from "../../../components/jobs/services/jobsApiService";
+import { toast } from "react-toastify";
 /** Load Razorpay SDK once */
 function loadRazorpay() {
   return new Promise((resolve, reject) => {
@@ -15,13 +16,19 @@ function loadRazorpay() {
 }
 
 /** Backend calls */
-async function getRzpKey() {
+async function getRzpKey(turnstileToken) {
+ if (!turnstileToken) {
+    throw  toast.error("Captcha verification required");
+  }
 
-  const data = await jobsApiService.getConfig();
+  const payload = {
+    turnstileResponse: turnstileToken
+  };
+  const data = await jobsApiService.postConfig(payload);
   const r = data;
   // if (!r.ok) throw new Error("Failed to load Razorpay key");
   const keyId = r.keyId;
-  if (!keyId) throw new Error("Invalid key from server");
+  if (!keyId) throw  toast.error("Invalid key from server");
   return keyId;
 }
 async function createOrder({ amountPaise, receipt, notes, candidate_id, position_id }) {
@@ -83,6 +90,7 @@ export default function Razorpay({
   position_id,
   onClose,
   autoTrigger = false, // 🔹 NEW: Auto-open Razorpay when mounted
+  turnstileToken,
 }) {
   console.log("candidaterazorpay", candidate)
   const userLoginData = useSelector((state) => state.user.user);
@@ -93,7 +101,7 @@ export default function Razorpay({
       setLoading(true);
       await loadRazorpay();
 
-      const keyId = await getRzpKey();
+      const keyId = await getRzpKey(turnstileToken);
       const order = await createOrder({
         amountPaise,
         receipt: `rcpt_${Date.now()}`,
@@ -128,11 +136,11 @@ export default function Razorpay({
                 paymentId: resp.razorpay_payment_id,
               });
             } else {
-              alert("Payment captured, but server verification failed.");
+              toast.error("Payment captured, but server verification failed.");
             }
           } catch (e) {
             console.error(e);
-            alert("Payment captured, but verification failed on server.");
+            toast.error("Payment captured, but verification failed on server.");
           }
         },
         modal: {
@@ -146,13 +154,13 @@ export default function Razorpay({
       });
 
       rzp.on("payment.failed", (res) => {
-        alert(res?.error?.description || "Payment failed");
+        toast.error(res?.error?.description || "Payment failed");
       });
 
       rzp.open();
     } catch (err) {
       console.error(err);
-      alert(err.message || "Unable to start payment. Please try again.");
+      toast.error(err.message || "Unable to start payment. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import Stepper from "../../../shared/components/Stepper";
 import AddressDetails from "../components/AddressDetails";
 import EducationDetails from "../components/EducationDetails";
 import ExperienceDetails from "../components/ExperienceDetails";
+import CertificationDetails from "../components/CertificationDetails";
 import DocumentDetails from "../components/DocumentDetails";
 import BasicDetails from "../components/BasicDetails";
 import UploadIdProof from "../components/UploadIdProof";
@@ -20,7 +21,7 @@ const CandidateProfileStepper = ({
   setActiveTab
 }) => {
 
-  const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Experience", "Document"];
+  const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Certification",  "Experience", "Document"];
 
   // Use server-provided user info from Redux to determine start step
   const serverData = useSelector((state) => state?.user?.user?.data); // matches other components
@@ -103,9 +104,12 @@ const CandidateProfileStepper = ({
         return <EducationDetails goNext={goNext} goBack={goBack} />;
 
       case 5:
-        return <ExperienceDetails goNext={goNext} goBack={goBack} />;
+        return <CertificationDetails goNext={goNext} goBack={goBack} />;
 
       case 6:
+        return <ExperienceDetails goNext={goNext} goBack={goBack} />;
+
+      case 7:
         return <DocumentDetails goNext={goNext} goBack={goBack} setActiveTab={setActiveTab} />;
 
       default:

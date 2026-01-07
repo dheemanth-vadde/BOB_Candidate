@@ -39,6 +39,14 @@ const AddressDetails = ({ goNext, goBack }) => {
 		cities: [],
 		pincodes: []
 	});
+	const EMPTY_ADDRESS = {
+		line1: "",
+		line2: "",
+		city: "",
+		district: "",
+		state: "",
+		pincode: ""
+	};
 
 	useEffect(() => {
 		async function loadMasters() {
@@ -105,6 +113,12 @@ const AddressDetails = ({ goNext, goBack }) => {
 			setPermAddress({ ...corrAddress });
 		}
 	}, [sameAsCorrespondence]);
+
+	const trimAddress = (address) => ({
+		...address,
+		line1: address.line1.trim(),
+		line2: address.line2.trim(),
+	});
 
 	const handleCorrChange = (e) => {
 		const { id, value } = e.target;
@@ -244,16 +258,18 @@ const AddressDetails = ({ goNext, goBack }) => {
   };
 
 	const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+		e.preventDefault();
+		
+		if (!validateForm()) return;
 
 		try {
+			const trimmedCorr = trimAddress(corrAddress);
+			const trimmedPerm = sameAsCorrespondence
+				? trimmedCorr
+				: trimAddress(permAddress);
 			const payload = mapAddressFormToApi({
-				corrAddress,
-				permAddress,
+				corrAddress: trimmedCorr,
+      			permAddress: trimmedPerm,
 				sameAsCorrespondence,
 				candidateId,
 			});
@@ -279,6 +295,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 			}));
 		} else {
 			// Clear any existing errors when unchecking
+			setPermAddress({ ...EMPTY_ADDRESS });
 			setFormErrors(prev => ({
 				...prev,
 				permAddress: {}
@@ -415,7 +432,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-12 col-sm-12 mt-3 d-flex align-items-center gap-2 pb-3 border-bottom">
+				<div className="col-md-12 col-sm-12 mt-4 d-flex align-items-center gap-2 pt-2 border-top">
 					<input
 						type="checkbox"
 						// className="form-control"

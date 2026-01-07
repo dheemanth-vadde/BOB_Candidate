@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Accordion } from "react-bootstrap";
 import "../../../css/PreviewModal.css";
 import logo_Bob from "../../../assets/bob-logo.png";
@@ -6,7 +6,7 @@ import sign from "../../../assets/download.png";
 import { useSelector } from "react-redux";
 import viewIcon from "../../../assets/view-icon.png";
 import { getState, getLocation } from "../../../shared/utils/masterHelpers";
-
+import TurnstileWidget from "../../integrations/Cpatcha/TurnstileWidget";
 import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 const PreviewModal = ({
   show,
@@ -18,7 +18,11 @@ const PreviewModal = ({
   masterData,
 onBack,
   applyForm,              // ✅ NEW
-  onApplyFormChange       // ✅ NEW
+  onApplyFormChange,       // ✅ NEW
+  formErrors,
+  setFormErrors,
+  interviewCentres,
+  setTurnstileToken
 }) => {
 console.log("Master Data111:", masterData);
 console.log("selected Job11:", selectedJob);
@@ -36,7 +40,7 @@ console.log("selected Job11:", selectedJob);
     (state) => state.preference.preferenceData
   );
   const preferences = preferenceData?.preferences || {};
-
+const [activeAccordion, setActiveAccordion] = useState(["0"]);
   const state1 = getState(masterData, preferences.state1);
   const location1 = getLocation(masterData, preferences.location1);
 
@@ -45,9 +49,20 @@ console.log("selected Job11:", selectedJob);
 
   const state3 = getState(masterData, preferences.state3);
   const location3 = getLocation(masterData, preferences.location3);
+   useEffect(() => {
+  if (
+    formErrors?.ctc ||
+    formErrors?.examCenter
+  ) {
+    setActiveAccordion(["4"]); // 👈 Add Preference section
+  }
+}, [formErrors]);
   if (!previewData) {
     return null;
   }
+
+ 
+
   // ✅ PHOTO
   const photoUrl =
     previewData.documents?.photo?.[0]?.url || null;
@@ -62,6 +77,7 @@ console.log("selected Job11:", selectedJob);
   console.log("Stored preference:", preferenceData);
   console.log("Preview previewData:", previewData);
   const allDocuments = Object.values(previewData.documents || {}).flat();
+  
   return (
     <Modal
       show={show}
@@ -83,7 +99,14 @@ console.log("selected Job11:", selectedJob);
         </div>
 
         {/* ===== ACCORDION ===== */}
-        <Accordion defaultActiveKey={["0"]} alwaysOpen className="bob-accordion">
+        {/* <Accordion defaultActiveKey={["0"]} alwaysOpen className="bob-accordion"> */}
+        <Accordion
+  activeKey={activeAccordion}
+  onSelect={(key) => setActiveAccordion(key)}
+  alwaysOpen
+  className="bob-accordion"
+>
+
           {/* === PERSONAL DETAILS === */}
           <Accordion.Item eventKey="0">
             <Accordion.Header>Personal Details</Accordion.Header>
@@ -422,7 +445,7 @@ console.log("selected Job11:", selectedJob);
                     <>
                       {[1, 2, 3].map((i) => (
                         <React.Fragment key={i}>
-                          <div className="col-md-3">
+                          <div className="col-md-4">
                             <label className="form-label">
                               State Preference {i}
                             </label>
@@ -447,7 +470,7 @@ console.log("selected Job11:", selectedJob);
                             </select>
                           </div>
 
-                          <div className="col-md-3">
+                          <div className="col-md-4">
                             <label className="form-label">
                               Location Preference {i}
                             </label>
@@ -475,36 +498,64 @@ console.log("selected Job11:", selectedJob);
                   )}
 
                   {/* EXPECTED CTC */}
-                  {selectedJob?.employment_type?.toLowerCase() === "contract" && (
-                    <div className="col-md-3">
+                   {selectedJob?.employment_type?.toLowerCase() === "contract" && ( 
+                    <div className="col-md-4">
                       <label className="form-label">
-                        Expected CTC (in Lakhs)
+                        Expected CTC (in Lakhs) <span className="text-danger">*</span>
                       </label>
                       <input
                         type="text"
                         className="form-control"
                         value={applyForm.ctc}
-                        onChange={(e) =>
-                          onApplyFormChange("ctc", e.target.value)
-                        }
+                        onChange={(e) => {
+                            onApplyFormChange("ctc", e.target.value);
+                            setFormErrors(prev => ({ ...prev, ctc: "" }));
+                          }}
                       />
+                      {formErrors?.ctc && (
+                        <div className="invalid-feedback d-block">
+                          {formErrors.ctc}
+                        </div>
+                      )}
                     </div>
-                  )}
+                )} 
 
                   {/* INTERVIEW CENTER */}
-                  <div className="col-md-3">
+                 <div className="col-md-4">
                     <label className="form-label">
-                      Exam / Interview Center
+                      Exam / Interview Center <span className="text-danger">*</span>
                     </label>
-                    <input
-                      type="text"
+
+                    <select
                       className="form-control"
                       value={applyForm.examCenter}
-                      onChange={(e) =>
-                        onApplyFormChange("examCenter", e.target.value)
-                      }
-                    />
+                      onChange={(e) => {
+                        onApplyFormChange("examCenter", e.target.value);
+
+                        // clear error on change
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          examCenter: null,
+                        }));
+                      }}
+                    >
+                      <option value="">Select Interview Center</option>
+
+                      {interviewCentres.map((centre) => (
+                        <option key={centre.id} value={centre.id}>
+                          {centre.Interview_Centre}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* ❌ Error message */}
+                    {formErrors.examCenter && (
+                      <div className="invalid-feedback d-block">
+                        {formErrors.examCenter}
+                      </div>
+                    )}
                   </div>
+
                 </div>
 
             </Accordion.Body>
@@ -521,7 +572,7 @@ console.log("selected Job11:", selectedJob);
             <span className="captcha-text">X A Y 2 U</span>
             <input type="text" className="captcha-input" />
           </div> */}
-
+   <TurnstileWidget onTokenChange={setTurnstileToken} />
           <div className="declaration-box text-start">
             <div className="form-check mb-2">
               <input

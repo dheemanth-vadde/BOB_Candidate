@@ -744,3 +744,23 @@ font-family: 'poppins';
   margin: 1.25rem 0 !important;
   /* border-radius: 1rem; */
 }
+
+.orange_text {
+  color: rgb(255, 112, 67);
+  font-size: 0.875rem;
+}
+.uploadcertification {
+	background-color: var(--bs-secondary-bg);
+}
+
+.experience_table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.profile_table_td {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

@@ -63,7 +63,7 @@ const ForgotPassword = () => {
             placeholder="example@domain.com"
           />
 
-          <button className="login-button" type="submit">
+          <button className="login-button mt-4" type="submit">
             Send Reset Link
           </button>
 

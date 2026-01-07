@@ -73,7 +73,7 @@
 .login_form label {
   font-size: 0.875rem;
   font-weight: 500;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   display: block;
   color: #333;
 }
@@ -83,7 +83,7 @@
   padding: 8px;
   border: 1px solid #ff6a00;
   border-radius: 5px;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
   font-size: 0.875rem;
   outline: none;
 }
@@ -201,7 +201,7 @@ input:-webkit-autofill {
 .custom-modal {
   background: white;
   padding: 25px;
-  width: 420px;
+  width: 500px;
   border-radius: 12px;
   text-align: center;
   font-size: 18px;

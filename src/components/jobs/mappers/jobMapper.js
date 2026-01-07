@@ -20,12 +20,13 @@ export const mapJobApiToModel = (apiJob, masters = {}) => {
     positionsDTO,
     masterPositionsDTO,
     requisitionsDTO,
-    positionStateDistributions = []
+   positionStateDistributions    
   } = apiJob;
 
 
   const stateDistributions = positionStateDistributions || [];
-
+// const positionStateDistributions =
+//   positionsDTO?.positionStateDistributions || [];
 const stateIds = stateDistributions
   .map(s => s.stateId)
   .filter(Boolean);
@@ -55,6 +56,74 @@ const stateNames = stateIds
     ? getState(masters, primaryStateId)
     : null;
 
+
+    /* =========================
+     VACANCY DISTRIBUTION (NEW)
+  ========================= */
+  // const vacancyDistribution = positionStateDistributions.map(dist => {
+  //   const state = getState(masters, dist.stateId);
+
+  //   return {
+  //     state_id: dist.stateId,
+  //     state_name: state?.state_name || "Unknown",
+  //     total: dist.totalVacancies ?? 0,
+
+  //     general: {
+  //       SC: dist.sc ?? 0,
+  //       ST: dist.st ?? 0,
+  //       OBC: dist.obc ?? 0,
+  //       EWS: dist.ews ?? 0,
+  //       GEN: dist.gen ?? 0
+  //     },
+
+  //     disability: {
+  //       OC: dist.oc ?? 0,
+  //       VI: dist.vi ?? 0,
+  //       HI: dist.hi ?? 0,
+  //       ID: dist.id ?? 0
+  //     }
+  //   };
+  // });
+// const vacancyDistribution = positionStateDistributions.map(stateDist => {
+//   const state = getState(masters, stateDist.stateId);
+
+//   /* =========================
+//      CATEGORY MAP (DYNAMIC)
+//   ========================= */
+//   const categoryMap = {};
+
+//   // initialize all categories with 0
+//   (masters.reservationCategories || []).forEach(cat => {
+//     categoryMap[cat.reservation_category_id] = 0;
+//   });
+
+//   // fill actual values from API
+//   stateDist.positionCategoryDistributions
+//     ?.filter(d => !d.isDisability)
+//     .forEach(d => {
+//       categoryMap[d.reservationCategoryId] = d.vacancyCount;
+//     });
+
+//   /* =========================
+//      DISABILITY MAP (OPTIONAL)
+//   ========================= */
+//   const disabilityMap = {};
+
+//   stateDist.positionCategoryDistributions
+//     ?.filter(d => d.isDisability)
+//     .forEach(d => {
+//       disabilityMap[d.disabilityCategoryId] = d.vacancyCount;
+//     });
+
+//   return {
+//     state_id: stateDist.stateId,
+//     state_name: state?.state_name || "Unknown",
+//     total: stateDist.totalVacancies ?? 0,
+//     categories: categoryMap,       // ✅ dynamic
+//     disability: disabilityMap      // ✅ dynamic
+//   };
+// });
+
   return {
     /* =========================
        IDS & TITLES
@@ -71,6 +140,7 @@ const stateNames = stateIds
     ========================= */
     description: masterPositionsDTO?.positionDescription || "",
     roles_responsibilities: positionsDTO?.rolesResponsibilities || "",
+    contract_period: positionsDTO?.contractYears || "",
 
     /* =========================
        JOB DETAILS
@@ -82,7 +152,8 @@ const stateNames = stateIds
 
     grade_id: positionsDTO?.gradeId || "",
     grade_name: grade ? grade.job_grade_code : "—",
-
+ // vacancy_distribution: vacancyDistribution,
+  positionStateDistributions: positionStateDistributions || [],
     /* =========================
        ELIGIBILITY
     ========================= */

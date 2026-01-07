@@ -55,22 +55,22 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		}
 	}, [formData.working]);
 
-	useEffect(() => {
-		if (!formData.working || !formData.from) return;
-		const interval = setInterval(() => {
-			setFormData(prev => ({
-				...prev,
-				experience: calculateExperienceDays(prev.from, null)
-			}));
-		}, 24 * 60 * 60 * 1000); // every day
-		return () => clearInterval(interval);
-	}, [formData.working, formData.from]);
+	// useEffect(() => {
+	// 	if (!formData.working || !formData.from) return;
+	// 	const interval = setInterval(() => {
+	// 		setFormData(prev => ({
+	// 			...prev,
+	// 			experience: calculateExperienceDays(prev.from, null)
+	// 		}));
+	// 	}, 24 * 60 * 60 * 1000); // every day
+	// 	return () => clearInterval(interval);
+	// }, [formData.working, formData.from]);
 
 	useEffect(() => {
 		const fetchWorkStatus = async () => {
 			try {
 				const res = await profileApi.getWorkStatus(candidateId);
-				const fresherStatus = Boolean(res?.data?.data);
+				const fresherStatus = Boolean(res?.data);
 				setIsFresher(fresherStatus);
 			} catch (err) {
 				console.error("Failed to fetch work status", err);
@@ -80,6 +80,14 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			fetchWorkStatus();
 		}
 	}, [candidateId]);
+
+	const trimStrings = (obj) =>
+		Object.fromEntries(
+			Object.entries(obj).map(([key, value]) => [
+			key,
+			typeof value === "string" ? value.trim() : value
+			])
+		);
 
 	const calculateExperienceDays = (fromDate, toDate) => {
 		if (!fromDate) return 0;
@@ -184,8 +192,25 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	const handleSaveExperience = async () => {
 		if (!validateForm()) return;
 
+		const effectiveToDate = formData.working
+			? new Date().toISOString().split("T")[0]
+			: formData.to;
+
+		const experienceDays = calculateExperienceDays(
+			formData.from,
+			effectiveToDate
+		);
+
+		const sanitizedFormData = trimStrings(formData);
+
+		const normalizedFormData = {
+			...sanitizedFormData,
+			to: sanitizedFormData.working ? null : sanitizedFormData.to,
+			experience: experienceDays
+		};
+
 		try {
-			const basePayload = mapExperienceDetailsFormToApi(formData, candidateId);
+			const basePayload = mapExperienceDetailsFormToApi(normalizedFormData, candidateId);
 
 			const payload = isEditMode
 				? { ...basePayload, workExperienceId: editingRow.workExperienceId }
@@ -500,7 +525,13 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 						{/* Existing document */}
 						{existingDocument && !certificateFile && (
-							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center">
+							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
+								style={{
+									border: "2px solid #bfc8e2",
+									borderRadius: "8px",
+									background: "#f7f9fc"
+								}}
+							>
 								<div className="d-flex align-items-center">
 									<FontAwesomeIcon
 										icon={faCheckCircle}
@@ -522,7 +553,13 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 						{/* New uploaded file */}
 						{certificateFile && (
-							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center">
+							<div className="uploaded-file-box p-3 d-flex justify-content-between align-items-center"
+								style={{
+									border: "2px solid #bfc8e2",
+									borderRadius: "8px",
+									background: "#f7f9fc"
+								}}
+							>
 								<div className="d-flex align-items-center">
 									<FontAwesomeIcon
 										icon={faCheckCircle}
@@ -586,7 +623,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<table>
+				<table className='experience_table'>
 					<thead>
 						<tr>
 							<th className='profile_table_th text-center'>S.No</th>

@@ -4,10 +4,12 @@ import React from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
+import bulbIcon from '../../../assets/bulb-icon.png';
 import { useBasicDetails } from '../hooks/basicHooks';
 import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import Loader from './Loader';
 
 const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -61,35 +63,52 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		handleRadio,
 		handleCheckbox,
 		handleSubmit,
-		calculateServicePeriodInMonths
+		calculateServicePeriodInMonths,
+		parsedClass,
+		handleNameKeyDown,
+		getAvailableDisabilityTypes,
+		loading
 	} = useBasicDetails({ goNext, goBack, parsedData });
 
 	return (
 		<div>
+			{loading && (
+				<Loader />
+			)}
 			<form className="row g-4 formfields"
 				onSubmit={handleSubmit}
 			>
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
-					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Personal Details</p>
+					<div className='d-flex justify-content-between align-items-center mt-2'>
+						<div>
+							<p className="tab_headers" style={{ marginBottom: '0px' }}>Personal Details</p>
+						</div>
+						<div className='d-flex'>
+							<img src={bulbIcon} style={{ width: '20px', height: '20px', marginTop: '10px', marginRight: '5px' }}/>
+							<p className='orange_text mt-2'>Resume details have been auto-applied in the highlighted fields.</p>
+						</div>
+					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="firstName" className="form-label">First Name <span className="text-danger">*</span></label>
+						<label htmlFor="firstName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>First Name <span className="text-danger">*</span></label>
 						<input
 							type="text"
-							className={`form-control ${formErrors.firstName ? 'is-invalid' : ''}`}
+							className={`form-control ${parsedClass("firstName")} ${formErrors.firstName ? 'is-invalid' : ''}`}
 							id="firstName"
 							value={formData.firstName || ''}
 							onChange={handleChange}
+							onKeyDown={handleNameKeyDown}
+							placeholder='Enter your first name'
 						/>
 						{formErrors.firstName && <div className="invalid-feedback">{formErrors.firstName}</div>}
 					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="middleName" className="form-label">Middle Name</label>
-						<input type="text" className="form-control" id="middleName" value={formData?.middleName} onChange={handleChange} />
+						<label htmlFor="middleName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Middle Name</label>
+						<input type="text" className={`form-control ${parsedClass("middleName")}`} id="middleName" value={formData?.middleName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your middle name' />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="lastName" className="form-label">Last Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} />
+						<label htmlFor="lastName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Last Name <span className="text-danger">*</span></label>
+						<input type="text" className={`form-control ${parsedClass("lastName")} ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your last name' />
 						{formErrors.lastName && <div className="invalid-feedback">{formErrors.lastName}</div>}
 					</div>
 
@@ -111,8 +130,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="fullNameSSC" className="form-label">Full Name as per SSC/Birth certificate <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} />
+						<label htmlFor="fullNameSSC" className="form-label">Full Name as per 10th/Birth Certificate <span className="text-danger">*</span></label>
+						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your full name' />
 						{formErrors.fullNameSSC && <div className="invalid-feedback">{formErrors.fullNameSSC}</div>}
 					</div>
 
@@ -135,8 +154,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
-						<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} />
+						<label htmlFor="dob" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Date of Birth <span className="text-danger">*</span></label>
+						<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} max={new Date().toISOString().split("T")[0]} />
 
 						{isDobMismatch && (
 							<small className="text-danger">
@@ -146,7 +165,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="birthCertificate" className="form-label">Upload Birth Certificate <span className="text-danger">*</span></label>
+						<label htmlFor="birthCertificate" className="form-label">Upload 10th/Birth Certificate <span className="text-danger">*</span></label>
 						{!birthFile && !existingBirthDoc && (
 							<div
 								className={`border rounded d-flex flex-column align-items-center justify-content-center ${formErrors.birthCertificate ? "border-danger" : ""}`}
@@ -310,7 +329,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="motherName" className="form-label">Mother Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} />
+						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your mother name' />
 						{formErrors.motherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.motherName}
@@ -320,7 +339,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="fatherName" className="form-label">Father Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} />
+						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your father name' />
 						{formErrors.fatherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.fatherName}
@@ -330,12 +349,34 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="spouseName" className="form-label">Spouse Name</label>
-						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} />
+						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your spouse name' />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="contactNumber" className="form-label">Contact Number <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.contactNumber ? 'is-invalid' : ''}`} id="contactNumber" value={formData?.contactNumber} onChange={handleChange} />
+						<label htmlFor="contactNumber" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Contact Number <span className="text-danger">*</span></label>
+						<input
+							type="text"
+							className={`form-control ${formErrors.contactNumber ? 'is-invalid' : ''}`}
+							id="contactNumber"
+							maxLength={10}
+							inputMode="numeric"
+							pattern="[0-9]*"
+							value={formData?.contactNumber}
+							placeholder='Enter your contact number'
+							onChange={handleChange}
+							onKeyDown={(e) => {
+								// Allow control keys
+								if (
+									["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+								) {
+									return;
+								}
+								// Block non-numeric keys
+								if (!/^\d$/.test(e.key)) {
+									e.preventDefault();
+								}
+							}}
+						/>
 						{formErrors.contactNumber && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.contactNumber}
@@ -345,12 +386,85 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="altNumber" className="form-label">Alternative Number</label>
-						<input type="text" className="form-control" id="altNumber" value={formData?.altNumber} onChange={handleChange} />
+						<input
+							type="text"
+							className="form-control"
+							id="altNumber"
+							maxLength={10}
+							inputMode="numeric"
+							pattern="[0-9]*"
+							value={formData?.altNumber}
+							placeholder='Enter your alternate number'
+							onChange={handleChange}
+							onKeyDown={(e) => {
+								// Allow control keys
+								if (
+									["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+								) {
+									return;
+								}
+								// Block non-numeric keys
+								if (!/^\d$/.test(e.key)) {
+									e.preventDefault();
+								}
+							}}
+						/>
+					</div>
+
+					<div className="col-md-3 col-sm-12 mt-2">
+						<label htmlFor="cibilScore" className="form-label">
+							CIBIL Score <span className="text-danger">*</span>
+						</label>
+
+						<input
+							type="text"
+							id="cibilScore"
+							value={formData.cibilScore}
+							className={`form-control ${formErrors.cibilScore ? "is-invalid" : ""}`}
+							placeholder="Enter CIBIL score"
+							inputMode="numeric"      // mobile numeric keypad
+							maxLength={3}            // optional: CIBIL usually 300–900
+							onChange={(e) => {
+							const value = e.target.value;
+
+							// 🔥 HARD BLOCK: allow only digits
+							if (!/^\d*$/.test(value)) return;
+
+							setFormData(prev => ({
+								...prev,
+								cibilScore: value
+							}));
+
+							// clear error immediately
+							setFormErrors(prev => {
+								const updated = { ...prev };
+								delete updated.cibilScore;
+								return updated;
+							});
+							}}
+							onKeyDown={(e) => {
+							// block non-numeric keys explicitly
+							if (
+								["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+							) {
+								return;
+							}
+							if (!/^\d$/.test(e.key)) {
+								e.preventDefault();
+							}
+							}}
+						/>
+
+						{formErrors.cibilScore && (
+							<div className="invalid-feedback">
+							{formErrors.cibilScore}
+							</div>
+						)}
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="socialMediaLink" className="form-label">Socail Media Profile Link</label>
-						<input type="text" className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} />
+						<input type="text" className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} placeholder='Enter your social media profile link' />
 					</div>
 				</div>
 
@@ -425,7 +539,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="caste" className="form-label">Community/Caste <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} />
+						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your community/caste' />
 						{formErrors.caste && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.caste}
@@ -453,8 +567,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-6 col-sm-12 mt-2">
 						<label htmlFor="communityCertificate" className="form-label">
-							Upload Certificate
-							{!isGeneralCategory && <span className="text-danger">*</span>}
+							Upload Certificate {!isGeneralCategory && <span className="text-danger">*</span>}
 						</label>
 						{!communityFile && !existingCommunityDoc && (
 							<div
@@ -637,6 +750,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							disabled={!formData?.twinSibling}
 							value={formData?.siblingName}
 							onChange={handleChange}
+							onKeyDown={handleNameKeyDown}
+							placeholder={`Enter your twin sibling's name`}
 						/>
 						{formErrors.siblingName && <div className="invalid-feedback">{formErrors.siblingName}</div>}
 					</div>
@@ -903,7 +1018,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 										}`}
 								>
 									<option value="">Select Disability Type</option>
-									{masterData?.disabilityCategories.map(d => (
+									{getAvailableDisabilityTypes(index).map(d => (
 										<option key={d.disabilityCategoryId} value={d.disabilityCategoryId}>
 											{d.disabilityName}
 										</option>
@@ -996,6 +1111,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							disabled={!formData?.isExService}
 							value={formData?.serviceEnrollment}
 							onChange={handleChange}
+							max={new Date().toISOString().split("T")[0]}
 						/>
 
 						{formErrors.serviceEnrollment && (
@@ -1016,6 +1132,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							value={formData?.dischargeDate}
 							onChange={handleChange}
 							min={formData.serviceEnrollment || undefined}
+							max={new Date().toISOString().split("T")[0]}
 						/>
 
 						{formErrors.dischargeDate && (
@@ -1027,7 +1144,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="servicePeriod" className="form-label">Service Period (in Months)</label>
-						<input type="number" className="form-control" id="servicePeriod" disabled value={formData?.servicePeriod} onChange={handleChange} />
+						<input type="number" className="form-control" id="servicePeriod" disabled value={formData?.servicePeriod} onChange={handleChange} placeholder='Enter your service period' />
 					</div>
 					<div className='col-md-6 d-flex flex-column'>
 						<div className="col-md-12 col-sm-12 d-grid">
@@ -1242,6 +1359,11 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								<label htmlFor="speak1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
 							</div>
 						</div>
+						{formErrors.language1Proficiency && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.language1Proficiency}
+							</div>
+						)}
 					</div>
 
 					<div className="col-md-4 col-sm-12 mt-2">
@@ -1276,6 +1398,11 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								<label htmlFor="speak2" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
 							</div>
 						</div>
+						{formErrors.language2Proficiency && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.language2Proficiency}
+							</div>
+						)}
 					</div>
 
 					<div className="col-md-4 col-sm-12 mt-2">
@@ -1310,6 +1437,11 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								<label htmlFor="speak1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
 							</div>
 						</div>
+						{formErrors.language3Proficiency && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.language3Proficiency}
+							</div>
+						)}
 					</div>
 				</div>
 

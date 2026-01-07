@@ -26,6 +26,7 @@ const ChangePassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 	const location = useLocation();
+	const [formErrors, setFormErrors] = useState({});
 
 	const email = location.state?.email;
 	const otp = location.state?.otp;
@@ -54,20 +55,21 @@ const ChangePassword = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!password || !confirmPassword) {
-      toast.error("Please fill all fields");
-      return;
+    const errors = {};
+
+    if (!password) errors.password = "Password is required";
+    if (!confirmPassword) errors.confirmPassword = "Confirm Password is required";
+
+    if (password && confirmPassword && password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
     }
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
+    if (password && !isStrongPassword(password)) {
+      errors.password = "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character";
     }
 
-    if (!isStrongPassword(password)) {
-      toast.error(
-        "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character"
-      );
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -115,23 +117,28 @@ const ChangePassword = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Enter new password"
               value={password}
-              required
-              onChange={(e) => setPassword(e.target.value)}
+              // required
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setFormErrors(prev => ({ ...prev, password: "" }));
+              }}
               style={{ paddingRight: "40px", marginBottom: "0.25rem" }}
+              className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}
             />
             <FontAwesomeIcon
               icon={showPassword ? faEye : faEyeSlash}
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: "absolute",
-                right: "15px",
-                top: "45%",
+                right: formErrors.password ? "30px" : "15px",
+                top: "49%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
                 color: "#666",
               }}
             />
           </div>
+          {formErrors.password && <div className="invalid-feedback">{formErrors.password || "This field is required"}</div>}
 
           {/* CONFIRM PASSWORD */}
           <label className="mt-3">Confirm Password:</label>
@@ -140,29 +147,34 @@ const ChangePassword = () => {
               type={showConfirm ? "text" : "password"}
               placeholder="Re-enter password"
               value={confirmPassword}
-              required
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              // required
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setFormErrors(prev => ({ ...prev, confirmPassword: "" }));
+              }}
               style={{ paddingRight: "40px" }}
+              className={`form-control ${formErrors.confirmPassword ? 'is-invalid' : ''}`}
             />
             <FontAwesomeIcon
               icon={showConfirm ? faEye : faEyeSlash}
               onClick={() => setShowConfirm(!showConfirm)}
               style={{
                 position: "absolute",
-                right: "15px",
-                top: "35%",
+                right: formErrors.confirmPassword ? "30px" : "15px",
+                top: "49%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
                 color: "#666"
               }}
             />
           </div>
+          {formErrors.confirmPassword && <div className="invalid-feedback">{formErrors.confirmPassword || "This field is required"}</div>}
 
           {/* <p className="forgot-link mb-4">
             <Link className="" to="/forgot-password">Forgot Password?</Link>
           </p> */}
 
-          <button className="login-button" type="submit" disabled={loading}>
+          <button className="login-button mt-4" type="submit" disabled={loading}>
             {loading ? "Updating..." : "Update Password"}
           </button>
 

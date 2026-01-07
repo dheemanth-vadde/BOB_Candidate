@@ -31,14 +31,57 @@
 	border-bottom: 1px solid rgba(22, 43, 117, 0.2);
 	font-size: 14px;
 }
-  .job-title{
-    color: #162B75;
+ 
+ /* Requisition code */
+/* Row container */
+.req-date-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+ .job-title{
+  	color: rgb(255, 112, 67) ;
   font-size: 1rem;
   width: 75%;
   float: left;
     margin-bottom: 10px;
     font-weight: 500 !important;
   }
+  .titlecolor{
+    
+      color: #162B75;
+  }
+/* REQ code */
+.req-code {
+  color:  rgb(255, 112, 67) ;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Date text */
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #1b2a6b;
+}
+
+/* Calendar icons */
+.date-icon {
+  font-size: 0.75rem;
+  color: #1b2a6b;
+}
+
+/* Divider */
+.date-divider {
+  color: #1b2a6b;
+  font-weight: 600;
+}
+/*end*/
+
   .qualification{
     color: #1a2c71 !important;
   width: 100%;
@@ -254,6 +297,55 @@ color:  #333333;
 }
 
 /* Individual info cards */
+.req-date-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+ .job-title{
+  	color: rgb(255, 112, 67) ;
+  font-size: 1rem;
+  width: 75%;
+  float: left;
+    margin-bottom: 10px;
+    font-weight: 500 !important;
+  }
+  .titlecolor{
+    
+      color: #162B75;
+  }
+/* REQ code */
+.job-detail-modal .req-code {
+  color:  rgb(255, 112, 67) ;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-left:10px
+}
+
+/* Date text */
+.job-detail-modal .date-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #1b2a6b;
+  margin-left:10px;
+}
+
+/* Calendar icons */
+.job-detail-modal .date-icon {
+  font-size: 0.75rem;
+  color: #1b2a6b;
+}
+
+/* Divider */
+.job-detail-modal .date-divider {
+  color: #1b2a6b;
+  font-weight: 600;
+}
+
 .info-card {
   background: rgba(66, 87, 159, 0.05);
   border: 1px solid #eef2f6;
@@ -364,4 +456,30 @@ color:  #333333;
   width: 100%;
   height: 100%;
   border: none;
+}
+/*know more*/
+/* ===== VACANCY DISTRIBUTION ===== */
+/* ===== VACANCY DISTRIBUTION TABLE ===== */
+
+.vacancy-table th {
+  background-color: #f1f3f6;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.vacancy-table td {
+  font-size: 13px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.vacancy-table td:nth-child(2),
+.vacancy-table td:nth-child(4) {
+  text-align: left;
+}
+
+.vacancy-table {
+  margin-bottom: 0;
 }

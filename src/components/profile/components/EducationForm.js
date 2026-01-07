@@ -9,7 +9,8 @@ import { useSelector } from 'react-redux';
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
+import { isValidCollegeName, validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
+import Loader from './Loader';
 
 const EducationForm = ({
   goNext,
@@ -22,10 +23,12 @@ const EducationForm = ({
   showSpecialization = true,
   showBoard = true,
   existingData = null,
-  masterData
+  masterData,
+  refreshEducation
 }) => {
   const user = useSelector((state) => state?.user?.user?.data);
   const candidateId = user?.user?.id;
+  const [loading, setLoading] = useState(false);
   const [certificateFile, setCertificateFile] = useState(null);
   const [existingDocument, setExistingDocument] = useState(null);
   const [formErrors, setFormErrors] = useState({});
@@ -144,6 +147,15 @@ const EducationForm = ({
         isValid = false;
       }
     });
+
+    if (!formData.college?.trim()) {
+      errors.college = "This field is required";
+      isValid = false;
+    } else if (!isValidCollegeName(formData.college)) {
+      errors.college = "Only alphabets and spaces are allowed";
+      isValid = false;
+    }
+
     // Date range validation
     if (formData.from && formData.to) {
       const { isValid: isDateValid, error } = validateEndDateAfterStart(
@@ -175,6 +187,7 @@ const EducationForm = ({
       }
       return;
     }
+    setLoading(true)
     try {
       // Get the docCode from masterData based on the selected education level
       const selectedEducationLevel = masterData.educationLevels.find(
@@ -185,15 +198,27 @@ const EducationForm = ({
         toast.error("Education level docCode not found");
         return;
       }
+
+      const normalizedFormData = {
+        ...formData,
+        college: formData.college
+          ?.replace(/\s+/g, " ")
+          .trim(),
+        university: formData.university
+          ?.replace(/\s+/g, " ")
+          .trim(),
+      };
       // Validate the document before uploading
-      try {
-        await profileApi.ValidateDocument(docCode, certificateFile);
-      } catch (validationErr) {
-        toast.error("Invalid Certificate");
-        return;
+      if (certificateFile) {
+        try {
+          await profileApi.ValidateDocument(docCode, certificateFile);
+        } catch (validationErr) {
+          toast.error("Invalid Certificate");
+          return;
+        }
       }
       const payload = mapEducationFormToApi({
-        formData,
+        formData: normalizedFormData,
         candidateId,
         fixedEducationLevelId,
         educationId,
@@ -206,10 +231,20 @@ const EducationForm = ({
         docCode
       );
       toast.success("Education details saved successfully");
+
+      if (refreshEducation) {
+        try {
+          await refreshEducation();
+        } catch (refreshErr) {
+          console.error("Failed to refresh education details after save", refreshErr);
+        }
+      }
       // goNext();
     } catch (err) {
       console.error(err);
       toast.error("Failed to save education");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -241,12 +276,14 @@ const EducationForm = ({
             // Clear error when user selects an option
             setFormErrors(prev => ({
               ...prev,
-              educationLevel: undefined
+              educationLevel: undefined,
+              university: undefined
             }));
             setFormData(prev => ({
               ...prev,
               educationLevel: documentTypeId,
-              educationDocCode: docCode
+              educationDocCode: docCode,
+              university: ""
             }));
             if (!educationId || !onEducationLevelChange || !selected) return;
             onEducationLevelChange(
@@ -293,7 +330,23 @@ const EducationForm = ({
           id="college"
           className={`form-control ${formErrors.college ? 'is-invalid' : ''}`}
           value={formData.college}
-          onChange={handleChange}
+          onBeforeInput={(e) => {
+            // block anything that is not letter or space
+            if (!/^[A-Za-z ]$/.test(e.data)) {
+              e.preventDefault();
+            }
+          }}
+          onPaste={(e) => {
+            const pasted = e.clipboardData.getData("text");
+            if (!/^[A-Za-z ]+$/.test(pasted)) {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) => {
+            // only valid chars ever reach here
+            setFormErrors(prev => ({ ...prev, college: undefined }));
+            setFormData(prev => ({ ...prev, college: e.target.value }));
+          }}
         />
         {formErrors.college && (
           <div className="invalid-feedback">{formErrors.college}</div>
@@ -310,10 +363,11 @@ const EducationForm = ({
             id="university"
             className={`form-select ${formErrors.university ? 'is-invalid' : ''}`}
             value={formData.university}
+            disabled={!formData.educationLevel}
             onChange={handleChange}
           >
             <option value="">Select Board</option>
-            {masterData?.boards.map(e => (
+            {masterData?.boards.filter(b => b.levelId === formData.educationLevel).map(e => (
               <option key={e.educationQualificationsId} value={e.educationQualificationsId}>
                 {e.qualificationCode}
               </option>
@@ -335,6 +389,7 @@ const EducationForm = ({
           className={`form-control ${formErrors.from || formErrors.dateRange ? 'is-invalid' : ''}`}
           value={formData.from}
           onChange={handleChange}
+          max={new Date().toISOString().split("T")[0]}
         />
         {formErrors.from && (
           <div className="invalid-feedback">{formErrors.from}</div>
@@ -347,7 +402,7 @@ const EducationForm = ({
       {/* To */}
       <div className="col-md-4 col-sm-12 mt-2">
         <label className="form-label">To <span className="text-danger">*</span></label>
-        <input type="date" id="to" className={`form-control ${formErrors.to || formErrors.dateRange ? 'is-invalid' : ''}`} value={formData.to} onChange={handleChange} min={formData.from || undefined} />
+        <input type="date" id="to" className={`form-control ${formErrors.to || formErrors.dateRange ? 'is-invalid' : ''}`} onChange={handleChange} value={formData.to} min={formData.from || undefined} max={new Date().toISOString().split("T")[0]} />
         {formErrors.to && (
           <div className="invalid-feedback">{formErrors.to}</div>
         )}
@@ -396,7 +451,7 @@ const EducationForm = ({
       {/* SPECIALIZATION → only visible if showSpecialization = true */}
       {showSpecialization && (
         <div className="col-md-4 col-sm-12 mt-2">
-          <label className="form-label">Specialization <span className="text-danger">*</span></label>
+          <label className="form-label">Specialization</label>
           <select
             id="specialization"
             className={`form-select ${formErrors.specialization ? 'is-invalid' : ''}`}
@@ -510,7 +565,10 @@ const EducationForm = ({
                 src={deleteIcon}
                 alt="Delete"
                 style={{ width: "25px", cursor: "pointer" }}
-                onClick={() => setExistingDocument(null)}
+                onClick={() => {
+                  setExistingDocument(null);
+                  setCertificateFile(null);
+                }}
               />
             </div>
           </div>
@@ -579,6 +637,10 @@ const EducationForm = ({
           Save
         </button>
       </div>
+
+      {loading && (
+				<Loader />
+			)}
     </form>
   );
 };

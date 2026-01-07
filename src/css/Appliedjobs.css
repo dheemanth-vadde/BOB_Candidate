@@ -78,7 +78,44 @@ display: flex;
 font-weight: 500;
   color: #162B75;
 }
+.req-code {
+  color:  rgb(255, 112, 67) ;
+  font-weight: 500;
+  font-size: 1rem;
+}
 
+/* Date text */
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #1b2a6b;
+}
+
+/* Calendar icons */
+.date-icon {
+  font-size: 0.75rem;
+  color: #1b2a6b;
+}
+
+/* Divider */
+.date-divider {
+  color: #1b2a6b;
+  font-weight: 600;
+}
+ .job-title{
+  	color: rgb(255, 112, 67) ;
+  font-size: 1rem;
+  width: 75%;
+  float: left;
+    margin-bottom: 10px;
+    font-weight: 500 !important;
+  }
+  .titlecolor{
+    
+      color: #162B75;
+  }
 /* =========================================================
    STATUS BADGES
 ========================================================= */
@@ -255,6 +292,34 @@ font-weight: 500;
 .offer-modal .btn-success:hover {
   background-color: #157347;
   border-color: #157347;
+}
+/*pagination*/
+
+.applied-jobs-page .pagination .page-link {
+  border-radius: 4px;
+  margin: 0 8px;
+  color: #1a2c71;
+}
+
+.applied-jobs-page .pagination .page-item.active .page-link {
+  background-color: #F26522;
+  border-color: #F26522;
+  color: #fff;
+}
+
+.applied-jobs-page .pagination .page-link:hover {
+  background-color: #ffe5d1;
+}
+.page-loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 /* Responsive */
 @media (max-width: 992px) {
