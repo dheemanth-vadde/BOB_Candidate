@@ -87,7 +87,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
 
 
-
+const [turnstileToken, setTurnstileToken] = useState("");
   const dispatch = useDispatch();
 
   const [previewData, setPreviewData] = useState();
@@ -1005,6 +1005,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
         show={showModal}
         onHide={() => setShowModal(false)}
         selectedJob={selectedJob}
+        masterData={masterData}
       />
 
 
@@ -1061,7 +1062,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
         formErrors={formErrors}                 // ✅ PASS ERRORS
         setFormErrors={setFormErrors}           // ✅ PASS SETTER
         interviewCentres={interviewCentres}
-
+ setTurnstileToken={setTurnstileToken}  
       />
 
       <PaymentModal
@@ -1071,6 +1072,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
         candidateId={candidateId}
         user={user}
         onPaymentSuccess={handleConfirmApply}
+        token={turnstileToken} 
       />
       <ConfirmationModal
         show={showPreCheckModal}

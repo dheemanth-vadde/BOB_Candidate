@@ -27,7 +27,7 @@ const steps = [
   "Selected In Interview",
   "Offer"
 ];
-
+const [errors, setErrors] = useState({});
 const statusToIndexMap = {
   Applied: 0,
   Shortlisted: 1,
@@ -90,22 +90,16 @@ const formatDateTime = (date) => {
 
 const handleSubmitRequest = async () => {
   try {
-    if (!selectedRequestType || !description) {
-      alert("Please select request type and enter description");
-      return;
-    }
+    if (!validateRequestForm()) return;
 
-    const candidate_Id = candidateId;
     const applicationId = job?.application_id;
-    console.log("candidateId:", candidateId, "applicationId:", applicationId);
-    if (!candidate_Id || !applicationId) {
-      alert("Missing candidate or application details");
+    if (!candidateId || !applicationId) {
+      toast.error("Missing candidate or application details");
       return;
     }
 
     const formData = new FormData();
 
-    // JSON part (must match Swagger key)
     formData.append(
       "createThreadRequestModel",
       new Blob(
@@ -120,7 +114,6 @@ const handleSubmitRequest = async () => {
       )
     );
 
-    // Optional file
     if (selectedFile) {
       formData.append("file", selectedFile);
     }
@@ -129,16 +122,32 @@ const handleSubmitRequest = async () => {
 
     toast.success("Request submitted successfully");
 
-    // reset state
+    // reset
     setSelectedRequestType("");
     setDescription("");
     setSelectedFile(null);
+    setErrors({});
 
     onHide();
   } catch (error) {
     console.error("Submit request failed", error);
     toast.error("Failed to submit request");
   }
+};
+const validateRequestForm = () => {
+  const newErrors = {};
+
+  if (!selectedRequestType) {
+    newErrors.requestType = "Please select a request type";
+  }
+
+  if (!description.trim()) {
+    newErrors.description = "Please enter query details";
+  }
+
+  setErrors(newErrors);
+
+  return Object.keys(newErrors).length === 0;
 };
 
 
@@ -249,35 +258,55 @@ useEffect(() => {
             {/* LEFT SIDE */}
             <div className="col-md-7">
               <div className="">
-                <label className="form-label">Request Type *</label>
-               <select
+                <label className="form-label">
+                  Request Type <span className="text-danger">*</span>
+                </label>
+
+                <select
                   className="form-select"
                   value={selectedRequestType}
-                  onChange={(e) => setSelectedRequestType(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedRequestType(e.target.value);
+                    setErrors(prev => ({ ...prev, requestType: "" }));
+                  }}
                 >
                   <option value="">Select Request Type</option>
-
-                  {requestTypes.map((type) => (
-                    <option
-                      key={type.requestTypeId}
-                      value={type.requestTypeId}
-                    >
+                  {requestTypes.map(type => (
+                    <option key={type.requestTypeId} value={type.requestTypeId}>
                       {type.requestName}
                     </option>
                   ))}
                 </select>
 
+                {errors.requestType && (
+                  <div className="invalid-feedback d-block">
+                    {errors.requestType}
+                  </div>
+                )}
+
               </div>
 
               <div>
-                <label className="form-label">Query Details *</label>
+               <label className="form-label">
+                  Query Details <span className="text-danger">*</span>
+                </label>
+
                 <textarea
                   className="form-control"
                   rows="3"
                   placeholder="Describe your query here..."
-                    value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={description}
+                  onChange={(e) => {
+                    setDescription(e.target.value);
+                    setErrors(prev => ({ ...prev, description: "" }));
+                  }}
                 />
+
+                {errors.description && (
+                  <div className="invalid-feedback d-block">
+                    {errors.description}
+                  </div>
+                )}
               </div>
             </div>
 

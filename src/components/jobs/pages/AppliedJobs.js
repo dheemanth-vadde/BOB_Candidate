@@ -39,7 +39,7 @@ const AppliedJobs = () => {
   // const [totalPages, setTotalPages] = useState(0);
 
   const ITEMS_PER_PAGE = 2;
-const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
   const candidateId = userData?.data?.user?.id;
@@ -122,12 +122,12 @@ const [currentPage, setCurrentPage] = useState(1);
       // const jobsData = jobsResponse?.data || [];
       // console.log("jobsResponse", jobsResponse)
       // console.log("content", jobsData.content)
-        // SAFELY extract array
-    const jobsData = Array.isArray(res?.data)
-      ? res.data
-      : Array.isArray(res?.data?.content)
-      ? res.data.content
-      : [];
+      // SAFELY extract array
+      const jobsData = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.content)
+          ? res.data.content
+          : [];
 
       const mappedJobs = mapAppliedJobsApiToList(jobsData || [], master);
       setAppliedJobs(mappedJobs);
@@ -174,12 +174,12 @@ const [currentPage, setCurrentPage] = useState(1);
     return matchesSearch;
   });
 
-const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
 
-const paginatedJobs = filteredJobs.slice(
-  (currentPage - 1) * ITEMS_PER_PAGE,
-  currentPage * ITEMS_PER_PAGE
-);
+  const paginatedJobs = filteredJobs.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   // const handleDirectDownload = async (job) => {
   //   try {
@@ -262,40 +262,40 @@ const paginatedJobs = filteredJobs.slice(
       .toLowerCase()
       .replace(/\b\w/g, char => char.toUpperCase()); // Title Case
   };
- const handleDownloadApplication = async (job) => {
-  if (!job?.application_id) {
-    toast.error("Application ID missing");
-    return;
-  }
+  const handleDownloadApplication = async (job) => {
+    if (!job?.application_id) {
+      toast.error("Application ID missing");
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const res = await jobsApiService.downloadApplication(
-      job.application_id
-    );
+      const res = await jobsApiService.downloadApplication(
+        job.application_id
+      );
 
-    // ✅ res IS the blob already
-    const blob = new Blob([res], { type: "application/pdf" });
+      // ✅ res IS the blob already
+      const blob = new Blob([res], { type: "application/pdf" });
 
-    const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "Application_Form.pdf"; // default name
-    document.body.appendChild(link);
-    link.click();
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "Application_Form.pdf"; // default name
+      document.body.appendChild(link);
+      link.click();
 
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
-  } catch (err) {
-    console.error("Download failed", err);
-    toast.error("Failed to download application");
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      console.error("Download failed", err);
+      toast.error("Failed to download application");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
 
@@ -321,13 +321,6 @@ const paginatedJobs = filteredJobs.slice(
         </div>
       </div>
 
-      {/* ===== LOADING ===== */}
-      {loading && (
-        <div className="text-center my-5">
-          <div className="spinner-border text-primary" role="status" />
-          <p className="mt-2">Loading Applied Jobs...</p>
-        </div>
-      )}
 
       {/* ===== APPLIED JOBS LIST ===== */}
       {/* {!loading && filteredJobs.length === 0 && (
@@ -352,6 +345,13 @@ const paginatedJobs = filteredJobs.slice(
 
       {paginatedJobs.map((job) => (
         <div className="applied-job-card mb-3" key={job.position_id}>
+          {/* ===== LOADING ===== */}
+          {loading && (
+            <div className="page-loader-overlay">
+              <div className="spinner-border text-light" role="status" />
+              <p className="mt-2 text-light">Processing...</p>
+            </div>
+          )}
 
           {/* Header */}
           <div className="applied-job-header">
@@ -485,7 +485,7 @@ const paginatedJobs = filteredJobs.slice(
         </div>
       ))}
 
- {/* {totalPages > 1 && (
+      {/* {totalPages > 1 && (
         <div className="d-flex justify-content-center mt-4">
           <ul className="pagination pagination-sm">
 
@@ -527,7 +527,7 @@ const paginatedJobs = filteredJobs.slice(
           </ul>
         </div>
       )} */}
- {totalPages > 1 && (
+      {totalPages > 1 && (
         <div className="d-flex justify-content-center mt-4">
           <ul className="pagination pagination-sm">
 

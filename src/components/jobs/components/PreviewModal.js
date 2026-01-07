@@ -6,7 +6,7 @@ import sign from "../../../assets/download.png";
 import { useSelector } from "react-redux";
 import viewIcon from "../../../assets/view-icon.png";
 import { getState, getLocation } from "../../../shared/utils/masterHelpers";
-
+import TurnstileWidget from "../../integrations/Cpatcha/TurnstileWidget";
 import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 const PreviewModal = ({
   show,
@@ -21,7 +21,8 @@ onBack,
   onApplyFormChange,       // ✅ NEW
   formErrors,
   setFormErrors,
-  interviewCentres
+  interviewCentres,
+  setTurnstileToken
 }) => {
 console.log("Master Data111:", masterData);
 console.log("selected Job11:", selectedJob);
@@ -48,7 +49,6 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
 
   const state3 = getState(masterData, preferences.state3);
   const location3 = getLocation(masterData, preferences.location3);
-
    useEffect(() => {
   if (
     formErrors?.ctc ||
@@ -527,9 +527,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                     </label>
 
                     <select
-                      className={`form-control ${
-                        formErrors.examCenter ? "is-invalid" : ""
-                      }`}
+                      className="form-control"
                       value={applyForm.examCenter}
                       onChange={(e) => {
                         onApplyFormChange("examCenter", e.target.value);
@@ -574,7 +572,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
             <span className="captcha-text">X A Y 2 U</span>
             <input type="text" className="captcha-input" />
           </div> */}
-
+   <TurnstileWidget onTokenChange={setTurnstileToken} />
           <div className="declaration-box text-start">
             <div className="form-check mb-2">
               <input

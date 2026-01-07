@@ -10,6 +10,7 @@ const PaymentModal = ({
   candidateId,
   user,
   onPaymentSuccess,
+  token
 }) => {
   const amount =
     (selectedJob?.application_fee_paise ?? 50000) / 100;
@@ -77,6 +78,7 @@ const PaymentModal = ({
               email: user?.data?.user?.email,
               phone: user?.data?.user?.phone,
             }}
+            turnstileToken={token}
           />
         )}
       </Modal.Footer>

@@ -9,9 +9,9 @@ import {
    faCalendarAlt,
   faCalendarTimes
 } from "@fortawesome/free-solid-svg-icons";
-const KnowMoreModal = ({ show, onHide, selectedJob }) => {
+import { mapVacancyDistributions }  from "../../jobs/mappers/vacancyDistributionMapper";
+const KnowMoreModal = ({ show, onHide, selectedJob,masterData}) => {
   if (!selectedJob) return null;
-  console.log("knowmore selected Job", selectedJob)
 
     const formatDate = (date) => {
   if (!date) return "-";
@@ -21,7 +21,18 @@ const KnowMoreModal = ({ show, onHide, selectedJob }) => {
     year: "numeric",
   });
 };
-
+const reservationCategories = masterData?.reservation_categories || [];
+const disabilities = masterData?.disabilities || [];
+const states = masterData?.states || [];
+console.log("positionStateDistributions",selectedJob?.positionStateDistributions)
+const vacancyDistribution = mapVacancyDistributions(
+  selectedJob?.positionStateDistributions || [],
+  states,
+  reservationCategories,
+  disabilities
+);
+console.log("vacanciesdistri",vacancyDistribution)
+console.log("reservationCategories", reservationCategories)
   return (
     <Modal
       show={show}
@@ -140,11 +151,13 @@ const KnowMoreModal = ({ show, onHide, selectedJob }) => {
             )}
           </ul>
         </div>
-       {/* ================= VACANCY DISTRIBUTION ================= */}
-{/* ================= VACANCY DISTRIBUTION TABLE ================= */}
-{selectedJob.vacancy_distribution?.length > 0 && (
+     
+{/* ================= VACANCY DISTRIBUTION ================= */}
+{vacancyDistribution.length > 0 && (
   <div className="info-card mt-4">
-    <h6 className="card-section-header">Vacancy Distribution (State-wise)</h6>
+    <h6 className="card-section-header">
+      Vacancy Distribution (State-wise)
+    </h6>
 
     <div className="table-responsive">
       <table className="table table-bordered vacancy-table">
@@ -152,48 +165,58 @@ const KnowMoreModal = ({ show, onHide, selectedJob }) => {
           <tr>
             <th rowSpan="2">State Name</th>
             <th rowSpan="2">Vacancies</th>
-            <th colSpan="6" className="text-center">Category</th>
-            <th colSpan="5" className="text-center">Out of Which (Disability)</th>
+
+            <th colSpan={reservationCategories.length + 1} className="text-center">
+              Category
+            </th>
+
+            <th colSpan={disabilities.length + 1} className="text-center">
+              Out of Which (Disability)
+            </th>
           </tr>
+
           <tr>
-            <th>SC</th>
-            <th>ST</th>
-            <th>OBC</th>
-            <th>EWS</th>
-            <th>GEN</th>
-            <th>TOTAL</th>
-            <th>OC</th>
-            <th>HI</th>
-            <th>VI</th>
-            <th>ID</th>
+            {reservationCategories.map(cat => (
+              <th key={cat.category_id}>{cat.category_code}</th>
+            ))}
+            <th>Total</th>
+
+            {disabilities.map(dis => (
+              <th key={dis.disability_id}>{dis.disability_code}</th>
+            ))}
             <th>Total</th>
           </tr>
         </thead>
 
         <tbody>
-          {selectedJob.vacancy_distribution.map((dist, index) => {
-            const disabilityTotal =
-              (dist.disability?.OC || 0) +
-              (dist.disability?.HI || 0) +
-              (dist.disability?.VI || 0) +
-              (dist.disability?.ID || 0);
+          {vacancyDistribution.map((dist, index) => {
+            const categoryTotal = reservationCategories.reduce(
+              (sum, cat) => sum + (dist.categories?.[cat.category_id] || 0),
+              0
+            );
+
+            const disabilityTotal = disabilities.reduce(
+              (sum, dis) => sum + (dist.disability?.[dis.disability_id] || 0),
+              0
+            );
 
             return (
               <tr key={index}>
                 <td>{dist.state_name}</td>
                 <td>{dist.total}</td>
 
-                <td>{dist.general.SC}</td>
-                <td>{dist.general.ST}</td>
-                <td>{dist.general.OBC}</td>
-                <td>{dist.general.EWS}</td>
-                <td>{dist.general.GEN}</td>
-                <td>{dist.total}</td>
+                {reservationCategories.map(cat => (
+                  <td key={cat.category_id}>
+                    {dist.categories?.[cat.category_id] || 0}
+                  </td>
+                ))}
+                <td>{categoryTotal}</td>
 
-                <td>{dist.disability.OC}</td>
-                <td>{dist.disability.HI}</td>
-                <td>{dist.disability.VI}</td>
-                <td>{dist.disability.ID}</td>
+                {disabilities.map(dis => (
+                  <td key={dis.disability_id}>
+                    {dist.disability?.[dis.disability_id] || 0}
+                  </td>
+                ))}
                 <td>{disabilityTotal}</td>
               </tr>
             );

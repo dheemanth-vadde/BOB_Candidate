@@ -310,7 +310,17 @@ font-weight: 500;
 .applied-jobs-page .pagination .page-link:hover {
   background-color: #ffe5d1;
 }
+.page-loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 /* Responsive */
 @media (max-width: 992px) {
   .job-meta-grid.row-1 {

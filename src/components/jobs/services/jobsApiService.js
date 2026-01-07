@@ -35,7 +35,8 @@ getInterviewCentres:() => mastersapi.get(`/master-dd-data/get/interview-centres`
   ),
    //razor pay
 
-   getConfig: () => razorpayapi.get('/config'),
+   //getConfig: () => razorpayapi.get('/config'),
+   postConfig: (data) => razorpayapi.post('/config', data),
   getRazorOrder: (data) => razorpayapi.post('/orders', data),
   getRazorVerify: (data) => razorpayapi.post('/verify', data),
 
