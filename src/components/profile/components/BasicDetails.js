@@ -89,7 +89,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						</div>
 					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="firstName" className="form-label">First Name <span className="text-danger">*</span></label>
+						<label htmlFor="firstName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>First Name <span className="text-danger">*</span></label>
 						<input
 							type="text"
 							className={`form-control ${parsedClass("firstName")} ${formErrors.firstName ? 'is-invalid' : ''}`}
@@ -101,12 +101,12 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						{formErrors.firstName && <div className="invalid-feedback">{formErrors.firstName}</div>}
 					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="middleName" className="form-label">Middle Name</label>
+						<label htmlFor="middleName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Middle Name</label>
 						<input type="text" className={`form-control ${parsedClass("middleName")}`} id="middleName" value={formData?.middleName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="lastName" className="form-label">Last Name <span className="text-danger">*</span></label>
+						<label htmlFor="lastName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Last Name <span className="text-danger">*</span></label>
 						<input type="text" className={`form-control ${parsedClass("lastName")} ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} onKeyDown={handleNameKeyDown} />
 						{formErrors.lastName && <div className="invalid-feedback">{formErrors.lastName}</div>}
 					</div>
@@ -153,7 +153,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
+						<label htmlFor="dob" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Date of Birth <span className="text-danger">*</span></label>
 						<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} max={new Date().toISOString().split("T")[0]} />
 
 						{isDobMismatch && (
@@ -352,7 +352,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="contactNumber" className="form-label">Contact Number <span className="text-danger">*</span></label>
+						<label htmlFor="contactNumber" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Contact Number <span className="text-danger">*</span></label>
 						<input
 							type="text"
 							className={`form-control ${formErrors.contactNumber ? 'is-invalid' : ''}`}

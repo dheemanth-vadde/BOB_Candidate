@@ -233,7 +233,11 @@ const EducationForm = ({
       toast.success("Education details saved successfully");
 
       if (refreshEducation) {
-        await refreshEducation();
+        try {
+          await refreshEducation();
+        } catch (refreshErr) {
+          console.error("Failed to refresh education details after save", refreshErr);
+        }
       }
       // goNext();
     } catch (err) {
@@ -272,12 +276,14 @@ const EducationForm = ({
             // Clear error when user selects an option
             setFormErrors(prev => ({
               ...prev,
-              educationLevel: undefined
+              educationLevel: undefined,
+              university: undefined
             }));
             setFormData(prev => ({
               ...prev,
               educationLevel: documentTypeId,
-              educationDocCode: docCode
+              educationDocCode: docCode,
+              university: ""
             }));
             if (!educationId || !onEducationLevelChange || !selected) return;
             onEducationLevelChange(
@@ -357,10 +363,11 @@ const EducationForm = ({
             id="university"
             className={`form-select ${formErrors.university ? 'is-invalid' : ''}`}
             value={formData.university}
+            disabled={!formData.educationLevel}
             onChange={handleChange}
           >
             <option value="">Select Board</option>
-            {masterData?.boards.map(e => (
+            {masterData?.boards.filter(b => b.levelId === formData.educationLevel).map(e => (
               <option key={e.educationQualificationsId} value={e.educationQualificationsId}>
                 {e.qualificationCode}
               </option>
@@ -444,7 +451,7 @@ const EducationForm = ({
       {/* SPECIALIZATION → only visible if showSpecialization = true */}
       {showSpecialization && (
         <div className="col-md-4 col-sm-12 mt-2">
-          <label className="form-label">Specialization <span className="text-danger">*</span></label>
+          <label className="form-label">Specialization</label>
           <select
             id="specialization"
             className={`form-select ${formErrors.specialization ? 'is-invalid' : ''}`}

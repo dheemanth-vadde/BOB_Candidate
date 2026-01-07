@@ -114,6 +114,12 @@ const AddressDetails = ({ goNext, goBack }) => {
 		}
 	}, [sameAsCorrespondence]);
 
+	const trimAddress = (address) => ({
+		...address,
+		line1: address.line1.trim(),
+		line2: address.line2.trim(),
+	});
+
 	const handleCorrChange = (e) => {
 		const { id, value } = e.target;
 
@@ -252,16 +258,18 @@ const AddressDetails = ({ goNext, goBack }) => {
   };
 
 	const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+		e.preventDefault();
+		
+		if (!validateForm()) return;
 
 		try {
+			const trimmedCorr = trimAddress(corrAddress);
+			const trimmedPerm = sameAsCorrespondence
+				? trimmedCorr
+				: trimAddress(permAddress);
 			const payload = mapAddressFormToApi({
-				corrAddress,
-				permAddress,
+				corrAddress: trimmedCorr,
+      			permAddress: trimmedPerm,
 				sameAsCorrespondence,
 				candidateId,
 			});

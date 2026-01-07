@@ -190,9 +190,9 @@ const CandidatePortal = () => {
           {disclaimerAccepted === true && renderTabContent()}
           {showModal && (
             <div className="custom-modal-overlay">
-              <div className="custom-modal" style={{ maxWidth: "650px", textAlign: "left", width: '650px' }}>
+              <div className="custom-modal" style={{ maxWidth: "900px", textAlign: "left", width: '900px' }}>
 
-                <h4 style={{ textAlign: "center", color: "#F26A21", fontWeight: 600 }}>
+                <h4 style={{ textAlign: "center", color: "#F26A21", fontWeight: 600, fontSize: '1rem' }}>
                   Disclaimer
                 </h4>
 
@@ -224,7 +224,7 @@ const CandidatePortal = () => {
                     onChange={(e) => setCheckboxChecked(e.target.checked)}
                     style={{ width: "18px", height: "18px", accentColor: "#F26A21", cursor: "pointer" }}
                   />
-                  <span style={{ fontSize: "0.95rem", fontWeight: 500 }}>
+                  <span style={{ fontSize: "0.95rem", color: "#555" }}>
                     I agree to all the above-mentioned disclaimers.
                   </span>
                 </div>
@@ -239,8 +239,8 @@ const CandidatePortal = () => {
                       backgroundColor: "#F26A21",
                       border: "none",
                       color: "white",
-                      padding: "10px 30px",
-                      borderRadius: "25px",
+                      padding: "0.5rem 1.5rem",
+                      borderRadius: "8px",
                       fontSize: "1rem",
                       cursor: "pointer",
                       opacity: checkboxChecked ? 1 : 0.6

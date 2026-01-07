@@ -94,19 +94,10 @@ const EducationDetails = ({ goNext, goBack }) => {
   }, [candidateId]);
 
   const handleSaveAndNext = () => {
-    const savedLevelIds = educations
-      .map(e => e.educationLevelId)
-      .filter(Boolean);
-
-    const missing = MANDATORY_LEVEL_IDS.filter(
-      id => !savedLevelIds.includes(id)
-    );
-
-    if (missing.length > 0) {
-      toast.error("Please fill Board details");
+    if (educations.filter(e => e.educationId).length === 0) {
+      toast.error("Please add at least 1 education");
       return;
     }
-
     goNext();
   };
 
@@ -161,6 +152,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     // showDegree={false}
                     // showSpecialization={false}
                     masterData={masterData}
+                    refreshEducation={fetchEducationDetails}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -175,6 +167,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.intermediate}
                     disableEducationLevel
                     masterData={masterData}
+                    refreshEducation={fetchEducationDetails}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -189,6 +182,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.graduation}
                     disableEducationLevel
                     masterData={masterData}
+                    refreshEducation={fetchEducationDetails}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -203,6 +197,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.postGraduation}
                     disableEducationLevel
                     masterData={masterData}
+                    refreshEducation={fetchEducationDetails}
                   />
                 </Accordion.Body>
               </Accordion.Item>

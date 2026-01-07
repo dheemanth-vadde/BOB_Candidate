@@ -110,7 +110,7 @@ const Login = () => {
         </div>
 
         <form className="login_form" onSubmit={handleLogin}>
-          <label>Email Id:</label>
+          <label>Email Id <span className="text-danger">*</span></label>
           <input
             type="email"
             value={email}
@@ -120,7 +120,7 @@ const Login = () => {
           />
           {formErrors.email && <div className="invalid-feedback mb-4">{formErrors.email}</div>}
 
-          <label>Password:</label>
+          <label>Password <span className="text-danger">*</span></label>
           <div style={{ position: 'relative' }}>
             <input
               type={showPassword ? "text" : "password"}

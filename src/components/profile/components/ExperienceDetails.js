@@ -81,6 +81,14 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		}
 	}, [candidateId]);
 
+	const trimStrings = (obj) =>
+		Object.fromEntries(
+			Object.entries(obj).map(([key, value]) => [
+			key,
+			typeof value === "string" ? value.trim() : value
+			])
+		);
+
 	const calculateExperienceDays = (fromDate, toDate) => {
 		if (!fromDate) return 0;
 		const start = new Date(fromDate);
@@ -193,9 +201,11 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			effectiveToDate
 		);
 
+		const sanitizedFormData = trimStrings(formData);
+
 		const normalizedFormData = {
-			...formData,
-			to: formData.working ? null : formData.to,
+			...sanitizedFormData,
+			to: sanitizedFormData.working ? null : sanitizedFormData.to,
 			experience: experienceDays
 		};
 
