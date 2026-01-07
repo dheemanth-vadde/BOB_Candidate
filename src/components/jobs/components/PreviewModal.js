@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Accordion } from "react-bootstrap";
 import "../../../css/PreviewModal.css";
 import logo_Bob from "../../../assets/bob-logo.png";
@@ -39,7 +39,7 @@ console.log("selected Job11:", selectedJob);
     (state) => state.preference.preferenceData
   );
   const preferences = preferenceData?.preferences || {};
-
+const [activeAccordion, setActiveAccordion] = useState(["0"]);
   const state1 = getState(masterData, preferences.state1);
   const location1 = getLocation(masterData, preferences.location1);
 
@@ -48,9 +48,21 @@ console.log("selected Job11:", selectedJob);
 
   const state3 = getState(masterData, preferences.state3);
   const location3 = getLocation(masterData, preferences.location3);
+
+   useEffect(() => {
+  if (
+    formErrors?.ctc ||
+    formErrors?.examCenter
+  ) {
+    setActiveAccordion(["4"]); // 👈 Add Preference section
+  }
+}, [formErrors]);
   if (!previewData) {
     return null;
   }
+
+ 
+
   // ✅ PHOTO
   const photoUrl =
     previewData.documents?.photo?.[0]?.url || null;
@@ -65,6 +77,7 @@ console.log("selected Job11:", selectedJob);
   console.log("Stored preference:", preferenceData);
   console.log("Preview previewData:", previewData);
   const allDocuments = Object.values(previewData.documents || {}).flat();
+  
   return (
     <Modal
       show={show}
@@ -86,7 +99,14 @@ console.log("selected Job11:", selectedJob);
         </div>
 
         {/* ===== ACCORDION ===== */}
-        <Accordion defaultActiveKey={["0"]} alwaysOpen className="bob-accordion">
+        {/* <Accordion defaultActiveKey={["0"]} alwaysOpen className="bob-accordion"> */}
+        <Accordion
+  activeKey={activeAccordion}
+  onSelect={(key) => setActiveAccordion(key)}
+  alwaysOpen
+  className="bob-accordion"
+>
+
           {/* === PERSONAL DETAILS === */}
           <Accordion.Item eventKey="0">
             <Accordion.Header>Personal Details</Accordion.Header>
@@ -525,7 +545,7 @@ console.log("selected Job11:", selectedJob);
 
                       {interviewCentres.map((centre) => (
                         <option key={centre.id} value={centre.id}>
-                          {centre.IntervieCentre}
+                          {centre.Interview_Centre}
                         </option>
                       ))}
                     </select>

@@ -8,14 +8,16 @@ const jobsApiService = {
   //Relevamnt Jobs
 
   getAllDetails: (candidateId) => jobsapi.get(`candidate/get-all-details/${candidateId}`),
+  //getAppliedJobs: (candidateId, page = 0, size = 5) => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}?page=${page}&size=${size}`),
   getAppliedJobs: (candidateId) => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}`),
   getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
+  //getJobPositions: (candidateId, page = 0, size = 5) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}?page=${page}&size=${size}`),
   getJobPositions: (candidateId) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}`),
    applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
    getMasterData:()=>mastersapi.get(`/display/all`),
     getRequestTypes:()=>mastersapi.get(`/master-dd-data/get/request-types`),
     getApplicationStatus:(applicationId) => jobsapi.get(`/track-app-status/status/${applicationId}`),
-
+getInterviewCentres:() => mastersapi.get(`/master-dd-data/get/interview-centres`),
     //thread apis 
     createCandidateThread: (candidateId, formData) => jobsapi.post(`/candidate-conversation/create-thread/${candidateId}`, formData, {
       headers: {
@@ -24,7 +26,13 @@ const jobsApiService = {
       }
     }),
     getRequestHistory: (applicationId) => jobsapi.get(`/candidate-conversation/request-history/${applicationId}`),
-
+    downloadApplication: (applicationId) =>
+  jobsapi.get(
+    `/applied-jobs/download/application-form/${applicationId}`,
+    {
+      responseType: "blob", // 🔥 VERY IMPORTANT
+    }
+  ),
    //razor pay
 
    getConfig: () => razorpayapi.get('/config'),

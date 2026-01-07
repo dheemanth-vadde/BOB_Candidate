@@ -293,6 +293,24 @@ font-weight: 500;
   background-color: #157347;
   border-color: #157347;
 }
+/*pagination*/
+
+.applied-jobs-page .pagination .page-link {
+  border-radius: 4px;
+  margin: 0 8px;
+  color: #1a2c71;
+}
+
+.applied-jobs-page .pagination .page-item.active .page-link {
+  background-color: #F26522;
+  border-color: #F26522;
+  color: #fff;
+}
+
+.applied-jobs-page .pagination .page-link:hover {
+  background-color: #ffe5d1;
+}
+
 /* Responsive */
 @media (max-width: 992px) {
   .job-meta-grid.row-1 {

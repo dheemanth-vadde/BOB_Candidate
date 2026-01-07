@@ -6,7 +6,7 @@ import {
   faCheckCircle,
   faSearch,
   faLightbulb,
-   faCalendarAlt,
+  faCalendarAlt,
   faCalendarTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "react-bootstrap";
@@ -30,6 +30,7 @@ import jobsApiService from "../services/jobsApiService";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ValidationErrorModal from "../components/ValidationErrorModal";
 import masterApi from "../../../services/master.api";
+import { mapInterviewCentresApi } from "../../jobs/mappers/interviewCentreMapper";
 
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
@@ -76,8 +77,11 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     { label: "11+ years", min: 11, max: Infinity },
   ];
   const [interviewCentres, setInterviewCentres] = useState([]);
-  const ITEMS_PER_PAGE = 5; // change if needed
+  const PAGE_SIZE = 5; // change if needed
+  //const [currentPage, setCurrentPage] = useState(0); // backend index
+  //const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5; // change if needed
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoDocs, setInfoDocs] = useState([]);
   const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
@@ -119,117 +123,143 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
       toast.error("Failed to load requisitions");
     }
   };
+  useEffect(() => {
+    const initMasters = async () => {
+      try {
+        const masterRes = await jobsApiService.getMasterData();
+        const mapped = mapMasterDataApi(masterRes);
+
+        setDepartments(mapped.departments || []);
+        setStates(mapped.states || []);
+        setLocations(mapped.cities || []);
+        setMasterData(mapped);
+        setIsMasterReady(true);
+      } catch (e) {
+        toast.error("Failed to load master data");
+      }
+    };
+
+    initMasters();
+  }, []);
+  const fetchJobs = async (page = 0) => {
+    if (!candidateId || !isMasterReady) return;
+
+    try {
+      setLoading(true);
+
+      const res = await jobsApiService.getJobPositions(candidateId);
+      //console.log("jobsres",res)
+      const jobsData = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.data)
+          ? res.data.data
+          : [];
+
+      const mappedJobs = mapJobsApiToList(
+        jobsData,
+        masterData
+      );
+
+      setJobs(mappedJobs);
+      //setTotalPages(pageData?.totalPages || 0);
+
+    } catch (err) {
+      toast.error("Failed to load jobs");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ✅ Fetch jobs
- const fetchJobs = async () => {
-  try {
-    setLoading(true);
+  //  const fetchJobs = async (currentPage=0) => {
+  //   try {
+  //     setLoading(true);
 
-    // 1️⃣ Always load master data
-    const masterRes = await jobsApiService.getMasterData();
-    const mappedMasterData = mapMasterDataApi(masterRes);
+  //     // 1️⃣ Always load master data
+  //     const masterRes = await jobsApiService.getMasterData();
+  //     const mappedMasterData = mapMasterDataApi(masterRes);
 
-    setDepartments(mappedMasterData.departments || []);
-    setStates(mappedMasterData.states || []);
-    setLocations(mappedMasterData.cities || []);
-    setMasterData(mappedMasterData);
+  //     setDepartments(mappedMasterData.departments || []);
+  //     setStates(mappedMasterData.states || []);
+  //     setLocations(mappedMasterData.cities || []);
+  //     setMasterData(mappedMasterData);
 
-    // 2️⃣ Load jobs separately
-    let jobsData = [];
+  //     // 2️⃣ Load jobs separately
+  //     let jobsData = [];
+  //     try {
+  //       const jobsRes = await jobsApiService.getJobPositions(candidateId,currentPage,PAGE_SIZE);
+  //       jobsData = jobsRes?.data || [];
+  //     } catch (jobErr) {
+  //       // ✅ 404 is OK → means no jobs
+  //       if (jobErr?.response?.status !== 404) {
+  //         throw jobErr; // real error
+  //       }
+  //     }
+
+  //     const mappedJobs = mapJobsApiToList(jobsData.content, mappedMasterData);
+  //     setJobs(mappedJobs);
+  // setTotalPages(jobsData?.totalPages || 0);
+  //     setCurrentPage(jobsData?.number || 0);
+  //     setIsMasterReady(true);
+  //   } catch (err) {
+  //     console.error("Error fetching data:", err);
+  //     toast.error("Failed to load data");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchInterviewCentres = async () => {
     try {
-      const jobsRes = await jobsApiService.getJobPositions(candidateId);
-      jobsData = jobsRes?.data || [];
-    } catch (jobErr) {
-      // ✅ 404 is OK → means no jobs
-      if (jobErr?.response?.status !== 404) {
-        throw jobErr; // real error
-      }
+      const res = await jobsApiService.getInterviewCentres(); // 🔁 adjust method name if needed
+
+      const mappedCentres = mapInterviewCentresApi(res);
+      console.log("mapped", mappedCentres)
+      setInterviewCentres(mappedCentres);
+    } catch (err) {
+      console.error("Failed to load interview centres", err);
+      toast.error("Failed to load interview centres");
+      setInterviewCentres([]);
     }
-
-    const mappedJobs = mapJobsApiToList(jobsData, mappedMasterData);
-    setJobs(mappedJobs);
-
-    setIsMasterReady(true);
-  } catch (err) {
-    console.error("Error fetching data:", err);
-    toast.error("Failed to load data");
-  } finally {
-    setLoading(false);
-  }
-};
-
-const fetchInterviewCentres = async () => {
-  try {
-  //  const res = await masterApi.getInterviewCentres(); // 🔁 adjust method name if needed
-const res= {
-
-  "success": true,
-
-  "message": "All request types fetched successfully",
-
-  "data": [
-
-    {
-
-      "IntervieCentre": "Interview Reschedule",
-
-      "id": "5175e8a8-64d7-4cce-855d-18b33b1c8c02"
-
-    },
-
-    {
-
-      "IntervieCentre": "Other Request",
-
-      "id": "d7bf6078-cf7c-4733-b23a-3c7a88f754f7"
-
-    },
-
-    {
-
-      "IntervieCentre": "Interview Mode Change",
-
-      "id": "6ac65934-5606-4364-b07f-3f4a9a38fead"
-
-    }
-
-  ]
-
-};
-    const centres = res?.data || [];
-    setInterviewCentres(centres);
-  } catch (err) {
-    console.error("Failed to load interview centres", err);
-    toast.error("Failed to load interview centres");
-  }
-};
+  };
   const fetchInfoDocuments = async (type) => {
-  try {
-    const res = await masterApi.getGenericDocuments();
+    try {
+      const res = await masterApi.getGenericDocuments();
 
-    const filtered = (res.data?.data || []).filter(
-      (doc) => doc.type?.toLowerCase() === type
-    );
+      const filtered = (res.data?.data || []).filter(
+        (doc) => doc.type?.toLowerCase() === type
+      );
 
-    if (filtered.length === 0) {
-      toast.info("No documents available");
-      return;
+      if (filtered.length === 0) {
+        toast.info("No documents available");
+        return;
+      }
+
+      setInfoDocs(filtered);
+      setActiveInfoType(type);
+      setShowInfoModal(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load documents");
     }
-
-    setInfoDocs(filtered);
-    setActiveInfoType(type);
-    setShowInfoModal(true);
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to load documents");
-  }
-};
-
+  };
+  useEffect(() => {
+    setCurrentPage(1); // backend index
+  }, [
+    searchTerm,
+    selectedDepartments,
+    selectedStates,
+    selectedExperience,
+    selectedRequisition,
+  ]);
   useEffect(() => {
     fetchRequisitions();
-    fetchJobs();
-    fetchInterviewCentres();   
+    fetchInterviewCentres();
   }, []);
+
+  useEffect(() => {
+    fetchJobs(currentPage);
+  }, [isMasterReady]);
   useEffect(() => {
     if (!candidateId || !isMasterReady) return;
 
@@ -250,7 +280,7 @@ const res= {
     };
 
     fetchCandidatePreview();
-  }, [candidateId, isMasterReady, masterData]);
+  }, [candidateId, isMasterReady]);
   const calculateAge = (dobString) => {
     if (!dobString) return null;
 
@@ -270,13 +300,13 @@ const res= {
     return age;
   };
   const formatDate = (date) => {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   const calculateExperienceYears = (totalExpString) => {
     if (!totalExpString) return 0;
@@ -356,8 +386,8 @@ const res= {
         examCenter: "",
       });
 
-     // setShowPreferenceModal(true);
-        setShowPreviewModal(true);
+      // setShowPreferenceModal(true);
+      setShowPreviewModal(true);
     } catch (err) {
       setValidationErrorMsg("Unable to validate profile. Please try again.");
       setShowValidationErrorModal(true);
@@ -487,6 +517,10 @@ const res= {
     );
   });
 
+  // const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+
+  //const paginatedJobs = filteredJobs;
+
   const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
 
   const paginatedJobs = filteredJobs.slice(
@@ -500,18 +534,18 @@ const res= {
         : [...prev, deptId]
     );
   };
-const isApplicationOpen = (endDate) => {
-  if (!endDate) return false;
+  const isApplicationOpen = (endDate) => {
+    if (!endDate) return false;
 
-  const today = new Date();
-  const end = new Date(endDate);
+    const today = new Date();
+    const end = new Date(endDate);
 
-  // Normalize time (important)
-  today.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
+    // Normalize time (important)
+    today.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
 
-  return today <= end;
-};
+    return today <= end;
+  };
   // const handleLocationChange = (locationId) => {
   //   setSelectedLocations((prev) =>
   //     prev.includes(locationId)
@@ -593,12 +627,12 @@ const isApplicationOpen = (endDate) => {
       return;
     }
     if (Object.keys(errors).length > 0) {
-        setFormErrors(errors);
-        return;
-      }
+      setFormErrors(errors);
+      return;
+    }
 
-      // ✅ Clear errors
-      setFormErrors({});
+    // ✅ Clear errors
+    setFormErrors({});
 
     dispatch(
       savePreference({
@@ -772,7 +806,7 @@ const isApplicationOpen = (endDate) => {
               </div>
             </div>
           </div>
-           {/* ================= EMPTY STATE (ADDED) ================= */}
+          {/* ================= EMPTY STATE (ADDED) ================= */}
           {filteredJobs.length === 0 && (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
               <div className="text-center">
@@ -802,25 +836,25 @@ const isApplicationOpen = (endDate) => {
                 <div className="card-body job-main-header-sec">
                   <div className="left_content">
                     {/* ===== Requisition code + dates row ===== */}
-<div className="req-date-row">
-  <span className="req-code">
-    {job.requisition_code}
-  </span>
+                    <div className="req-date-row">
+                      <span className="req-code">
+                        {job.requisition_code}
+                      </span>
 
-  <span className="date-item">
-    <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
-    Start: {formatDate(job.registration_start_date)}
-  </span>
+                      <span className="date-item">
+                        <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+                        Start: {formatDate(job.registration_start_date)}
+                      </span>
 
-  <span className="date-divider">|</span>
+                      <span className="date-divider">|</span>
 
-  <span className="date-item">
-    <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
-    End: {formatDate(job.registration_end_date)}
-  </span>
-</div>
+                      <span className="date-item">
+                        <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+                        End: {formatDate(job.registration_end_date)}
+                      </span>
+                    </div>
                     <h6 className="job-title titlecolor">
-                       {job.position_title}
+                      {job.position_title}
                     </h6>
                     <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Employment Type:</span>{" "}
@@ -842,10 +876,12 @@ const isApplicationOpen = (endDate) => {
                       <span className="subtitle">Location:</span>{" "}
                       {job.state_name}
                     </p> */}
-                    <p className="mb-1 text-mutedd small size35">
-                      <span className="subtitle">Contract Period:</span>{" "}
-                      {job.contract_period}
-                    </p>
+                    {job.employment_type === "contract" && (
+                      <p className="mb-1 text-mutedd small size35">
+                        <span className="subtitle">Contract Period:</span>{" "}
+                        {job.contract_period} Years
+                      </p>
+                    )}
                     <p className="mb-1 text-mutedd small size30">
                       <span className="subtitle">Vacancies:</span>{" "}
                       {job.no_of_vacancies}
@@ -857,19 +893,19 @@ const isApplicationOpen = (endDate) => {
                     <p className="mb-1 text-mutedd small qualification">
                       <span className="subtitle">Location:</span>{" "}
                       {job.state_name}
-                    </p> 
+                    </p>
                   </div>
                   <div className="justify-content-between align-items-center apply_btn">
-{isApplicationOpen(job.registration_end_date) ? (
-                    <button
-                      className="btn btn-sm btn-outline-primary hovbtn"
-                      onClick={() => {
-                        setSelectedJob(job);
-                        setShowPreCheckModal(true);
-                      }}
-                    >
-                      Apply Now
-                    </button> ) : (
+                    {isApplicationOpen(job.registration_end_date) ? (
+                      <button
+                        className="btn btn-sm btn-outline-primary hovbtn"
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setShowPreCheckModal(true);
+                        }}
+                      >
+                        Apply Now
+                      </button>) : (
                       <span className="text-danger fw-semibold small">
                         Application Closed
                       </span>
@@ -889,6 +925,51 @@ const isApplicationOpen = (endDate) => {
         </div>
       </div>
 
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-4">
+          <ul className="pagination pagination-sm">
+
+            {/* Prev */}
+            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+              >
+                ‹
+              </button>
+            </li>
+
+            {/* Pages */}
+            {Array.from({ length: totalPages }, (_, i) => {
+              const page = i + 1;
+              return (
+                <li
+                  key={page}
+                  className={`page-item ${currentPage === page ? "active" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                </li>
+              );
+            })}
+
+            {/* Next */}
+            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+              >
+                ›
+              </button>
+            </li>
+
+          </ul>
+        </div>
+      )}
       {/* ✅ Add Preference Modal */}
 
       {/* <PreferenceModal
@@ -973,13 +1054,13 @@ const isApplicationOpen = (endDate) => {
           setShowPreviewModal(false);
 
         }}
-         onBack={() => {
+        onBack={() => {
           setShowPreviewModal(false);
           setShowApplyModal(true);
         }}
-         formErrors={formErrors}                 // ✅ PASS ERRORS
-         setFormErrors={setFormErrors}           // ✅ PASS SETTER
-           interviewCentres={interviewCentres} 
+        formErrors={formErrors}                 // ✅ PASS ERRORS
+        setFormErrors={setFormErrors}           // ✅ PASS SETTER
+        interviewCentres={interviewCentres}
 
       />
 
@@ -1002,50 +1083,7 @@ const isApplicationOpen = (endDate) => {
         onClose={() => setShowValidationErrorModal(false)}
         message={validationErrorMsg}
       />
-      {totalPages > 1 && (
-        <div className="d-flex justify-content-center mt-4">
-          <ul className="pagination pagination-sm align-items-center">
 
-            {/* ◀ Prev */}
-            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              >
-                ‹
-              </button>
-            </li>
-
-            {/* Page Numbers */}
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <li
-                key={page}
-                className={`page-item ${currentPage === page ? "active" : ""}`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              </li>
-            ))}
-
-            {/* ▶ Next */}
-            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-              <button
-                className="page-link"
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages))
-                }
-              >
-                ›
-              </button>
-            </li>
-
-          </ul>
-        </div>
-      )}
 
       <Modal
         show={showInfoModal}

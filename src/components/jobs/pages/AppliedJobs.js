@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import html2pdf from "html2pdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch,faCheckCircle,faCalendarAlt,
-  faCalendarTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSearch, faCheckCircle, faCalendarAlt,
+  faCalendarTimes
+} from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import Razorpay from "../../integrations/payments/Razorpay";
 import { mapAppliedJobsApiToList } from "../../jobs/mappers/appliedjobMapper";
@@ -20,8 +22,7 @@ import ApplicationDownload from "../components/ApplicationDownload";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
 
-  const [selectedDepartments, setSelectedDepartments] = useState([]);
-  const [selectedLocations, setSelectedLocations] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -29,10 +30,16 @@ const AppliedJobs = () => {
   const [offerData, setOfferData] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [masterData, setMasterData] = useState([{}]);
-  const [showPreview, setShowPreview] = useState(false);
+
   const previewRef = useRef();
   const [previewData, setPreviewData] = useState(null);
+  // const PAGE_SIZE = 2;
 
+  // const [currentPage, setCurrentPage] = useState(0); // backend page index
+  // const [totalPages, setTotalPages] = useState(0);
+
+  const ITEMS_PER_PAGE = 2;
+const [currentPage, setCurrentPage] = useState(1);
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
   const candidateId = userData?.data?.user?.id;
@@ -61,6 +68,12 @@ const AppliedJobs = () => {
       return null;
     }
   };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+
+  ]);
   // const handleDownloadApplication = async (job) => {
   //   try {
   //     setLoading(true);
@@ -90,13 +103,13 @@ const AppliedJobs = () => {
   //   }
   // };
   const formatDate = (date) => {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   const fetchAppliedJobs = async (master) => {
     if (!candidateId || !master) return;
@@ -104,14 +117,24 @@ const AppliedJobs = () => {
     try {
       setLoading(true);
 
-      const jobsResponse = await jobsApiService.getAppliedJobs(candidateId);
+      const res = await jobsApiService.getAppliedJobs(candidateId);
 
-      const jobsData = Array.isArray(jobsResponse?.data)
-        ? jobsResponse.data
-        : [];
+      // const jobsData = jobsResponse?.data || [];
+      // console.log("jobsResponse", jobsResponse)
+      // console.log("content", jobsData.content)
+        // SAFELY extract array
+    const jobsData = Array.isArray(res?.data)
+      ? res.data
+      : Array.isArray(res?.data?.content)
+      ? res.data.content
+      : [];
 
-      const mappedJobs = mapAppliedJobsApiToList(jobsData, master);
+      const mappedJobs = mapAppliedJobsApiToList(jobsData || [], master);
       setAppliedJobs(mappedJobs);
+
+      // ✅ pagination state
+      //setCurrentPage(jobsData?.number ?? 0);
+      //setTotalPages(jobsData?.totalPages ?? 0);
 
     } catch (error) {
       console.error("Error fetching applied jobs:", error);
@@ -138,20 +161,25 @@ const AppliedJobs = () => {
 
   // ✅ Filter logic
   const filteredJobs = appliedJobs.filter((job) => {
-    const matchesDept =
-      selectedDepartments.length === 0 ||
-      selectedDepartments.includes(job.dept_id);
-    const matchesLoc =
-      selectedLocations.length === 0 ||
-      selectedLocations.includes(job.location_id);
+    // const matchesDept =
+    //   selectedDepartments.length === 0 ||
+    //   selectedDepartments.includes(job.dept_id);
+    // const matchesLoc =
+    //   selectedLocations.length === 0 ||
+    //   selectedLocations.includes(job.location_id);
     const matchesSearch =
       job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesDept && matchesLoc && matchesSearch;
+    return matchesSearch;
   });
 
- 
+const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+
+const paginatedJobs = filteredJobs.slice(
+  (currentPage - 1) * ITEMS_PER_PAGE,
+  currentPage * ITEMS_PER_PAGE
+);
 
   // const handleDirectDownload = async (job) => {
   //   try {
@@ -234,6 +262,40 @@ const AppliedJobs = () => {
       .toLowerCase()
       .replace(/\b\w/g, char => char.toUpperCase()); // Title Case
   };
+ const handleDownloadApplication = async (job) => {
+  if (!job?.application_id) {
+    toast.error("Application ID missing");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const res = await jobsApiService.downloadApplication(
+      job.application_id
+    );
+
+    // ✅ res IS the blob already
+    const blob = new Blob([res], { type: "application/pdf" });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Application_Form.pdf"; // default name
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error("Download failed", err);
+    toast.error("Failed to download application");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
 
@@ -272,23 +334,23 @@ const AppliedJobs = () => {
         <p className="text-muted">No applied jobs found.</p>
       )} */}
 
-              {!loading && filteredJobs.length === 0 && (
-                  <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
-                    <div className="text-center">
-                      <FontAwesomeIcon
-                        icon={faCheckCircle}
-                        size="3x"
-                        className="text-muted mb-3"
-                      />
-                      <h5 className="text-muted">No applied jobs found</h5>
-                      <p className="text-muted small">
-                        Please apply to jobs in Current Opportunities.
-                      </p>
-                    </div>
-                  </div>
-                )}
+      {!loading && filteredJobs.length === 0 && (
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
+          <div className="text-center">
+            <FontAwesomeIcon
+              icon={faCheckCircle}
+              size="3x"
+              className="text-muted mb-3"
+            />
+            <h5 className="text-muted">No applied jobs found</h5>
+            <p className="text-muted small">
+              Please apply to jobs in Current Opportunities.
+            </p>
+          </div>
+        </div>
+      )}
 
-      {filteredJobs.map((job) => (
+      {paginatedJobs.map((job) => (
         <div className="applied-job-card mb-3" key={job.position_id}>
 
           {/* Header */}
@@ -297,21 +359,21 @@ const AppliedJobs = () => {
               <span className="req-code">
                 {job.requisition_code}
               </span>
-            
+
               <span className="date-item">
                 <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
                 Start: {formatDate(job.registration_start_date)}
               </span>
-            
+
               <span className="date-divider">|</span>
-            
+
               <span className="date-item">
                 <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
                 End: {formatDate(job.registration_end_date)}
               </span>
-               <h6 className="job-title titlecolor">
-                       {job.position_title}
-                    </h6>
+              <h6 className="job-title titlecolor">
+                {job.position_title}
+              </h6>
             </div>
 
             <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
@@ -376,6 +438,17 @@ const AppliedJobs = () => {
 
           {/* Footer */}
           <div className="job-footer">
+
+            {/* Download Application */}
+            <button
+              className="footer-link"
+              onClick={() => handleDownloadApplication(job)}
+            >
+              Download Application
+            </button>
+            <span className="footer-separator">|</span>
+
+
             {(
               job.application_status === "Offered" ||
               job.application_status === "Offer_Accepted" ||
@@ -411,6 +484,94 @@ const AppliedJobs = () => {
           </div>
         </div>
       ))}
+
+ {/* {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-4">
+          <ul className="pagination pagination-sm">
+
+            
+            <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 0))}
+              >
+                ‹
+              </button>
+            </li>
+
+           
+            {Array.from({ length: totalPages }, (_, i) => (
+              <li
+                key={i}
+                className={`page-item ${currentPage === i ? "active" : ""}`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(i)}
+                >
+                  {i + 1}
+                </button>
+              </li>
+            ))}
+
+         
+            <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages - 1))}
+              >
+                ›
+              </button>
+            </li>
+
+          </ul>
+        </div>
+      )} */}
+ {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-4">
+          <ul className="pagination pagination-sm">
+
+            {/* Prev */}
+            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+              >
+                ‹
+              </button>
+            </li>
+
+            {/* Pages */}
+            {Array.from({ length: totalPages }, (_, i) => {
+              const page = i + 1;
+              return (
+                <li
+                  key={page}
+                  className={`page-item ${currentPage === page ? "active" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                </li>
+              );
+            })}
+
+            {/* Next */}
+            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+              >
+                ›
+              </button>
+            </li>
+
+          </ul>
+        </div>
+      )}
       <TrackApplicationModal
         show={showTrackModal}
         onHide={() => setShowTrackModal(false)}

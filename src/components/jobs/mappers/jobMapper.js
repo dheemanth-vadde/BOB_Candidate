@@ -55,6 +55,35 @@ const stateNames = stateIds
     ? getState(masters, primaryStateId)
     : null;
 
+
+    /* =========================
+     VACANCY DISTRIBUTION (NEW)
+  ========================= */
+  const vacancyDistribution = positionStateDistributions.map(dist => {
+    const state = getState(masters, dist.stateId);
+
+    return {
+      state_id: dist.stateId,
+      state_name: state?.state_name || "Unknown",
+      total: dist.totalVacancies ?? 0,
+
+      general: {
+        SC: dist.sc ?? 0,
+        ST: dist.st ?? 0,
+        OBC: dist.obc ?? 0,
+        EWS: dist.ews ?? 0,
+        GEN: dist.gen ?? 0
+      },
+
+      disability: {
+        OC: dist.oc ?? 0,
+        VI: dist.vi ?? 0,
+        HI: dist.hi ?? 0,
+        ID: dist.id ?? 0
+      }
+    };
+  });
+
   return {
     /* =========================
        IDS & TITLES
@@ -71,7 +100,7 @@ const stateNames = stateIds
     ========================= */
     description: masterPositionsDTO?.positionDescription || "",
     roles_responsibilities: positionsDTO?.rolesResponsibilities || "",
-    contract_period:"2 years",
+    contract_period: positionsDTO?.contractYears || "",
 
     /* =========================
        JOB DETAILS
@@ -83,7 +112,7 @@ const stateNames = stateIds
 
     grade_id: positionsDTO?.gradeId || "",
     grade_name: grade ? grade.job_grade_code : "—",
-
+  vacancy_distribution: vacancyDistribution,
     /* =========================
        ELIGIBILITY
     ========================= */

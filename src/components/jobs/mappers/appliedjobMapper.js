@@ -133,7 +133,7 @@ export const mapAppliedJobApiToModel = (apiJob, masters = {}) => {
     application_status: candidateApplicationDTO?.applicationStatus || "",
     application_date: candidateApplicationDTO?.applicationDate || "",
     application_updated_date: candidateApplicationDTO?.updatedDate || null,
-    reference_number: candidateApplicationDTO?.referenceNumber || "",
+    reference_number: candidateApplicationDTO?.applicationNo || "",
     /* =========================
        🆕 STATE DISTRIBUTION META
     ========================= */
