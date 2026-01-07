@@ -15,7 +15,7 @@ import jobsApiService from "../services/jobsApiService";
 import OfferLetterModal from "../../jobs/components/OfferLetterModal";
 import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
 import { toast } from "react-toastify";
-import ApplicationDownload from "../components/ApplicationDownload";
+
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -501,13 +501,6 @@ const AppliedJobs = () => {
         onDecisionSuccess={() => fetchAppliedJobs(masterData)}
       />
 
-      <ApplicationDownload
-        ref={previewRef}
-        previewData={previewData}
-        selectedJob={selectedJob}
-        masterData={masterData}
-        preferences={{ preferences }}
-      />
 
     </div>
   );
