@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import masterApi from '../../../services/master.api';
 import { toast } from "react-toastify";
 import Loader from "./Loader";
+import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
 
 const EducationDetails = ({ goNext, goBack }) => {
   const EMPTY_MASTER_DATA = {
@@ -32,6 +33,7 @@ const EducationDetails = ({ goNext, goBack }) => {
   const [educations, setEducations] = useState([]);
   const [masterData, setMasterData] = useState(EMPTY_MASTER_DATA);
   const [loading, setLoading] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   const fetchEducationDetails = async () => {
     setLoading(true);
@@ -55,6 +57,7 @@ const EducationDetails = ({ goNext, goBack }) => {
       if (!list.length) {
         setHasApiEducations(false);
         setEducations([]);
+        setIsDirty(false);
         return;
       }
 
@@ -81,6 +84,7 @@ const EducationDetails = ({ goNext, goBack }) => {
       });
 
       setEducations(mapped);
+      setIsDirty(false);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load education details");
@@ -134,6 +138,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     existingData={edu.data}
                     masterData={masterData}
                     refreshEducation={fetchEducationDetails}
+                    onDirtyChange={setIsDirty}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -153,6 +158,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     // showSpecialization={false}
                     masterData={masterData}
                     refreshEducation={fetchEducationDetails}
+                    onDirtyChange={setIsDirty}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -168,6 +174,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     disableEducationLevel
                     masterData={masterData}
                     refreshEducation={fetchEducationDetails}
+                    onDirtyChange={setIsDirty}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -183,6 +190,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     disableEducationLevel
                     masterData={masterData}
                     refreshEducation={fetchEducationDetails}
+                    onDirtyChange={setIsDirty}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -198,6 +206,7 @@ const EducationDetails = ({ goNext, goBack }) => {
                     disableEducationLevel
                     masterData={masterData}
                     refreshEducation={fetchEducationDetails}
+                    onDirtyChange={setIsDirty}
                   />
                 </Accordion.Body>
               </Accordion.Item>
@@ -225,13 +234,7 @@ const EducationDetails = ({ goNext, goBack }) => {
 
       {/* Bottom Nav Buttons — UNCHANGED */}
       <div className="d-flex justify-content-between mt-5">
-        <button
-          type="button"
-          className="btn btn-outline-secondary text-muted"
-          onClick={goBack}
-        >
-          Back
-        </button>
+        <BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
 
         <button
           type="button"

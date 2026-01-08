@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import { mapExperienceApiToUi, mapExperienceDetailsFormToApi } from '../mappers/ExperienceMapper';
 import { toast } from 'react-toastify';
 import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
+import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
 
 const ExperienceDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -28,6 +29,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [editingRow, setEditingRow] = useState(null);
 	const [showFresherOption, setShowFresherOption] = useState(false);
+	const [isDirty, setIsDirty] = useState(false);
 	const [formData, setFormData] = useState({
 		organization: "",
 		role: "",
@@ -104,8 +106,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			...prev,
 			[id]: value
 		}));
+		setIsDirty(true);
 
-		// 🔥 clear error immediately
 		if (formErrors[id]) {
 			setFormErrors(prev => ({
 				...prev,
@@ -123,6 +125,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 				: [];
 			const mappedList = apiList.map(mapExperienceApiToUi);
 			setExperienceList(mappedList);
+			setIsDirty(false);
 			// 🔑 CORE LOGIC
 			if (mappedList.length > 0) {
 				setShowFresherOption(false);
@@ -227,6 +230,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					? "Experience updated successfully"
 					: "Experience saved successfully"
 			);
+			setIsDirty(false);
 
 			handleCancelEdit();
 			fetchExperienceDetails();
@@ -240,6 +244,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		const file = e.target.files[0];
 		if (file) {
 			setCertificateFile(file);
+			setIsDirty(true);
 			setFormErrors(prev => ({ ...prev, certificate: "" }));
 		}
 	};
@@ -256,6 +261,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			console.log("Work status savedsss:", effectiveFresherStatus);
 			await profileApi.postWorkStatus(candidateId, effectiveFresherStatus);
 			console.log("Work status saved:", effectiveFresherStatus);
+			setIsDirty(false);
 			goNext();
 		} catch (err) {
 			console.error(err);
@@ -686,7 +692,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className="d-flex justify-content-between">
 					<div>
-						<button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
+						<BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
 					</div>
 					<div>
 						<button

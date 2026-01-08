@@ -24,7 +24,8 @@ const EducationForm = ({
   showBoard = true,
   existingData = null,
   masterData,
-  refreshEducation
+  refreshEducation,
+  onDirtyChange = () => {}
 }) => {
   const user = useSelector((state) => state?.user?.user?.data);
   const candidateId = user?.user?.id;
@@ -95,6 +96,7 @@ const EducationForm = ({
       ...prev,
       [id]: value
     }));
+    onDirtyChange(true);
   };
 
   const handleBrowse = () => {
@@ -118,6 +120,7 @@ const EducationForm = ({
       return;
     }
     setCertificateFile(file);
+    onDirtyChange(true);
   };
 
   const formatFileSize = (size) => {
@@ -231,6 +234,7 @@ const EducationForm = ({
         docCode
       );
       toast.success("Education details saved successfully");
+      onDirtyChange(false);
 
       if (refreshEducation) {
         try {

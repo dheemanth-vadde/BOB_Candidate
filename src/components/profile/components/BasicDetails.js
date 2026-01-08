@@ -10,6 +10,7 @@ import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Loader from './Loader';
+import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
 
 const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -67,7 +68,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		parsedClass,
 		handleNameKeyDown,
 		getAvailableDisabilityTypes,
-		loading
+		loading,
+		isDirty
 	} = useBasicDetails({ goNext, goBack, parsedData });
 
 	return (
@@ -118,8 +120,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							type="text"
 							id="fullNameAadhar"
 							value={formData.fullNameAadhar}
-							readOnly={isAadhaarLocked}
-							className={`form-control ${isAadhaarLocked ? "bg-light text-muted" : ""}`}
+							readOnly
+							className={`form-control bg-light text-muted`}
 						/>
 						{isNameMismatch && (
 							<small className="text-danger">
@@ -1504,7 +1506,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="d-flex justify-content-between">
 						<div>
-							<button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
+							<BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
 						</div>
 						<div>
 							<button

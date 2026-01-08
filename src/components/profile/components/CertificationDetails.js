@@ -7,6 +7,7 @@ import profileApi from "../services/profile.api";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { mapCertificationApiToUi, mapCertificationFormToApi } from "../mappers/CertificationMapper";
+import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
 /* ================= HELPERS ================= */
 const isFutureDate = (dateStr) =>
   dateStr && new Date(dateStr) > new Date();
@@ -53,6 +54,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
     expiryDate: ""
   });
   const [nextError, setNextError] = useState("");
+  const [isDirty, setIsDirty] = useState(false);
 
 
   /* ================= FETCH ================= */
@@ -65,9 +67,11 @@ const CertificationDetails = ({ goNext, goBack }) => {
         : [];
 
       setCertList(mapped);
+      setIsDirty(false);
     } catch (err) {
       console.error("Failed to fetch certifications", err);
       setCertList([]);
+      setIsDirty(false);
     }
   };
 
@@ -116,6 +120,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
       }
       return updated;
     });
+    setIsDirty(true);
 
     if (formErrors[id]) {
       setFormErrors((p) => ({ ...p, [id]: "" }));
@@ -147,6 +152,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
     }
     // 3️⃣ Accept file
     setCertificateFile(file);
+    setIsDirty(true);
     setExistingDocument(null);
     setFormErrors((p) => ({ ...p, certificate: "" }));
     setNextError("");
@@ -235,6 +241,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
       );
 
       toast.success(isEditMode ? "Updated successfully" : "Saved successfully");
+      setIsDirty(false);
       setNextError("");
       resetForm();
       fetchCertifications();
@@ -307,6 +314,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
 
     try {
       await profileApi.saveHasCertification(candidateId, checked);
+      setIsDirty(false);
 
       if (!checked) {
         resetForm();
@@ -497,7 +505,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
 
         {/* NAV */}
         <div className="d-flex justify-content-between">
-          <button className="btn btn-outline-secondary" onClick={goBack}>Back</button>
+          <BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
           <button type="button" className="btn btn-primary" style={{ backgroundColor: "rgb(255, 112, 67)", border: "medium", padding: "8px 24px", borderRadius: "4px", color: "rgb(255, 255, 255)" }} onClick={handleSaveAndNext}>Save & Next</button>
         </div>
 

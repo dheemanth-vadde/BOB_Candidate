@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import profileApi from "../services/profile.api";
 import { toast } from "react-toastify";
 import { validateNonEmptyText } from "../../../shared/utils/validation";
+import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
 
 const AddressDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -33,6 +34,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 		pincode: ""
 	});
 	const [sameAsCorrespondence, setSameAsCorrespondence] = useState(false);
+	const [isDirty, setIsDirty] = useState(false);
 	const [masters, setMasters] = useState({
 		states: [],
 		districts: [],
@@ -98,6 +100,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 			setCorrAddress(mapped.corrAddress);
 			setPermAddress(mapped.permAddress);
 			setSameAsCorrespondence(mapped.sameAsCorrespondence);
+			setIsDirty(false);
 		} catch (error) {
 			console.error("Error fetching address details:", error);
 		}
@@ -152,6 +155,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 
 			return updated;
 		});
+		setIsDirty(true);
 
 		if (sameAsCorrespondence) {
 			setPermAddress(prev => ({ ...prev, [id]: value }));
@@ -190,6 +194,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 
 			return updated;
 		});
+		setIsDirty(true);
 	};
 
 	const validateForm = () => {
@@ -275,6 +280,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 			});
 			await profileApi.postAddressDetails(candidateId, payload);
 			toast.success("Address details have been saved successfully");
+			setIsDirty(false);
 			goNext();
 		} catch (err) {
 			console.error(err);
@@ -285,6 +291,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 	const handleCheckboxToggle = (e) => {
 		const checked = e.target.checked;
 		setSameAsCorrespondence(checked);
+		setIsDirty(true);
 
 		if (checked) {
 			// copy values and clear permanent address errors
@@ -563,7 +570,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 
 				<div className="d-flex justify-content-between">
 					<div>
-						<button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
+						<BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
 					</div>
 					<div>
 						<button

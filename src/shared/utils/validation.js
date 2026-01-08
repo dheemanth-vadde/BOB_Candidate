@@ -189,13 +189,13 @@ export const isStrongPassword = (password) => {
 export const validatePhoneNumber = (phone) => {
   // strictly digits only
   if (!/^\d+$/.test(phone)) {
-    toast.error("Mobile number must contain only numbers");
+    // toast.error("Mobile number must contain only numbers");
     return false;
   }
 
   // exactly 10 digits
   if (phone.length !== 10) {
-    toast.error("Mobile number must be exactly 10 digits");
+    // toast.error("Mobile number must be exactly 10 digits");
     return false;
   }
 
