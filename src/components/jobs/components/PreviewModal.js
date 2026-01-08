@@ -183,7 +183,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
 
                     <tr>
                       <td className="fw-med">Category</td>
-                      <td className="fw-reg" colSpan={2}  >{previewData.personalDetails.category || "-"}</td>
+                      <td className="fw-reg" colSpan={2}  >{previewData.personalDetails.reservationCategory_name || "-"}</td>
                       <td className="fw-med">Caste/Community</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.caste || "-"}</td>
                     </tr>
@@ -191,8 +191,12 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                     <tr>
                       <td className="fw-med">Date of Birth</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.dob}</td>
-                      <td className="fw-med">Age (as on cut-off date)</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "-"}</td>
+                       <td className="fw-med">Nationality</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality_name}</td>
+                    
+                      
+                      {/* <td className="fw-med">Age (as on cut-off date)</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "-"}</td> */}
                     </tr>
 
                     <tr>
@@ -202,13 +206,13 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.physicalDisability || "N"}</td>
                     </tr>
 
-                    <tr>
-                      <td className="fw-med">Exam Center</td>
-                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "-"}</td> 
+                    {/* <tr>
+                      <td className="fw-med">Exam Centerrrr</td>
+                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "-"}</td>
                       <td className="fw-med">Nationality</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality_name}</td>
                     
-                    </tr>
+                    </tr> */}
 
                     <tr>
                       <td className="fw-med">Marital Status</td>
@@ -219,10 +223,12 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                     <tr>
                       <td className="fw-med">Twin Sibling</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.isTwin}</td>
-                      <td className="fw-med">Details</td>
+                      {/* <td className="fw-med">Details</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.isTwin === "YES"
                         ? `${previewData.personalDetails.twinName} (${previewData.personalDetails.twinGender_name})`
-                        : "-"}</td>
+                        : "-"}</td> */}
+                          <td className="fw-med">CIBIL Score</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.cibilScore}</td>
                     </tr>
                     <tr>
                       <td className="fw-med">Current CTC</td>

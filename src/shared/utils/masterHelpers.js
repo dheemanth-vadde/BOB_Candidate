@@ -120,3 +120,14 @@ export const getReligion = (masters, religionId) =>
     religionId,
     "religion_id"
   );
+
+/* =========================
+   RESERVATION
+========================= */
+export const getReservation = (masters, reservationId) =>
+  getMasterById(
+    masters,
+    "reservation_categories",
+    reservationId,
+    "category_id"
+  );

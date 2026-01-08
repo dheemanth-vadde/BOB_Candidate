@@ -3,7 +3,8 @@ import {
   getReligion,
   getNationality,
   getMaritalStatus,
-  getState
+  getState,
+  getReservation
 } from "../../../shared/utils/masterHelpers";
 export const mapCandidateToPreview = (
   apiData = {},
@@ -29,10 +30,12 @@ const documents = apiData?.documentDetails || [];
     profile.maritalStatusId
   );
   const twinGender = getGender?.(masters, profile.twinGenderId);
+  const reservation = getReservation?.(masters, profile.reservationCategoryId);
   console.log("gender:", gender);
   console.log("religion:", religion);
   console.log("nationality:", nationality);
   console.log("maritalStatus:", maritalStatus);
+  console.log("reservation:", reservation);
   
   /* =========================
      DOCUMENT GROUPING
@@ -103,13 +106,11 @@ socialMediaProfileLink: profile.socialMediaProfileLink || "-",
 
       exService: yesNo(profile.exServiceman),
       physicalDisability: yesNo(profile.disability),
+      cibilScore: profile.cibilScore || "-",
+      reservationCategory: profile.reservationCategoryId || "-",
+      reservationCategory_name: reservation?.category_code || "-"
 
-      /* ================= MISC (UNCHANGED) ================= */
-      location1: "-",
-      location2: "-",
-      location3: "-",
-      currentCTC: "-",
-      expectedCTC: "-",
+   
     },
 
     /* =========================
