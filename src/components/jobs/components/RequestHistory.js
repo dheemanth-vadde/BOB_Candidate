@@ -61,7 +61,7 @@ const RequestHistory = ({ applicationId, requestTypes = [] }) => {
               <AccordionRow eventKey={String(index)}>
                 <td>{requestTypeMap[item.request_type_id] || "—"}</td>
                 <td>{item.messages[0]?.message || "-"}</td>
-                <td>{item.status}</td>
+                {/* <td>{item.status}</td> */}
                 <td className={`status ${item.status?.toLowerCase()}`}>
                   {item.status}
                 </td>

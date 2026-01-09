@@ -83,13 +83,13 @@
 /*end*/
 
   .qualification{
-    color: #1a2c71 !important;
+    color: #6A7282 !important;
   width: 100%;
   float: left;
   }
   .subtitle{
     font-weight:500;
-    color:#4A5565;
+    color:#6A7282;
     font-size:0.875rem;
   }
    
@@ -109,6 +109,7 @@
   .left_content{
     width:85%;
     float:left;
+    line-height:26px;
   }
   .apply_btn{
     display: block !important;
@@ -281,12 +282,12 @@ color:  #333333;
   background: rgba(66, 87, 159, 0.05); 
   border: 1px solid #e0e6ed;
   border-radius: 12px;
-  padding: 20px;
+  padding: 15px;
 }
 
 .stat-label {
   color: #42579F;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
 }
 
@@ -350,7 +351,7 @@ color:  #333333;
   background: rgba(66, 87, 159, 0.05);
   border: 1px solid #eef2f6;
   border-radius: 10px;
-  padding: 15px 20px;
+  padding: 10px 15px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
@@ -363,18 +364,29 @@ color:  #333333;
 
 .card-section-header {
   color: #42579F;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
   margin-top: 10px;
   margin-bottom: 8px;
 }
-
+.modal-header .btn-close{
+  right: 25px !important;
+  position: absolute;
+}
 /* Bullet points styling */
 .custom-list {
   list-style: none;
   padding-left: 0;
 }
-
+ul{
+  margin-bottom:0 !important;
+}
+.ok-btn{
+  margin-top:0px !important;
+}
+.modal-footer{
+  margin: 0 auto !important;
+}
 .custom-list li {
   position: relative;
   padding-left: 20px;
@@ -460,18 +472,20 @@ color:  #333333;
 /*know more*/
 /* ===== VACANCY DISTRIBUTION ===== */
 /* ===== VACANCY DISTRIBUTION TABLE ===== */
-
+.job-detail-modal .table th{
+  text-transform: none !important;
+}
 .vacancy-table th {
   background-color: #f1f3f6;
   font-weight: 600;
   font-size: 13px;
-  text-align: center;
+  text-align: left;
   vertical-align: middle;
 }
 
 .vacancy-table td {
   font-size: 13px;
-  text-align: center;
+  text-align: left;
   vertical-align: middle;
 }
 

@@ -139,7 +139,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
  const getExperienceRangeInMonths = () => {
   if (!selectedExperience || selectedExperience.length === 0) {
-    return { monthMinExp: 0, monthMaxExp: 0 };
+    return { monthMinExp: null, monthMaxExp: null };
   }
 
   const minYears = Math.min(...selectedExperience.map(e => e.min));
@@ -179,6 +179,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
     const res = await jobsApiService.getJobPositions(payload); // POST
 
     const pageData = res?.data;
+    console.log("pageDta",pageData)
     const jobsData = pageData?.content || [];
 
     const mappedJobs = mapJobsApiToList(jobsData, masterData);
@@ -576,7 +577,7 @@ useEffect(() => {
                 ))}
               </div>
 
-              {(selectedDepartments.length > 0 || selectedLocations.length > 0) && (
+              {(selectedDepartments.length > 0 || selectedLocations.length > 0 || selectedExperience.length>0) && (
                 <button
                   className="btn btn-sm btn-outline-secondary mt-3"
                   onClick={clearFilters}
@@ -767,10 +768,7 @@ useEffect(() => {
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {totalPages > 1 && (
+          {totalPages > 1 && (
         <ul className="pagination pagination-sm justify-content-center">
           <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
             <button
@@ -805,6 +803,10 @@ useEffect(() => {
           </li>
         </ul>
       )}
+        </div>
+      </div>
+
+      
 
       {/* ✅ Original Know More Modal (unchanged) */}
       <KnowMoreModal

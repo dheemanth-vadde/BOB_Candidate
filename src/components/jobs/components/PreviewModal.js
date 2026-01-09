@@ -372,9 +372,9 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                 <thead className="table-header">
                   <tr>
                     <th>File Type</th>
-                    <th>Action</th>
+                    <th className="textCenter">Action</th>
                     <th>File Type</th>
-                    <th>Action</th>
+                    <th className="textCenter">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -395,7 +395,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                       <tr key={index}>
                         {/* LEFT DOCUMENT */}
                         <td>{doc.displayname ? doc.displayname : doc.name}</td>
-                        <td>
+                        <td className="textCenter">
                           <a
                             href={doc.url}
                             target="_blank"
@@ -411,7 +411,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                         {nextDoc ? (
                           <>
                             <td>{nextDoc.displayname ? nextDoc.displayname : nextDoc.name}</td>
-                            <td>
+                            <td className="textCenter">
                               <a
                                 href={nextDoc.url}
                                 target="_blank"
@@ -426,7 +426,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                         ) : (
                           <>
                             <td>-</td>
-                            <td>-</td>
+                            <td >-</td>
                           </>
                         )}
                       </tr>
