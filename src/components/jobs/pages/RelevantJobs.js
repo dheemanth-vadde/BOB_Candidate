@@ -74,11 +74,9 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     { label: "11+ years", min: 11, max: Infinity },
   ];
   const [interviewCentres, setInterviewCentres] = useState([]);
-  const PAGE_SIZE =10; // change if needed
-  //const [currentPage, setCurrentPage] = useState(0); // backend index
-  //const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5; // change if needed
+ const [currentPage, setCurrentPage] = useState(0); // backend index
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoDocs, setInfoDocs] = useState([]);
   const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
@@ -138,34 +136,65 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
     initMasters();
   }, []);
-  const fetchJobs = async (page = 0) => {
-    if (!candidateId || !isMasterReady) return;
 
-    try {
-      setLoading(true);
+ const getExperienceRangeInMonths = () => {
+  if (!selectedExperience || selectedExperience.length === 0) {
+    return { monthMinExp: 0, monthMaxExp: 0 };
+  }
 
-      const res = await jobsApiService.getJobPositions(candidateId);
-      //console.log("jobsres",res)
-      const jobsData = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res?.data?.data)
-          ? res.data.data
-          : [];
+  const minYears = Math.min(...selectedExperience.map(e => e.min));
 
-      const mappedJobs = mapJobsApiToList(
-        jobsData,
-        masterData
-      );
+  const hasInfinity = selectedExperience.some(e => e.max === Infinity);
 
-      setJobs(mappedJobs);
-      //setTotalPages(pageData?.totalPages || 0);
+  const maxYears = hasInfinity
+    ? null
+    : Math.max(...selectedExperience.map(e => e.max));
 
-    } catch (err) {
-      toast.error("Failed to load jobs");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    monthMinExp: minYears * 12,
+    monthMaxExp: maxYears === null ? 0 : maxYears * 12
   };
+};
+
+
+
+  const fetchJobs = async () => {
+  if (!candidateId || !isMasterReady) return;
+
+  try {
+    setLoading(true);
+     const { monthMinExp, monthMaxExp } = getExperienceRangeInMonths();
+    const payload = {
+      searchText: searchTerm || "",
+      candidateId,
+      deptIds: selectedDepartments,
+      stateIds: selectedStates,
+      requisitionId: selectedRequisition || null,
+      page: currentPage,
+      size: pageSize,
+     monthMinExp,
+      monthMaxExp
+    };
+
+    const res = await jobsApiService.getJobPositions(payload); // POST
+
+    const pageData = res?.data;
+    const jobsData = pageData?.content || [];
+
+    const mappedJobs = mapJobsApiToList(jobsData, masterData);
+
+    setJobs(mappedJobs);
+    setTotalPages(pageData?.totalPages ?? 0);
+
+  } catch (err) {
+    //toast.error("Failed to load jobs");
+    setJobs([]);
+    setTotalPages(0);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchInterviewCentres = async () => {
     try {
@@ -202,7 +231,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
     }
   };
   useEffect(() => {
-    setCurrentPage(1); // backend index
+    setCurrentPage(0); // backend index
   }, [
     searchTerm,
     selectedDepartments,
@@ -215,9 +244,20 @@ const [turnstileToken, setTurnstileToken] = useState("");
     fetchInterviewCentres();
   }, []);
 
-  useEffect(() => {
-    fetchJobs(currentPage);
-  }, [isMasterReady]);
+useEffect(() => {
+  if (!isMasterReady) return;
+  fetchJobs();
+}, [
+  isMasterReady,
+  currentPage,
+  searchTerm,
+  selectedDepartments,
+  selectedStates,
+  selectedExperience,
+  selectedRequisition,
+  pageSize
+]);
+
   useEffect(() => {
     if (!candidateId || !isMasterReady) return;
 
@@ -249,73 +289,6 @@ const [turnstileToken, setTurnstileToken] = useState("");
     });
   };
 
-  // const calculateAge = (dobString) => {
-  //   if (!dobString) return null;
-
-  //   const dob = new Date(dobString);
-  //   const today = new Date();
-
-  //   let age = today.getFullYear() - dob.getFullYear();
-  //   const monthDiff = today.getMonth() - dob.getMonth();
-
-  //   if (
-  //     monthDiff < 0 ||
-  //     (monthDiff === 0 && today.getDate() < dob.getDate())
-  //   ) {
-  //     age--;
-  //   }
-
-  //   return age;
-  // };
-  
-
-  // const calculateExperienceYears = (totalExpString) => {
-  //   if (!totalExpString) return 0;
-
-  //   // "60 Months" → 60
-  //   const months = parseInt(totalExpString.replace(/\D/g, ""), 10);
-  //   return Math.floor(months / 12);
-  // };
-  // const validateAgeAndExperience = (job, previewData) => {
-  //   // ---------- AGE ----------
-  //   const dob = previewData?.personalDetails?.dob;
-  //   const age = calculateAge(dob);
-
-  //   console.log("age", age)
-
-  //   if (!age) {
-  //     toast.error("Date of Birth is missing in profile");
-  //     return false;
-  //   }
-  //   console.log("age min max", job.eligibility_age_min, job.eligibility_age_max)
-  //   if (
-  //     (job.eligibility_age_min && age < job.eligibility_age_min) ||
-  //     (job.eligibility_age_max && age > job.eligibility_age_max)
-  //   ) {
-  //     toast.error(
-  //       `Age must be between ${job.eligibility_age_min} - ${job.eligibility_age_max} years`
-  //     );
-  //     return false;
-  //   }
-
-  //   // ---------- EXPERIENCE ----------
-  //   const totalExpYears = calculateExperienceYears(
-  //     previewData?.experienceSummary?.total
-  //   );
-  //   console.log("totalExpYears", totalExpYears)
-  //   console.log("job.mandatory_experience", job.mandatory_experience)
-  //   if (
-  //     job.mandatory_experience &&
-  //     totalExpYears < Number(job.mandatory_experience)
-  //   ) {
-  //     toast.error(
-  //       `Minimum ${job.mandatory_experience} years experience required`
-  //     );
-  //     return false;
-  //   }
-
-  //   return true; // ✅ Eligible
-  // };
   const handlePreCheckConfirm = async () => {
     setShowPreCheckModal(false);
 
@@ -416,57 +389,6 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
 
 
-  const filteredJobs = jobs.filter((job) => {
-
-    const matchesDepartment =
-      selectedDepartments.length === 0 ||
-      selectedDepartments.includes(job.dept_id);
-
-    /* =========================
-      STATE FILTER ✅ NEW
-    ========================= */
-
-    const matchesState =
-      selectedStates.length === 0 ||
-      selectedStates.some(stateId =>
-        job.state_id_array?.includes(stateId)
-      );
-
-    const matchesSearch =
-      job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesRequisition =
-      !selectedRequisition ||
-      String(job.requisition_id) === String(selectedRequisition);
-
-    const matchesExperience =
-      selectedExperience.length === 0 ||
-      selectedExperience.some((range) => {
-        const exp = Number(job.mandatory_experience || 0);
-        return exp >= range.min && exp <= range.max;
-      });
-    console.log("selected states", selectedStates, job.state_id)
-    console.log("matchesState", matchesState)
-    return (
-      matchesDepartment &&
-      matchesState &&          // ✅ ADDED
-      matchesSearch &&
-      matchesRequisition &&
-      matchesExperience
-    );
-  });
-
-  // const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
-
-  //const paginatedJobs = filteredJobs;
-
-  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
-
-  const paginatedJobs = filteredJobs.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
   const handleDepartmentChange = (deptId) => {
     setSelectedDepartments((prev) =>
       prev.includes(deptId)
@@ -575,6 +497,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
             />
             <span className="filter">Filters</span>
           </div>
+          
           <div
             className="bob-left-custom-filter-div"
             style={{
@@ -679,6 +602,19 @@ const [turnstileToken, setTurnstileToken] = useState("");
               </div>
             </div>
 
+            <select
+              className="form-select form-select-sm"
+              style={{ width: "90px" }}
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+
+
             <div className="d-flex align-items-center gap-2">
               <button
                 className="info_btn"
@@ -707,7 +643,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
             </div>
           </div>
           {/* ================= EMPTY STATE (ADDED) ================= */}
-          {filteredJobs.length === 0 && (
+          {jobs.length === 0 && (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
               <div className="text-center">
                 <FontAwesomeIcon
@@ -722,7 +658,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
               </div>
             </div>
           )}
-          {paginatedJobs.map((job) => (
+          {jobs.map((job) => (
             <div className="col-md-12 mb-4" key={job.position_id}>
               <div
                 className="card h-100"
@@ -826,53 +762,40 @@ const [turnstileToken, setTurnstileToken] = useState("");
       </div>
 
       {totalPages > 1 && (
-        <div className="d-flex justify-content-center mt-4">
-          <ul className="pagination pagination-sm">
+        <ul className="pagination pagination-sm justify-content-center">
+          <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+            <button
+              className="page-link"
+              onClick={() => setCurrentPage(p => Math.max(p - 1, 0))}
+            >
+              ‹
+            </button>
+          </li>
 
-            {/* Prev */}
-            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <li
+              key={i}
+              className={`page-item ${currentPage === i ? "active" : ""}`}
+            >
               <button
                 className="page-link"
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                onClick={() => setCurrentPage(i)}
               >
-                ‹
+                {i + 1}
               </button>
             </li>
+          ))}
 
-            {/* Pages */}
-            {Array.from({ length: totalPages }, (_, i) => {
-              const page = i + 1;
-              return (
-                <li
-                  key={page}
-                  className={`page-item ${currentPage === page ? "active" : ""}`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </button>
-                </li>
-              );
-            })}
-
-            {/* Next */}
-            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-              >
-                ›
-              </button>
-            </li>
-
-          </ul>
-        </div>
+          <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
+            <button
+              className="page-link"
+              onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages - 1))}
+            >
+              ›
+            </button>
+          </li>
+        </ul>
       )}
-      {/* ✅ Add Preference Modal */}
-
-      
 
       {/* ✅ Original Know More Modal (unchanged) */}
       <KnowMoreModal
@@ -910,7 +833,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
         formErrors={formErrors}                 // ✅ PASS ERRORS
         setFormErrors={setFormErrors}           // ✅ PASS SETTER
         interviewCentres={interviewCentres}
- setTurnstileToken={setTurnstileToken}  
+        setTurnstileToken={setTurnstileToken}  
       />
 
       <PaymentModal

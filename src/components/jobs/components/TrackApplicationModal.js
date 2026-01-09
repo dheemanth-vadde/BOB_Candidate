@@ -7,6 +7,7 @@ import { Accordion, useAccordionButton } from "react-bootstrap";
 import jobsApiService from "../../jobs/services/jobsApiService";
 import { useSelector } from "react-redux";
 import RequestHistory from "../../jobs/components/RequestHistory";
+import CompensationSection from "../../jobs/components/CompensationSection";
 import { toast } from "react-toastify";
 const TrackApplicationModal = ({ show, onHide, job }) => {
   const [activeKey, setActiveKey] = useState("0");
@@ -45,7 +46,14 @@ const stepToStatusMap = {
 };
 
 console.log("selected jobs",job)
-
+useEffect(() => {
+  if (show) {
+    setErrors({});
+    setSelectedRequestType("");
+    setDescription("");
+    setSelectedFile(null);
+  }
+}, [show]);
 const fetchApplicationStatus = async () => {
   try {
     if (!job?.application_id) return;
@@ -87,6 +95,7 @@ const formatDateTime = (date) => {
     minute: "2-digit"
   });
 };
+
 
 const handleSubmitRequest = async () => {
   try {
@@ -249,6 +258,9 @@ useEffect(() => {
 })}
           </div>
 
+{/* {job?.employmentType === "Contract" && currentIndex >= steps.indexOf("Compensation") && ( */}
+  <CompensationSection applicationId={job?.application_id} />
+{/* )} */}
 
         {/* ===== SUBMIT REQUEST ===== */}
         <div className="query-section bank-style">
@@ -345,7 +357,7 @@ useEffect(() => {
                   Cancel
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-primaryy"
                   onClick={handleSubmitRequest}
                 >
                   Submit

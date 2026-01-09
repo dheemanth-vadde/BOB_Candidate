@@ -313,7 +313,7 @@ font-weight: 500;
 .page-loader-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background:rgba(255, 255, 255, 0.7);
   z-index: 9999;
 
   display: flex;
@@ -321,6 +321,20 @@ font-weight: 500;
   align-items: center;
   justify-content: center;
 }
+.list-loader-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6); /* light overlay */
+  z-index: 10;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none; /* optional: allow scrolling */
+}
+
 /* Responsive */
 @media (max-width: 992px) {
   .job-meta-grid.row-1 {

@@ -236,18 +236,30 @@
   font-size: 0.875rem;
   font-weight: 400;
 }
-
-.query-actions .btn-primary {
+.query-actions .btn-primaryy:focus,
+.query-actions .btn-primaryy:focus-visible {
+  background-color: #162B75;
+  border-color: #162B75;
+  color: #fff;
+}
+.query-actions .btn-primaryy {
   background: #162B75;
   border-color: #162B75;
   color:#fff;
   font-size: 0.875rem;
   font-weight: 400;
 }
-.query-actions .btn-primary:hover {
+.query-actions .btn-primaryy:hover {
   background: #162B75;
   border-color: #162B75;
   color:#fff;
+}
+/* Active (on click) */
+.query-actions .btn-primaryy:active,
+.query-actions .btn-primaryy.active {  
+  background-color: #162B75;
+  border-color: #162B75;
+  color: #fff;
 }
 .query-actions .btn-outline-secondary{
 
@@ -349,4 +361,20 @@
 .thread-item .time {
   font-size: 11px;
   color: #999;
+}
+.bob-pref-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #f26522; /* Bank orange */
+}
+
+.info-bulb-icon{
+  color: #f37021;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
