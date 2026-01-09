@@ -259,7 +259,7 @@ useEffect(() => {
           </div>
 
 {/* {job?.employmentType === "Contract" && currentIndex >= steps.indexOf("Compensation") && ( */}
-  <CompensationSection applicationId={job?.application_id} />
+  {/* <CompensationSection applicationId={job?.application_id} /> */}
 {/* )} */}
 
         {/* ===== SUBMIT REQUEST ===== */}

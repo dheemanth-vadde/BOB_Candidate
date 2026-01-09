@@ -22,6 +22,7 @@ const documents = apiData?.documentDetails || [];
   /* =========================
      MASTER LOOKUPS (SAFE)
   ========================= */
+  
   const gender = getGender?.(masters, profile.genderId);
   const religion = getReligion?.(masters, profile.religionId);
   const nationality = getNationality?.(masters, profile.nationality);
@@ -53,6 +54,7 @@ const documents = apiData?.documentDetails || [];
        PERSONAL DETAILS (UNCHANGED KEYS)
     ========================= */
     personalDetails: {
+      age:apiData.age || "-",
       fullName: profile.fullNameAadhar || "-",
       mobile: profile.contactNo || "-",
       email: profile.email || "-",

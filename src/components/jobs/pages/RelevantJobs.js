@@ -259,26 +259,35 @@ useEffect(() => {
 ]);
 
   useEffect(() => {
-    if (!candidateId || !isMasterReady) return;
+  if (
+    !candidateId ||
+    !isMasterReady ||
+    !selectedJob?.position_id
+  ) {
+    return;
+  }
 
-    const fetchCandidatePreview = async () => {
-      try {
-        const response = await jobsApiService.getAllDetails(candidateId);
+  const fetchCandidatePreview = async () => {
+    try {
+      const response = await jobsApiService.getAllDetails(
+        candidateId,
+        selectedJob.position_id
+      );
 
-        const mappedPreviewData = mapCandidateToPreview(
-          response.data,
-          masterData        // ✅ PASS MASTERS HERE
-        );
+      const mappedPreviewData = mapCandidateToPreview(
+        response.data,
+        masterData
+      );
 
-        setPreviewData(mappedPreviewData);
-      } catch (error) {
-        console.error("Failed to fetch candidate preview", error);
-        toast.error("Unable to load candidate profile");
-      }
-    };
+      setPreviewData(mappedPreviewData);
+    } catch (error) {
+      console.error("Failed to fetch candidate preview", error);
+      toast.error("Unable to load candidate profile");
+    }
+  };
 
-    fetchCandidatePreview();
-  }, [candidateId, isMasterReady]);
+  fetchCandidatePreview();
+}, [candidateId, isMasterReady, selectedJob]);
 
   const formatDate = (date) => {
     if (!date) return "-";

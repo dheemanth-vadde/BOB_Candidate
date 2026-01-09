@@ -206,13 +206,12 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.physicalDisability || "N"}</td>
                     </tr>
 
-                    {/* <tr>
-                      <td className="fw-med">Exam Centerrrr</td>
-                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "-"}</td>
-                      <td className="fw-med">Nationality</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality_name}</td>
-                    
-                    </tr> */}
+                   <tr>
+                     <td className="fw-med">Age (as on cut-off date)</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "-"}</td> 
+                        <td className="fw-med"></td>
+                      <td className="fw-reg" colSpan={2}></td>
+                    </tr> 
 
                     <tr>
                       <td className="fw-med">Marital Status</td>

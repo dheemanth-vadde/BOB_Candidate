@@ -7,7 +7,7 @@ const jobsApiService = {
 
   //Relevamnt Jobs
 
-  getAllDetails: (candidateId) => jobsapi.get(`candidate/get-all-details/${candidateId}`),
+  getAllDetails: (candidateId,positionId) => jobsapi.get(`candidate/get-all-details/${candidateId}/${positionId}`),
   getAppliedJobs: (candidateId, page = 0, size = 5, searchTerm = "") => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}?page=${page}&size=${size}&searchTerm=${searchTerm}`),
   //getAppliedJobs: (candidateId) => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}`),
   getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
