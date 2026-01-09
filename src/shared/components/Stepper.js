@@ -9,23 +9,23 @@ const Stepper = ({ steps, activeStep }) => {
         const isCompleted = index < activeStep;
 
         return (
-          <div
-            key={index}
-            className={`step-item ${isActive ? "active" : ""} ${
-              isCompleted ? "completed" : ""
-            }`}
-            style={{ cursor: "default" }}  // Not clickable
-          >
-            <div className="step-circle">
-              {isCompleted ? "✓" : index + 1}
+          <React.Fragment key={index}>
+            <div
+              className={`step-item ${isActive ? "active" : ""} ${
+                isCompleted ? "completed" : ""
+              }`}
+            >
+              <div className="step_circle">
+                {isCompleted ? "✓" : index + 1}
+              </div>
+              <div className="step-label">{step}</div>
             </div>
 
-            <div className="step-label">{step}</div>
-
+            {/* Render line only if it's not the last step */}
             {index !== steps.length - 1 && (
-              <div className="step-line" />
+              <div className={`step-line ${isCompleted ? "completed" : ""}`} />
             )}
-          </div>
+          </React.Fragment>
         );
       })}
     </div>

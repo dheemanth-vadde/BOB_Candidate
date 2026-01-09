@@ -141,7 +141,7 @@ const EducationForm = ({
       { key: 'to', label: 'To Date' },
       { key: 'percentage', label: 'Percentage/CGPA' },
       ...(showBoard ? [{ key: 'university', label: 'Board' }] : []),
-      ...(showSpecialization ? [{ key: 'specialization', label: 'Specialization' }] : []),
+      // ...(showSpecialization ? [{ key: 'specialization', label: 'Specialization' }] : []),
       { key: 'educationType', label: 'Education Type' }
     ];
     requiredFields.forEach(field => {
@@ -258,7 +258,7 @@ const EducationForm = ({
 
   return (
     <form className="row g-4 formfields pt-2" onSubmit={handleSubmit}>
-      <div className="col-md-4 col-sm-12 mt-2">
+      <div className="col-md-4 col-sm-12 mt-3">
         <label className="form-label">
           Education Level <span className="text-danger">*</span>
         </label>
@@ -325,7 +325,7 @@ const EducationForm = ({
       )} */}
 
       {/* College */}
-      <div className="col-md-4 col-sm-12 mt-2">
+      <div className="col-md-4 col-sm-12 mt-3">
         <label className="form-label">
           School/College/University <span className="text-danger">*</span>
         </label>
@@ -359,7 +359,7 @@ const EducationForm = ({
 
       {/* University */}
       {showBoard && (
-        <div className="col-md-4 col-sm-12 mt-2">
+        <div className="col-md-4 col-sm-12 mt-3">
           <label htmlFor="university" className="form-label">
             Board <span className="text-danger">*</span>
           </label>
@@ -385,7 +385,7 @@ const EducationForm = ({
       )}
 
       {/* From */}
-      <div className="col-md-4 col-sm-12 mt-2">
+      <div className="col-md-4 col-sm-12 mt-3">
         <label className="form-label">From <span className="text-danger">*</span></label>
         <input
           type="date"
@@ -404,7 +404,7 @@ const EducationForm = ({
       </div>
 
       {/* To */}
-      <div className="col-md-4 col-sm-12 mt-2">
+      <div className="col-md-4 col-sm-12 mt-3">
         <label className="form-label">To <span className="text-danger">*</span></label>
         <input type="date" id="to" className={`form-control ${formErrors.to || formErrors.dateRange ? 'is-invalid' : ''}`} onChange={handleChange} value={formData.to} min={formData.from || undefined} max={new Date().toISOString().split("T")[0]} />
         {formErrors.to && (
@@ -413,7 +413,7 @@ const EducationForm = ({
       </div>
 
       {/* Percentage */}
-      <div className="col-md-4 col-sm-12 mt-2">
+      <div className="col-md-4 col-sm-12 mt-3">
         <label className="form-label">Percentage/CGPA <span className="text-danger">*</span></label>
         <input
           type="number"
@@ -454,7 +454,7 @@ const EducationForm = ({
 
       {/* SPECIALIZATION → only visible if showSpecialization = true */}
       {showSpecialization && (
-        <div className="col-md-4 col-sm-12 mt-2">
+        <div className="col-md-4 col-sm-12 mt-3">
           <label className="form-label">Specialization</label>
           <select
             id="specialization"
@@ -475,7 +475,7 @@ const EducationForm = ({
         </div>
       )}
 
-      <div className="col-md-4 col-sm-12 mt-2">
+      <div className="col-md-4 col-sm-12 mt-3">
         <label className="form-label">Education Type <span className="text-danger">*</span></label>
         <select
           id="educationType"
@@ -495,7 +495,7 @@ const EducationForm = ({
         )}
       </div>
 
-      <div className="col-md-4 col-sm-12 mt-2">
+      <div className="col-md-4 col-sm-12 mt-3">
         <label htmlFor="eduCert" className="form-label">Education Certificate <span className="text-danger">*</span></label>
         {!certificateFile && !existingDocument && (
           <div

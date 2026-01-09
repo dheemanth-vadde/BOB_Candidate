@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpload, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faUpload, faCheckCircle, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from "../../../assets/delete-icon.png";
 import editIcon from "../../../assets/edit-icon.png";
 import profileApi from "../services/profile.api";
@@ -8,6 +8,8 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { mapCertificationApiToUi, mapCertificationFormToApi } from "../mappers/CertificationMapper";
 import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
+import { Form } from 'react-bootstrap';
+import Loader from "./Loader";
 /* ================= HELPERS ================= */
 const isFutureDate = (dateStr) =>
   dateStr && new Date(dateStr) > new Date();
@@ -55,11 +57,12 @@ const CertificationDetails = ({ goNext, goBack }) => {
   });
   const [nextError, setNextError] = useState("");
   const [isDirty, setIsDirty] = useState(false);
-
+  const [loading, setLoading] = useState(false);
 
   /* ================= FETCH ================= */
   const fetchCertifications = async () => {
     try {
+      setLoading(true);
       const res = await profileApi.getCertifications(candidateId);
 
       const mapped = Array.isArray(res?.data)
@@ -72,6 +75,8 @@ const CertificationDetails = ({ goNext, goBack }) => {
       console.error("Failed to fetch certifications", err);
       setCertList([]);
       setIsDirty(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -233,6 +238,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
         certificateFile
       );
 
+      setLoading(true);
 
       await profileApi.saveCertification(
         candidateId,
@@ -248,8 +254,11 @@ const CertificationDetails = ({ goNext, goBack }) => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to save certification");
+    } finally {
+      setLoading(false);
     }
   };
+
   const handleSaveAndNext = () => {
     if (!hasCertification) {
       setNextError("");
@@ -265,10 +274,6 @@ const CertificationDetails = ({ goNext, goBack }) => {
     setNextError("");
     goNext();
   };
-
-
-
-
 
   const resetForm = () => {
     setFormData({
@@ -299,12 +304,15 @@ const CertificationDetails = ({ goNext, goBack }) => {
   };
   const handleDelete = async (row) => {
     try {
+      setLoading(true);
       await profileApi.deleteCertification(row.certificationId);
       toast.success("Deleted successfully");
       fetchCertifications();
       if (editingRow?.certificationId === row.certificationId) resetForm();
     } catch {
       toast.error("Delete failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -332,20 +340,17 @@ const CertificationDetails = ({ goNext, goBack }) => {
   /* ================= UI ================= */
   return (
     <div className="px-4 py-3 border rounded bg-white">
-      <div className="col-md-3 col-sm-12 d-flex align-items-center gap-2 px-2 rounded" style={{ backgroundColor: "rgb(255, 247, 237)", border: "1px solid rgb(231, 148, 109)" }}>
-        <input
+      <div className="col-md-3 col-sm-12 d-flex align-items-center gap-2 p-2 rounded" style={{ backgroundColor: "rgb(255, 247, 237)", border: "1px solid rgb(231, 148, 109)", width: "fit-content" }}>
+        <Form.Check
           type="checkbox"
           id="hasCertification"
+          label="I hold certification(s)"
           checked={hasCertification}
           onChange={(e) =>
             handleHasCertificationToggle(e.target.checked)
           }
+          style={{ fontSize: "14px", color: "rgb(110, 110, 110)", fontWeight: "500" }}
         />
-
-        <label className="form-label mt-2" htmlFor="hasCertification" style={{ fontSize: "14px", color: "rgb(110, 110, 110)", fontWeight: "500" }}>
-          I have certification(s) </label>
-
-
       </div>
       {nextError && (
         <div className="text-danger mt-1" style={{ fontSize: "13px" }}>
@@ -455,9 +460,9 @@ const CertificationDetails = ({ goNext, goBack }) => {
           )}
         </div>
         {/* ACTIONS */}
-        <div className="d-flex justify-content-center gap-3">
+        <div className="d-flex justify-content-end gap-3">
           <button
-            type="button" onClick={handleSave} disabled={!hasCertification} className={`btn blue-button ${!hasCertification ? "disabled bg-light text-muted border" : ""}`}
+            type="button" onClick={handleSave} disabled={!hasCertification} className={`btn blue-button px-4 ${!hasCertification ? "disabled bg-light text-muted border" : ""}`}
             style={{ cursor: !hasCertification ? "not-allowed" : "pointer" }}>
             {isEditMode ? "Update" : "Submit"}
           </button>
@@ -506,10 +511,30 @@ const CertificationDetails = ({ goNext, goBack }) => {
         {/* NAV */}
         <div className="d-flex justify-content-between">
           <BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
-          <button type="button" className="btn btn-primary" style={{ backgroundColor: "rgb(255, 112, 67)", border: "medium", padding: "8px 24px", borderRadius: "4px", color: "rgb(255, 255, 255)" }} onClick={handleSaveAndNext}>Save & Next</button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            style={{
+              backgroundColor: "rgb(255, 112, 67)",
+              border: "medium",
+              padding: "0.6rem 2rem",
+              borderRadius: "4px",
+              color: "#fff",
+              fontSize: '0.875rem'
+            }}
+            onClick={handleSaveAndNext}
+          >
+            Save & Next
+            <FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
+          </button>
         </div>
 
       </form>
+
+      {loading && (
+        <Loader />
+      )}
+
     </div >
   );
 };

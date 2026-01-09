@@ -7,6 +7,9 @@ import profileApi from "../services/profile.api";
 import { toast } from "react-toastify";
 import { validateNonEmptyText } from "../../../shared/utils/validation";
 import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
+import { Form } from 'react-bootstrap';
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const AddressDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -115,7 +118,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 		if (sameAsCorrespondence) {
 			setPermAddress({ ...corrAddress });
 		}
-	}, [sameAsCorrespondence]);
+	}, [sameAsCorrespondence, corrAddress]);
 
 	const trimAddress = (address) => ({
 		...address,
@@ -319,7 +322,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 			>
 				<p className="tab_headers" style={{ marginBottom: '0px' }}>Address of Correspondence</p>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="line1" className="form-label">Address Line 1 <span className="text-danger">*</span></label>
 					<input 
                     type="text" 
@@ -333,7 +336,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                   )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="line2" className="form-label">Address Line 2 <span className="text-danger">*</span></label>
 					<input 
                     type="text" 
@@ -347,7 +350,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                   )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="state" className="form-label">State <span className="text-danger">*</span></label>
 					<select 
                     id="state" 
@@ -367,7 +370,7 @@ const AddressDetails = ({ goNext, goBack }) => {
 					</select>
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="district" className="form-label">District <span className="text-danger">*</span></label>
 					<select 
                     id="district" 
@@ -391,7 +394,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="city" className="form-label">City <span className="text-danger">*</span></label>
 					<select 
                     id="city" 
@@ -415,7 +418,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="pincode" className="form-label">Pin <span className="text-danger">*</span></label>
 					<select 
                     id="pincode" 
@@ -439,22 +442,19 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-12 col-sm-12 mt-4 d-flex align-items-center gap-2 pt-2 border-top">
-					<input
+				<div className="col-md-12 col-sm-12 mt-4 d-flex align-items-center gap-2 pt-3 border-top">
+					<Form.Check
 						type="checkbox"
-						// className="form-control"
 						id="sameCheckbox"
-						// value={formData.education_qualification || ''}
-						// onChange={handleChange}
+						label="Same as Address of Correspondence"
 						checked={sameAsCorrespondence}
 						onChange={handleCheckboxToggle}
 					/>
-					<label htmlFor="sameCheckbox" className="form-label mb-0">Same as Address of Correspondence</label>
 				</div>
 
 				<p className="tab_headers mt-3" style={{ marginBottom: '0px' }}>Permanent Address</p>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="line1" className="form-label">Address Line 1 <span className="text-danger">*</span></label>
 					<input 
                     type="text" 
@@ -469,7 +469,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                   )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="line2" className="form-label">Address Line 2 <span className="text-danger">*</span></label>
 					<input 
                     type="text" 
@@ -484,7 +484,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                   )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="state" className="form-label">State <span className="text-danger">*</span></label>
 					<select
 						className={`form-select ${formErrors.permAddress?.state ? 'is-invalid' : ''}`}
@@ -505,7 +505,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="district" className="form-label">District <span className="text-danger">*</span></label>
 					<select
 						className={`form-select ${formErrors.permAddress?.district ? 'is-invalid' : ''}`}
@@ -526,7 +526,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="city" className="form-label">City <span className="text-danger">*</span></label>
 					<select
 						className={`form-select ${formErrors.permAddress?.city ? 'is-invalid' : ''}`}
@@ -547,7 +547,7 @@ const AddressDetails = ({ goNext, goBack }) => {
                     )}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="pincode" className="form-label">Pin <span className="text-danger">*</span></label>
 					<select
 						className={`form-select ${formErrors.permAddress?.pincode ? 'is-invalid' : ''}`}
@@ -579,11 +579,15 @@ const AddressDetails = ({ goNext, goBack }) => {
 							style={{
 								backgroundColor: "#ff7043",
 								border: "none",
-								padding: "8px 24px",
+								padding: "0.6rem 2rem",
 								borderRadius: "4px",
-								color: "#fff"
+								color: "#fff",
+								fontSize: '0.875rem'
 							}}
-						>Save and Next</button>
+						>
+							Save & Next
+							<FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
+						</button>
 					</div>
 				</div>
 

@@ -575,6 +575,26 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				[id]: true
 			}));
 		}
+
+		if (id === "contactNumber") {
+			if (/^\d{10}$/.test(updatedValue)) {
+			setFormErrors(prev => {
+				const updated = { ...prev };
+				delete updated.contactNumber;
+				return updated;
+			});
+			}
+		}
+
+		if (id === "altNumber") {
+			if (/^\d{10}$/.test(updatedValue) || updatedValue === "") {
+			setFormErrors(prev => {
+				const updated = { ...prev };
+				delete updated.altNumber;
+				return updated;
+			});
+			}
+		}
 	};
 
 	const trimNameFields = (data) => {
@@ -678,7 +698,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		// Required fields validation
 		const requiredFields = [
 			'firstName', 'lastName', 'fullNameAadhar', 'fullNameSSC', 'gender',
-			'dob', 'maritalStatus', 'nationality', 'religion', 'category',
+			'dob', 'cibilScore', 'maritalStatus', 'nationality', 'religion', 'category',
 			'caste', 'motherName', 'fatherName', 'contactNumber', 'language1'
 		];
 
@@ -689,14 +709,28 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			}
 		});
 
+		const mobile = cleanedFormData.contactNumber?.trim();
+
+		if (mobile) {
+			if (!/^\d{10}$/.test(mobile)) {
+				errors.contactNumber = "Mobile number must be exactly 10 digits";
+			}
+		}
+
+		const altMobile = cleanedFormData.altNumber?.trim();
+		
+		if (altMobile && !/^\d{10}$/.test(altMobile)) {
+			errors.altNumber = "Alternate number must be exactly 10 digits";
+		}
+
 		// ---------------- NAME VALIDATION ----------------
-  const NAME_ERROR = "Only alphabets and spaces are allowed";
-  NAME_FIELDS.forEach(field => {
-    const value = cleanedFormData[field];
-    if (value && !isValidName(value)) {
-      errors[field] = NAME_ERROR;
-    }
-  });
+		const NAME_ERROR = "Only alphabets and spaces are allowed";
+		NAME_FIELDS.forEach(field => {
+			const value = cleanedFormData[field];
+			if (value && !isValidName(value)) {
+			errors[field] = NAME_ERROR;
+			}
+		});
 
   // ---------------- TWIN SIBLING ----------------
   if (cleanedFormData.twinSibling) {

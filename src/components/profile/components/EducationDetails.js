@@ -8,6 +8,8 @@ import masterApi from '../../../services/master.api';
 import { toast } from "react-toastify";
 import Loader from "./Loader";
 import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const EducationDetails = ({ goNext, goBack }) => {
   const EMPTY_MASTER_DATA = {
@@ -242,13 +244,15 @@ const EducationDetails = ({ goNext, goBack }) => {
           style={{
             backgroundColor: "#ff7043",
             border: "none",
-            padding: "0.5rem 1rem",
+            padding: "0.6rem 2rem",
             borderRadius: "4px",
-            color: "#fff"
+            color: "#fff",
+            fontSize: '0.875rem'
           }}
           onClick={handleSaveAndNext}
         >
-          Save and Next
+          Save & Next
+          <FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
         </button>
       </div>
 

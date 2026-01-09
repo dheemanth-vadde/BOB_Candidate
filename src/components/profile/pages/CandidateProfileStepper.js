@@ -121,7 +121,7 @@ const CandidateProfileStepper = ({
     <div className="pb-3">
       <Stepper steps={steps} activeStep={activeStep} />
 
-      <div className="p-3" style={{ margin: '0 auto', width: '75%' }}>
+      <div className="p-3" style={{ margin: '0 auto', width: '82%' }}>
         {renderStepContent()}
       </div>
     </div>

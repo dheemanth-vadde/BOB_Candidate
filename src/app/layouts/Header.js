@@ -19,10 +19,10 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
-  const notifications = [
-    { id: 1, message: "📢 Bank of Baroda posted a new opening.", time: "1h ago", read: true },
-    { id: 2, message: "✅ Application submitted successfully.", time: "3h ago", read: true },
-  ];
+  // const notifications = [
+  //   { id: 1, message: "📢 Bank of Baroda posted a new opening.", time: "1h ago", read: true },
+  //   { id: 2, message: "✅ Application submitted successfully.", time: "3h ago", read: true },
+  // ];
 
   const getInitials = (fullName = "") => {
     if (!fullName.trim()) return "";
@@ -77,7 +77,7 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
             <div className="d-flex align-items-center">
 
               {/* Notifications */}
-              <Button
+              {/* <Button
                 variant="link"
                 className="me-2 position-relative"
                 style={{
@@ -92,10 +92,10 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
                 onClick={() => setShowNotification((prev) => !prev)}
               >
                 <FontAwesomeIcon icon={faBell} size="1x" style={{ color: "#42579f" }} />
-              </Button>
+              </Button> */}
 
               {/* Notification Popup */}
-              {showNotification && (
+              {/* {showNotification && (
                 <Card
                   ref={notificationRef}
                   className="position-absolute"
@@ -121,7 +121,7 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
                     ))}
                   </Card.Body>
                 </Card>
-              )}
+              )} */}
 
               {/* USER ICON */}
               <div className="position-relative" ref={dropdownRef}>

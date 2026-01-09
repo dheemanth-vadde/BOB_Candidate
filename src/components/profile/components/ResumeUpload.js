@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import '../../../css/Resumeupload.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faChevronRight, faUpload } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
@@ -209,14 +209,16 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
             style={{
               backgroundColor: "#ff7043",
               border: "none",
-              padding: "8px 24px",
+              padding: "0.6rem 2rem",
               borderRadius: "4px",
-              color: "#fff"
+              color: "#fff",
+              fontSize: '0.875rem'
             }}
             onClick={handleContinue}
             disabled={!resumeFile && !resumePublicUrl}
           >
             {loading ? "Processing..." : "Save & Next"}
+            <FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
           </button>
         </div>
       </div>

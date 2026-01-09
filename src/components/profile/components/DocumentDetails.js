@@ -5,11 +5,16 @@ import profileApi from '../services/profile.api';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { markProfileCompleted } from '../../../components/auth/store/userSlice';
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import bulbIcon from '../../../assets/bulb-icon.png';
+import Loader from './Loader';
 
 const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 	const dispatch = useDispatch();
 	const [isFresher, setIsFresher] = useState(false);
 	const [formErrors, setFormErrors] = useState({});
+	const [loading, setLoading] = useState(false);
 	const user = useSelector((state) => state?.user?.user?.data);
 	const candidateId = user?.user?.id;
 
@@ -21,6 +26,9 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 	);
 	const idProofDoc = useSelector((state) =>
 		state.documentTypes?.list?.data?.find(doc => doc.docCode === "IDPROOF") || null
+	);
+	const birthDoc = useSelector((state) =>
+		state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT") || null
 	);
 	const payslipDoc1 = useSelector((state) =>
 		state.documentTypes?.list?.data?.find(doc => doc.docCode === "PAYSLIP1") || null
@@ -39,6 +47,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 		{ key: "photo", label: "Photo", required: true, docCode: photoDoc?.docCode, documentId: photoDoc?.documentTypeId },
 		{ key: "signature", label: "Signature", required: true, docCode: signDoc?.docCode, documentId: signDoc?.documentTypeId },
 		{ key: "idProof", label: "ID Proof", required: true, docCode: idProofDoc?.docCode, documentId: idProofDoc?.documentTypeId },
+		{ key: "birthCert", label: "Birth Certificate", required: true, docCode: birthDoc?.docCode, documentId: birthDoc?.documentTypeId },
 		{ key: "salary1", label: "Last 3 Month Salary Slip - Month 1", required: true, docCode: payslipDoc1?.docCode, documentId: payslipDoc1?.documentTypeId },
 		{ key: "salary2", label: "Last 3 Month Salary Slip - Month 2", required: true, docCode: payslipDoc2?.docCode, documentId: payslipDoc2?.documentTypeId },
 		{ key: "salary3", label: "Last 3 Month Salary Slip - Month 3", required: true, docCode: payslipDoc3?.docCode, documentId: payslipDoc3?.documentTypeId },
@@ -115,6 +124,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 		if (!candidateId) return;
 
 		try {
+			setLoading(true);
 			const res = await profileApi.getDocumentDetails(candidateId);
 			const docs = (res?.data || []).filter(d => d.documentId !== null);
 			const populatedFiles = {};
@@ -142,6 +152,8 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 			setFiles(populatedFiles);
 		} catch (err) {
 			console.error("Failed to fetch documents", err);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -188,6 +200,8 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 			? customNames[field.key]?.trim().replace(/\s+/g, "_")
 			: undefined;
 
+			setLoading(true);
+
 			await profileApi.postDocumentDetails(
 				candidateId,
 				field.documentId,
@@ -199,12 +213,41 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 			return true;
 		} catch (err) {
 			console.error(`Upload failed for ${field.label}`, err);
+		} finally {
+			setLoading(false);
 		}
 	};
 
 	const handleFileChange = async (key, e) => {
 		const file = e.target.files[0];
 		if (!file) return;
+
+		const allowedMimeTypes = ["image/png", "image/jpeg"];
+		const allowedExtensions = [".png", ".jpg", ".jpeg"];
+		const maxSize = 2 * 1024 * 1024; // 2MB
+
+		const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+
+		// ❌ Extension check
+		if (!allowedExtensions.includes(extension)) {
+			toast.error("Only JPG, JPEG, and PNG files are allowed");
+			e.target.value = ""; // IMPORTANT
+			return;
+		}
+
+		// ❌ MIME type check
+		if (!allowedMimeTypes.includes(file.type)) {
+			toast.error("Invalid file type");
+			e.target.value = "";
+			return;
+		}
+
+		// ❌ Size check
+		if (file.size > maxSize) {
+			toast.error("File size must not exceed 2MB");
+			e.target.value = "";
+			return;
+		}
 
 		const field = uploadFieldsConfig.find(f => f.key === key);
 		if (!field) return;
@@ -215,6 +258,8 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 		if (uploadSucceeded) {
 			// Refresh from API to get updated file info
 			await fetchDocuments();
+		} else {
+			e.target.value = ""; // reset on failure
 		}
 	};
 
@@ -244,22 +289,19 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 
 		try {
 			await profileApi.saveProfileComplete(candidateId, true);
-
-			// ✅ UPDATE REDUX IMMEDIATELY
 			dispatch(markProfileCompleted());
-
-			// Go to Current Opportunity
 			setActiveTab("jobs");
-
-			//  DO NOT call goNext()
 		} catch (err) {
 			toast.error("Profile completion failed");
 		}
 	};
 
-
 	return (
 		<div className="px-4 py-3 border rounded bg-white">
+			<div className='d-flex'>
+				<img src={bulbIcon} style={{ width: '25px', height: '25px', marginTop: '6px', marginRight: '5px' }}/>
+				<p className='orange_text mt-2'>Please ensure all uploaded documents are clear and eligible. File size should not exceed 2MB per document.</p>
+			</div>
 			<div className="row g-5 mt-0">
 				{uploadFieldsConfig.map(field => {
 					const isPayslip = payslipDocCodes.includes(field.docCode);
@@ -294,18 +336,23 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 			</div>
 
 			<div className="d-flex justify-content-between mt-4">
-				<button className="btn btn-outline-secondary" onClick={goBack}>
+				<button className="btn grey_border" onClick={goBack} style={{ fontSize: '0.875rem', padding: "0.6rem 1rem" }}>
+					<FontAwesomeIcon icon={faChevronLeft} size='sm' style={{ marginRight: '0.25rem' }} />
 					Back
 				</button>
 
 				<button
 					className="btn btn-primary"
-					style={{ backgroundColor: "#ff7043", border: "none", color: 'white' }}
+					style={{ backgroundColor: "#ff7043", border: "none", color: 'white', padding: "0.6rem 1rem", fontSize: '0.875rem' }}
 					onClick={handleSubmit}
 				>
 					Submit
 				</button>
 			</div>
+
+			{loading && (
+				<Loader />
+			)}
 		</div>
 	);
 };

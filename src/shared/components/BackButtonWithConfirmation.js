@@ -1,3 +1,5 @@
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 
 const BackButtonWithConfirmation = ({ goBack, isDirty }) => {
@@ -22,7 +24,8 @@ const BackButtonWithConfirmation = ({ goBack, isDirty }) => {
 
   return (
     <>
-      <button type="button" className="btn btn-outline-secondary text-muted" onClick={handleBack}>
+      <button type="button" className="btn grey_border text-muted" onClick={handleBack} style={{ fontSize: '0.875rem', padding: "0.6rem 1rem" }}>
+        <FontAwesomeIcon icon={faChevronLeft} size='sm' style={{ marginRight: '0.25rem' }} />
         Back
       </button>
       {showModal && (

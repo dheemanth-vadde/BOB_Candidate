@@ -1,12 +1,10 @@
 .stepper-container {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	/* margin: 0px 0 30px 0; */
-	width: 100%;
-	position: relative;
-	padding: 1rem 10rem;
-	background-color: #fff;
+  display: flex;
+  align-items: flex-start; /* Align to top so labels don't shift the circles */
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 10rem;
+  background-color: #fff;
 }
 
 .step-item {
@@ -14,42 +12,44 @@
   flex-direction: column;
   align-items: center;
   position: relative;
-  cursor: pointer;
-  flex: 1;
+  z-index: 2;
+  min-width: 80px; /* Ensures label doesn't squash */
 }
 
-.step-item .step-circle {
+.step_circle {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid #d6d6d6;
+  border: 3px solid #d6d6d6;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   background: white;
   color: #999;
-  z-index: 2;
+  transition: all 0.3s ease;
 }
 
-.step-item .step-label {
-  margin-top: 0px;
+.step-label {
+  margin-top: 8px;
   font-size: 0.75rem;
   color: #999;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.step-item .step-line {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  width: 100%;
-  height: 2px;
-  background: #d6d6d6;
-  z-index: 1;
+/* THE LINE: Positioned between circles */
+.step-line {
+  flex-grow: 1;
+  height: 1.5px;
+  background: #e0e0e0;
+  margin: 16px 0px 0 0px; /* 16px aligns it to the middle of the 32px circle */
+  transition: all 0.3s ease;
 }
 
-/* Active Step */
-.step-item.active .step-circle {
+/* Active State */
+.step-item.active .step_circle {
   border-color: #42579f;
   background: #42579f;
   color: white;
@@ -57,11 +57,11 @@
 
 .step-item.active .step-label {
   color: #42579f;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* Completed Step */
-.step-item.completed .step-circle {
+/* Completed State */
+.step-item.completed .step_circle {
   border-color: #42579f;
   background: #42579f;
   color: white;
@@ -69,9 +69,9 @@
 
 .step-item.completed .step-label {
   color: #42579f;
-  font-weight: 500;
 }
 
-.step-item.completed .step-line {
+/* Blue line for completed steps */
+.step-line.completed {
   background: #42579f;
 }

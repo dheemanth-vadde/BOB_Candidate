@@ -1,4 +1,4 @@
-import { faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
@@ -11,6 +11,9 @@ import { mapExperienceApiToUi, mapExperienceDetailsFormToApi } from '../mappers/
 import { toast } from 'react-toastify';
 import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
 import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
+import { Form } from 'react-bootstrap';
+import bulbIcon from '../../../assets/bulb-icon.png';
+import Loader from './Loader';
 
 const ExperienceDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -30,6 +33,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 	const [editingRow, setEditingRow] = useState(null);
 	const [showFresherOption, setShowFresherOption] = useState(false);
 	const [isDirty, setIsDirty] = useState(false);
+	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		organization: "",
 		role: "",
@@ -41,6 +45,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		experience: 0,
 		currentCTC: ""
 	});
+
 
 	useEffect(() => {
 		let totalDays = experienceList.reduce((sum, item) => sum + (item.experience || 0), 0);
@@ -83,6 +88,37 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		}
 	}, [candidateId]);
 
+	useEffect(() => {
+		if (!isFresher) return;
+
+		// 1. Reset form completely
+		setFormData({
+			organization: "",
+			role: "",
+			postHeld: "",
+			from: "",
+			to: "",
+			working: false,
+			description: "",
+			experience: 0,
+			currentCTC: ""
+		});
+
+		// 2. Clear files
+		setCertificateFile(null);
+		setExistingDocument(null);
+
+		// 3. Clear errors
+		setFormErrors({});
+
+		// 4. Exit edit mode
+		setIsEditMode(false);
+		setEditingRow(null);
+
+		// 5. Mark dirty (this IS a meaningful change)
+		setIsDirty(true);
+	}, [isFresher]);
+
 	const trimStrings = (obj) =>
 		Object.fromEntries(
 			Object.entries(obj).map(([key, value]) => [
@@ -119,6 +155,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 	const fetchExperienceDetails = async () => {
 		try {
+			setLoading(true);
 			const res = await profileApi.getExperienceDetails(candidateId);
 			const apiList = Array.isArray(res?.data)
 				? res?.data
@@ -136,12 +173,15 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		} catch (err) {
 			console.error("Failed to fetch experience details", err);
 			setShowFresherOption(true); // safe fallback
+		} finally {
+			setLoading(false);
 		}
 	};
 
 	useEffect(() => {
 		fetchExperienceDetails();
 	}, [candidateId]);
+
 	const validateForm = () => {
 		const errors = {};
 
@@ -219,6 +259,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 				? { ...basePayload, workExperienceId: editingRow.workExperienceId }
 				: basePayload;
 
+			setLoading(true);
+
 			await profileApi.postExperienceDetails(
 				candidateId,
 				payload,
@@ -237,6 +279,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		} catch (err) {
 			console.error(err);
 			toast.error("Failed to save experience");
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -257,10 +301,9 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		try {
 			const effectiveFresherStatus = showFresherOption ? isFresher : false;
 			const payload = { isFresher: effectiveFresherStatus };
-			console.log("Work fresher status payload:", payload);
-			console.log("Work status savedsss:", effectiveFresherStatus);
+			
 			await profileApi.postWorkStatus(candidateId, effectiveFresherStatus);
-			console.log("Work status saved:", effectiveFresherStatus);
+
 			setIsDirty(false);
 			goNext();
 		} catch (err) {
@@ -336,6 +379,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		// );
 		// if (!confirmDelete) return;
 		try {
+			setLoading(true);
 			await profileApi.deleteExperienceDetails(item.workExperienceId);
 			toast.success("Experience deleted successfully");
 			// Always re-fetch — backend is source of truth
@@ -347,6 +391,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		} catch (err) {
 			console.error(err);
 			toast.error("Failed to delete experience");
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -382,14 +428,17 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		<div className="px-4 py-3 border rounded bg-white">
 			{showFresherOption && (
 				<div className='col-md-2 col-sm-12 d-flex align-items-center gap-2 py-1 px-2 rounded' style={{ backgroundColor: '#fff7ed', border: '1px solid #e7946dff' }}>
-					<input
+					<Form.Check
 						type="checkbox"
-						// className="form-control"
 						id="fresherCheckbox"
+						label="I'm fresher"
 						checked={isFresher}
-						onChange={(e) => setIsFresher(e.target.checked)}
+						onChange={(e) => {
+							setIsFresher(e.target.checked);
+							setIsDirty(true);
+						}}
+						style={{ fontSize: '14px', color: '#6e6e6e', fontWeight: 500 }}
 					/>
-					<label htmlFor="fresherCheckbox" className="form-label mt-1" style={{ fontSize: '14px', color: '#6e6e6e', fontWeight: 500 }}>I'm fresher</label>
 				</div>
 			)}
 			<form className="row g-4 formfields mt-2"
@@ -423,7 +472,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						<div className="invalid-feedback">{formErrors.postHeld}</div>
 					)}
 				</div>
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="from" className="form-label">From <span className="text-danger">*</span></label>
 					<input type="date" className={`form-control ${formErrors.from ? "is-invalid" : ""}`} id="from" value={formData.from} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 					{formErrors.from && (
@@ -431,7 +480,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="to" className="form-label">To {formData.working === false && (<span className="text-danger">*</span>)}</label>
 					<input type="date" className={`form-control ${formErrors.to ? "is-invalid" : ""}`} id="to" value={formData.to} onChange={handleChange} disabled={isFresher === true || formData.working === true} required={isFresher === false || formData.working === false} min={formData.from || undefined} />
 					{formErrors.to && (
@@ -439,7 +488,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="working" className="form-label">Presently Working <span className="text-danger">*</span></label>
 					<select
 						className={`form-select ${formErrors.working ? "is-invalid" : ""}`}
@@ -462,7 +511,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="currentCTC" className="form-label">Current CTC <span className="text-danger">*</span></label>
 					<input
 						type="number"
@@ -480,7 +529,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="description" className="form-label">Brief Description <span className="text-danger">*</span></label>
 					<textarea className={`form-control ${formErrors.description ? "is-invalid" : ""}`} id="description" rows={4} value={formData.description} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 					{formErrors.description && (
@@ -488,7 +537,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<div className="col-md-4 col-sm-12 mt-2">
+				<div className="col-md-4 col-sm-12 mt-3">
 					<label className="form-label">
 						Experience Certificate <span className="text-danger">*</span>
 					</label>
@@ -548,12 +597,20 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 									</div>
 								</div>
 
-								<img
-									src={deleteIcon}
-									alt="Delete"
-									style={{ width: "22px", cursor: "pointer" }}
-									onClick={() => setExistingDocument(null)}
-								/>
+								<div className='d-flex gap-2'>
+									<img
+										src={viewIcon}
+										alt="View"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => window.open(existingDocument.fileUrl, "_blank")}
+									/>
+									<img
+										src={deleteIcon}
+										alt="Delete"
+										style={{ width: "22px", cursor: "pointer" }}
+										onClick={() => setExistingDocument(null)}
+									/>
+								</div>
 							</div>
 						)}
 
@@ -579,12 +636,20 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 									</div>
 								</div>
 
-								<img
-									src={deleteIcon}
-									alt="Delete"
-									style={{ width: "22px", cursor: "pointer" }}
-									onClick={() => setCertificateFile(null)}
-								/>
+								<div className='d-flex gap-2'>
+									<img
+										src={viewIcon}
+										alt="View"
+										style={{ width: "25px", cursor: "pointer" }}
+										onClick={() => window.open(URL.createObjectURL(certificateFile), "_blank")}
+									/>
+									<img
+										src={deleteIcon}
+										alt="Delete"
+										style={{ width: "22px", cursor: "pointer" }}
+										onClick={() => setCertificateFile(null)}
+									/>
+								</div>
 							</div>
 						)}
 					</div>
@@ -598,18 +663,22 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 				</div>
 
 
-				<div className="d-flex justify-content-center gap-3 mt-3">
+				<div className="d-flex justify-content-between gap-3 mt-4">
+					<div className='d-flex'>
+						<img src={bulbIcon} style={{ width: '25px', height: '25px', marginTop: '6px', marginRight: '5px' }}/>
+						<p className='orange_text mt-2 mb-0'>If multiple roles/posts were held in the same organization, please record each one separately.</p>
+					</div>
 					{!isEditMode ? (
 						<button
 							type="button"
-							className="btn blue-button"
+							className="btn blue-button px-4"
 							onClick={handleSaveExperience}
 							disabled={isFresher}
 						>
 							Submit
 						</button>
 					) : (
-						<>
+						<div className="d-flex gap-2">
 							<button
 								type="button"
 								className="btn btn-outline-secondary text-muted"
@@ -620,19 +689,19 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 							<button
 								type="button"
-								className="btn blue-button"
+								className="btn blue-button px-4"
 								onClick={handleSaveExperience}
 							>
 								Update
 							</button>
-						</>
+						</div>
 					)}
 				</div>
 
 				<table className='experience_table'>
 					<thead>
 						<tr>
-							<th className='profile_table_th text-center'>S.No</th>
+							<th className='profile_table_th text-center' style={{ textAlign: 'left', width: '5%' }}>S.No</th>
 							<th className='profile_table_th'>Organization</th>
 							<th className='profile_table_th'>From</th>
 							<th className='profile_table_th'>To</th>
@@ -656,11 +725,22 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 								<td className='profile_table_td'>{item?.description}</td>
 								<td className='profile_table_td'>
 									<div className="d-flex gap-2">
-										{/* <div>
-											<img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
-										</div> */}
 										<div>
 											<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(item)} />
+										</div>
+										<div>
+											<img
+												src={viewIcon}
+												alt="View"
+												style={{ width: "25px", cursor: "pointer" }}
+												onClick={() => {
+													if (!item?.certificate?.fileUrl) {
+													toast.error("No document available");
+													return;
+													}
+													window.open(item.certificate.fileUrl, "_blank", "noopener,noreferrer");
+												}}
+											/>
 										</div>
 										<div>
 											<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(item)} />
@@ -701,14 +781,23 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 							style={{
 								backgroundColor: "#ff7043",
 								border: "none",
-								padding: "8px 24px",
+								padding: "0.6rem 2rem",
 								borderRadius: "4px",
-								color: "#fff"
+								color: "#fff",
+								fontSize: '0.875rem'
 							}}
-						>Save and Next</button>
+						>
+							Save & Next
+							<FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
+						</button>
 					</div>
 				</div>
 			</form>
+
+			{loading && (
+				<Loader />
+			)}
+
 		</div>
 	)
 }

@@ -55,7 +55,7 @@ const UploadField = forwardRef(({
     <div className="col-md-12 col-sm-12 mt-3">
 
       <div className="d-flex gap-3 align-items-center">
-        <label className="grey-label mb-1" style={{ fontSize: '12px' }}>
+        <label className="grey-label mb-1" style={{ fontSize: '0.875rem' }}>
           {label} {required && <span className="text-danger">*</span>}
         </label>
 
@@ -92,14 +92,14 @@ const UploadField = forwardRef(({
               Click to upload or drag and drop
             </div>
             <div className="text-muted" style={{ fontSize: "12px" }}>
-              PDF, JPG, PNG (Max 2MB)
+              JPG, PNG (Max 2MB)
             </div>
           </div>
 
           {/* FILE INPUT with forwarded ref */}
           <input
             type="file"
-            accept=".jpg,.jpeg,.png,.pdf"
+            accept=".jpg,.jpeg,.png"
             style={{ display: "none" }}
             ref={ref}
             onChange={onChange}
