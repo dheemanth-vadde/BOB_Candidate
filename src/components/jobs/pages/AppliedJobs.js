@@ -19,11 +19,12 @@ import useDebounce from "../../jobs/hooks/useDebounce";
 import start from "../../../assets/start.png";
 import end from "../../../assets/end.png";
 import download from "../../../assets/download.png";
+import Loader from "../../profile/components/Loader";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 const [listLoading, setListLoading] = useState(false);
-const [downloadLoading, setDownloadLoading] = useState(null);
+const [downloadLoading, setDownloadLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [offerData, setOfferData] = useState(null);
@@ -203,7 +204,7 @@ const [isMasterReady, setIsMasterReady] = useState(false);
   if (!job?.application_id) return;
 
   try {
-    setDownloadLoading(job.application_id); // ✅ store ID
+    setDownloadLoading(true); // ✅ store ID
 
     const res = await jobsApiService.downloadApplication(
       job.application_id
@@ -221,7 +222,7 @@ const [isMasterReady, setIsMasterReady] = useState(false);
   } catch (err) {
     toast.error("Failed to download application");
   } finally {
-    setDownloadLoading(null); // ✅ reset
+    setDownloadLoading(false); // ✅ reset
   }
 };
 
@@ -292,6 +293,7 @@ const [isMasterReady, setIsMasterReady] = useState(false);
               <div className="mt-2 text-muted">Loading results…</div>
             </div>
           )}
+          {downloadLoading && <Loader />}
 
           {/* Header */}
           <div className="applied-job-header">
@@ -373,7 +375,7 @@ const [isMasterReady, setIsMasterReady] = useState(false);
              
               <button
               className="footer-link downloadbtn"
-              disabled={downloadLoading === job.application_id}
+            
               onClick={() => handleDownloadApplication(job)}
             >
               {/* {downloadLoading === job.application_id

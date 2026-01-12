@@ -381,6 +381,7 @@
   color: #0A0A0A !important;
   font-size: 0.875rem !important;
   font-weight: 400 !important;
+  text-transform:none;
   
 }
 .track-application-modal {
