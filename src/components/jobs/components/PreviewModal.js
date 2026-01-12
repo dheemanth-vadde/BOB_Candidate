@@ -49,6 +49,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
 
   const state3 = getState(masterData, preferences.state3);
   const location3 = getLocation(masterData, preferences.location3);
+  
    useEffect(() => {
   if (
     formErrors?.ctc ||
@@ -60,7 +61,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
   if (!previewData) {
     return null;
   }
-
+  
  
 
   // ✅ PHOTO
@@ -86,7 +87,16 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
       centered
       dialogClassName="bob-preview-modal"
     >
-      <Modal.Body className="bob-modal-body">
+      <Modal.Body className="bob-modal-body position-relative">
+        {/* Close Button */}
+        <button 
+          type="button" 
+          className="btn-close position-absolute" 
+          style={{top: '6px', right: '15px', zIndex: 1}}
+          onClick={onHide}
+          aria-label="Close"
+        />
+        
         {/* ===== HEADER ===== */}
         <div className="bob-header">
           <div className="title_pre">
@@ -183,7 +193,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
 
                     <tr>
                       <td className="fw-med">Category</td>
-                      <td className="fw-reg" colSpan={2}  >{previewData.personalDetails.category || "-"}</td>
+                      <td className="fw-reg" colSpan={2}  >{previewData.personalDetails.reservationCategory_name || "-"}</td>
                       <td className="fw-med">Caste/Community</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.caste || "-"}</td>
                     </tr>
@@ -191,8 +201,12 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                     <tr>
                       <td className="fw-med">Date of Birth</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.dob}</td>
-                      <td className="fw-med">Age (as on cut-off date)</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "-"}</td>
+                       <td className="fw-med">Nationality</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality_name}</td>
+                    
+                      
+                      {/* <td className="fw-med">Age (as on cut-off date)</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "-"}</td> */}
                     </tr>
 
                     <tr>
@@ -202,13 +216,12 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.physicalDisability || "N"}</td>
                     </tr>
 
-                    <tr>
-                      <td className="fw-med">Exam Center</td>
-                      <td className="fw-reg" colSpan={2}>{preferences.examCenter || "-"}</td> 
-                      <td className="fw-med">Nationality</td>
-                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.nationality_name}</td>
-                    
-                    </tr>
+                   <tr>
+                     <td className="fw-med">Age (as on cut-off date)</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.age || "-"}</td> 
+                        <td className="fw-med"></td>
+                      <td className="fw-reg" colSpan={2}></td>
+                    </tr> 
 
                     <tr>
                       <td className="fw-med">Marital Status</td>
@@ -219,10 +232,12 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                     <tr>
                       <td className="fw-med">Twin Sibling</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.isTwin}</td>
-                      <td className="fw-med">Details</td>
+                      {/* <td className="fw-med">Details</td>
                       <td className="fw-reg" colSpan={2}>{previewData.personalDetails.isTwin === "YES"
                         ? `${previewData.personalDetails.twinName} (${previewData.personalDetails.twinGender_name})`
-                        : "-"}</td>
+                        : "-"}</td> */}
+                          <td className="fw-med">CIBIL Score</td>
+                      <td className="fw-reg" colSpan={2}>{previewData.personalDetails.cibilScore}</td>
                     </tr>
                     <tr>
                       <td className="fw-med">Current CTC</td>
@@ -289,9 +304,9 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                   <thead className="table-header">
                     <tr>
                       <th>S. No</th>
-                      <th>Onboard/University</th>
+                      <th>Education Level</th>
                       <th>School/College</th>
-                      <th>Degree</th>
+                      <th>Board</th>
                       <th>Specialization</th>
                       <th>From Date</th>
                       <th>To Date</th>
@@ -300,19 +315,33 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                   </thead>
                   <tbody>
                     {previewData.education.map((edu, idx) => (
-                      <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{edu.institution}</td>
-                        <td>{edu.school}</td>
-                        <td>{edu.degree}</td>
-                        <td>{edu.subject}</td>
-                        <td>{edu.startDate}</td>
-                        <td>{edu.endDate}</td>
-                        <td>{edu.percentage !== null && edu.percentage !== undefined
+                    <tr key={idx}>
+                      <td>{idx + 1}</td>
+
+                      {/* Education Level */}
+                      <td>{edu.educationLevel_name || "-"}</td>
+
+                      {/* School / College */}
+                      <td>{edu.institution || "-"}</td>
+
+                      {/* Board / Qualification */}
+                      <td>{edu.mandatoryQualification_name || "-"}</td>
+
+                      {/* Specialization */}
+                      <td>{edu.specialization_name || "-"}</td>
+
+                      {/* Dates */}
+                      <td>{edu.startDate || "-"}</td>
+                      <td>{edu.endDate || "-"}</td>
+
+                      {/* Percentage */}
+                      <td>
+                        {edu.percentage !== null && edu.percentage !== undefined
                           ? `${edu.percentage}%`
-                          : "-"}</td>
-                      </tr>
-                    ))}
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))}
                   </tbody>
                 </table>
               </div>
@@ -337,7 +366,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                       <th>Role</th>
                       <th>From Date</th>
                       <th>To Date</th>
-                      <th>Duration</th>
+                      <th>Experience</th>
                       <th>Brief Description of Work</th>
                     </tr>
                   </thead>
@@ -367,9 +396,9 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                 <thead className="table-header">
                   <tr>
                     <th>File Type</th>
-                    <th>Action</th>
+                    <th className="textCenter">Action</th>
                     <th>File Type</th>
-                    <th>Action</th>
+                    <th className="textCenter">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -390,7 +419,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                       <tr key={index}>
                         {/* LEFT DOCUMENT */}
                         <td>{doc.displayname ? doc.displayname : doc.name}</td>
-                        <td>
+                        <td className="textCenter">
                           <a
                             href={doc.url}
                             target="_blank"
@@ -406,7 +435,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                         {nextDoc ? (
                           <>
                             <td>{nextDoc.displayname ? nextDoc.displayname : nextDoc.name}</td>
-                            <td>
+                            <td className="textCenter">
                               <a
                                 href={nextDoc.url}
                                 target="_blank"
@@ -421,7 +450,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                         ) : (
                           <>
                             <td>-</td>
-                            <td>-</td>
+                            <td >-</td>
                           </>
                         )}
                       </tr>

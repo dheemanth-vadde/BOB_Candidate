@@ -3,7 +3,11 @@ import {
   getReligion,
   getNationality,
   getMaritalStatus,
-  getState
+  getState,
+  getReservation,
+   getEducationLevel,
+  getSpecialization,
+  getMandatoryQualification
 } from "../../../shared/utils/masterHelpers";
 export const mapCandidateToPreview = (
   apiData = {},
@@ -21,6 +25,7 @@ const documents = apiData?.documentDetails || [];
   /* =========================
      MASTER LOOKUPS (SAFE)
   ========================= */
+  
   const gender = getGender?.(masters, profile.genderId);
   const religion = getReligion?.(masters, profile.religionId);
   const nationality = getNationality?.(masters, profile.nationality);
@@ -29,10 +34,24 @@ const documents = apiData?.documentDetails || [];
     profile.maritalStatusId
   );
   const twinGender = getGender?.(masters, profile.twinGenderId);
+  const reservation = getReservation?.(masters, profile.reservationCategoryId);
+
+  //const educationLevels = getEducationLevels?.(masters, educations[0]?.educationLevelId);
   console.log("gender:", gender);
   console.log("religion:", religion);
   console.log("nationality:", nationality);
   console.log("maritalStatus:", maritalStatus);
+  console.log("reservation:", reservation);
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    .replace(/\//g, "-");
+  };
   
   /* =========================
      DOCUMENT GROUPING
@@ -50,13 +69,14 @@ const documents = apiData?.documentDetails || [];
        PERSONAL DETAILS (UNCHANGED KEYS)
     ========================= */
     personalDetails: {
+      age:apiData.age || "-",
       fullName: profile.fullNameAadhar || "-",
       mobile: profile.contactNo || "-",
       email: profile.email || "-",
       motherName: profile.motherName || "-",
       fatherName: profile.fatherName || "-",
       spouseName: profile.spouseName || "-",
-      dob: profile.dateOfBirth || "-",
+      dob: formatDate(profile.dateOfBirth) || "-",
 socialMediaProfileLink: profile.socialMediaProfileLink || "-",
         /* ================= TWIN DETAILS ================= */
   isTwin: yesNo(profile.isTwin),
@@ -103,13 +123,11 @@ socialMediaProfileLink: profile.socialMediaProfileLink || "-",
 
       exService: yesNo(profile.exServiceman),
       physicalDisability: yesNo(profile.disability),
+      cibilScore: profile.cibilScore || "-",
+      reservationCategory: profile.reservationCategoryId || "-",
+      reservationCategory_name: reservation?.category_code || "-"
 
-      /* ================= MISC (UNCHANGED) ================= */
-      location1: "-",
-      location2: "-",
-      location3: "-",
-      currentCTC: "-",
-      expectedCTC: "-",
+   
     },
 
     /* =========================
@@ -119,10 +137,10 @@ socialMediaProfileLink: profile.socialMediaProfileLink || "-",
       org: e.workExperience.organizationName || "-",
       designation: e.workExperience.postHeld || "-",
       department: e.workExperience.role || "-",
-      from: e.workExperience.fromDate || "-",
+      from: formatDate(e.workExperience.fromDate) || "-",
       to: e.workExperience.isPresentlyWorking
         ? "Present"
-        : e.workExperience.toDate || "-",
+        : formatDate(e.workExperience.toDate) || "-",
       duration: `${e.workExperience.monthsOfExp || 0} Months`,
       nature: e.workExperience.workDescription || "-"
     })),
@@ -144,13 +162,54 @@ socialMediaProfileLink: profile.socialMediaProfileLink || "-",
     /* =========================
        EDUCATION (🆕 SAFE ADDITION)
     ========================= */
-    education: educations.map((e) => ({
-      qualification_id: e.education.educationQualificationsId,
-      institution: e.education.institutionName || "-",
-      percentage: e.education.percentage ?? "-",
-      startDate: e.education.startDate || "-",
-      endDate: e.education.endDate || "-",
-    })),
+    // education: educations.map((e) => ({
+    //   qualification_id: e.education.educationTypeId,
+    //   educationQualificationsId: e.education.educationQualificationsId || "-",
+    //   institution: e.education.institutionName || "-",
+    //   specialization:e.education.specializationId || "-",
+    //   percentage: e.education.percentage ?? "-",
+    //   startDate: e.education.startDate || "-",
+    //   endDate: e.education.endDate || "-",
+    // })),
+
+    education: educations.map((e) => {
+      
+
+        const specialization = getSpecialization(
+        masters,
+        e.education.specializationId
+        );
+
+        const mandatoryQualification = getMandatoryQualification(
+        masters,
+        e.education.educationQualificationsId
+        );
+        console.log("mandatoryQualification", mandatoryQualification)
+
+        const educationLevel = getEducationLevel(
+        masters,
+        mandatoryQualification.level_id
+        );
+console.log("educationLevel", educationLevel)
+        return {
+        qualification_id: e.education.educationTypeId || "-",
+        institution: e.education.institutionName || "-",
+        percentage: e.education.percentage ?? "-",
+        startDate: formatDate(e.education.startDate) || "-",
+        endDate: formatDate(e.education.endDate) || "-",
+
+        /* 🆕 Display values */
+        educationLevel_name:
+          educationLevel?.education_level_name || "-",
+
+        specialization_name:
+          specialization?.specialization_name || "-",
+
+        mandatoryQualification_name:
+          mandatoryQualification?.qualification_name || "-"
+        };
+    }),
+
 
     /* =========================
        LANGUAGES (🆕 SAFE ADDITION)

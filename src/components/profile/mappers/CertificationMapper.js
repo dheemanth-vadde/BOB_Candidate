@@ -1,16 +1,17 @@
 export const mapCertificationFormToApi = (
   formData,
   candidateId,
-  certificationId,
+  certificateId,
   file
 ) => ({
-  certificationId: certificationId ?? null, // ✅ THIS decides insert vs update
+  certificateId: certificateId ?? null, // ✅ THIS decides insert vs update
   candidateId,
   issuedBy: formData.issuedBy,
   certificationName: formData.certificationName,
   certificationDate: formData.certificationDate,
   expiryDate: formData.expiryDate || null,
   certificateFileName: file?.name || null,
+  certificationId: formData.certificationMasterId
 });
 
 
@@ -21,7 +22,8 @@ export const mapCertificationApiToUi = (apiItem) => {
 
   return {
     // identifiers
-    certificationId: cert.certificationId,
+    certificateId: cert.certificateId,
+    certificationMasterId: cert.certificationId || "",
 
     // certification fields
     issuedBy: cert.issuedBy || "",

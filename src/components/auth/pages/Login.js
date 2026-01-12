@@ -60,7 +60,11 @@ const Login = () => {
     e.preventDefault();
 
     const errors = {};
-    if (!email.trim()) errors.email = "Email is required";
+    if (!email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Enter valid email";
+    }
     if (!password.trim()) errors.password = "Password is required";
 
     if (Object.keys(errors).length > 0) {
@@ -109,7 +113,7 @@ const Login = () => {
           <h5 className="mt-1">Welcome to Candidate Login</h5>
         </div>
 
-        <form className="login_form" onSubmit={handleLogin}>
+        <form className="login_form" onSubmit={handleLogin} noValidate>
           <label>Email Id <span className="text-danger">*</span></label>
           <input
             type="email"

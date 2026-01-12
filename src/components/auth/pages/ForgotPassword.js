@@ -68,7 +68,7 @@ const ForgotPassword = () => {
           </button>
 
           <p className="register-link mb-0">
-            ← Back to <Link to="/login">Login</Link>
+            ← Back to <Link to="/login" replace>Login</Link>
           </p>
         </form>
         {/* {message && <p>{message}</p>} */}

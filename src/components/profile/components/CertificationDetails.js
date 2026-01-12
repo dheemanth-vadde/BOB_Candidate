@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpload, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faUpload, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from "../../../assets/delete-icon.png";
 import editIcon from "../../../assets/edit-icon.png";
 import profileApi from "../services/profile.api";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { mapCertificationApiToUi, mapCertificationFormToApi } from "../mappers/CertificationMapper";
+import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
+import { Form } from 'react-bootstrap';
+import Loader from "./Loader";
+import greenCheck from '../../../assets/green-check.png'
+import masterApi from "../../../services/master.api";
+
 /* ================= HELPERS ================= */
 const isFutureDate = (dateStr) =>
   dateStr && new Date(dateStr) > new Date();
@@ -48,16 +54,21 @@ const CertificationDetails = ({ goNext, goBack }) => {
   const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     issuedBy: "",
+    certificationMasterId: "",
     certificationName: "",
     certificationDate: "",
     expiryDate: ""
   });
   const [nextError, setNextError] = useState("");
-
+  const [isDirty, setIsDirty] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [hasCertification, setHasCertification] = useState(false);
+  const [certMasterOptions, setCertMasterOptions] = useState([]);
 
   /* ================= FETCH ================= */
   const fetchCertifications = async () => {
     try {
+      setLoading(true);
       const res = await profileApi.getCertifications(candidateId);
 
       const mapped = Array.isArray(res?.data)
@@ -65,13 +76,37 @@ const CertificationDetails = ({ goNext, goBack }) => {
         : [];
 
       setCertList(mapped);
+      setIsDirty(false);
     } catch (err) {
       console.error("Failed to fetch certifications", err);
       setCertList([]);
+      setIsDirty(false);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const [hasCertification, setHasCertification] = useState(false);
+  useEffect(() => {
+    const fetchCertificationMasters = async () => {
+      try {
+        const res = await masterApi.getCertifications();
+
+        const options = Array.isArray(res?.data?.data)
+          ? res?.data?.data.map(c => ({
+              value: c.certificationMasterId,
+              label: c.certificationName
+            }))
+          : [];
+
+        setCertMasterOptions(options);
+      } catch (err) {
+        console.error("Failed to fetch certification masters", err);
+        setCertMasterOptions([]);
+      }
+    };
+
+    fetchCertificationMasters();
+  }, []);
 
   useEffect(() => {
     if (candidateId && hasCertification) {
@@ -116,6 +151,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
       }
       return updated;
     });
+    setIsDirty(true);
 
     if (formErrors[id]) {
       setFormErrors((p) => ({ ...p, [id]: "" }));
@@ -147,6 +183,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
     }
     // 3️⃣ Accept file
     setCertificateFile(file);
+    setIsDirty(true);
     setExistingDocument(null);
     setFormErrors((p) => ({ ...p, certificate: "" }));
     setNextError("");
@@ -161,6 +198,10 @@ const CertificationDetails = ({ goNext, goBack }) => {
       return true;
     }
     const errors = {};
+
+    if (!formData.certificationMasterId) {
+      errors.certificationMasterId = "This field is required";
+    }
 
     if (!formData.issuedBy.trim()) {
       errors.issuedBy = "This field is required";
@@ -223,10 +264,11 @@ const CertificationDetails = ({ goNext, goBack }) => {
       const payload = mapCertificationFormToApi(
         formData,
         candidateId,
-        isEditMode ? editingRow?.certificationId : null, // ✅ REQUIRED
+        isEditMode ? editingRow?.certificateId : null, // ✅ REQUIRED
         certificateFile
       );
-
+      console.log("Payload to save:", payload);
+      setLoading(true);
 
       await profileApi.saveCertification(
         candidateId,
@@ -235,14 +277,18 @@ const CertificationDetails = ({ goNext, goBack }) => {
       );
 
       toast.success(isEditMode ? "Updated successfully" : "Saved successfully");
+      setIsDirty(false);
       setNextError("");
       resetForm();
       fetchCertifications();
     } catch (err) {
       console.error(err);
       toast.error("Failed to save certification");
+    } finally {
+      setLoading(false);
     }
   };
+
   const handleSaveAndNext = () => {
     if (!hasCertification) {
       setNextError("");
@@ -259,13 +305,10 @@ const CertificationDetails = ({ goNext, goBack }) => {
     goNext();
   };
 
-
-
-
-
   const resetForm = () => {
     setFormData({
       issuedBy: "",
+      certificationMasterId: "",
       certificationName: "",
       certificationDate: "",
       expiryDate: ""
@@ -282,6 +325,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
     setEditingRow(row);
     setFormData({
       issuedBy: row.issuedBy,
+      certificationMasterId: row.certificationMasterId,
       certificationName: row.certificationName,
       certificationDate: row.certificationDate,
       expiryDate: row.expiryDate || ""
@@ -292,12 +336,15 @@ const CertificationDetails = ({ goNext, goBack }) => {
   };
   const handleDelete = async (row) => {
     try {
+      setLoading(true);
       await profileApi.deleteCertification(row.certificationId);
       toast.success("Deleted successfully");
       fetchCertifications();
       if (editingRow?.certificationId === row.certificationId) resetForm();
     } catch {
       toast.error("Delete failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -307,6 +354,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
 
     try {
       await profileApi.saveHasCertification(candidateId, checked);
+      setIsDirty(false);
 
       if (!checked) {
         resetForm();
@@ -324,20 +372,17 @@ const CertificationDetails = ({ goNext, goBack }) => {
   /* ================= UI ================= */
   return (
     <div className="px-4 py-3 border rounded bg-white">
-      <div className="col-md-3 col-sm-12 d-flex align-items-center gap-2 px-2 rounded" style={{ backgroundColor: "rgb(255, 247, 237)", border: "1px solid rgb(231, 148, 109)" }}>
-        <input
+      <div className="col-md-3 col-sm-12 d-flex align-items-center gap-2 p-2 rounded" style={{ backgroundColor: "rgb(255, 247, 237)", border: "1px solid rgb(231, 148, 109)", width: "fit-content" }}>
+        <Form.Check
           type="checkbox"
           id="hasCertification"
+          label="I hold certification(s)"
           checked={hasCertification}
           onChange={(e) =>
             handleHasCertificationToggle(e.target.checked)
           }
+          style={{ fontSize: "14px", color: "rgb(110, 110, 110)", fontWeight: "500" }}
         />
-
-        <label className="form-label mt-2" htmlFor="hasCertification" style={{ fontSize: "14px", color: "rgb(110, 110, 110)", fontWeight: "500" }}>
-          I have certification(s) </label>
-
-
       </div>
       {nextError && (
         <div className="text-danger mt-1" style={{ fontSize: "13px" }}>
@@ -345,6 +390,31 @@ const CertificationDetails = ({ goNext, goBack }) => {
         </div>
       )}
       <form className="row g-4 mt-2" noValidate>
+        <div className="col-md-4">
+          <label className="form-label">
+            Certification {hasCertification && <span className="text-danger">*</span>}
+          </label>
+
+          <select
+            id="certificationMasterId"
+            disabled={!hasCertification}
+            value={formData.certificationMasterId}
+            onChange={handleChange}
+            className={`form-select ${formErrors.certificationMasterId ? "is-invalid" : ""}`}
+          >
+            <option value="">Select certification</option>
+            {certMasterOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          <div className="invalid-feedback">
+            {formErrors.certificationMasterId}
+          </div>
+        </div>
+
         {/* Issued By */}
         <div className="col-md-4">
           <label className="form-label">
@@ -413,7 +483,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
             {(certificateFile || existingDocument) && (
               <div className="d-flex justify-content-between w-100">
                 <div className="d-flex align-items-center gap-2">
-                  <FontAwesomeIcon icon={faCheckCircle} className="text-success" />
+                  <img src={greenCheck} className="text-success" style={{ width: '22px', height: '22px' }} />
                   <div>
                     <div style={{ fontWeight: 600 }}>
                       {certificateFile?.name || existingDocument?.displayName}
@@ -447,9 +517,9 @@ const CertificationDetails = ({ goNext, goBack }) => {
           )}
         </div>
         {/* ACTIONS */}
-        <div className="d-flex justify-content-center gap-3">
+        <div className="d-flex justify-content-end gap-3">
           <button
-            type="button" onClick={handleSave} disabled={!hasCertification} className={`btn blue-button ${!hasCertification ? "disabled bg-light text-muted border" : ""}`}
+            type="button" onClick={handleSave} disabled={!hasCertification} className={`btn blue-button px-4 ${!hasCertification ? "disabled bg-light text-muted border" : ""}`}
             style={{ cursor: !hasCertification ? "not-allowed" : "pointer" }}>
             {isEditMode ? "Update" : "Submit"}
           </button>
@@ -497,11 +567,31 @@ const CertificationDetails = ({ goNext, goBack }) => {
 
         {/* NAV */}
         <div className="d-flex justify-content-between">
-          <button className="btn btn-outline-secondary" onClick={goBack}>Back</button>
-          <button type="button" className="btn btn-primary" style={{ backgroundColor: "rgb(255, 112, 67)", border: "medium", padding: "8px 24px", borderRadius: "4px", color: "rgb(255, 255, 255)" }} onClick={handleSaveAndNext}>Save & Next</button>
+          <BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
+          <button
+            type="button"
+            className="btn btn-primary"
+            style={{
+              backgroundColor: "rgb(255, 112, 67)",
+              border: "medium",
+              padding: "0.6rem 2rem",
+              borderRadius: "4px",
+              color: "#fff",
+              fontSize: '0.875rem'
+            }}
+            onClick={handleSaveAndNext}
+          >
+            Save & Next
+            <FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
+          </button>
         </div>
 
       </form>
+
+      {loading && (
+        <Loader />
+      )}
+
     </div >
   );
 };

@@ -1,13 +1,11 @@
-import React, { forwardRef, useState } from "react";
+import { forwardRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../assets/delete-icon.png';
-import editIcon from '../../assets/edit-icon.png';
 import viewIcon from '../../assets/view-icon.png';
-import { faFile } from "@fortawesome/free-solid-svg-icons/faFile";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import profileApi from "../../components/profile/services/profile.api";
 import { useSelector } from "react-redux";
+import greenCheck from '../../assets/green-check.png'
 
 const UploadField = forwardRef(({
   label,
@@ -55,7 +53,7 @@ const UploadField = forwardRef(({
     <div className="col-md-12 col-sm-12 mt-3">
 
       <div className="d-flex gap-3 align-items-center">
-        <label className="grey-label mb-1" style={{ fontSize: '12px' }}>
+        <label className="grey-label mb-1" style={{ fontSize: '0.875rem' }}>
           {label} {required && <span className="text-danger">*</span>}
         </label>
 
@@ -92,14 +90,14 @@ const UploadField = forwardRef(({
               Click to upload or drag and drop
             </div>
             <div className="text-muted" style={{ fontSize: "12px" }}>
-              PDF, JPG, PNG (Max 2MB)
+              JPG, PNG (Max 2MB)
             </div>
           </div>
 
           {/* FILE INPUT with forwarded ref */}
           <input
             type="file"
-            accept=".jpg,.jpeg,.png,.pdf"
+            accept=".jpg,.jpeg,.png"
             style={{ display: "none" }}
             ref={ref}
             onChange={onChange}
@@ -119,9 +117,9 @@ const UploadField = forwardRef(({
 
           {/* Left: Check icon + file info */}
           <div className="d-flex align-items-center">
-            <FontAwesomeIcon
-              icon={faCheckCircle}
-              style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+            <img
+              src={greenCheck}
+              style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
             />
 
             <div className='p-2'>

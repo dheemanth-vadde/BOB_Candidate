@@ -3,14 +3,29 @@ import Turnstile from "react-turnstile";
 
 export default function TurnstileWidget({ onTokenChange }) {
   const [token, setToken] = useState("");
+  const [isVerified, setIsVerified] = useState(false);
 
   const handleSuccess = (t) => {
     setToken(t);
+    setIsVerified(true);
     onTokenChange(t);
   };
 
   const handleExpire = () => {
     setToken("");
+    setIsVerified(false);
+    onTokenChange("");
+  };
+
+  const handleError = () => {
+    setToken("");
+    setIsVerified(false);
+    onTokenChange("");
+  };
+
+  const handleTimeout = () => {
+    setToken("");
+    setIsVerified(false);
     onTokenChange("");
   };
 
@@ -29,11 +44,13 @@ export default function TurnstileWidget({ onTokenChange }) {
         execution="render"
         onSuccess={handleSuccess}
         onExpire={handleExpire}
+        onError={handleError}
+        onTimeout={handleTimeout}
         options={{ theme: "light" }}
       />
 
       {/* Styled badge */}
-      {token &&(
+      {isVerified &&(
       <div style={{
         padding: "8px 12px",
         background: "#e8f5e9",

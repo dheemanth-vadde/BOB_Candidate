@@ -189,13 +189,13 @@ export const isStrongPassword = (password) => {
 export const validatePhoneNumber = (phone) => {
   // strictly digits only
   if (!/^\d+$/.test(phone)) {
-    toast.error("Mobile number must contain only numbers");
+    // toast.error("Mobile number must contain only numbers");
     return false;
   }
 
   // exactly 10 digits
   if (phone.length !== 10) {
-    toast.error("Mobile number must be exactly 10 digits");
+    // toast.error("Mobile number must be exactly 10 digits");
     return false;
   }
 
@@ -247,7 +247,29 @@ export const validateFile = ({
 
   return true;
 };
+
 export const isValidCollegeName = (value = "") => {
   const trimmed = value.trim();
   return /^[A-Za-z ]+$/.test(trimmed);
 };
+
+export const hasDateCollision = ({
+  from,
+  to,
+  educationId,
+  existingRanges
+}) => {
+  const start = new Date(from).getTime();
+  const end = new Date(to).getTime();
+
+  return existingRanges.some(r => {
+    if (!r.from || !r.to) return false;
+    if (educationId && r.educationId === educationId) return false;
+
+    const rStart = new Date(r.from).getTime();
+    const rEnd = new Date(r.to).getTime();
+
+    return start <= rEnd && end >= rStart;
+  });
+};
+

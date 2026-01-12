@@ -15,26 +15,29 @@ import jobsApiService from "../services/jobsApiService";
 import OfferLetterModal from "../../jobs/components/OfferLetterModal";
 import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
 import { toast } from "react-toastify";
-
+import useDebounce from "../../jobs/hooks/useDebounce";
+import start from "../../../assets/start.png";
+import end from "../../../assets/end.png";
+import download from "../../../assets/download.png";
+import Loader from "../../profile/components/Loader";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
+const [listLoading, setListLoading] = useState(false);
+const [downloadLoading, setDownloadLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [offerData, setOfferData] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
-  const [masterData, setMasterData] = useState([{}]);
+  const [masterData, setMasterData] = useState({}); 
 
-  const previewRef = useRef();
-  const [previewData, setPreviewData] = useState(null);
-  // const PAGE_SIZE = 2;
+const [isMasterReady, setIsMasterReady] = useState(false);
+  // const PAGE_SIZE = 3;
+  const [pageSize, setPageSize] = useState(10); // default page size
 
-  // const [currentPage, setCurrentPage] = useState(0); // backend page index
-  // const [totalPages, setTotalPages] = useState(0);
-
-  const ITEMS_PER_PAGE = 10;
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // backend page index (0-based)
+  const [totalPages, setTotalPages] = useState(0);
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
   // ✅ Redux: Logged-in user
   const userData = useSelector((state) => state.user.user);
   const candidateId = userData?.data?.user?.id;
@@ -43,72 +46,93 @@ const AppliedJobs = () => {
     (state) => state.preference.preferenceData
   );
   const preferences = preferenceData?.preferences || {};
+
+
   const fetchMasterData = async () => {
-    try {
-      const masterResponse = await jobsApiService.getMasterData();
-      const mappedMasterData = mapMasterDataApi(masterResponse);
+  try {
+    const masterResponse = await jobsApiService.getMasterData();
+    const mappedMasterData = mapMasterDataApi(masterResponse);
 
-      if (
-        !mappedMasterData ||
-        !Object.keys(mappedMasterData).length
-      ) {
-        console.warn("Master data empty");
-        return null;
-      }
-
-      setMasterData(mappedMasterData);
-      return mappedMasterData; // ✅ IMPORTANT
-    } catch (error) {
-      console.error("Error fetching master data:", error);
+    if (!mappedMasterData || !Object.keys(mappedMasterData).length) {
       return null;
     }
-  };
+
+    setMasterData(mappedMasterData);
+    setIsMasterReady(true); // ✅ ADD THIS
+    return mappedMasterData;
+  } catch (error) {
+    return null;
+  }
+};
+
   useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    searchTerm,
+  if (!candidateId || !isMasterReady) return;
 
-  ]);
+  if (!debouncedSearchTerm) {
+    fetchAppliedJobs(masterData);
+    return;
+  }
 
+  if (debouncedSearchTerm.length < 3) return;
+
+  fetchAppliedJobs(masterData);
+}, [
+  candidateId,
+  isMasterReady,       // ✅ ADD
+  currentPage,
+  debouncedSearchTerm,
+  pageSize
+]);
+
+
+  useEffect(() => {
+    setCurrentPage(prev => (prev === 0 ? prev : 0));
+  }, [debouncedSearchTerm]);
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [pageSize]);
   const formatDate = (date) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    });
+    }).replace(/\//g, "-");
   };
 
   const fetchAppliedJobs = async (master) => {
     if (!candidateId || !master) return;
 
     try {
-      setLoading(true);
+      setListLoading(true);
 
-      const res = await jobsApiService.getAppliedJobs(candidateId);
+      const res = await jobsApiService.getAppliedJobs(
+        candidateId,
+        currentPage,
+        pageSize,
+        debouncedSearchTerm
+      );
 
-      // const jobsData = jobsResponse?.data || [];
-      // console.log("jobsResponse", jobsResponse)
-      // console.log("content", jobsData.content)
-      // SAFELY extract array
-      const jobsData = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res?.data?.content)
-          ? res.data.content
-          : [];
+      const pageData = res?.data;
+      const jobsData = Array.isArray(pageData?.content)
+        ? pageData.content
+        : [];
 
       const mappedJobs = mapAppliedJobsApiToList(jobsData || [], master);
       setAppliedJobs(mappedJobs);
+      // ✅ pagination safety
+      if (jobsData.length === 0) {
+        setTotalPages(0);
+      } else {
+        setTotalPages(pageData?.totalPages ?? 0);
+      }
 
-      // ✅ pagination state
-      //setCurrentPage(jobsData?.number ?? 0);
-      //setTotalPages(jobsData?.totalPages ?? 0);
 
     } catch (error) {
       console.error("Error fetching applied jobs:", error);
       setAppliedJobs([]);
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
   };
 
@@ -117,31 +141,28 @@ const AppliedJobs = () => {
 
     const init = async () => {
       const master = await fetchMasterData();
-      if (master) {
-        fetchAppliedJobs(master);
-      }
+      if (master) setMasterData(master);
     };
 
     init();
   }, [candidateId]);
 
 
+  // // ✅ Filter logic
+  // const filteredJobs = appliedJobs.filter((job) => {
+  //   const matchesSearch =
+  //     job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
 
-  // ✅ Filter logic
-  const filteredJobs = appliedJobs.filter((job) => {
-    const matchesSearch =
-      job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
+  //   return matchesSearch;
+  // });
 
-    return matchesSearch;
-  });
 
-  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
 
-  const paginatedJobs = filteredJobs.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // const paginatedJobs = filteredJobs.slice(
+  //   (currentPage - 1) * ITEMS_PER_PAGE,
+  //   currentPage * ITEMS_PER_PAGE
+  // );
 
   const handleViewOffer = async (job) => {
     try {
@@ -150,7 +171,7 @@ const AppliedJobs = () => {
         return;
       }
 
-      setLoading(true);
+      setListLoading(true);
 
       const res = await jobsApiService.getOfferLetterByApplicationId(
         job.application_id
@@ -168,7 +189,7 @@ const AppliedJobs = () => {
       console.error("Failed to fetch offer letter", err);
       toast.error("Unable to load offer letter");
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
   };
   const formatStatusLabel = (status) => {
@@ -180,39 +201,31 @@ const AppliedJobs = () => {
       .replace(/\b\w/g, char => char.toUpperCase()); // Title Case
   };
   const handleDownloadApplication = async (job) => {
-    if (!job?.application_id) {
-      toast.error("Application ID missing");
-      return;
-    }
+  if (!job?.application_id) return;
 
-    try {
-      setLoading(true);
+  try {
+    setDownloadLoading(true); // ✅ store ID
 
-      const res = await jobsApiService.downloadApplication(
-        job.application_id
-      );
+    const res = await jobsApiService.downloadApplication(
+      job.application_id
+    );
 
-      // ✅ res IS the blob already
-      const blob = new Blob([res], { type: "application/pdf" });
+    const blob = new Blob([res], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
 
-      const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Application_Form.pdf";
+    link.click();
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "Application_Form.pdf"; // default name
-      document.body.appendChild(link);
-      link.click();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    toast.error("Failed to download application");
+  } finally {
+    setDownloadLoading(false); // ✅ reset
+  }
+};
 
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-    } catch (err) {
-      console.error("Download failed", err);
-      toast.error("Failed to download application");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
 
@@ -221,7 +234,17 @@ const AppliedJobs = () => {
       {/* ===== PAGE HEADER ===== */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         <span className="mb-0 appliedheader">Job Applications</span>
-
+        {/* <select
+          className="form-select form-select-sm"
+          style={{ width: "90px" }}
+          value={pageSize}
+          onChange={(e) => setPageSize(Number(e.target.value))}
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+        </select> */}
         {/* Search Bar */}
         <div className="applied-search">
 
@@ -243,8 +266,8 @@ const AppliedJobs = () => {
       {/* {!loading && filteredJobs.length === 0 && (
         <p className="text-muted">No applied jobs found.</p>
       )} */}
-
-      {!loading && filteredJobs.length === 0 && (
+      
+      {!listLoading  && appliedJobs.length === 0 && (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
           <div className="text-center">
             <FontAwesomeIcon
@@ -260,113 +283,107 @@ const AppliedJobs = () => {
         </div>
       )}
 
-      {paginatedJobs.map((job) => (
+      {appliedJobs.map((job) => (
         <div className="applied-job-card mb-3" key={job.position_id}>
           {/* ===== LOADING ===== */}
-          {loading && (
-            <div className="page-loader-overlay">
-              <div className="spinner-border text-light" role="status" />
-              <p className="mt-2 text-light">Processing...</p>
+          {/* Overlay loader */}
+          {listLoading  && (
+            <div className="list-loader-overlay">
+              <div className="spinner-border text-primary" />
+              <div className="mt-2 text-muted">Loading results…</div>
             </div>
           )}
+          {downloadLoading && <Loader />}
 
           {/* Header */}
           <div className="applied-job-header">
             <div className="req-date-row">
               <span className="req-code">
-                {job.requisition_code}
+              {job.requisition_title} ({job.requisition_code})
               </span>
 
               <span className="date-item">
-                <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+                <img src={start}  className="date-icon" alt="start"></img>
                 Start: {formatDate(job.registration_start_date)}
               </span>
 
               <span className="date-divider">|</span>
 
               <span className="date-item">
-                <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+               <img src={end}  className="date-icon" alt="end"></img>
                 End: {formatDate(job.registration_end_date)}
               </span>
               <h6 className="job-title titlecolor">
                 {job.position_title}
               </h6>
+              <div className="job-meta-grid row-1">
+                <div className="meta-item">
+                  <span className="label">Reference No:</span>
+                  <span className="value"> {job?.reference_number?.trim() ? job.reference_number : "-"}</span>
+                </div>
+
+                <div className="meta-item">
+                  <span className="label">Eligibility Age:</span>
+                  <span className="value">
+                    {job.eligibility_age_min} – {job.eligibility_age_max} years
+                  </span>
+                </div>
+
+                <div className="meta-item">
+                  <span className="label">Applied On:</span>
+                  <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
+                </div>
+
+                <div className="meta-item">
+                  <span className="label">Employment Type:</span>
+                  <span className="value">{job.employment_type}</span>
+                </div>
+              </div>
+              
+              <div className="job-meta-grid row-2">
+                <div className="meta-item">
+                  <span className="label">Department:</span>
+                  <span className="value">{job.dept_name}</span>
+                </div>
+
+                <div className="meta-item">
+                  <span className="label">Experience:</span>
+                  <span className="value">{job.mandatory_experience} years</span>
+                </div>
+
+                <div className="meta-item">
+                  <span className="label">Vacancies:</span>
+                  <span className="value">{job.no_of_vacancies}</span>
+                </div>
+              </div>
+              <br></br>
+              <div className="job-meta-grid row-3">
+                <div className="meta-item meta-item-education">
+                  <span className="label">Qualification:</span>
+                  <span className="value">{job.mandatory_qualification}</span>
+                </div>
+              </div>
+              
+
             </div>
-
-            <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
-              {/* {job.application_status || "Applied"} */}
-              {formatStatusLabel(job.application_status)}
-            </span>
-          </div>
-
-          {/* Grid Info */}
-          {/* ===== META DATA – SINGLE FLEX ROW ===== */}
-          {/* ===== META ROW 1 ===== */}
-          {/* ===== META ROW 1 ===== */}
-          <div className="job-meta-grid row-1">
-            <div className="meta-item">
-              <span className="label">Reference No:</span>
-              <span className="value"> {job?.reference_number?.trim() ? job.reference_number : "-"}</span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Eligibility Age:</span>
-              <span className="value">
-                {job.eligibility_age_min} – {job.eligibility_age_max} years
+            <div className="actionbtns">
+              
+              <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
+                {/* {job.application_status || "Applied"} */}
+                {formatStatusLabel(job.application_status)}
               </span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Applied On:</span>
-              <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Employment Type:</span>
-              <span className="value">{job.employment_type}</span>
-            </div>
-          </div>
-
-          {/* ===== META ROW 2 ===== */}
-          <div className="job-meta-grid row-2">
-            <div className="meta-item">
-              <span className="label">Department:</span>
-              <span className="value">{job.dept_name}</span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Experience:</span>
-              <span className="value">{job.mandatory_experience} years</span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Vacancies:</span>
-              <span className="value">{job.no_of_vacancies}</span>
-            </div>
-          </div>
-
-          {/* ===== META ROW 3 ===== */}
-          <div className="job-meta-grid row-3">
-            <div className="meta-item">
-              <span className="label">Qualification:</span>
-              <span className="value">{job.mandatory_qualification}</span>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="job-footer">
-
-            {/* Download Application */}
-            <button
-              className="footer-link"
+             
+              <button
+              className="footer-link downloadbtn"
+            
               onClick={() => handleDownloadApplication(job)}
             >
-              Download Application
+              {/* {downloadLoading === job.application_id
+                ? "Downloading..."
+                : "Download Application"} */} <img src={download}  className="dowload-icon" alt="end"></img>Download Application
             </button>
-            <span className="footer-separator">|</span>
-
-
-            {(
+              
+                {(
               job.application_status === "Offered" ||
               job.application_status === "Offer_Accepted" ||
               job.application_status === "Offer_Rejected"
@@ -382,15 +399,8 @@ const AppliedJobs = () => {
                   <span className="footer-separator">|</span>
                 </>
               )}
-
-            {/* <button
-          className="footer-link download-link"
-           onClick={() => handleDirectDownload(job)}
-        >
-          Download Application
-        </button> */}
-            <button
-              className="footer-link"
+              <button
+              className="footer-link action_items"
               onClick={() => {
                 setSelectedJob(job);
                 setShowTrackModal(true);
@@ -398,15 +408,35 @@ const AppliedJobs = () => {
             >
               Track Application
             </button>
-          </div>
+
+            </div>
+            </div>
+
+          
+        
         </div>
       ))}
-
-      {/* {totalPages > 1 && (
+      {appliedJobs.length > 0 && (
+            <div className="d-flex justify-content-start mb-3">
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "90px" }}
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          )}
+          
+      {appliedJobs.length > 0 && totalPages > 1 && (
         <div className="d-flex justify-content-center mt-4">
           <ul className="pagination pagination-sm">
 
-            
+            {/* Prev */}
             <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
               <button
                 className="page-link"
@@ -416,7 +446,7 @@ const AppliedJobs = () => {
               </button>
             </li>
 
-           
+            {/* Pages */}
             {Array.from({ length: totalPages }, (_, i) => (
               <li
                 key={i}
@@ -431,7 +461,7 @@ const AppliedJobs = () => {
               </li>
             ))}
 
-         
+            {/* Next */}
             <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
               <button
                 className="page-link"
@@ -443,52 +473,9 @@ const AppliedJobs = () => {
 
           </ul>
         </div>
-      )} */}
-      {totalPages > 1 && (
-        <div className="d-flex justify-content-center mt-4">
-          <ul className="pagination pagination-sm">
-
-            {/* Prev */}
-            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-              >
-                ‹
-              </button>
-            </li>
-
-            {/* Pages */}
-            {Array.from({ length: totalPages }, (_, i) => {
-              const page = i + 1;
-              return (
-                <li
-                  key={page}
-                  className={`page-item ${currentPage === page ? "active" : ""}`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </button>
-                </li>
-              );
-            })}
-
-            {/* Next */}
-            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-              >
-                ›
-              </button>
-            </li>
-
-          </ul>
-        </div>
       )}
+
+
       <TrackApplicationModal
         show={showTrackModal}
         onHide={() => setShowTrackModal(false)}

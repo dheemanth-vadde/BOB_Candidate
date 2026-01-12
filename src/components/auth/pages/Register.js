@@ -32,6 +32,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [turnstileKey, setTurnstileKey] = useState(0);
 
   useEffect(() => {
     fetch("/public_key.pem")
@@ -60,6 +61,28 @@ const Register = () => {
     setFormErrors(prev => ({ ...prev, [name]: "" }));
   };
 
+  const handleDobChange = (e) => {
+    const value = e.target.value;
+
+    // Allow clearing
+    if (!value) {
+      setForm({ ...form, dob: "" });
+      setFormErrors(prev => ({ ...prev, dob: "" }));
+      return;
+    }
+
+    // value is ALWAYS yyyy-mm-dd for type="date"
+    const [year] = value.split("-");
+
+    // HARD BLOCK: more than 4 digits in year
+    if (year.length > 4) {
+      return;
+    }
+
+    setForm({ ...form, dob: value });
+    setFormErrors(prev => ({ ...prev, dob: "" }));
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     const { name, email, phone, password, confirmPassword, dob } = form;
@@ -68,12 +91,28 @@ const Register = () => {
 
     if (!name.trim()) errors.name = "Full Name is required";
     if (!dob) errors.dob = "Date of Birth is required";
-    if (!email.trim()) errors.email = "Email is required";
-    if (!phone.trim()) errors.phone = "Mobile Number is required";
+    if (!email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Enter valid email";
+    }
+    if (!phone.trim()) {
+      errors.phone = "Mobile Number is required";
+    } else if (!/^\d{10}$/.test(phone)) {
+      errors.phone = "Mobile Number must be exactly 10 digits";
+    }
     if (!password) errors.password = "Password is required";
     if (!confirmPassword) errors.confirmPassword = "Confirm Password is required";
 
-    if (phone && !validatePhoneNumber(phone)) errors.phone = "Invalid mobile number";
+    if (dob) {
+      const selectedDate = new Date(dob);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        errors.dob = "Date of Birth cannot be in the future";
+      }
+    }
 
     if (password && !isStrongPassword(password)) {
       errors.password = "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character";
@@ -121,6 +160,9 @@ const Register = () => {
           toast.error(msg);
         }
       }
+      // Reset Turnstile on error to clear the verification badge
+      setTurnstileKey(prev => prev + 1);
+      setToken("");
     }
   };
 
@@ -138,7 +180,7 @@ const Register = () => {
           <h4 className="mt-1">Welcome to Candidate Login</h4>
         </div>
 
-        <form onSubmit={handleRegister} className="login_form">
+        <form onSubmit={handleRegister} className="login_form" noValidate>
           <label>Full Name as per Aadhar <span className="text-danger">*</span></label>
           <input
             name="name"
@@ -151,9 +193,9 @@ const Register = () => {
           <input
             type="date"
             name="dob"
-            onChange={handleChange}
+            value={form.dob}
+            onChange={handleDobChange}
             className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`}
-            max={new Date().toISOString().split("T")[0]}
           />
           {formErrors.dob && <div className="invalid-feedback">{formErrors.dob}</div>}
 
@@ -247,7 +289,7 @@ const Register = () => {
             />
           </div>
           {formErrors.confirmPassword && <div className="invalid-feedback d-block">{formErrors.confirmPassword}</div>}
-          <TurnstileWidget onTokenChange={setToken} />
+          <TurnstileWidget key={turnstileKey} onTokenChange={setToken} />
           <button type="submit" className="login-button mt-2 mb-2">Register</button>
 
           <p className="register-link mb-0">

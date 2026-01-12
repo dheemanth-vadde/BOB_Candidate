@@ -10,6 +10,11 @@ import {
   faCalendarTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { mapVacancyDistributions }  from "../../jobs/mappers/vacancyDistributionMapper";
+import { mapNationalVacancyDistributions } from "../mappers/NationalVacancyDistributionMapper";
+import LocationWiseVacancyTable from "./LocationWiseVacancyTable";
+import NationalVacancyTable from "./NationalVacancyTable";
+import start from "../../../assets/start.png";
+import end from "../../../assets/end.png";
 const KnowMoreModal = ({ show, onHide, selectedJob,masterData}) => {
   if (!selectedJob) return null;
 
@@ -19,20 +24,39 @@ const KnowMoreModal = ({ show, onHide, selectedJob,masterData}) => {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  });
+  }).replace(/\//g, '-');
 };
 const reservationCategories = masterData?.reservation_categories || [];
 const disabilities = masterData?.disabilities || [];
 const states = masterData?.states || [];
-console.log("positionStateDistributions",selectedJob?.positionStateDistributions)
-const vacancyDistribution = mapVacancyDistributions(
-  selectedJob?.positionStateDistributions || [],
-  states,
-  reservationCategories,
-  disabilities
-);
-console.log("vacanciesdistri",vacancyDistribution)
-console.log("reservationCategories", reservationCategories)
+// const isLocationWise = selectedJob?.isLocationWise;
+// const vacancyDistribution = mapVacancyDistributions(
+//   selectedJob?.positionStateDistributions || [],
+//   states,
+//   reservationCategories,
+//   disabilities
+// );
+
+
+
+// const stateWiseDistribution = isLocationWise
+//   ? mapVacancyDistributions(
+//       selectedJob?.positionStateDistributions || [],
+//       states,
+//       reservationCategories,
+//       disabilities
+//     )
+//   : null;
+
+// const nationalDistribution = !isLocationWise
+//   ? mapNationalVacancyDistributions(
+//       selectedJob?.positionCategoryNationalDistributions || [],
+//       reservationCategories,
+//       disabilities
+//     )
+//   : null;
+
+console.log("selectedJob111111111",selectedJob)
   return (
     <Modal
       show={show}
@@ -51,14 +75,16 @@ console.log("reservationCategories", reservationCategories)
             </span>
 
             <span className="date-item">
-              <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+              {/* <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" /> */}
+              <img src={start}  className="date-icon" alt="start"></img>
               Start: {formatDate(selectedJob?.registration_start_date)}
             </span>
 
             <span className="date-divider">|</span>
 
             <span className="date-item">
-              <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+              {/* <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" /> */}
+               <img src={end}  className="date-icon" alt="end"></img>
               End: {formatDate(selectedJob?.registration_end_date)}
             </span>
           </div>
@@ -101,7 +127,7 @@ console.log("reservationCategories", reservationCategories)
         </div>
 
         {/* Education Section */}
-        <div className="info-card mb-3">
+        <div className="info-card mt-3">
           <h6 className="card-section-header">Mandatory Education:</h6>
            <ul className="custom-list">
             {selectedJob.mandatory_qualification ? (
@@ -121,7 +147,7 @@ console.log("reservationCategories", reservationCategories)
         </div>
 
         {/* Experience Section */}
-        <div className="info-card mb-3">
+        <div className="info-card mt-3">
           <h6 className="card-section-header">Mandatory Experience:</h6>
          <ul className="custom-list">
             {selectedJob.mandatory_experience ? (
@@ -141,7 +167,7 @@ console.log("reservationCategories", reservationCategories)
         </div>
 
         {/* Responsibilities Section */}
-        <div className="info-card">
+        <div className="info-card mt-3">
           <h6 className="card-section-header">Key Responsibilities:</h6>
           <ul className="custom-list">
             {selectedJob.roles_responsibilities ? (
@@ -153,8 +179,8 @@ console.log("reservationCategories", reservationCategories)
         </div>
      
 {/* ================= VACANCY DISTRIBUTION ================= */}
-{vacancyDistribution.length > 0 && (
-  <div className="info-card mt-4">
+{/* {vacancyDistribution.length > 0 && (
+  <div className="info-card mt-3">
     <h6 className="card-section-header">
       Vacancy Distribution (State-wise)
     </h6>
@@ -225,8 +251,23 @@ console.log("reservationCategories", reservationCategories)
       </table>
     </div>
   </div>
+)} */}
+{selectedJob?.isLocationWise ? (
+  <LocationWiseVacancyTable
+    positionStateDistributions={selectedJob.positionStateDistributions}
+    states={states}
+    reservationCategories={reservationCategories}
+    disabilities={disabilities}
+  />
+) : (
+  <NationalVacancyTable
+    positionCategoryNationalDistributions={
+      selectedJob.positionCategoryNationalDistributions
+    }
+    reservationCategories={reservationCategories}
+    disabilities={disabilities}
+  />
 )}
-
       </Modal.Body>
 
       <Modal.Footer className="border-0 pb-4">

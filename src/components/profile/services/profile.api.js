@@ -207,6 +207,19 @@ export const getResumeDetails = (candidateId) => {
   return candidateApi.get(`/resume/get-resume-details/${candidateId}`);
 };
 
+// Save All Experience Details from Resume
+export const saveAllExperienceDetails = (candidateId, experiencePayload) => {
+  return candidateApi.post(
+    `/experience/save-all-exp-details/${candidateId}`,
+    experiencePayload,
+    {
+      headers: {
+        "X-Client": "candidate",
+      },
+    }
+  );
+};
+
 // GET work status (isFresher)
 export const getWorkStatus = (candidateId) => {
   return candidateApi.get(`/profile/get-work-status/${candidateId}`, {
@@ -360,6 +373,7 @@ export default {
   deleteDocument,
   parseResumeDetails,
   getResumeDetails,
+  saveAllExperienceDetails,
   getWorkStatus,
   postWorkStatus,
   ValidateDocument,

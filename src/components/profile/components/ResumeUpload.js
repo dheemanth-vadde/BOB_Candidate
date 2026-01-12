@@ -1,19 +1,22 @@
 // components/Tabs/ResumeUpload.jsx
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import '../../../css/Resumeupload.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faChevronRight, faUpload } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../../assets/delete-icon.png';
-import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import profileApi, { parseResumeDetails } from '../services/profile.api';
+import profileApi from '../services/profile.api';
+import { setParsedResume } from '../store/resumeSlice';
+import { setParsedExperience } from '../store/experienceSlice';
 import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
+import greenCheck from '../../../assets/green-check.png'
 
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl, goNext, goBack, resumePublicUrl, isBasicDetailsSubmitted }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
   const user = useSelector((state) => state?.user?.user?.data);
   const auth = useSelector((state) => state.user.authUser);
   const token = user?.accessToken;
@@ -84,6 +87,59 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       }
       if (res?.data) {
         setParsedData(res.data);
+        try {
+          const parsed = res.data;
+          // Attach stable temporary ids to parsed education entries
+          const makeId = () => (
+            (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2)}`
+          );
+          const parsedWithIds = {
+            ...parsed,
+            education: Array.isArray(parsed.education)
+              ? parsed.education.map(e => ({ ...e, __tempId: e.__tempId || makeId() }))
+              : []
+          };
+          dispatch(setParsedResume(parsedWithIds));
+
+          // Handle experience data
+          if (Array.isArray(parsed.experience) && parsed.experience.length > 0) {
+            // Attach stable temporary ids to parsed experience entries
+            const experienceWithIds = parsed.experience.map(exp => ({
+              ...exp,
+              __tempId: exp.__tempId || makeId()
+            }));
+            
+            // Dispatch experience to Redux store
+            dispatch(setParsedExperience(experienceWithIds));
+
+            // Transform experience data for API call
+            const experiencePayload = experienceWithIds.map(exp => ({
+              candidateId: candidateId,
+              fromDate: exp.startDate ? new Date(exp.startDate).toISOString().split('T')[0] : null,
+              toDate: exp.endDate ? new Date(exp.endDate).toISOString().split('T')[0] : null,
+              organizationName: exp.employer || '',
+              role: exp.designation || '',
+              postHeld: exp.designation || '',
+              isPresentlyWorking: exp.endDate ? false : true, // Check if currently working
+              workDescription: '',
+              monthsOfExp: exp.totalYears ? calculateMonthsFromString(exp.totalYears) : 0,
+              currentCtc: 0,
+              workExperienceId: null
+            }));
+
+            // Call API to save all experience details
+            try {
+              await profileApi.saveAllExperienceDetails(candidateId, experiencePayload);
+              toast.success("Experience details saved successfully");
+            } catch (expErr) {
+              console.error("Failed to save experience details", expErr);
+              toast.error("Failed to save experience details");
+              // Don't block the flow, continue anyway
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to dispatch parsed resume/experience', e);
+        }
       }
       goNext(); // ✅ success only
     } catch (err) {
@@ -96,6 +152,22 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       setLoading(false);
     }
 
+  };
+
+  // Helper function to convert totalYears string to months
+  const calculateMonthsFromString = (totalYearsStr) => {
+    if (!totalYearsStr) return 0;
+    let months = 0;
+    const yearMatch = totalYearsStr.match(/(\d+)\s*year/i);
+    const monthMatch = totalYearsStr.match(/(\d+)\s*month/i);
+    
+    if (yearMatch) {
+      months += parseInt(yearMatch[1], 10) * 12;
+    }
+    if (monthMatch) {
+      months += parseInt(monthMatch[1], 10);
+    }
+    return months;
   };
 
   useEffect(() => {
@@ -143,9 +215,9 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
 
           {/* Left: Check icon + file info */}
           <div className="d-flex align-items-center">
-            <FontAwesomeIcon
-              icon={faCheckCircle}
-              style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+            <img
+              src={greenCheck}
+              style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
             />
 
             <div className='p-2'>
@@ -209,14 +281,16 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
             style={{
               backgroundColor: "#ff7043",
               border: "none",
-              padding: "8px 24px",
+              padding: "0.6rem 2rem",
               borderRadius: "4px",
-              color: "#fff"
+              color: "#fff",
+              fontSize: '0.875rem'
             }}
             onClick={handleContinue}
             disabled={!resumeFile && !resumePublicUrl}
           >
             {loading ? "Processing..." : "Save & Next"}
+            <FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
           </button>
         </div>
       </div>

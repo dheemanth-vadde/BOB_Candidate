@@ -42,7 +42,7 @@ display: flex;
   outline: none;
   padding: 9px 12px;
   width: 100%;
-  font-size: 14px;
+  font-size: 0.85rem;
 }
 
 .search-input::placeholder {
@@ -79,7 +79,7 @@ font-weight: 500;
   color: #162B75;
 }
 .req-code {
-  color:  rgb(255, 112, 67) ;
+  color:  #F26522 ;
   font-weight: 500;
   font-size: 1rem;
 }
@@ -94,9 +94,9 @@ font-weight: 500;
 }
 
 /* Calendar icons */
-.date-icon {
-  font-size: 0.75rem;
-  color: #1b2a6b;
+.applied-jobs-page .date-icon {
+width: 12px;
+  height: 12px;
 }
 
 /* Divider */
@@ -107,9 +107,8 @@ font-weight: 500;
  .job-title{
   	color: rgb(255, 112, 67) ;
   font-size: 1rem;
-  width: 75%;
   float: left;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
     font-weight: 500 !important;
   }
   .titlecolor{
@@ -131,6 +130,7 @@ font-weight: 500;
 .status-badge.applied {
   background: #e7f0ff;
   color: #0C5DFF;
+  float: right;
 }
 
 .status-badge.interview,
@@ -226,7 +226,7 @@ font-weight: 500;
   display: grid;
   column-gap: 32px;
   row-gap: 10px;
-  margin-top: 8px;
+  margin-top: 0px;
   font-size: 14px;
 }
 
@@ -247,7 +247,7 @@ font-weight: 500;
 
 .job-meta-grid.row-3 {
   grid-template-columns: 1fr;
-  margin-top: 6px;
+  margin-top: 0px;
 }
 
 .meta-item .label {
@@ -262,37 +262,7 @@ font-weight: 500;
   font-weight: 300;
   font-size:0.875rem;
 }
-.offer-modal .modal-title{
-  font-size: 1.25rem;
-  font-weight: 400;
-}
-.comments-label  .textarea.form-control{
-  font-weight: 400;
-  color: #364153;
-  font-size:0.75rem;
-}
-.offer-modal .btn-danger{
-  background-color: #dc3545;
-  color: white;
-   font-size:0.875rem;
-   font-weight:400
-}
-.offer-modal .btn-danger:hover {
-  background-color: #c53030;
-  border-color: #c53030;
-}
 
-.offer-modal .btn-success{
-  background-color: #198754;
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 400;
-}
-
-.offer-modal .btn-success:hover {
-  background-color: #157347;
-  border-color: #157347;
-}
 /*pagination*/
 
 .applied-jobs-page .pagination .page-link {
@@ -313,7 +283,7 @@ font-weight: 500;
 .page-loader-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background:rgba(255, 255, 255, 0.7);
   z-index: 9999;
 
   display: flex;
@@ -321,6 +291,20 @@ font-weight: 500;
   align-items: center;
   justify-content: center;
 }
+.list-loader-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6); /* light overlay */
+  z-index: 10;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none; /* optional: allow scrolling */
+}
+
 /* Responsive */
 @media (max-width: 992px) {
   .job-meta-grid.row-1 {
@@ -355,4 +339,42 @@ font-weight: 500;
     align-items: flex-start;
     gap: 6px;
   }
+}
+
+/* Css added by Veeresh */
+.meta-item {
+  width: 250px;
+}
+.meta-item-education {
+  width: 100% !important;
+}
+.meta-item-education span.value{
+  color: #404040;
+  font-weight: 300;
+  font-size: 0.875rem;
+}
+.req-date-row{
+  width:85%;
+}
+.actionbtns{
+  width:15%;
+  float: right;
+  display: block;
+  text-align: right;
+  margin-top: 25px;
+}
+.downloadbtn{
+  color: #F26522;
+  border: 1px solid #F26522;
+  border-radius: 20px;
+  padding: 6px 15px;
+  margin: 15px 0 20px;
+  background: #FDE8DE;
+}
+.track-application-modal{
+  width:1100px !important;
+}
+.dowload-icon{
+  width: 17px;
+  height: 18px;
 }

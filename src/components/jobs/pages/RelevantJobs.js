@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import {
   faCheckCircle,
   faSearch,
-  faLightbulb,
   faCalendarAlt,
-  faCalendarTimes
+  faCalendarTimes,
+  faFileLines, faCircleInfo 
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "react-bootstrap";
 import "../../../css/Relevantjobs.css";
@@ -28,7 +28,11 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import ValidationErrorModal from "../components/ValidationErrorModal";
 import masterApi from "../../../services/master.api";
 import { mapInterviewCentresApi } from "../../jobs/mappers/interviewCentreMapper";
-
+import useDebounce from "../../jobs/hooks/useDebounce";
+import Vector from "../../../assets/Vector.png";
+import Group from "../../../assets/Group.png";
+import start from "../../../assets/start.png";
+import end from "../../../assets/end.png";
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,11 +78,9 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     { label: "11+ years", min: 11, max: Infinity },
   ];
   const [interviewCentres, setInterviewCentres] = useState([]);
-  const PAGE_SIZE =10; // change if needed
-  //const [currentPage, setCurrentPage] = useState(0); // backend index
-  //const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5; // change if needed
+ const [currentPage, setCurrentPage] = useState(0); // backend index
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoDocs, setInfoDocs] = useState([]);
   const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
@@ -88,16 +90,8 @@ const [turnstileToken, setTurnstileToken] = useState("");
   const dispatch = useDispatch();
 
   const [previewData, setPreviewData] = useState();
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    searchTerm,
-    selectedDepartments,
-    selectedLocations,
-    selectedExperience,
-    selectedRequisition,
-  ]);
   const user = useSelector((state) => state.user.user);
 
 
@@ -138,34 +132,66 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
     initMasters();
   }, []);
-  const fetchJobs = async (page = 0) => {
-    if (!candidateId || !isMasterReady) return;
 
-    try {
-      setLoading(true);
+ const getExperienceRangeInMonths = () => {
+  if (!selectedExperience || selectedExperience.length === 0) {
+    return { monthMinExp: null, monthMaxExp: null };
+  }
 
-      const res = await jobsApiService.getJobPositions(candidateId);
-      //console.log("jobsres",res)
-      const jobsData = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res?.data?.data)
-          ? res.data.data
-          : [];
+  const minYears = Math.min(...selectedExperience.map(e => e.min));
 
-      const mappedJobs = mapJobsApiToList(
-        jobsData,
-        masterData
-      );
+  const hasInfinity = selectedExperience.some(e => e.max === Infinity);
 
-      setJobs(mappedJobs);
-      //setTotalPages(pageData?.totalPages || 0);
+  const maxYears = hasInfinity
+    ? null
+    : Math.max(...selectedExperience.map(e => e.max));
 
-    } catch (err) {
-      toast.error("Failed to load jobs");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    monthMinExp: minYears * 12,
+    monthMaxExp: maxYears === null ? 0 : maxYears * 12
   };
+};
+
+
+
+  const fetchJobs = async () => {
+  if (!candidateId || !isMasterReady) return;
+
+  try {
+    setLoading(true);
+     const { monthMinExp, monthMaxExp } = getExperienceRangeInMonths();
+    const payload = {
+      searchText: debouncedSearchTerm || "",
+      candidateId,
+      deptIds: selectedDepartments,
+      stateIds: selectedStates,
+      requisitionId: selectedRequisition || null,
+      page: currentPage,
+      size: pageSize,
+     monthMinExp,
+      monthMaxExp
+    };
+
+    const res = await jobsApiService.getJobPositions(payload); // POST
+
+    const pageData = res?.data;
+    console.log("pageDta",pageData)
+    const jobsData = pageData?.content || [];
+
+    const mappedJobs = mapJobsApiToList(jobsData, masterData);
+
+    setJobs(mappedJobs);
+    setTotalPages(pageData?.totalPages ?? 0);
+
+  } catch (err) {
+    //toast.error("Failed to load jobs");
+    setJobs([]);
+    setTotalPages(0);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchInterviewCentres = async () => {
     try {
@@ -202,9 +228,9 @@ const [turnstileToken, setTurnstileToken] = useState("");
     }
   };
   useEffect(() => {
-    setCurrentPage(1); // backend index
+    setCurrentPage(0); // backend index
   }, [
-    searchTerm,
+    debouncedSearchTerm,
     selectedDepartments,
     selectedStates,
     selectedExperience,
@@ -215,30 +241,61 @@ const [turnstileToken, setTurnstileToken] = useState("");
     fetchInterviewCentres();
   }, []);
 
+useEffect(() => {
+  if (!isMasterReady) return;
+
+  // 🔹 no search → fetch all
+  if (!debouncedSearchTerm) {
+    fetchJobs();
+    return;
+  }
+
+  // 🔹 min 3 characters rule
+  if (debouncedSearchTerm.length < 3) return;
+
+  fetchJobs();
+}, [
+  isMasterReady,
+  currentPage,
+  debouncedSearchTerm,   // ✅ debounced value
+  selectedDepartments,
+  selectedStates,
+  selectedExperience,
+  selectedRequisition,
+  pageSize
+]);
+
+
   useEffect(() => {
-    fetchJobs(currentPage);
-  }, [isMasterReady]);
-  useEffect(() => {
-    if (!candidateId || !isMasterReady) return;
+  if (
+    !candidateId ||
+    !isMasterReady ||
+    !selectedJob?.position_id
+  ) {
+    return;
+  }
 
-    const fetchCandidatePreview = async () => {
-      try {
-        const response = await jobsApiService.getAllDetails(candidateId);
+  const fetchCandidatePreview = async () => {
+    try {
+      const response = await jobsApiService.getAllDetails(
+        candidateId,
+        selectedJob.position_id
+      );
 
-        const mappedPreviewData = mapCandidateToPreview(
-          response.data,
-          masterData        // ✅ PASS MASTERS HERE
-        );
+      const mappedPreviewData = mapCandidateToPreview(
+        response.data,
+        masterData
+      );
 
-        setPreviewData(mappedPreviewData);
-      } catch (error) {
-        console.error("Failed to fetch candidate preview", error);
-        toast.error("Unable to load candidate profile");
-      }
-    };
+      setPreviewData(mappedPreviewData);
+    } catch (error) {
+      console.error("Failed to fetch candidate preview", error);
+      toast.error("Unable to load candidate profile");
+    }
+  };
 
-    fetchCandidatePreview();
-  }, [candidateId, isMasterReady]);
+  fetchCandidatePreview();
+}, [candidateId, isMasterReady, selectedJob]);
 
   const formatDate = (date) => {
     if (!date) return "-";
@@ -246,76 +303,10 @@ const [turnstileToken, setTurnstileToken] = useState("");
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    });
+    })
+    .replace(/\//g, "-");
   };
 
-  // const calculateAge = (dobString) => {
-  //   if (!dobString) return null;
-
-  //   const dob = new Date(dobString);
-  //   const today = new Date();
-
-  //   let age = today.getFullYear() - dob.getFullYear();
-  //   const monthDiff = today.getMonth() - dob.getMonth();
-
-  //   if (
-  //     monthDiff < 0 ||
-  //     (monthDiff === 0 && today.getDate() < dob.getDate())
-  //   ) {
-  //     age--;
-  //   }
-
-  //   return age;
-  // };
-  
-
-  // const calculateExperienceYears = (totalExpString) => {
-  //   if (!totalExpString) return 0;
-
-  //   // "60 Months" → 60
-  //   const months = parseInt(totalExpString.replace(/\D/g, ""), 10);
-  //   return Math.floor(months / 12);
-  // };
-  // const validateAgeAndExperience = (job, previewData) => {
-  //   // ---------- AGE ----------
-  //   const dob = previewData?.personalDetails?.dob;
-  //   const age = calculateAge(dob);
-
-  //   console.log("age", age)
-
-  //   if (!age) {
-  //     toast.error("Date of Birth is missing in profile");
-  //     return false;
-  //   }
-  //   console.log("age min max", job.eligibility_age_min, job.eligibility_age_max)
-  //   if (
-  //     (job.eligibility_age_min && age < job.eligibility_age_min) ||
-  //     (job.eligibility_age_max && age > job.eligibility_age_max)
-  //   ) {
-  //     toast.error(
-  //       `Age must be between ${job.eligibility_age_min} - ${job.eligibility_age_max} years`
-  //     );
-  //     return false;
-  //   }
-
-  //   // ---------- EXPERIENCE ----------
-  //   const totalExpYears = calculateExperienceYears(
-  //     previewData?.experienceSummary?.total
-  //   );
-  //   console.log("totalExpYears", totalExpYears)
-  //   console.log("job.mandatory_experience", job.mandatory_experience)
-  //   if (
-  //     job.mandatory_experience &&
-  //     totalExpYears < Number(job.mandatory_experience)
-  //   ) {
-  //     toast.error(
-  //       `Minimum ${job.mandatory_experience} years experience required`
-  //     );
-  //     return false;
-  //   }
-
-  //   return true; // ✅ Eligible
-  // };
   const handlePreCheckConfirm = async () => {
     setShowPreCheckModal(false);
 
@@ -416,57 +407,6 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
 
 
-  const filteredJobs = jobs.filter((job) => {
-
-    const matchesDepartment =
-      selectedDepartments.length === 0 ||
-      selectedDepartments.includes(job.dept_id);
-
-    /* =========================
-      STATE FILTER ✅ NEW
-    ========================= */
-
-    const matchesState =
-      selectedStates.length === 0 ||
-      selectedStates.some(stateId =>
-        job.state_id_array?.includes(stateId)
-      );
-
-    const matchesSearch =
-      job.position_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.requisition_code?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesRequisition =
-      !selectedRequisition ||
-      String(job.requisition_id) === String(selectedRequisition);
-
-    const matchesExperience =
-      selectedExperience.length === 0 ||
-      selectedExperience.some((range) => {
-        const exp = Number(job.mandatory_experience || 0);
-        return exp >= range.min && exp <= range.max;
-      });
-    console.log("selected states", selectedStates, job.state_id)
-    console.log("matchesState", matchesState)
-    return (
-      matchesDepartment &&
-      matchesState &&          // ✅ ADDED
-      matchesSearch &&
-      matchesRequisition &&
-      matchesExperience
-    );
-  });
-
-  // const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
-
-  //const paginatedJobs = filteredJobs;
-
-  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
-
-  const paginatedJobs = filteredJobs.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
   const handleDepartmentChange = (deptId) => {
     setSelectedDepartments((prev) =>
       prev.includes(deptId)
@@ -575,6 +515,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
             />
             <span className="filter">Filters</span>
           </div>
+          
           <div
             className="bob-left-custom-filter-div"
             style={{
@@ -644,7 +585,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
                 ))}
               </div>
 
-              {(selectedDepartments.length > 0 || selectedLocations.length > 0) && (
+              {(selectedDepartments.length > 0 || selectedLocations.length > 0 || selectedExperience.length>0) && (
                 <button
                   className="btn btn-sm btn-outline-secondary mt-3"
                   onClick={clearFilters}
@@ -661,7 +602,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
           {/* 🔹 Search and Requisition Dropdown */}
           <div className="d-flex justify-content-between mb-3">
             <div className="d-flex" style={{ flex: 1 }}>
-              <div style={{ minWidth: "250px" }}>
+              <div style={{ minWidth: "325px" }}>
                 <select
                   className="form-select"
                   value={selectedRequisition}
@@ -679,17 +620,36 @@ const [turnstileToken, setTurnstileToken] = useState("");
               </div>
             </div>
 
+            {/* <select
+              className="form-select form-select-sm"
+              style={{ width: "90px" }}
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select> */}
+
+
             <div className="d-flex align-items-center gap-2">
               <button
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("annexures")}
               >
+                 {/* <FontAwesomeIcon icon={faFileLines} className="me-2" /> */}
+                  <img src={Group} alt="Group" className="annexure_group"/>
+               
                 Annexure Forms
               </button>
               <button
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("generic")}
+              
               >
+                  {/* <FontAwesomeIcon icon={faCircleInfo} className="me-2" /> */}
+                   <img src={Vector} alt="Vector"   className="generic_group"/>
                 Generic Information
               </button>
               <div className="applied-search">
@@ -707,7 +667,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
             </div>
           </div>
           {/* ================= EMPTY STATE (ADDED) ================= */}
-          {filteredJobs.length === 0 && (
+          {jobs.length === 0 && (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
               <div className="text-center">
                 <FontAwesomeIcon
@@ -722,7 +682,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
               </div>
             </div>
           )}
-          {paginatedJobs.map((job) => (
+          {jobs.map((job) => (
             <div className="col-md-12 mb-4" key={job.position_id}>
               <div
                 className="card h-100"
@@ -738,18 +698,19 @@ const [turnstileToken, setTurnstileToken] = useState("");
                     {/* ===== Requisition code + dates row ===== */}
                     <div className="req-date-row">
                       <span className="req-code">
-                        {job.requisition_code}
+                        {job.requisition_title} ({job.requisition_code})
                       </span>
 
                       <span className="date-item">
-                        <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+                        {/* <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" /> */}
+                        <img src={start}  className="date-icon" alt="start"></img>
                         Start: {formatDate(job.registration_start_date)}
                       </span>
 
                       <span className="date-divider">|</span>
 
                       <span className="date-item">
-                        <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+                         <img src={end}  className="date-icon" alt="end"></img>
                         End: {formatDate(job.registration_end_date)}
                       </span>
                     </div>
@@ -791,7 +752,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
                       {job.mandatory_qualification}
                     </p>
                     <p className="mb-1 text-mutedd small qualification">
-                      <span className="subtitle">Location:</span>{" "}
+                      <span className="subtitle">States:</span>{" "}
                       {job.state_name}
                     </p>
                   </div>
@@ -822,55 +783,60 @@ const [turnstileToken, setTurnstileToken] = useState("");
               </div>
             </div>
           ))}
+          
+          {jobs.length > 0 && (
+            <div className="d-flex justify-content-start mb-3">
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "90px" }}
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          )}
+          
+          {totalPages > 1 && (
+        <ul className="pagination pagination-sm justify-content-center">
+          <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+            <button
+              className="page-link"
+              onClick={() => setCurrentPage(p => Math.max(p - 1, 0))}
+            >
+              ‹
+            </button>
+          </li>
+
+          {Array.from({ length: totalPages }, (_, i) => (
+            <li
+              key={i}
+              className={`page-item ${currentPage === i ? "active" : ""}`}
+            >
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(i)}
+              >
+                {i + 1}
+              </button>
+            </li>
+          ))}
+
+          <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
+            <button
+              className="page-link"
+              onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages - 1))}
+            >
+              ›
+            </button>
+          </li>
+        </ul>
+      )}
         </div>
       </div>
-
-      {totalPages > 1 && (
-        <div className="d-flex justify-content-center mt-4">
-          <ul className="pagination pagination-sm">
-
-            {/* Prev */}
-            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-              >
-                ‹
-              </button>
-            </li>
-
-            {/* Pages */}
-            {Array.from({ length: totalPages }, (_, i) => {
-              const page = i + 1;
-              return (
-                <li
-                  key={page}
-                  className={`page-item ${currentPage === page ? "active" : ""}`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </button>
-                </li>
-              );
-            })}
-
-            {/* Next */}
-            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-              >
-                ›
-              </button>
-            </li>
-
-          </ul>
-        </div>
-      )}
-      {/* ✅ Add Preference Modal */}
 
       
 
@@ -910,7 +876,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
         formErrors={formErrors}                 // ✅ PASS ERRORS
         setFormErrors={setFormErrors}           // ✅ PASS SETTER
         interviewCentres={interviewCentres}
- setTurnstileToken={setTurnstileToken}  
+        setTurnstileToken={setTurnstileToken}  
       />
 
       <PaymentModal

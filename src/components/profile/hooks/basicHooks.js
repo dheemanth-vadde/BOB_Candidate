@@ -42,6 +42,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	const serviceDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "SERVICE"));
 	const birthDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT"));
 	const [loading, setLoading] = useState(false);
+	const [isDirty, setIsDirty] = useState(false);
 	const [formData, setFormData] = useState({
 		firstName: "",
 		middleName: "",
@@ -220,6 +221,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 					// 👇 Use extracted Aadhaar name if available, else DB data
 					fullNameAadhar: aadhaarName || mappedForm.fullNameAadhar
 				}));
+				setIsDirty(false);
 				console.log("Mapped Form Data:", mappedForm);
 
 				setIsAadhaarLocked(
@@ -399,6 +401,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				return;
 			}
 			setCommunityFile(file);
+			setIsDirty(true);
 			clearFieldError("communityCertificate");
 		} finally {
 			setLoading(false);
@@ -428,6 +431,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			}
 
 			setDisabilityFile(file);
+			setIsDirty(true);
 		} finally {
 			setLoading(false);
 		}
@@ -453,8 +457,8 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		}
 
 		setServiceFile(file);
+		setIsDirty(true);
 
-		// 🔥 CLEAR VALIDATION ERROR
 		setFormErrors(prev => {
 			const updated = { ...prev };
 			delete updated.serviceCertificate;
@@ -497,6 +501,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 			// Either Birth or Board passed
 			setBirthFile(file);
+			setIsDirty(true);
 			clearFieldError("birthCertificate");
 
 		} finally {
@@ -555,6 +560,8 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			[id]: updatedValue
 		}));
 
+		setIsDirty(true);
+
 		setParsedFields(prev => {
 			if (!prev[id]) return prev;
 			const updated = { ...prev };
@@ -567,6 +574,26 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				...prev,
 				[id]: true
 			}));
+		}
+
+		if (id === "contactNumber") {
+			if (/^\d{10}$/.test(updatedValue)) {
+			setFormErrors(prev => {
+				const updated = { ...prev };
+				delete updated.contactNumber;
+				return updated;
+			});
+			}
+		}
+
+		if (id === "altNumber") {
+			if (/^\d{10}$/.test(updatedValue) || updatedValue === "") {
+			setFormErrors(prev => {
+				const updated = { ...prev };
+				delete updated.altNumber;
+				return updated;
+			});
+			}
 		}
 	};
 
@@ -587,6 +614,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				i === index ? { ...dis, [field]: value } : dis
 			)
 		}));
+		setIsDirty(true);
 
 		// 🔥 CLEAR VALIDATION ERROR
 		setFormErrors(prev => {
@@ -633,6 +661,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			...prev,
 			[name]: value
 		}));
+		setIsDirty(true);
 	};
 
 	const handleCheckbox = (e) => {
@@ -641,6 +670,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			...prev,
 			[id]: checked
 		}));
+		setIsDirty(true);
 		const match = id.match(/^(language[123])/);
 		if (match) {
 			const langKey = match[1];
@@ -668,7 +698,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		// Required fields validation
 		const requiredFields = [
 			'firstName', 'lastName', 'fullNameAadhar', 'fullNameSSC', 'gender',
-			'dob', 'maritalStatus', 'nationality', 'religion', 'category',
+			'dob', 'cibilScore', 'maritalStatus', 'nationality', 'religion', 'category',
 			'caste', 'motherName', 'fatherName', 'contactNumber', 'language1'
 		];
 
@@ -679,14 +709,28 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			}
 		});
 
+		const mobile = cleanedFormData.contactNumber?.trim();
+
+		if (mobile) {
+			if (!/^\d{10}$/.test(mobile)) {
+				errors.contactNumber = "Mobile number must be exactly 10 digits";
+			}
+		}
+
+		const altMobile = cleanedFormData.altNumber?.trim();
+		
+		if (altMobile && !/^\d{10}$/.test(altMobile)) {
+			errors.altNumber = "Alternate number must be exactly 10 digits";
+		}
+
 		// ---------------- NAME VALIDATION ----------------
-  const NAME_ERROR = "Only alphabets and spaces are allowed";
-  NAME_FIELDS.forEach(field => {
-    const value = cleanedFormData[field];
-    if (value && !isValidName(value)) {
-      errors[field] = NAME_ERROR;
-    }
-  });
+		const NAME_ERROR = "Only alphabets and spaces are allowed";
+		NAME_FIELDS.forEach(field => {
+			const value = cleanedFormData[field];
+			if (value && !isValidName(value)) {
+			errors[field] = NAME_ERROR;
+			}
+		});
 
   // ---------------- TWIN SIBLING ----------------
   if (cleanedFormData.twinSibling) {
@@ -816,6 +860,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			await Promise.all(uploadPromises);
 
 			toast.success("Basic details have been saved successfully");
+			setIsDirty(false);
 			goNext();
 		} catch (err) {
 			console.error(err);
@@ -893,25 +938,33 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 	// when OCR/extracted data arrives, populate form and lock fullNameAadhar
 	useEffect(() => {
-		if (!aadhaarName) return;
+		if (aadhaarName) {
+			setFormData(prev => ({
+				...prev,
+				fullNameAadhar: aadhaarName
+			}));
 
-		setFormData(prev => ({
-			...prev,
-			fullNameAadhar: aadhaarName
-		}));
+			setFormErrors(prev => ({
+				...prev,
+				fullNameAadhar: ""
+			}));
 
-		setFormErrors(prev => ({
-			...prev,
-			fullNameAadhar: ""
-		}));
+			setTouched(prev => ({
+				...prev,
+				fullNameAadhar: true
+			}));
 
-		setTouched(prev => ({
-			...prev,
-			fullNameAadhar: true
-		}));
-
-		setIsAadhaarLocked(true);
+			setIsAadhaarLocked(true);
+		} else {
+			setIsAadhaarLocked(false);
+		}
 	}, [aadhaarName]);
+
+	useEffect(() => {
+		if (isAadhaarLocked || aadhaarName) return;
+		const combined = [formData.firstName, formData.middleName, formData.lastName].filter(Boolean).join(' ');
+		setFormData(prev => ({ ...prev, fullNameAadhar: combined }));
+	}, [formData.firstName, formData.middleName, formData.lastName, isAadhaarLocked, aadhaarName]);
 
 	useEffect(() => {
 		if (!parsedData?.personal?.name) return;
@@ -991,6 +1044,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		parsedClass,
 		handleNameKeyDown,
 		getAvailableDisabilityTypes,
-		loading
+		loading,
+		isDirty
 	};
 };

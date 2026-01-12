@@ -222,5 +222,31 @@ const safeBool = (v) => v ?? true;
         employment_type_name: safeStr(e.typeName),
         is_active: true,
       })),
+
+      /* =====================
+      EDUCATION LEVELS ✅
+    ====================== */
+    education_levels: (data.educationLevels || [])
+      .filter(e => e.documentTypeId)
+      .map(e => ({
+        education_level_id: e.documentTypeId,
+        education_level_code: safeStr(e.docCode),
+        education_level_name: safeStr(e.documentName),
+        is_required: e.isRequired ?? false,
+        is_editable: e.isEditable ?? true,
+        is_active: true,
+      })),
+
+      /* =====================
+      SPECIALIZATIONS ✅
+    ====================== */
+    specializations: (data.specializationMaster || [])
+      .filter(s => s.specializationId)
+      .map(s => ({
+        specialization_id: s.specializationId,
+        specialization_name: safeStr(s.specializationName),
+        is_active: true,
+      })),
+
   };
 };

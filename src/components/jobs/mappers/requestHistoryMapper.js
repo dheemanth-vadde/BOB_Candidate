@@ -14,6 +14,8 @@ export const mapRequestHistoryApiToList = (apiList = []) => {
       request_type_id: thread.requestTypeId,
       initiated_by: thread.initiatedBy,
       status: thread.status,
+      created_date:thread.createdDate,
+      modified_date:thread.modifiedDate,
 
       messages: messages.map(msg => ({
         message_id: msg.conversationMessageId,
@@ -22,6 +24,8 @@ export const mapRequestHistoryApiToList = (apiList = []) => {
         message: msg.message,
         attachment: msg.attachmentPath,
         is_read: msg.isRead,
+           created_date:msg.createdDate,
+      modified_date:msg.modifiedDate,
       })),
     };
   });

@@ -115,7 +115,7 @@
 }
 
 .track-application-modal .step.current .step-label {
-  color: #1f3c88;
+  font-weight: 600;
 }
 
 /* Date & time */
@@ -236,18 +236,30 @@
   font-size: 0.875rem;
   font-weight: 400;
 }
-
-.query-actions .btn-primary {
+.query-actions .btn-primaryy:focus,
+.query-actions .btn-primaryy:focus-visible {
+  background-color: #162B75;
+  border-color: #162B75;
+  color: #fff;
+}
+.query-actions .btn-primaryy {
   background: #162B75;
   border-color: #162B75;
   color:#fff;
   font-size: 0.875rem;
   font-weight: 400;
 }
-.query-actions .btn-primary:hover {
+.query-actions .btn-primaryy:hover {
   background: #162B75;
   border-color: #162B75;
   color:#fff;
+}
+/* Active (on click) */
+.query-actions .btn-primaryy:active,
+.query-actions .btn-primaryy.active {  
+  background-color: #162B75;
+  border-color: #162B75;
+  color: #fff;
 }
 .query-actions .btn-outline-secondary{
 
@@ -275,24 +287,21 @@
   margin-bottom: 12px;
 }
 
-.history-table th {
-  font-size: 12px;
-  color: #6c757d;
-}
 
 .history-table td {
   font-weight:400;
   font-size: 0.875rem;
   vertical-align: middle;
+  color:#000000 !important;
 }
 
-.status.approved {
+.history-table .status.approved {
   color: #28a745;
   font-weight: 600;
 }
 
-.status.pending {
-  color: #CA8009;
+.history-table .status.pending {
+  color: #CA8009 !important;
 }
 
 /* ==============================
@@ -349,4 +358,37 @@
 .thread-item .time {
   font-size: 11px;
   color: #999;
+}
+.bob-pref-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #f26522; /* Bank orange */
+}
+
+.info-bulb-icon{
+  color: #f37021;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+.history-table .table-header th{
+  background: #fff !important;
+  text-align:left;
+  color: #0A0A0A !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  text-transform:none;
+  
+}
+.track-application-modal {
+  max-width:1100px !important;
+}
+.date-time{
+  font-size: 0.75rem;
+  color: #99A1AF;
+  font-weight:400;
 }

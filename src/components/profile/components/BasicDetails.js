@@ -1,8 +1,7 @@
-import { faCheckCircle, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
-import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
 import bulbIcon from '../../../assets/bulb-icon.png';
 import { useBasicDetails } from '../hooks/basicHooks';
@@ -10,6 +9,9 @@ import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Loader from './Loader';
+import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
+import { Form } from 'react-bootstrap';
+import greenCheck from '../../../assets/green-check.png'
 
 const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -67,7 +69,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		parsedClass,
 		handleNameKeyDown,
 		getAvailableDisabilityTypes,
-		loading
+		loading,
+		isDirty
 	} = useBasicDetails({ goNext, goBack, parsedData });
 
 	return (
@@ -84,7 +87,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							<p className="tab_headers" style={{ marginBottom: '0px' }}>Personal Details</p>
 						</div>
 						<div className='d-flex'>
-							<img src={bulbIcon} style={{ width: '20px', height: '20px', marginTop: '10px', marginRight: '5px' }}/>
+							<img src={bulbIcon} style={{ width: '25px', height: '25px', marginTop: '6px', marginRight: '5px' }}/>
 							<p className='orange_text mt-2'>Resume details have been auto-applied in the highlighted fields.</p>
 						</div>
 					</div>
@@ -118,8 +121,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							type="text"
 							id="fullNameAadhar"
 							value={formData.fullNameAadhar}
-							readOnly={isAadhaarLocked}
-							className={`form-control ${isAadhaarLocked ? "bg-light text-muted" : ""}`}
+							readOnly
+							className={`form-control bg-light text-muted`}
 						/>
 						{isNameMismatch && (
 							<small className="text-danger">
@@ -129,13 +132,13 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						{formErrors.fullNameAadhar && <div className="invalid-feedback">{formErrors.fullNameAadhar}</div>}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="fullNameSSC" className="form-label">Full Name as per 10th/Birth Certificate <span className="text-danger">*</span></label>
 						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your full name' />
 						{formErrors.fullNameSSC && <div className="invalid-feedback">{formErrors.fullNameSSC}</div>}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="gender" className="form-label">Gender <span className="text-danger">*</span></label>
 						<select
 							className={`form-select ${formErrors.gender ? 'is-invalid' : ''}`}
@@ -153,7 +156,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						{formErrors.gender && <div className="invalid-feedback">{formErrors.gender}</div>}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="dob" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Date of Birth <span className="text-danger">*</span></label>
 						<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} max={new Date().toISOString().split("T")[0]} />
 
@@ -164,7 +167,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="birthCertificate" className="form-label">Upload 10th/Birth Certificate <span className="text-danger">*</span></label>
 						{!birthFile && !existingBirthDoc && (
 							<div
@@ -210,9 +213,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 
 									<div>
@@ -265,9 +268,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -305,7 +308,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="maritalStatus" className="form-label">Marital Status <span className="text-danger">*</span></label>
 						<select
 							id="maritalStatus"
@@ -327,7 +330,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="motherName" className="form-label">Mother Name <span className="text-danger">*</span></label>
 						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your mother name' />
 						{formErrors.motherName && (
@@ -337,7 +340,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="fatherName" className="form-label">Father Name <span className="text-danger">*</span></label>
 						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your father name' />
 						{formErrors.fatherName && (
@@ -347,12 +350,12 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="spouseName" className="form-label">Spouse Name</label>
 						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your spouse name' />
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="contactNumber" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Contact Number <span className="text-danger">*</span></label>
 						<input
 							type="text"
@@ -384,7 +387,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="altNumber" className="form-label">Alternative Number</label>
 						<input
 							type="text"
@@ -409,9 +412,14 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								}
 							}}
 						/>
+						{formErrors.altNumber && (
+							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
+								{formErrors.altNumber}
+							</div>
+						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="cibilScore" className="form-label">
 							CIBIL Score <span className="text-danger">*</span>
 						</label>
@@ -462,7 +470,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="socialMediaLink" className="form-label">Socail Media Profile Link</label>
 						<input type="text" className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} placeholder='Enter your social media profile link' />
 					</div>
@@ -471,7 +479,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Commuity</p>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="nationality" className="form-label">Nationality/Citizenship <span className="text-danger">*</span></label>
 						<select
 							className={`form-select ${formErrors.nationality ? 'is-invalid' : ''}`}
@@ -493,7 +501,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="religion" className="form-label">Religion <span className="text-danger">*</span></label>
 						<select
 							id="religion"
@@ -515,7 +523,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="category" className="form-label">Category <span className="text-danger">*</span></label>
 						<select
 							id="category"
@@ -537,7 +545,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="caste" className="form-label">Community/Caste <span className="text-danger">*</span></label>
 						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your community/caste' />
 						{formErrors.caste && (
@@ -547,7 +555,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="casteState" className="form-label">State to which belong for SC/ST/OBC</label>
 						<select
 							className="form-select"
@@ -565,7 +573,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						</select>
 					</div>
 
-					<div className="col-md-6 col-sm-12 mt-2">
+					<div className="col-md-6 col-sm-12 mt-3">
 						<label htmlFor="communityCertificate" className="form-label">
 							Upload Certificate {!isGeneralCategory && <span className="text-danger">*</span>}
 						</label>
@@ -613,9 +621,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -668,9 +676,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -711,7 +719,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Siblings</p>
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="twinSibling" className="form-label">Do you have a twin sibling? <span className="text-danger">*</span></label>
 						<select
 							className="form-select"
@@ -741,7 +749,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						</select>
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="siblingName" className="form-label">Twin Sibling's Name</label>
 						<input
 							type="text"
@@ -756,7 +764,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						{formErrors.siblingName && <div className="invalid-feedback">{formErrors.siblingName}</div>}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="twinGender" className="form-label">Gender of the twin</label>
 						<select
 							className={`form-select ${formErrors.twinGender ? 'is-invalid' : ''}`}
@@ -778,7 +786,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Disability</p>
-					<div className="col-md-4 col-sm-12 mt-2">
+					<div className="col-md-4 col-sm-12 mt-3">
 						<label htmlFor="disability" className="form-label">Person with Disability? <span className="text-danger">*</span></label>
 						<select
 							className="form-select"
@@ -821,7 +829,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						</select>
 					</div>
 
-					<div className="col-md-4 col-sm-12 mt-2">
+					<div className="col-md-4 col-sm-12 mt-3">
 						<label htmlFor="scribeRequirement" className="form-label">Scribe Requirement</label>
 						<select
 							className={`form-select ${formErrors.scribeRequirement ? 'is-invalid' : ''
@@ -843,7 +851,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-4 col-sm-12 mt-2">
+					<div className="col-md-4 col-sm-12 mt-3">
 						<label htmlFor="disabilityCertificate" className="form-label">Upload Certificate</label>
 						{!disabilityFile && !existingDisabilityDoc && (
 							<div
@@ -890,9 +898,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -944,9 +952,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -1082,7 +1090,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Ex-Service Person</p>
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="servicePerson" className="form-label">Ex Service Person?</label>
 						<select
 							className="form-select"
@@ -1101,7 +1109,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						</select>
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="serviceEnrollment" className="form-label">Service Start Enrollment Date</label>
 						<input
 							type="date"
@@ -1121,7 +1129,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="dischargeDate" className="form-label">Discharge Date</label>
 						<input
 							type="date"
@@ -1142,7 +1150,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="servicePeriod" className="form-label">Service Period (in Months)</label>
 						<input type="number" className="form-control" id="servicePeriod" disabled value={formData?.servicePeriod} onChange={handleChange} placeholder='Enter your service period' />
 					</div>
@@ -1155,11 +1163,28 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							</div>
 
 							<div>
-								<input type="radio" id="employmentSecuredYes" name="employmentSecured" value="Yes" checked={formData?.employmentSecured === "Yes"} onChange={handleRadio} />
-								<label htmlFor="employmentSecuredYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-
-								<input type="radio" id="employmentSecuredNo" name="employmentSecured" value="No" checked={formData?.employmentSecured === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
-								<label htmlFor="employmentSecuredNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+								<Form.Check
+									type="radio"
+									id="employmentSecuredYes"
+									name="employmentSecured"
+									value="Yes"
+									label="Yes"
+									checked={formData?.employmentSecured === "Yes"}
+									onChange={handleRadio}
+									inline
+									style={{ fontSize: "12px" }}
+								/>
+								<Form.Check
+									type="radio"
+									id="employmentSecuredNo"
+									name="employmentSecured"
+									value="No"
+									label="No"
+									checked={formData?.employmentSecured === "No"}
+									onChange={handleRadio}
+									inline
+									style={{ fontSize: "12px", marginLeft: '1rem' }}
+								/>
 							</div>
 						</div>
 
@@ -1171,11 +1196,28 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							</div>
 
 							<div>
-								<input type="radio" id="lowerPostYes" name="lowerPostStatus" value="Yes" checked={formData?.lowerPostStatus === "Yes"} onChange={handleRadio} />
-								<label htmlFor="lowerPostYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-
-								<input type="radio" id="lowerPostNo" name="lowerPostStatus" value="No" checked={formData?.lowerPostStatus === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
-								<label htmlFor="lowerPostNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+								<Form.Check
+									type="radio"
+									id="lowerPostYes"
+									name="lowerPostStatus"
+									value="Yes"
+									label="Yes"
+									checked={formData?.lowerPostStatus === "Yes"}
+									onChange={handleRadio}
+									inline
+									style={{ fontSize: "12px" }}
+								/>
+								<Form.Check
+									type="radio"
+									id="lowerPostNo"
+									name="lowerPostStatus"
+									value="No"
+									label="No"
+									checked={formData?.lowerPostStatus === "No"}
+									onChange={handleRadio}
+									inline
+									style={{ fontSize: "12px", marginLeft: '1rem' }}
+								/>
 							</div>
 						</div>
 					</div>
@@ -1228,9 +1270,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 
 									<div>
@@ -1283,9 +1325,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -1326,7 +1368,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 				<div className="px-4 pb-4 rounded row g-4 formfields bg-white border">
 					<p className="tab_headers" style={{ marginBottom: '0px', marginTop: '1rem' }}>Language Profiency</p>
-					<div className="col-md-4 col-sm-12 mt-2">
+					<div className="col-md-4 col-sm-12 mt-3">
 						<label htmlFor="language1" className="form-label">Language 1 <span className="text-danger">*</span></label>
 						<select
 							id="language1"
@@ -1346,18 +1388,33 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						</select>
 						{formErrors.language1 && <div className="invalid-feedback">{formErrors.language1}</div>}
 						<div className="d-flex">
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language1Read" checked={formData?.language1Read} onChange={handleCheckbox} />
-								<label htmlFor="read1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Read</label>
-							</div>
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language1Write" checked={formData?.language1Write} onChange={handleCheckbox} style={{ marginLeft: '0.75rem' }} />
-								<label htmlFor="write1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Write</label>
-							</div>
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language1Speak" checked={formData?.language1Speak} onChange={handleCheckbox} style={{ marginLeft: '0.75rem' }} />
-								<label htmlFor="speak1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
-							</div>
+							<Form.Check
+								type="checkbox"
+								id="language1Read"
+								label="Read"
+								checked={formData?.language1Read}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
+							<Form.Check
+								type="checkbox"
+								id="language1Write"
+								label="Write"
+								checked={formData?.language1Write}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
+							<Form.Check
+								type="checkbox"
+								id="language1Speak"
+								label="Speak"
+								checked={formData?.language1Speak}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
 						</div>
 						{formErrors.language1Proficiency && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
@@ -1366,7 +1423,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-4 col-sm-12 mt-2">
+					<div className="col-md-4 col-sm-12 mt-3">
 						<label htmlFor="language2" className="form-label">Language 2</label>
 						<select
 							id="language2"
@@ -1385,18 +1442,33 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							))}
 						</select>
 						<div className="d-flex">
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language2Read" checked={formData?.language2Read} onChange={handleCheckbox} />
-								<label htmlFor="read2" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Read</label>
-							</div>
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language2Write" checked={formData?.language2Write} onChange={handleCheckbox} style={{ marginLeft: '0.75rem' }} />
-								<label htmlFor="write2" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Write</label>
-							</div>
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language2Speak" checked={formData?.language2Speak} onChange={handleCheckbox} style={{ marginLeft: '0.75rem' }} />
-								<label htmlFor="speak2" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
-							</div>
+							<Form.Check
+								type="checkbox"
+								id="language2Read"
+								label="Read"
+								checked={formData?.language2Read}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
+							<Form.Check
+								type="checkbox"
+								id="language2Write"
+								label="Write"
+								checked={formData?.language2Write}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
+							<Form.Check
+								type="checkbox"
+								id="language2Speak"
+								label="Speak"
+								checked={formData?.language2Speak}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
 						</div>
 						{formErrors.language2Proficiency && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
@@ -1405,7 +1477,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						)}
 					</div>
 
-					<div className="col-md-4 col-sm-12 mt-2">
+					<div className="col-md-4 col-sm-12 mt-3">
 						<label htmlFor="language3" className="form-label">Language 3</label>
 						<select
 							id="language3"
@@ -1424,18 +1496,33 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							))}
 						</select>
 						<div className="d-flex">
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language3Read" checked={formData?.language3Read} onChange={handleCheckbox} />
-								<label htmlFor="read1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Read</label>
-							</div>
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language3Write" checked={formData?.language3Write} onChange={handleCheckbox} style={{ marginLeft: '0.75rem' }} />
-								<label htmlFor="write1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Write</label>
-							</div>
-							<div className="d-flex align-items-center">
-								<input type="checkbox" id="language3Speak" checked={formData?.language3Speak} onChange={handleCheckbox} style={{ marginLeft: '0.75rem' }} />
-								<label htmlFor="speak1" className="form-label" style={{ marginLeft: '0.25rem', marginTop: '0.4rem' }}>Speak</label>
-							</div>
+							<Form.Check
+								type="checkbox"
+								id="language3Read"
+								label="Read"
+								checked={formData?.language3Read}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
+							<Form.Check
+								type="checkbox"
+								id="language3Write"
+								label="Write"
+								checked={formData?.language3Write}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
+							<Form.Check
+								type="checkbox"
+								id="language3Speak"
+								label="Speak"
+								checked={formData?.language3Speak}
+								onChange={handleCheckbox}
+								inline
+								style={{ marginTop: '0.4rem' }}
+							/>
 						</div>
 						{formErrors.language3Proficiency && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
@@ -1453,10 +1540,28 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							</label>
 						</div>
 						<div>
-							<input type="radio" id="riotVictimFamily" name="riotVictimFamily" value="Yes" checked={formData?.riotVictimFamily === "Yes"} onChange={handleRadio} />
-							<label htmlFor="riotYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-							<input type="radio" id="riotVictimFamily" name="riotVictimFamily" value="No" checked={formData?.riotVictimFamily === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
-							<label htmlFor="riotNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+							<Form.Check
+								type="radio"
+								id="riotVictimFamilyYes"
+								name="riotVictimFamily"
+								value="Yes"
+								label="Yes"
+								checked={formData?.riotVictimFamily === "Yes"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px" }}
+							/>
+							<Form.Check
+								type="radio"
+								id="riotVictimFamilyNo"
+								name="riotVictimFamily"
+								value="No"
+								label="No"
+								checked={formData?.riotVictimFamily === "No"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px", marginLeft: '1rem' }}
+							/>
 						</div>
 					</div>
 
@@ -1467,10 +1572,28 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							</label>
 						</div>
 						<div>
-							<input type="radio" id="servingInGovt" name="servingInGovt" value="Yes" checked={formData?.servingInGovt === "Yes"} onChange={handleRadio} />
-							<label htmlFor="psuYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-							<input type="radio" id="servingInGovt" name="servingInGovt" value="No" checked={formData?.servingInGovt === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
-							<label htmlFor="psuNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+							<Form.Check
+								type="radio"
+								id="servingInGovtYes"
+								name="servingInGovt"
+								value="Yes"
+								label="Yes"
+								checked={formData?.servingInGovt === "Yes"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px" }}
+							/>
+							<Form.Check
+								type="radio"
+								id="servingInGovtNo"
+								name="servingInGovt"
+								value="No"
+								label="No"
+								checked={formData?.servingInGovt === "No"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px", marginLeft: '1rem' }}
+							/>
 						</div>
 					</div>
 
@@ -1481,10 +1604,28 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							</label>
 						</div>
 						<div>
-							<input type="radio" id="minorityCommunity" name="minorityCommunity" value="Yes" checked={formData?.minorityCommunity === "Yes"} onChange={handleRadio} />
-							<label htmlFor="rmcYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-							<input type="radio" id="minorityCommunity" name="minorityCommunity" value="No" checked={formData?.minorityCommunity === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
-							<label htmlFor="rmcNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+							<Form.Check
+								type="radio"
+								id="minorityCommunityYes"
+								name="minorityCommunity"
+								value="Yes"
+								label="Yes"
+								checked={formData?.minorityCommunity === "Yes"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px" }}
+							/>
+							<Form.Check
+								type="radio"
+								id="minorityCommunityNo"
+								name="minorityCommunity"
+								value="No"
+								label="No"
+								checked={formData?.minorityCommunity === "No"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px", marginLeft: '1rem' }}
+							/>
 						</div>
 					</div>
 
@@ -1495,16 +1636,34 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							</label>
 						</div>
 						<div>
-							<input type="radio" id="disciplinaryAction" name="disciplinaryAction" value="Yes" checked={formData?.disciplinaryAction === "Yes"} onChange={handleRadio} />
-							<label htmlFor="disciplineActionYes" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>Yes</label>
-							<input type="radio" id="disciplinaryAction" name="disciplinaryAction" value="No" checked={formData?.disciplinaryAction === "No"} onChange={handleRadio} style={{ marginLeft: '1rem' }} />
-							<label htmlFor="disciplineActionNo" style={{ fontSize: "12px", marginLeft: "0.25rem" }}>No</label>
+							<Form.Check
+								type="radio"
+								id="disciplinaryActionYes"
+								name="disciplinaryAction"
+								value="Yes"
+								label="Yes"
+								checked={formData?.disciplinaryAction === "Yes"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px" }}
+							/>
+							<Form.Check
+								type="radio"
+								id="disciplinaryActionNo"
+								name="disciplinaryAction"
+								value="No"
+								label="No"
+								checked={formData?.disciplinaryAction === "No"}
+								onChange={handleRadio}
+								inline
+								style={{ fontSize: "12px", marginLeft: '1rem' }}
+							/>
 						</div>
 					</div>
 
-					<div className="d-flex justify-content-between">
+					<div className="d-flex justify-content-between mt-2">
 						<div>
-							<button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
+							<BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
 						</div>
 						<div>
 							<button
@@ -1513,11 +1672,16 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								style={{
 									backgroundColor: "#ff7043",
 									border: "none",
-									padding: "8px 24px",
+									padding: "0.6rem 2rem",
 									borderRadius: "4px",
-									color: "#fff"
+									color: "#fff",
+									fontSize: '0.875rem'
 								}}
-							>Save and Next</button>
+							>
+								Save & Next
+								<FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
+								{/* <span className='px-2' style={{ fontSize: '1.25rem' }}>></span> */}
+							</button>
 						</div>
 					</div>
 				</div>

@@ -42,10 +42,15 @@ export const getGenericDocuments = () => {
   );
 };
 
+export const getCertifications = () => {
+  return api.get(`/v1/master/certificates-master/all`);
+};
+
 export default {
   getMasterData,
   getDocumentTypes,
   getChatFAQReply,
   getChatQueryReply,
-  getGenericDocuments
+  getGenericDocuments,
+  getCertifications
 };
