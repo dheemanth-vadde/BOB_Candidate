@@ -226,7 +226,7 @@ display: flex;
   outline: none;
   padding: 9px 12px;
   width: 100%;
-  font-size: 14px;
+  font-size: 0.85rem;
 }
 
 .relevant .search-input::placeholder {
@@ -422,15 +422,14 @@ ul{
     border-bottom: none !important;
     padding-bottom: 0 !important;
 }
-
 .info_btn {
-  color: rgb(255, 112, 67);
-  background-color: white;
-  border: 1px solid rgb(255, 112, 67);
-  border-radius: 10px;
-  padding: 0.3rem 0.5rem;
+	color: rgb(255, 112, 67);
+	background-color: white;
+	border: 1px solid rgb(255, 112, 67);
+	border-radius: 10px;
+	padding: 0.5rem 0.5rem;
+	font-size: 0.85rem;
 }
-
 .info-modal .modal-dialog {
   max-width: 95vw;
 }

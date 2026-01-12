@@ -28,7 +28,7 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import ValidationErrorModal from "../components/ValidationErrorModal";
 import masterApi from "../../../services/master.api";
 import { mapInterviewCentresApi } from "../../jobs/mappers/interviewCentreMapper";
-
+import useDebounce from "../../jobs/hooks/useDebounce";
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,16 +86,8 @@ const [turnstileToken, setTurnstileToken] = useState("");
   const dispatch = useDispatch();
 
   const [previewData, setPreviewData] = useState();
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    searchTerm,
-    selectedDepartments,
-    selectedLocations,
-    selectedExperience,
-    selectedRequisition,
-  ]);
   const user = useSelector((state) => state.user.user);
 
 
@@ -165,7 +157,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
     setLoading(true);
      const { monthMinExp, monthMaxExp } = getExperienceRangeInMonths();
     const payload = {
-      searchText: searchTerm || "",
+      searchText: debouncedSearchTerm || "",
       candidateId,
       deptIds: selectedDepartments,
       stateIds: selectedStates,
@@ -234,7 +226,7 @@ const [turnstileToken, setTurnstileToken] = useState("");
   useEffect(() => {
     setCurrentPage(0); // backend index
   }, [
-    searchTerm,
+    debouncedSearchTerm,
     selectedDepartments,
     selectedStates,
     selectedExperience,
@@ -247,17 +239,28 @@ const [turnstileToken, setTurnstileToken] = useState("");
 
 useEffect(() => {
   if (!isMasterReady) return;
+
+  // 🔹 no search → fetch all
+  if (!debouncedSearchTerm) {
+    fetchJobs();
+    return;
+  }
+
+  // 🔹 min 3 characters rule
+  if (debouncedSearchTerm.length < 3) return;
+
   fetchJobs();
 }, [
   isMasterReady,
   currentPage,
-  searchTerm,
+  debouncedSearchTerm,   // ✅ debounced value
   selectedDepartments,
   selectedStates,
   selectedExperience,
   selectedRequisition,
   pageSize
 ]);
+
 
   useEffect(() => {
   if (
@@ -296,7 +299,8 @@ useEffect(() => {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    });
+    })
+    .replace(/\//g, "-");
   };
 
   const handlePreCheckConfirm = async () => {
@@ -594,7 +598,7 @@ useEffect(() => {
           {/* 🔹 Search and Requisition Dropdown */}
           <div className="d-flex justify-content-between mb-3">
             <div className="d-flex" style={{ flex: 1 }}>
-              <div style={{ minWidth: "250px" }}>
+              <div style={{ minWidth: "325px" }}>
                 <select
                   className="form-select"
                   value={selectedRequisition}
@@ -612,7 +616,7 @@ useEffect(() => {
               </div>
             </div>
 
-            <select
+            {/* <select
               className="form-select form-select-sm"
               style={{ width: "90px" }}
               value={pageSize}
@@ -622,7 +626,7 @@ useEffect(() => {
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
-            </select>
+            </select> */}
 
 
             <div className="d-flex align-items-center gap-2">
@@ -684,7 +688,7 @@ useEffect(() => {
                     {/* ===== Requisition code + dates row ===== */}
                     <div className="req-date-row">
                       <span className="req-code">
-                        {job.requisition_code}
+                        {job.requisition_title} ({job.requisition_code})
                       </span>
 
                       <span className="date-item">
@@ -768,6 +772,17 @@ useEffect(() => {
               </div>
             </div>
           ))}
+          <select
+              className="form-select form-select-sm"
+              style={{ width: "90px" }}
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
           {totalPages > 1 && (
         <ul className="pagination pagination-sm justify-content-center">
           <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>

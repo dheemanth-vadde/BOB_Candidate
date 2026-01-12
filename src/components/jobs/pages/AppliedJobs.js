@@ -93,7 +93,7 @@ const [downloadLoading, setDownloadLoading] = useState(false);
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    });
+    }).replace(/\//g, "-");
   };
 
   const fetchAppliedJobs = async (master) => {
@@ -238,7 +238,7 @@ const [downloadLoading, setDownloadLoading] = useState(false);
       {/* ===== PAGE HEADER ===== */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         <span className="mb-0 appliedheader">Job Applications</span>
-        <select
+        {/* <select
           className="form-select form-select-sm"
           style={{ width: "90px" }}
           value={pageSize}
@@ -248,7 +248,7 @@ const [downloadLoading, setDownloadLoading] = useState(false);
           <option value={10}>10</option>
           <option value={20}>20</option>
           <option value={50}>50</option>
-        </select>
+        </select> */}
         {/* Search Bar */}
         <div className="applied-search">
 
@@ -302,7 +302,7 @@ const [downloadLoading, setDownloadLoading] = useState(false);
           <div className="applied-job-header">
             <div className="req-date-row">
               <span className="req-code">
-                {job.requisition_code}
+              {job.requisition_title} ({job.requisition_code})
               </span>
 
               <span className="date-item">
@@ -431,7 +431,17 @@ const [downloadLoading, setDownloadLoading] = useState(false);
           </div>
         </div>
       ))}
-
+      <select
+          className="form-select form-select-sm"
+          style={{ width: "90px" }}
+          value={pageSize}
+          onChange={(e) => setPageSize(Number(e.target.value))}
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+        </select>
       {appliedJobs.length > 0 && totalPages > 1 && (
         <div className="d-flex justify-content-center mt-4">
           <ul className="pagination pagination-sm">
