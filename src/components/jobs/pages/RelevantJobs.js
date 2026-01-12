@@ -743,7 +743,7 @@ useEffect(() => {
                       {job.mandatory_qualification}
                     </p>
                     <p className="mb-1 text-mutedd small qualification">
-                      <span className="subtitle">Location:</span>{" "}
+                      <span className="subtitle">States:</span>{" "}
                       {job.state_name}
                     </p>
                   </div>

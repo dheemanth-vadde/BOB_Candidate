@@ -2,6 +2,7 @@ import { Modal } from "react-bootstrap";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import jobsApiService  from "../services/jobsApiService";
+import "../../../css/Offerletter.css";
 const OfferLetterModal = ({ show, onHide, offerData, onDecisionSuccess }) => {
     const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(false);

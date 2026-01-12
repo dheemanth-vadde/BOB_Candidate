@@ -153,7 +153,9 @@ const validateRequestForm = () => {
   if (!description.trim()) {
     newErrors.description = "Please enter query details";
   }
-
+  if (selectedFile && !allowedTypes.includes(selectedFile.type)) {
+    newErrors.file = "Invalid file type selected";
+  }
   setErrors(newErrors);
 
   return Object.keys(newErrors).length === 0;
@@ -182,29 +184,49 @@ useEffect(() => {
 }, [show, job?.application_id]);
 
 
-  const handleFileSelect = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
+const allowedTypes = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png"
+];
+const MAX_SIZE_MB = 5; // optional
+
+const handleFileSelect = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const newErrors = {};
+
+  // 🔒 File type validation
+  if (!allowedTypes.includes(file.type)) {
+    newErrors.file = "Only PDF, DOC, DOCX, JPG, PNG files are allowed";
+  }
+
+  // 🔒 File size validation
+  if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+    newErrors.file = `File size must be less than ${MAX_SIZE_MB}MB`;
+  }
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    e.target.value = "";
+    setSelectedFile(null);
+    return;
+  }
+
+  // ✅ valid file
+  setErrors(prev => ({ ...prev, file: "" }));
+  setSelectedFile(file);
+};
+
 
   const handleUploadClick = () => {
     fileInputRef.current.click();
   };
   if (!job) return null;
 
-  const AccordionRow = ({ eventKey, children }) => {
-    const decoratedOnClick = useAccordionButton(eventKey, () => {
-      setActiveKey(prev => (prev === eventKey ? null : eventKey));
-    });
-
-    return (
-      <tr onClick={decoratedOnClick} style={{ cursor: "pointer" }}>
-        {children}
-        <td className="text-end">
-          {activeKey === eventKey ? "▲" : "▼"}
-        </td>
-      </tr>
-    );
-  };
 
 
   return (
@@ -344,10 +366,14 @@ useEffect(() => {
                 type="file"
                 ref={fileInputRef}
                 className="d-none"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                accept=".pdf,.doc,.jpg,.png"
                 onChange={handleFileSelect}
               />
-
+              {errors.file && (
+                <div className="invalid-feedback d-block">
+                  {errors.file}
+                </div>
+              )}
               {/* ACTIONS */}
               <div className="query-actions">
                 <button

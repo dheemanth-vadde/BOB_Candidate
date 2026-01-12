@@ -32,13 +32,15 @@ export const mapAppliedJobApiToModel = (apiJob, masters = {}) => {
   /* =========================
      MASTER LOOKUPS
   ========================= */
+  console.log("applied jObs positionsDTO", positionsDTO?.deptId)
   const dept = getDepartment(masters, positionsDTO?.deptId);
   const grade = getJobGrade(masters, positionsDTO?.gradeId);
   const employmentType = getEmploymentType(
     masters,
     positionsDTO?.employmentType
   );
-
+console.log("applied jObs depts", dept)
+console.log("applied jObs employmentType", employmentType)
   return {
     /* =========================
        IDS & TITLES

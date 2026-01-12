@@ -42,6 +42,16 @@ const documents = apiData?.documentDetails || [];
   console.log("nationality:", nationality);
   console.log("maritalStatus:", maritalStatus);
   console.log("reservation:", reservation);
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    .replace(/\//g, "-");
+  };
   
   /* =========================
      DOCUMENT GROUPING
@@ -66,7 +76,7 @@ const documents = apiData?.documentDetails || [];
       motherName: profile.motherName || "-",
       fatherName: profile.fatherName || "-",
       spouseName: profile.spouseName || "-",
-      dob: profile.dateOfBirth || "-",
+      dob: formatDate(profile.dateOfBirth) || "-",
 socialMediaProfileLink: profile.socialMediaProfileLink || "-",
         /* ================= TWIN DETAILS ================= */
   isTwin: yesNo(profile.isTwin),
@@ -127,10 +137,10 @@ socialMediaProfileLink: profile.socialMediaProfileLink || "-",
       org: e.workExperience.organizationName || "-",
       designation: e.workExperience.postHeld || "-",
       department: e.workExperience.role || "-",
-      from: e.workExperience.fromDate || "-",
+      from: formatDate(e.workExperience.fromDate) || "-",
       to: e.workExperience.isPresentlyWorking
         ? "Present"
-        : e.workExperience.toDate || "-",
+        : formatDate(e.workExperience.toDate) || "-",
       duration: `${e.workExperience.monthsOfExp || 0} Months`,
       nature: e.workExperience.workDescription || "-"
     })),
@@ -185,8 +195,8 @@ console.log("educationLevel", educationLevel)
         qualification_id: e.education.educationTypeId || "-",
         institution: e.education.institutionName || "-",
         percentage: e.education.percentage ?? "-",
-        startDate: e.education.startDate || "-",
-        endDate: e.education.endDate || "-",
+        startDate: formatDate(e.education.startDate) || "-",
+        endDate: formatDate(e.education.endDate) || "-",
 
         /* 🆕 Display values */
         educationLevel_name:

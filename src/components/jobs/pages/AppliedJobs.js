@@ -20,14 +20,14 @@ const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 const [listLoading, setListLoading] = useState(false);
-const [downloadLoading, setDownloadLoading] = useState(false);
+const [downloadLoading, setDownloadLoading] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [offerData, setOfferData] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
-  const [masterData, setMasterData] = useState([{}]);
+  const [masterData, setMasterData] = useState({}); 
 
-
+const [isMasterReady, setIsMasterReady] = useState(false);
   // const PAGE_SIZE = 3;
   const [pageSize, setPageSize] = useState(10); // default page size
 
@@ -45,41 +45,41 @@ const [downloadLoading, setDownloadLoading] = useState(false);
 
 
   const fetchMasterData = async () => {
-    try {
-      const masterResponse = await jobsApiService.getMasterData();
-      const mappedMasterData = mapMasterDataApi(masterResponse);
+  try {
+    const masterResponse = await jobsApiService.getMasterData();
+    const mappedMasterData = mapMasterDataApi(masterResponse);
 
-      if (
-        !mappedMasterData ||
-        !Object.keys(mappedMasterData).length
-      ) {
-        console.warn("Master data empty");
-        return null;
-      }
-
-      setMasterData(mappedMasterData);
-      return mappedMasterData; // ✅ IMPORTANT
-    } catch (error) {
-      console.error("Error fetching master data:", error);
+    if (!mappedMasterData || !Object.keys(mappedMasterData).length) {
       return null;
     }
-  };
+
+    setMasterData(mappedMasterData);
+    setIsMasterReady(true); // ✅ ADD THIS
+    return mappedMasterData;
+  } catch (error) {
+    return null;
+  }
+};
+
   useEffect(() => {
-    if (!candidateId) return;
-    if (!masterData || !Object.keys(masterData).length) return;
+  if (!candidateId || !isMasterReady) return;
 
-    // no search → fetch all
-    if (debouncedSearchTerm.length === 0) {
-      fetchAppliedJobs(masterData);
-      return;
-    }
-
-    // wait for min chars
-    if (debouncedSearchTerm.length < 3) return;
-
+  if (!debouncedSearchTerm) {
     fetchAppliedJobs(masterData);
+    return;
+  }
 
-  }, [candidateId, currentPage, debouncedSearchTerm, pageSize]);
+  if (debouncedSearchTerm.length < 3) return;
+
+  fetchAppliedJobs(masterData);
+}, [
+  candidateId,
+  isMasterReady,       // ✅ ADD
+  currentPage,
+  debouncedSearchTerm,
+  pageSize
+]);
+
 
   useEffect(() => {
     setCurrentPage(prev => (prev === 0 ? prev : 0));
@@ -197,39 +197,31 @@ const [downloadLoading, setDownloadLoading] = useState(false);
       .replace(/\b\w/g, char => char.toUpperCase()); // Title Case
   };
   const handleDownloadApplication = async (job) => {
-    if (!job?.application_id) {
-      toast.error("Application ID missing");
-      return;
-    }
+  if (!job?.application_id) return;
 
-    try {
-      setDownloadLoading(true);
+  try {
+    setDownloadLoading(job.application_id); // ✅ store ID
 
-      const res = await jobsApiService.downloadApplication(
-        job.application_id
-      );
+    const res = await jobsApiService.downloadApplication(
+      job.application_id
+    );
 
-      // ✅ res IS the blob already
-      const blob = new Blob([res], { type: "application/pdf" });
+    const blob = new Blob([res], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
 
-      const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Application_Form.pdf";
+    link.click();
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "Application_Form.pdf"; // default name
-      document.body.appendChild(link);
-      link.click();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    toast.error("Failed to download application");
+  } finally {
+    setDownloadLoading(null); // ✅ reset
+  }
+};
 
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-    } catch (err) {
-      console.error("Download failed", err);
-      toast.error("Failed to download application");
-    } finally {
-      setDownloadLoading(false);
-    }
-  };
 
   return (
 
@@ -319,84 +311,74 @@ const [downloadLoading, setDownloadLoading] = useState(false);
               <h6 className="job-title titlecolor">
                 {job.position_title}
               </h6>
-            </div>
+              <div className="job-meta-grid row-1">
+                <div className="meta-item">
+                  <span className="label">Reference No:</span>
+                  <span className="value"> {job?.reference_number?.trim() ? job.reference_number : "-"}</span>
+                </div>
 
-            <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
-              {/* {job.application_status || "Applied"} */}
-              {formatStatusLabel(job.application_status)}
-            </span>
-          </div>
+                <div className="meta-item">
+                  <span className="label">Eligibility Age:</span>
+                  <span className="value">
+                    {job.eligibility_age_min} – {job.eligibility_age_max} years
+                  </span>
+                </div>
 
-          {/* Grid Info */}
-          {/* ===== META DATA – SINGLE FLEX ROW ===== */}
-          {/* ===== META ROW 1 ===== */}
-          {/* ===== META ROW 1 ===== */}
-          <div className="job-meta-grid row-1">
-            <div className="meta-item">
-              <span className="label">Reference No:</span>
-              <span className="value"> {job?.reference_number?.trim() ? job.reference_number : "-"}</span>
-            </div>
+                <div className="meta-item">
+                  <span className="label">Applied On:</span>
+                  <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
+                </div>
 
-            <div className="meta-item">
-              <span className="label">Eligibility Age:</span>
-              <span className="value">
-                {job.eligibility_age_min} – {job.eligibility_age_max} years
-              </span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Applied On:</span>
-              <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Employment Type:</span>
-              <span className="value">{job.employment_type}</span>
-            </div>
-          </div>
-
-          {/* ===== META ROW 2 ===== */}
-          <div className="job-meta-grid row-2">
-            <div className="meta-item">
-              <span className="label">Department:</span>
-              <span className="value">{job.dept_name}</span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Experience:</span>
-              <span className="value">{job.mandatory_experience} years</span>
-            </div>
-
-            <div className="meta-item">
-              <span className="label">Vacancies:</span>
-              <span className="value">{job.no_of_vacancies}</span>
-            </div>
-          </div>
-
-          {/* ===== META ROW 3 ===== */}
-          <div className="job-meta-grid row-3">
-            <div className="meta-item">
-              <span className="label">Qualification:</span>
-              <span className="value">{job.mandatory_qualification}</span>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="job-footer">
-
-            {/* Download Application */}
-            <button
-              className="footer-link"
-               disabled={downloadLoading === job.application_id}
-              onClick={() => handleDownloadApplication(job)}
+                <div className="meta-item">
+                  <span className="label">Employment Type:</span>
+                  <span className="value">{job.employment_type}</span>
+                </div>
+              </div>
               
+              <div className="job-meta-grid row-2">
+                <div className="meta-item">
+                  <span className="label">Department:</span>
+                  <span className="value">{job.dept_name}</span>
+                </div>
+
+                <div className="meta-item">
+                  <span className="label">Experience:</span>
+                  <span className="value">{job.mandatory_experience} years</span>
+                </div>
+
+                <div className="meta-item">
+                  <span className="label">Vacancies:</span>
+                  <span className="value">{job.no_of_vacancies}</span>
+                </div>
+              </div>
+              <br></br>
+              <div className="job-meta-grid row-3">
+                <div className="meta-item meta-item-education">
+                  <span className="label">Qualification:</span>
+                  <span className="value">{job.mandatory_qualification}</span>
+                </div>
+              </div>
+              
+
+            </div>
+            <div className="actionbtns">
+              
+              <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
+                {/* {job.application_status || "Applied"} */}
+                {formatStatusLabel(job.application_status)}
+              </span>
+             
+              <button
+              className="footer-link downloadbtn"
+              disabled={downloadLoading === job.application_id}
+              onClick={() => handleDownloadApplication(job)}
             >
-               {downloadLoading === job.application_id ? "Downloading..." : "Download Application"}
+              {downloadLoading === job.application_id
+                ? "Downloading..."
+                : "Download Application"}
             </button>
-            <span className="footer-separator">|</span>
-
-
-            {(
+              
+                {(
               job.application_status === "Offered" ||
               job.application_status === "Offer_Accepted" ||
               job.application_status === "Offer_Rejected"
@@ -412,15 +394,8 @@ const [downloadLoading, setDownloadLoading] = useState(false);
                   <span className="footer-separator">|</span>
                 </>
               )}
-
-            {/* <button
-          className="footer-link download-link"
-           onClick={() => handleDirectDownload(job)}
-        >
-          Download Application
-        </button> */}
-            <button
-              className="footer-link"
+              <button
+              className="footer-link action_items"
               onClick={() => {
                 setSelectedJob(job);
                 setShowTrackModal(true);
@@ -428,7 +403,12 @@ const [downloadLoading, setDownloadLoading] = useState(false);
             >
               Track Application
             </button>
-          </div>
+
+            </div>
+            </div>
+
+          
+        
         </div>
       ))}
       {appliedJobs.length > 0 && (

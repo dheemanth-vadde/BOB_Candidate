@@ -61,7 +61,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
   if (!previewData) {
     return null;
   }
-
+  
  
 
   // ✅ PHOTO
@@ -87,7 +87,16 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
       centered
       dialogClassName="bob-preview-modal"
     >
-      <Modal.Body className="bob-modal-body">
+      <Modal.Body className="bob-modal-body position-relative">
+        {/* Close Button */}
+        <button 
+          type="button" 
+          className="btn-close position-absolute" 
+          style={{top: '6px', right: '15px', zIndex: 1}}
+          onClick={onHide}
+          aria-label="Close"
+        />
+        
         {/* ===== HEADER ===== */}
         <div className="bob-header">
           <div className="title_pre">

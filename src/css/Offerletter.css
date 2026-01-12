@@ -1,0 +1,46 @@
+.comments-label{
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: #364153;
+}
+.offer-modal .btn-danger {
+  background-color: #EC4E52;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+.offer-modal .modal-title{
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+.comments-label  .textarea.form-control{
+  font-weight: 400;
+  color: #364153;
+  font-size:0.75rem;
+}
+.offer-modal .btn-danger{
+  background-color: #EC4E52;
+  color: white;
+   font-size:0.875rem;
+   font-weight:400
+}
+.offer-modal .btn-danger:hover {
+  background-color: #EC4E52;
+  border-color: #EC4E52;
+}
+
+.offer-modal .btn-success{
+  background-color: #22C55E;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.offer-modal .btn-success:hover {
+  background-color: #22C55E;
+  border-color: #22C55E;
+}
+.offer-modal .form-control {
+  font-size: 0.75rem !important;
+  border-radius:10px;
+}

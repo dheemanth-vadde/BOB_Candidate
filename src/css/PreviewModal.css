@@ -17,7 +17,7 @@
   border: 1px solid #ffddb9;
   border-radius: 10px;
   padding: 14px 20px;
-  margin-top: 12px;
+  margin-top: 25px;
   /* ✅ Space before header box */
   margin-bottom: 10px;
   /* space below header */
@@ -72,7 +72,7 @@
 .bob-table td,
 .bob-table th {
   padding: 6px 8px !important;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight:300;
   vertical-align: middle !important;
   color: #000 !important;
@@ -85,13 +85,13 @@
 }
 
 /* === Table Header === */
-.table-header th {
+.bob-preview-modal .table-header th {
   background: #002d62 !important;
   color: #fff !important;
-  font-weight: 500;
-  text-align: center;
-  font-size: 12.5px;
-  letter-spacing: 0.2px;
+  font-weight: 500 !important;
+  /* text-align: center; */
+  font-size: 0.8rem !important;
+  letter-spacing: 0.2px !important;
   text-transform: capitalize !important;
 }
 

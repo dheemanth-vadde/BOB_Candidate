@@ -18,7 +18,7 @@ const LocationWiseVacancyTable = ({
 
   return (
     <div className="info-card mt-3">
-      <h6 className="card-section-header">Vacancy Distribution (State-wise)</h6>
+      <h6 className="card-section-header">Category Wise Reservation (State-wise)</h6>
 
       <div className="table-responsive">
         <table className="table table-bordered vacancy-table">
