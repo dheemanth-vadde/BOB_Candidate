@@ -4,7 +4,10 @@ import {
   getNationality,
   getMaritalStatus,
   getState,
-  getReservation
+  getReservation,
+   getEducationLevel,
+  getSpecialization,
+  getMandatoryQualification
 } from "../../../shared/utils/masterHelpers";
 export const mapCandidateToPreview = (
   apiData = {},
@@ -32,6 +35,8 @@ const documents = apiData?.documentDetails || [];
   );
   const twinGender = getGender?.(masters, profile.twinGenderId);
   const reservation = getReservation?.(masters, profile.reservationCategoryId);
+
+  //const educationLevels = getEducationLevels?.(masters, educations[0]?.educationLevelId);
   console.log("gender:", gender);
   console.log("religion:", religion);
   console.log("nationality:", nationality);
@@ -147,13 +152,54 @@ socialMediaProfileLink: profile.socialMediaProfileLink || "-",
     /* =========================
        EDUCATION (🆕 SAFE ADDITION)
     ========================= */
-    education: educations.map((e) => ({
-      qualification_id: e.education.educationQualificationsId,
-      institution: e.education.institutionName || "-",
-      percentage: e.education.percentage ?? "-",
-      startDate: e.education.startDate || "-",
-      endDate: e.education.endDate || "-",
-    })),
+    // education: educations.map((e) => ({
+    //   qualification_id: e.education.educationTypeId,
+    //   educationQualificationsId: e.education.educationQualificationsId || "-",
+    //   institution: e.education.institutionName || "-",
+    //   specialization:e.education.specializationId || "-",
+    //   percentage: e.education.percentage ?? "-",
+    //   startDate: e.education.startDate || "-",
+    //   endDate: e.education.endDate || "-",
+    // })),
+
+    education: educations.map((e) => {
+      
+
+        const specialization = getSpecialization(
+        masters,
+        e.education.specializationId
+        );
+
+        const mandatoryQualification = getMandatoryQualification(
+        masters,
+        e.education.educationQualificationsId
+        );
+        console.log("mandatoryQualification", mandatoryQualification)
+
+        const educationLevel = getEducationLevel(
+        masters,
+        mandatoryQualification.level_id
+        );
+console.log("educationLevel", educationLevel)
+        return {
+        qualification_id: e.education.educationTypeId || "-",
+        institution: e.education.institutionName || "-",
+        percentage: e.education.percentage ?? "-",
+        startDate: e.education.startDate || "-",
+        endDate: e.education.endDate || "-",
+
+        /* 🆕 Display values */
+        educationLevel_name:
+          educationLevel?.education_level_name || "-",
+
+        specialization_name:
+          specialization?.specialization_name || "-",
+
+        mandatoryQualification_name:
+          mandatoryQualification?.qualification_name || "-"
+        };
+    }),
+
 
     /* =========================
        LANGUAGES (🆕 SAFE ADDITION)

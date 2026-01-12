@@ -131,3 +131,35 @@ export const getReservation = (masters, reservationId) =>
     reservationId,
     "category_id"
   );
+/* =========================
+   EDUCATION LEVEL
+========================= */
+export const getEducationLevel = (masters, educationLevelId) =>
+  getMasterById(
+    masters,
+    "education_levels",        // ✅ master key
+    educationLevelId,
+    "education_level_id"       // ✅ id field
+  );
+
+/* =========================
+   SPECIALIZATION
+========================= */
+export const getSpecialization = (masters, specializationId) =>
+  getMasterById(
+    masters,
+    "specializations",         // ✅ master key
+    specializationId,
+    "specialization_id"        // ✅ id field
+  );
+
+/* =========================
+   MANDATORY QUALIFICATION
+========================= */
+export const getMandatoryQualification = (masters, qualificationId) =>
+  getMasterById(
+    masters,
+    "mandatory_qualifications", // ✅ master key
+    qualificationId,
+    "qualification_id"          // ✅ id field
+  );

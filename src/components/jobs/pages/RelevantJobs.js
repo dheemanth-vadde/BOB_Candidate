@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import {
   faCheckCircle,
   faSearch,
-  faLightbulb,
   faCalendarAlt,
-  faCalendarTimes
+  faCalendarTimes,
+  faFileLines, faCircleInfo 
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "react-bootstrap";
 import "../../../css/Relevantjobs.css";
@@ -634,12 +634,14 @@ useEffect(() => {
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("annexures")}
               >
+                 <FontAwesomeIcon icon={faFileLines} className="me-2" />
                 Annexure Forms
               </button>
               <button
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("generic")}
               >
+                  <FontAwesomeIcon icon={faCircleInfo} className="me-2" />
                 Generic Information
               </button>
               <div className="applied-search">

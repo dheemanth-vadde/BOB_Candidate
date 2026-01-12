@@ -23,7 +23,7 @@ const KnowMoreModal = ({ show, onHide, selectedJob,masterData}) => {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  });
+  }).replace(/\//g, '-');
 };
 const reservationCategories = masterData?.reservation_categories || [];
 const disabilities = masterData?.disabilities || [];

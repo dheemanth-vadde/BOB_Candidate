@@ -49,6 +49,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
 
   const state3 = getState(masterData, preferences.state3);
   const location3 = getLocation(masterData, preferences.location3);
+  
    useEffect(() => {
   if (
     formErrors?.ctc ||
@@ -294,9 +295,9 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                   <thead className="table-header">
                     <tr>
                       <th>S. No</th>
-                      <th>Onboard/University</th>
+                      <th>Education Level</th>
                       <th>School/College</th>
-                      <th>Degree</th>
+                      <th>Board</th>
                       <th>Specialization</th>
                       <th>From Date</th>
                       <th>To Date</th>
@@ -305,19 +306,33 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                   </thead>
                   <tbody>
                     {previewData.education.map((edu, idx) => (
-                      <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{edu.institution}</td>
-                        <td>{edu.school}</td>
-                        <td>{edu.degree}</td>
-                        <td>{edu.subject}</td>
-                        <td>{edu.startDate}</td>
-                        <td>{edu.endDate}</td>
-                        <td>{edu.percentage !== null && edu.percentage !== undefined
+                    <tr key={idx}>
+                      <td>{idx + 1}</td>
+
+                      {/* Education Level */}
+                      <td>{edu.educationLevel_name || "-"}</td>
+
+                      {/* School / College */}
+                      <td>{edu.institution || "-"}</td>
+
+                      {/* Board / Qualification */}
+                      <td>{edu.mandatoryQualification_name || "-"}</td>
+
+                      {/* Specialization */}
+                      <td>{edu.specialization_name || "-"}</td>
+
+                      {/* Dates */}
+                      <td>{edu.startDate || "-"}</td>
+                      <td>{edu.endDate || "-"}</td>
+
+                      {/* Percentage */}
+                      <td>
+                        {edu.percentage !== null && edu.percentage !== undefined
                           ? `${edu.percentage}%`
-                          : "-"}</td>
-                      </tr>
-                    ))}
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))}
                   </tbody>
                 </table>
               </div>
