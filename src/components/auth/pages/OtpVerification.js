@@ -20,6 +20,16 @@ const OtpVerification = () => {
 
   const email = location.state?.email; // ← Get email sent from Login page
 
+  if (!email) {
+    navigate("/", { replace: true });
+    return null;
+  }
+
+  const resetOtp = () => {
+    setOtp(["", "", "", "", "", ""]);
+    inputsRef.current[0]?.focus();
+  };
+
   const handleChange = (value, index) => {
     if (!/^[0-9]?$/.test(value)) return;
 
@@ -72,6 +82,7 @@ const OtpVerification = () => {
     } catch (err) {
       console.log(err);
       toast.error(err.response?.data?.message || "OTP verification failed. Please try again.");
+      resetOtp();
     } finally {
       setLoading(false);
     }
@@ -86,6 +97,7 @@ const OtpVerification = () => {
 			setLoading(true);
 			const res = await authApi.resendOtp(email);
 			toast.success("OTP resent successfully!");
+      resetOtp();
 			console.log("Resend OTP Response:", res.data);
 		} catch (err) {
 			console.log(err);

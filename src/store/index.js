@@ -4,6 +4,8 @@ import digilockerReducer from '../components/integrations/digilocker/digilockerS
 import preferenceReducer from "../components/jobs/store/preferenceSlice";
 import documentTypesReducer from '../components/profile/store/documentTypesSlice';
 import idProofReducer from '../components/profile/store/idProofSlice';
+import resumeReducer from '../components/profile/store/resumeSlice';
+import experienceReducer from '../components/profile/store/experienceSlice';
 
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
@@ -23,6 +25,8 @@ export const store = configureStore({
      preference: preferenceReducer,
     documentTypes: documentTypesReducer,
     idProof: idProofReducer,
+    resume: resumeReducer,
+    experience: experienceReducer,
   },
 });
 

@@ -1,8 +1,7 @@
-import { faArrowRight, faCheckCircle, faChevronRight, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
-import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
 import bulbIcon from '../../../assets/bulb-icon.png';
 import { useBasicDetails } from '../hooks/basicHooks';
@@ -12,6 +11,7 @@ import { toast } from 'react-toastify';
 import Loader from './Loader';
 import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
 import { Form } from 'react-bootstrap';
+import greenCheck from '../../../assets/green-check.png'
 
 const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -213,9 +213,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 
 									<div>
@@ -268,9 +268,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -621,9 +621,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -676,9 +676,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -898,9 +898,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -952,9 +952,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -1270,9 +1270,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 
 									<div>
@@ -1325,9 +1325,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							>
 								{/* LEFT SIDE: Check icon + File name + size */}
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>

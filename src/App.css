@@ -676,6 +676,7 @@ font-family: 'poppins';
 .blue-button {
   border: 1px solid #42579f !important;
   color: #42579f !important;
+  font-size: 0.875rem !important;
 }
 
 .profile_table_th {
@@ -788,4 +789,58 @@ font-family: 'poppins';
 
 .grey_border {
   border: 2px solid #dee2e6 !important;
+}
+
+.navbarupload .nav-link {
+  position: relative;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.navbarupload .nav-link.active {
+  color: #42579f;
+  border: none;
+}
+
+/* BLUE BOTTOM BORDER */
+.navbarupload .nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #42579f;
+}
+
+/* CARET-UP TRIANGLE */
+.navbarupload .nav-link.active::before {
+  content: "";
+  position: absolute;
+  bottom: 2px;              /* sits just above the blue border */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #42579f;
+}
+
+.app-footer {
+  margin-top: auto;              /* THIS makes it sticky */
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.candidate-portal-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }

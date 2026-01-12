@@ -1,13 +1,11 @@
-import React, { forwardRef, useState } from "react";
+import { forwardRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../assets/delete-icon.png';
-import editIcon from '../../assets/edit-icon.png';
 import viewIcon from '../../assets/view-icon.png';
-import { faFile } from "@fortawesome/free-solid-svg-icons/faFile";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import profileApi from "../../components/profile/services/profile.api";
 import { useSelector } from "react-redux";
+import greenCheck from '../../assets/green-check.png'
 
 const UploadField = forwardRef(({
   label,
@@ -119,9 +117,9 @@ const UploadField = forwardRef(({
 
           {/* Left: Check icon + file info */}
           <div className="d-flex align-items-center">
-            <FontAwesomeIcon
-              icon={faCheckCircle}
-              style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+            <img
+              src={greenCheck}
+              style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
             />
 
             <div className='p-2'>

@@ -1,24 +1,22 @@
 // CandidatePortal.js
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './Header';
 import RelevantJobs from '../../components/jobs/pages/RelevantJobs';
 import AppliedJobs from '../../components/jobs/pages/AppliedJobs';
-// import Career from '../../components/Tabs/Career';
 import './../../css/custom-bootstrap-overrides.css';
 import { apiService } from '../../services/apiService';
 import { useDispatch, useSelector } from 'react-redux';
 import CandidateProfileStepper from '../../components/profile/pages/CandidateProfileStepper';
 import { fetchDocumentTypes } from '../../components/profile/store/documentTypesSlice';
 import disclaimerApi from '../services/disclaimer.api';
+import Footer from './Footer';
 
 const CandidatePortal = () => {
   const user = useSelector((state) => state.user.user);
-  const authUser = useSelector((state) => state.user.authUser);
   const candidateId = user?.data?.user?.id;
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(null); // null = loading
   const [showModal, setShowModal] = useState(false);
   const [checkboxChecked, setCheckboxChecked] = useState(false);
-  
   const [activeTab, setActiveTab] = useState('info');
   const [resumeFile, setResumeFile] = useState(null);
   const [ResumePublicUrl, setResumePublicUrl] = useState(null);
@@ -71,8 +69,6 @@ const CandidatePortal = () => {
       if (!user?.candidate_id) return;
       const response = await apiService.getCandidateDetails(user.candidate_id);
 
-
-
       try {
         const response = await apiService.getCandidateDetails(user.candidate_id);
 
@@ -110,6 +106,7 @@ const CandidatePortal = () => {
 
     fetchCandidateData();
   }, [user?.candidate_id]);
+
   const handleDisclaimerAccept = async () => {
     try {
       const res = await disclaimerApi.saveDisclaimerStatus(candidateId, true);
@@ -123,33 +120,10 @@ const CandidatePortal = () => {
     }
   };
 
-
-
   const renderTabContent = () => {
     switch (activeTab) {
-      // case 'career':
-      //   return <Career candidateData={candidateData} setActiveTab={setActiveTab} />;
-
-      // case 'resume':
-      //   return (
-      //     <ResumeUpload
-      //       resumeFile={resumeFile}
-      //       setResumeFile={setResumeFile}
-      //       setParsedData={setCandidateData}
-      //       resumePublicUrl={ResumePublicUrl}
-      //       setResumePublicUrl={setResumePublicUrl}
-      //       goNext={() => setActiveTab('info')}
-      //     />
-      //   );
-
       case 'info':
         return (
-          // <ReviewDetails
-          //   initialData={candidateData}
-          //   resumePublicUrl={ResumePublicUrl}
-          //   onSubmit={handleFormSubmit}
-          //   goNext={() => setActiveTab('jobs')}
-          // />
           <CandidateProfileStepper
             resumeFile={resumeFile}
             setResumeFile={setResumeFile}
@@ -181,7 +155,7 @@ const CandidatePortal = () => {
   };
 
   return (
-    <div>
+    <div className="candidate-portal-layout">
       {/* 👇 Pass activeTab + setActiveTab into Header */}
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
@@ -255,6 +229,7 @@ const CandidatePortal = () => {
           )}
         </div>
       </div>
+      {/* <Footer /> */}
     </div>
   );
 };

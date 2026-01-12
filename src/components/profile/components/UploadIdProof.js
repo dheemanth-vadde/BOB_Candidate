@@ -3,15 +3,15 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import '../../../css/Resumeupload.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faUpload, faSpinner, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faUpload, faSpinner, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../../assets/delete-icon.png';
-import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
 import profileApi from '../services/profile.api';
 import { createWorker } from 'tesseract.js';
 import { setExtractedData, clearExtractedData } from '../store/idProofSlice';
 import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
+import greenCheck from '../../../assets/green-check.png'
 
 const normalize = (s) =>
   s
@@ -292,13 +292,9 @@ const UploadIdProof = ({ goNext, goBack }) => {
           }}
         >
           <div className="d-flex align-items-center">
-            <FontAwesomeIcon
-              icon={faCheckCircle}
-              style={{
-                color: "green",
-                fontSize: "22px",
-                marginRight: "10px",
-              }}
+            <img
+              src={greenCheck}
+              style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
             />
 
             <div className="p-2">

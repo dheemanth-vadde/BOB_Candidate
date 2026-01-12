@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpload, faCheckCircle, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faUpload, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from "../../../assets/delete-icon.png";
 import editIcon from "../../../assets/edit-icon.png";
 import profileApi from "../services/profile.api";
@@ -10,6 +10,9 @@ import { mapCertificationApiToUi, mapCertificationFormToApi } from "../mappers/C
 import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
 import { Form } from 'react-bootstrap';
 import Loader from "./Loader";
+import greenCheck from '../../../assets/green-check.png'
+import masterApi from "../../../services/master.api";
+
 /* ================= HELPERS ================= */
 const isFutureDate = (dateStr) =>
   dateStr && new Date(dateStr) > new Date();
@@ -51,6 +54,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
   const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     issuedBy: "",
+    certificationMasterId: "",
     certificationName: "",
     certificationDate: "",
     expiryDate: ""
@@ -58,6 +62,8 @@ const CertificationDetails = ({ goNext, goBack }) => {
   const [nextError, setNextError] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hasCertification, setHasCertification] = useState(false);
+  const [certMasterOptions, setCertMasterOptions] = useState([]);
 
   /* ================= FETCH ================= */
   const fetchCertifications = async () => {
@@ -80,7 +86,27 @@ const CertificationDetails = ({ goNext, goBack }) => {
     }
   };
 
-  const [hasCertification, setHasCertification] = useState(false);
+  useEffect(() => {
+    const fetchCertificationMasters = async () => {
+      try {
+        const res = await masterApi.getCertifications();
+
+        const options = Array.isArray(res?.data?.data)
+          ? res?.data?.data.map(c => ({
+              value: c.certificationMasterId,
+              label: c.certificationName
+            }))
+          : [];
+
+        setCertMasterOptions(options);
+      } catch (err) {
+        console.error("Failed to fetch certification masters", err);
+        setCertMasterOptions([]);
+      }
+    };
+
+    fetchCertificationMasters();
+  }, []);
 
   useEffect(() => {
     if (candidateId && hasCertification) {
@@ -173,6 +199,10 @@ const CertificationDetails = ({ goNext, goBack }) => {
     }
     const errors = {};
 
+    if (!formData.certificationMasterId) {
+      errors.certificationMasterId = "This field is required";
+    }
+
     if (!formData.issuedBy.trim()) {
       errors.issuedBy = "This field is required";
     }
@@ -234,10 +264,10 @@ const CertificationDetails = ({ goNext, goBack }) => {
       const payload = mapCertificationFormToApi(
         formData,
         candidateId,
-        isEditMode ? editingRow?.certificationId : null, // ✅ REQUIRED
+        isEditMode ? editingRow?.certificateId : null, // ✅ REQUIRED
         certificateFile
       );
-
+      console.log("Payload to save:", payload);
       setLoading(true);
 
       await profileApi.saveCertification(
@@ -278,6 +308,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
   const resetForm = () => {
     setFormData({
       issuedBy: "",
+      certificationMasterId: "",
       certificationName: "",
       certificationDate: "",
       expiryDate: ""
@@ -294,6 +325,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
     setEditingRow(row);
     setFormData({
       issuedBy: row.issuedBy,
+      certificationMasterId: row.certificationMasterId,
       certificationName: row.certificationName,
       certificationDate: row.certificationDate,
       expiryDate: row.expiryDate || ""
@@ -358,6 +390,31 @@ const CertificationDetails = ({ goNext, goBack }) => {
         </div>
       )}
       <form className="row g-4 mt-2" noValidate>
+        <div className="col-md-4">
+          <label className="form-label">
+            Certification {hasCertification && <span className="text-danger">*</span>}
+          </label>
+
+          <select
+            id="certificationMasterId"
+            disabled={!hasCertification}
+            value={formData.certificationMasterId}
+            onChange={handleChange}
+            className={`form-select ${formErrors.certificationMasterId ? "is-invalid" : ""}`}
+          >
+            <option value="">Select certification</option>
+            {certMasterOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          <div className="invalid-feedback">
+            {formErrors.certificationMasterId}
+          </div>
+        </div>
+
         {/* Issued By */}
         <div className="col-md-4">
           <label className="form-label">
@@ -426,7 +483,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
             {(certificateFile || existingDocument) && (
               <div className="d-flex justify-content-between w-100">
                 <div className="d-flex align-items-center gap-2">
-                  <FontAwesomeIcon icon={faCheckCircle} className="text-success" />
+                  <img src={greenCheck} className="text-success" style={{ width: '22px', height: '22px' }} />
                   <div>
                     <div style={{ fontWeight: 600 }}>
                       {certificateFile?.name || existingDocument?.displayName}

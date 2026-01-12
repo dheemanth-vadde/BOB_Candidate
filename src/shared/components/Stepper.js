@@ -1,5 +1,6 @@
 import React from "react";
 import "./../../css/Stepper.css";
+import whiteCheck from '../../assets/white-check.png'
 
 const Stepper = ({ steps, activeStep }) => {
   return (
@@ -16,7 +17,15 @@ const Stepper = ({ steps, activeStep }) => {
               }`}
             >
               <div className="step_circle">
-                {isCompleted ? "✓" : index + 1}
+                {isCompleted ? (
+                  <img
+                    src={whiteCheck}
+                    alt="Completed"
+                    className="step-check-icon"
+                  />
+                ) : (
+                  index + 1
+                )}
               </div>
               <div className="step-label">{step}</div>
             </div>

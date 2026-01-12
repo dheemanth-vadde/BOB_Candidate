@@ -75,3 +75,8 @@
 .step-line.completed {
   background: #42579f;
 }
+
+.step-check-icon {
+  width: 18px;
+  height: 18px;
+}

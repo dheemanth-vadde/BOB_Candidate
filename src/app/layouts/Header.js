@@ -18,6 +18,7 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // const notifications = [
   //   { id: 1, message: "📢 Bank of Baroda posted a new opening.", time: "1h ago", read: true },
@@ -176,58 +177,71 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
       {!hideIcons && (
         <div
           className="bg-white border-bottom"
-          style={{
-            position: "sticky",
-            top: "64px",
-            zIndex: 1029,
-          }}
+          style={{ position: "sticky", top: "64px", zIndex: 1029 }}
         >
-          <ul className="nav nav-tabs navbarupload container-fluid px-3">
-            {/* <li className="nav-item">
-              <button
-                className={`nav-link ${activeTab === 'career' ? 'active' : ''}`}
-                onClick={() => setActiveTab('career')}
-              >
-                Home
-              </button>
-            </li> */}
+          <div className="container-fluid px-3 d-flex align-items-center">
 
-            {/* <li className="nav-item">
-              <button
-                className={`nav-link ${activeTab === 'resume' ? 'active border-0' : ''}`}
-                onClick={() => setActiveTab('resume')}
-              >
-                Upload Resume
-              </button>
-            </li> */}
+            {/* HAMBURGER (MOBILE ONLY) */}
+            <button
+              className="btn d-lg-none"
+              onClick={() => setShowMobileMenu(prev => !prev)}
+            >
+              ☰
+            </button>
 
-            <li className="nav-item">
-              <button
-                className={`nav-link ${activeTab === 'info' ? 'active border-0' : ''}`}
-                onClick={() => setActiveTab('info')}
-              >
-                My Profile
-              </button>
-            </li>
+            {/* DESKTOP TABS */}
+            <ul className="nav nav-tabs navbarupload d-none d-lg-flex">
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${activeTab === 'info' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('info')}
+                >
+                  My Profile
+                </button>
+              </li>
 
-            <li className="nav-item">
-              <button
-                className={`nav-link ${activeTab === 'jobs' ? 'active border-0' : ''}`}
-                onClick={() => setActiveTab('jobs')}
-              >
-                Current Opportunities
-              </button>
-            </li>
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${activeTab === 'jobs' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('jobs')}
+                >
+                  Current Opportunities
+                </button>
+              </li>
 
-            <li className="nav-item">
-              <button
-                className={`nav-link ${activeTab === 'applied-jobs' ? 'active border-0' : ''}`}
-                onClick={() => setActiveTab('applied-jobs')}
-              >
-                Applied Jobs
-              </button>
-            </li>
-          </ul>
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${activeTab === 'applied-jobs' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('applied-jobs')}
+                >
+                  Applied Jobs
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* MOBILE DROPDOWN MENU */}
+          {showMobileMenu && (
+            <ul className="nav flex-column d-lg-none border-top">
+              {[
+                { key: 'info', label: 'My Profile' },
+                { key: 'jobs', label: 'Current Opportunities' },
+                { key: 'applied-jobs', label: 'Applied Jobs' },
+              ].map(tab => (
+                <li key={tab.key} className="nav-item">
+                  <button
+                    className={`nav-link text-start w-100 ${activeTab === tab.key ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab(tab.key);
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </>

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import { faCheckCircle } from '@fortawesome/free-solid-svg-icons/faCheckCircle';
 import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
 import { mapExperienceApiToUi, mapExperienceDetailsFormToApi } from '../mappers/ExperienceMapper';
@@ -14,6 +13,7 @@ import BackButtonWithConfirmation from '../../../shared/components/BackButtonWit
 import { Form } from 'react-bootstrap';
 import bulbIcon from '../../../assets/bulb-icon.png';
 import Loader from './Loader';
+import greenCheck from '../../../assets/green-check.png'
 
 const ExperienceDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
@@ -411,7 +411,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 
 	const blockCTCKeys = (e) => {
-		const blocked = ["e", "E", "+", "-", ".", ","];
+		const blocked = ["e", "E", "+", "-", ","];
 		if (blocked.includes(e.key)) {
 			e.preventDefault();
 		}
@@ -588,9 +588,9 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 								}}
 							>
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div style={{ fontWeight: 600 }}>
 										{existingDocument.displayName ?? existingDocument.fileName}
@@ -624,9 +624,9 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 								}}
 							>
 								<div className="d-flex align-items-center">
-									<FontAwesomeIcon
-										icon={faCheckCircle}
-										style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+									<img
+										src={greenCheck}
+										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
 										<div style={{ fontWeight: 600 }}>{certificateFile.name}</div>

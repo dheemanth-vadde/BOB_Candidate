@@ -247,7 +247,29 @@ export const validateFile = ({
 
   return true;
 };
+
 export const isValidCollegeName = (value = "") => {
   const trimmed = value.trim();
   return /^[A-Za-z ]+$/.test(trimmed);
 };
+
+export const hasDateCollision = ({
+  from,
+  to,
+  educationId,
+  existingRanges
+}) => {
+  const start = new Date(from).getTime();
+  const end = new Date(to).getTime();
+
+  return existingRanges.some(r => {
+    if (!r.from || !r.to) return false;
+    if (educationId && r.educationId === educationId) return false;
+
+    const rStart = new Date(r.from).getTime();
+    const rEnd = new Date(r.to).getTime();
+
+    return start <= rEnd && end >= rStart;
+  });
+};
+
