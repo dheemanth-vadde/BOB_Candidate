@@ -774,17 +774,23 @@ useEffect(() => {
               </div>
             </div>
           ))}
-          <select
-              className="form-select form-select-sm"
-              style={{ width: "90px" }}
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
+          
+          {jobs.length > 0 && (
+            <div className="d-flex justify-content-start mb-3">
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "90px" }}
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          )}
+          
           {totalPages > 1 && (
         <ul className="pagination pagination-sm justify-content-center">
           <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
