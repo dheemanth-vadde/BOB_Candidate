@@ -71,8 +71,8 @@
 
 /* Calendar icons */
 .date-icon {
-  font-size: 0.75rem;
-  color: #1b2a6b;
+ width:12px;
+ height:12px;
 }
 
 /* Divider */
@@ -336,8 +336,8 @@ color:  #333333;
 
 /* Calendar icons */
 .job-detail-modal .date-icon {
-  font-size: 0.75rem;
-  color: #1b2a6b;
+width: 12px;
+  height: 12px;
 }
 
 /* Divider */
@@ -494,4 +494,14 @@ ul{
 
 .vacancy-table {
   margin-bottom: 0;
+}
+.annexure_group{
+width:14px;
+height:17px;
+margin-right:5px;
+}
+.generic_group{
+width: 13px;
+  height: 13px;
+  margin-right: 5px;
 }

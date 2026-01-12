@@ -94,9 +94,9 @@ font-weight: 500;
 }
 
 /* Calendar icons */
-.date-icon {
-  font-size: 0.75rem;
-  color: #1b2a6b;
+.applied-jobs-page .date-icon {
+width: 12px;
+  height: 12px;
 }
 
 /* Divider */
@@ -373,4 +373,8 @@ font-weight: 500;
 }
 .track-application-modal{
   width:1100px !important;
+}
+.dowload-icon{
+  width: 17px;
+  height: 18px;
 }

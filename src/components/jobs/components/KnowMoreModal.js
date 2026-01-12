@@ -13,7 +13,8 @@ import { mapVacancyDistributions }  from "../../jobs/mappers/vacancyDistribution
 import { mapNationalVacancyDistributions } from "../mappers/NationalVacancyDistributionMapper";
 import LocationWiseVacancyTable from "./LocationWiseVacancyTable";
 import NationalVacancyTable from "./NationalVacancyTable";
-
+import start from "../../../assets/start.png";
+import end from "../../../assets/end.png";
 const KnowMoreModal = ({ show, onHide, selectedJob,masterData}) => {
   if (!selectedJob) return null;
 
@@ -74,14 +75,16 @@ console.log("selectedJob111111111",selectedJob)
             </span>
 
             <span className="date-item">
-              <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+              {/* <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" /> */}
+              <img src={start}  className="date-icon" alt="start"></img>
               Start: {formatDate(selectedJob?.registration_start_date)}
             </span>
 
             <span className="date-divider">|</span>
 
             <span className="date-item">
-              <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+              {/* <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" /> */}
+               <img src={end}  className="date-icon" alt="end"></img>
               End: {formatDate(selectedJob?.registration_end_date)}
             </span>
           </div>

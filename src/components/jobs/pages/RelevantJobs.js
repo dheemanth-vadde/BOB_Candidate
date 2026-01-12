@@ -29,6 +29,10 @@ import ValidationErrorModal from "../components/ValidationErrorModal";
 import masterApi from "../../../services/master.api";
 import { mapInterviewCentresApi } from "../../jobs/mappers/interviewCentreMapper";
 import useDebounce from "../../jobs/hooks/useDebounce";
+import Vector from "../../../assets/Vector.png";
+import Group from "../../../assets/Group.png";
+import start from "../../../assets/start.png";
+import end from "../../../assets/end.png";
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -634,14 +638,18 @@ useEffect(() => {
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("annexures")}
               >
-                 <FontAwesomeIcon icon={faFileLines} className="me-2" />
+                 {/* <FontAwesomeIcon icon={faFileLines} className="me-2" /> */}
+                  <img src={Group} alt="Group" className="annexure_group"/>
+               
                 Annexure Forms
               </button>
               <button
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("generic")}
+              
               >
-                  <FontAwesomeIcon icon={faCircleInfo} className="me-2" />
+                  {/* <FontAwesomeIcon icon={faCircleInfo} className="me-2" /> */}
+                   <img src={Vector} alt="Vector"   className="generic_group"/>
                 Generic Information
               </button>
               <div className="applied-search">
@@ -694,14 +702,15 @@ useEffect(() => {
                       </span>
 
                       <span className="date-item">
-                        <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+                        {/* <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" /> */}
+                        <img src={start}  className="date-icon" alt="start"></img>
                         Start: {formatDate(job.registration_start_date)}
                       </span>
 
                       <span className="date-divider">|</span>
 
                       <span className="date-item">
-                        <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+                         <img src={end}  className="date-icon" alt="end"></img>
                         End: {formatDate(job.registration_end_date)}
                       </span>
                     </div>

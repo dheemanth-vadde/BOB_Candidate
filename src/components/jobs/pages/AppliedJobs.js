@@ -16,6 +16,9 @@ import OfferLetterModal from "../../jobs/components/OfferLetterModal";
 import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
 import { toast } from "react-toastify";
 import useDebounce from "../../jobs/hooks/useDebounce";
+import start from "../../../assets/start.png";
+import end from "../../../assets/end.png";
+import download from "../../../assets/download.png";
 const AppliedJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -298,14 +301,14 @@ const [isMasterReady, setIsMasterReady] = useState(false);
               </span>
 
               <span className="date-item">
-                <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" />
+                <img src={start}  className="date-icon" alt="start"></img>
                 Start: {formatDate(job.registration_start_date)}
               </span>
 
               <span className="date-divider">|</span>
 
               <span className="date-item">
-                <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" />
+               <img src={end}  className="date-icon" alt="end"></img>
                 End: {formatDate(job.registration_end_date)}
               </span>
               <h6 className="job-title titlecolor">
@@ -373,9 +376,9 @@ const [isMasterReady, setIsMasterReady] = useState(false);
               disabled={downloadLoading === job.application_id}
               onClick={() => handleDownloadApplication(job)}
             >
-              {downloadLoading === job.application_id
+              {/* {downloadLoading === job.application_id
                 ? "Downloading..."
-                : "Download Application"}
+                : "Download Application"} */} <img src={download}  className="dowload-icon" alt="end"></img>Download Application
             </button>
               
                 {(

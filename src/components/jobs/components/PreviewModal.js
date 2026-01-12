@@ -366,7 +366,7 @@ const [activeAccordion, setActiveAccordion] = useState(["0"]);
                       <th>Role</th>
                       <th>From Date</th>
                       <th>To Date</th>
-                      <th>Duration</th>
+                      <th>Experience</th>
                       <th>Brief Description of Work</th>
                     </tr>
                   </thead>
