@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from "../../../assets/delete-icon.png";
+import viewIcon from "../../../assets/view-icon.png";
 import editIcon from "../../../assets/edit-icon.png";
 import profileApi from "../services/profile.api";
 import { useSelector } from "react-redux";
@@ -70,7 +71,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
     try {
       setLoading(true);
       const res = await profileApi.getCertifications(candidateId);
-
+      console.log("Certification masters fetched:", res.data);
       const mapped = Array.isArray(res?.data)
         ? res.data.map(mapCertificationApiToUi)
         : [];
@@ -90,7 +91,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
     const fetchCertificationMasters = async () => {
       try {
         const res = await masterApi.getCertifications();
-
+        
         const options = Array.isArray(res?.data?.data)
           ? res?.data?.data.map(c => ({
               value: c.certificationMasterId,
@@ -140,12 +141,32 @@ const CertificationDetails = ({ goNext, goBack }) => {
     initHasCertification();
   }, [candidateId]);
 
+  const isOtherSelected = () => {
+    const selected = certMasterOptions.find(
+      opt => opt.value === formData.certificationMasterId
+    );
+    return selected?.label === "Other";
+  };
+
   /* ================= HANDLERS ================= */
   const handleChange = (e) => {
     const { id, value } = e.target;
 
     setFormData((prev) => {
       const updated = { ...prev, [id]: value };
+
+      if (id === "certificationMasterId") {
+        const selected = certMasterOptions.find(opt => opt.value === value);
+
+        if (selected?.label === "Other") {
+          // Enable manual entry
+          updated.certificationName = "";
+        } else {
+          // Lock name to selected certification
+          updated.certificationName = selected?.label || "";
+        }
+      }
+
       if (id === "certificationDate") {
         updated.expiryDate = "";
       }
@@ -207,7 +228,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
       errors.issuedBy = "This field is required";
     }
 
-    if (!formData.certificationName.trim()) {
+    if (isOtherSelected() && !formData.certificationName.trim()) {
       errors.certificationName = "This field is required";
     }
 
@@ -265,7 +286,8 @@ const CertificationDetails = ({ goNext, goBack }) => {
         formData,
         candidateId,
         isEditMode ? editingRow?.certificateId : null, // ✅ REQUIRED
-        certificateFile
+        certificateFile,
+        existingDocument
       );
       console.log("Payload to save:", payload);
       setLoading(true);
@@ -273,7 +295,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
       await profileApi.saveCertification(
         candidateId,
         payload,
-        certificateFile // ✅ file passed to POST
+        certificateFile instanceof File ? certificateFile : undefined
       );
 
       toast.success(isEditMode ? "Updated successfully" : "Saved successfully");
@@ -337,7 +359,8 @@ const CertificationDetails = ({ goNext, goBack }) => {
   const handleDelete = async (row) => {
     try {
       setLoading(true);
-      await profileApi.deleteCertification(row.certificationId);
+      console.log("Deleting certificateId:", row);
+      await profileApi.deleteCertification(row.certificateId);
       toast.success("Deleted successfully");
       fetchCertifications();
       if (editingRow?.certificationId === row.certificationId) resetForm();
@@ -347,6 +370,26 @@ const CertificationDetails = ({ goNext, goBack }) => {
       setLoading(false);
     }
   };
+
+  const handleViewCertificate = () => {
+		// CASE 1: Newly uploaded file (local preview)
+		if (certificateFile instanceof File) {
+			const fileURL = URL.createObjectURL(certificateFile);
+			window.open(fileURL, "_blank");
+
+			// Prevent memory leaks
+			setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
+			return;
+		}
+
+		// CASE 2: Existing document from API
+		if (existingDocument?.fileUrl) {
+			window.open(existingDocument.fileUrl, "_blank");
+			return;
+		}
+
+		toast.error("No certificate available to view");
+	};
 
   const handleHasCertificationToggle = async (checked) => {
     setHasCertification(checked);
@@ -372,18 +415,20 @@ const CertificationDetails = ({ goNext, goBack }) => {
   /* ================= UI ================= */
   return (
     <div className="px-4 py-3 border rounded bg-white">
-      <div className="col-md-3 col-sm-12 d-flex align-items-center gap-2 p-2 rounded" style={{ backgroundColor: "rgb(255, 247, 237)", border: "1px solid rgb(231, 148, 109)", width: "fit-content" }}>
-        <Form.Check
-          type="checkbox"
-          id="hasCertification"
-          label="I hold certification(s)"
-          checked={hasCertification}
-          onChange={(e) =>
-            handleHasCertificationToggle(e.target.checked)
-          }
-          style={{ fontSize: "14px", color: "rgb(110, 110, 110)", fontWeight: "500" }}
-        />
-      </div>
+      {certList.length === 0 && (
+        <div className="col-md-3 col-sm-12 d-flex align-items-center gap-2 p-2 rounded" style={{ backgroundColor: "rgb(255, 247, 237)", border: "1px solid rgb(231, 148, 109)", width: "fit-content" }}>
+          <Form.Check
+            type="checkbox"
+            id="hasCertification"
+            label="I hold certification(s)"
+            checked={hasCertification}
+            onChange={(e) =>
+              handleHasCertificationToggle(e.target.checked)
+            }
+            style={{ fontSize: "14px", color: "rgb(110, 110, 110)", fontWeight: "500" }}
+          />
+        </div>
+      )}
       {nextError && (
         <div className="text-danger mt-1" style={{ fontSize: "13px" }}>
           {nextError}
@@ -429,7 +474,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
           <label className="form-label">
             Certification Name {hasCertification && <span className="text-danger">*</span>}
           </label>
-          <input id="certificationName" disabled={!hasCertification} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
+          <input id="certificationName" disabled={!hasCertification || !isOtherSelected()} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
           <div className="invalid-feedback">{formErrors.certificationName}</div>
         </div>
 
@@ -497,15 +542,32 @@ const CertificationDetails = ({ goNext, goBack }) => {
                     )}
                   </div>
                 </div>
+                <div className="d-flex align-items-center gap-2">
+                  <img
+                    src={viewIcon}
+                    width={25}
+                    height={25}
+                    alt="View"
+                    style={{ cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewCertificate();
+                    }}
+                  />
 
-                <img src={deleteIcon} width={25} height={25} alt="Delete" onClick={(e) => {
-                  e.stopPropagation();
-                  if (!hasCertification) return;
-                  setCertificateFile(null);
-                  setExistingDocument(null);
-                }}
-                  style={{ cursor: hasCertification ? "pointer" : "not-allowed", opacity: hasCertification ? 1 : 0.5 }}
-                />
+                  <img src={deleteIcon} width={25} height={25} alt="Delete" onClick={(e) => {
+                    e.stopPropagation();
+                    if (!hasCertification) return;
+                      setCertificateFile(null);
+                      setExistingDocument(null);
+                      // Reset file input so the same file can be uploaded again
+                      const fileInput = document.getElementById("certInput");
+                      if (fileInput) fileInput.value = "";
+                      setFormErrors((p) => ({ ...p, certificate: "" }));
+                    }}
+                    style={{ cursor: hasCertification ? "pointer" : "not-allowed", opacity: hasCertification ? 1 : 0.5 }}
+                  />
+                </div>
               </div>
             )}
             <input id="certInput" type="file" hidden accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={handleFileChange} disabled={!hasCertification} />
@@ -531,39 +593,99 @@ const CertificationDetails = ({ goNext, goBack }) => {
         </div>
 
         {/* TABLE */}
-        <table>
-          <thead>
-            <tr>
-              <th className="profile_table_th text-center">S.No</th>
-              <th className="profile_table_th">Certification Issued By</th>
-              <th className="profile_table_th">Certification Name</th>
-              <th className="profile_table_th">Certification Date</th>
-              <th className="profile_table_th">Expiry Date, If any</th>
-              <th className="profile_table_th">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {certList.map((c, i) => (
-              <tr key={i}>
-                <td className="profile_table_td text-center">{i + 1}</td>
-                <td className="profile_table_td">{c.issuedBy}</td>
-                <td className="profile_table_td">{c.certificationName}</td>
-                <td className="profile_table_td">{c.certificationDate}</td>
-                <td className="profile_table_td">{c.expiryDate || "-"}</td>
-                <td className="profile_table_td">
-                  <div className="d-flex gap-2">
-                    <div>
-                      <img src={editIcon} alt="Edit" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(c)} />
-                    </div>
-                    <div>
-                      <img src={deleteIcon} alt="Delete" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(c)} />
-                    </div>
-                  </div>
-                </td>
+        <div className="d-none d-md-block w-100">
+          <table className="w-100">
+            <thead>
+              <tr>
+                <th className="profile_table_th text-center">S.No</th>
+                <th className="profile_table_th">Certification Issued By</th>
+                <th className="profile_table_th">Certification Name</th>
+                <th className="profile_table_th">Certification Date</th>
+                <th className="profile_table_th">Expiry Date, If any</th>
+                <th className="profile_table_th">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {certList.map((c, i) => (
+                <tr key={i}>
+                  <td className="profile_table_td text-center">{i + 1}</td>
+                  <td className="profile_table_td">{c.issuedBy}</td>
+                  <td className="profile_table_td">{c.certificationName}</td>
+                  <td className="profile_table_td">{c.certificationDate}</td>
+                  <td className="profile_table_td">{c.expiryDate || "-"}</td>
+                  <td className="profile_table_td">
+                    <div className="d-flex gap-2">
+                      <div>
+                        <img
+                          src={viewIcon}
+                          alt="View"
+                          style={{ width: "25px", cursor: "pointer" }}
+                          onClick={() => window.open(c.certificate?.fileUrl, "_blank")}
+                        />
+                      </div>
+                      <div>
+                        <img src={editIcon} alt="Edit" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(c)} />
+                      </div>
+                      <div>
+                        <img src={deleteIcon} alt="Delete" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(c)} />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* MOBILE CARDS */}
+        <div className="d-block d-md-none">
+          {certList.map((c, i) => (
+            <div
+              key={c.certificationId}
+              className="border rounded p-3 mb-3 bg-white shadow-sm"
+            >
+              <div className="d-flex justify-content-between mb-2">
+                <strong>Certification #{i + 1}</strong>
+                <div className="d-flex gap-2">
+                  <div>
+                    <img
+                      src={viewIcon}
+                      alt="View"
+                      style={{ width: "25px", cursor: "pointer" }}
+                      onClick={() => window.open(c.certificate?.fileUrl, "_blank")}
+                    />
+                  </div>
+                  <div>
+                    <img src={editIcon} alt="Edit" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(c)} />
+                  </div>
+                  <div>
+                    <img src={deleteIcon} alt="Delete" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(c)} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-1">
+                <small className="text-muted">Issued By</small>
+                <div className='wrap-text'>{c.issuedBy}</div>
+              </div>
+
+              <div className="mb-1">
+                <small className="text-muted">Certification</small>
+                <div className='wrap-text'>{c.certificationName}</div>
+              </div>
+
+              <div className="mb-1">
+                <small className="text-muted">Certification Date</small>
+                <div className='wrap-text'>{c.certificationDate}</div>
+              </div>
+
+              <div>
+                <small className="text-muted">Expiry Date</small>
+                <div className='wrap-text'>{c.expiryDate || "-"}</div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* NAV */}
         <div className="d-flex justify-content-between">

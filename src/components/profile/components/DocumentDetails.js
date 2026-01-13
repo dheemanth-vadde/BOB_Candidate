@@ -187,7 +187,11 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 
 			if (!skipValidation) {
 				try {
-					await profileApi.ValidateDocument(field.docCode, file);
+					const validationRes = await profileApi.ValidateDocument(field.docCode, file);
+					if (!validationRes?.success) {
+						toast.error("Invalid Certificate");
+						return false;
+					}
 				} catch {
 					toast.error("Invalid Certificate");
 					return false;

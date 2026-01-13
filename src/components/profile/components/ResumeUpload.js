@@ -16,6 +16,7 @@ import greenCheck from '../../../assets/green-check.png'
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl, goNext, goBack, resumePublicUrl, isBasicDetailsSubmitted }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
+  const [localBlobUrl, setLocalBlobUrl] = useState(null);
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.user?.user?.data);
   const auth = useSelector((state) => state.user.authUser);
@@ -29,6 +30,10 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       setResumeFile(null);
       setResumePublicUrl("");
       setFileName("");
+      if (localBlobUrl) {
+        URL.revokeObjectURL(localBlobUrl);
+        setLocalBlobUrl(null);
+      }
     }
   }, [isBasicDetailsSubmitted]);
 
@@ -52,6 +57,10 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
 
     setResumeFile(file);
     setFileName(file.name);
+    
+    // Create a blob URL for local preview
+    const blobUrl = URL.createObjectURL(file);
+    setLocalBlobUrl(blobUrl);
   };
 
   const fileSizeInKB = resumeFile ? (resumeFile.size / 1024).toFixed(2) : null;
@@ -192,6 +201,11 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
     setResumeFile(null);
     setResumePublicUrl("");
     setFileName("");
+    // Clean up blob URL
+    if (localBlobUrl) {
+      URL.revokeObjectURL(localBlobUrl);
+      setLocalBlobUrl(null);
+    }
     // clear file input value (critical)
     const input = document.getElementById("resume-input");
     if (input) {
@@ -233,7 +247,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
           {/* Right: Action icons */}
           <div className="d-flex gap-2">
 
-            <div onClick={() => window.open(resumePublicUrl, "_blank")}>
+            <div onClick={() => window.open(localBlobUrl || resumePublicUrl, "_blank")}>
               <img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
             </div>
 

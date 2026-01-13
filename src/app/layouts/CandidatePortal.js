@@ -159,7 +159,7 @@ const CandidatePortal = () => {
       {/* 👇 Pass activeTab + setActiveTab into Header */}
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="">
+      <div className="mb-3">
         <div className="tab-content">
           {disclaimerAccepted === true && renderTabContent()}
           {showModal && (
@@ -229,7 +229,9 @@ const CandidatePortal = () => {
           )}
         </div>
       </div>
-      {/* <Footer /> */}
+
+      <Footer />
+
     </div>
   );
 };

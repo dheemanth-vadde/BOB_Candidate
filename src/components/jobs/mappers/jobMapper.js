@@ -6,7 +6,7 @@ import {
    getEmploymentType,
    getState
 } from "../../../shared/utils/masterHelpers";
-
+import { formatExperience } from "../../../shared/utils/formatExperience";
 export const mapJobApiToModel = (apiJob, masters = {}) => {
    if (!apiJob) return null;
 
@@ -78,8 +78,8 @@ export const mapJobApiToModel = (apiJob, masters = {}) => {
       eligibility_age_max: positionsDTO?.eligibilityAgeMax ?? null,
       mandatory_qualification: positionsDTO?.mandatoryEducation || "",
       preferred_qualification: positionsDTO?.preferredEducation || "",
-      mandatory_experience: Number(positionsDTO?.mandatoryExperience) || 0,
-      preferred_experience: Number(positionsDTO?.preferredExperience) || 0,
+      mandatory_experience: formatExperience(positionsDTO?.mandatoryExperienceMonths),
+      preferred_experience: formatExperience(positionsDTO?.preferredExperienceMonths),
 
       /* =========================
          VACANCIES

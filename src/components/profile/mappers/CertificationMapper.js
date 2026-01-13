@@ -2,7 +2,8 @@ export const mapCertificationFormToApi = (
   formData,
   candidateId,
   certificateId,
-  file
+  file,
+  existingDocument
 ) => ({
   certificateId: certificateId ?? null, // ✅ THIS decides insert vs update
   candidateId,
@@ -10,7 +11,11 @@ export const mapCertificationFormToApi = (
   certificationName: formData.certificationName,
   certificationDate: formData.certificationDate,
   expiryDate: formData.expiryDate || null,
-  certificateFileName: file?.name || null,
+  certificateFileName:
+    file?.name ||
+    existingDocument?.fileName ||
+    existingDocument?.displayName ||
+    null,
   certificationId: formData.certificationMasterId
 });
 

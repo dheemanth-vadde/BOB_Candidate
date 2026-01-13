@@ -844,3 +844,26 @@ font-family: 'poppins';
   display: flex;
   flex-direction: column;
 }
+
+.wrap-text {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.75rem;
+  color: #7B91B0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1028; /* below header */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+}

@@ -280,7 +280,7 @@ width: 12px;
 .applied-jobs-page .pagination .page-link:hover {
   background-color: #ffe5d1;
 }
-.page-loader-overlay {
+/* .page-loader-overlay {
   position: fixed;
   inset: 0;
   background:rgba(255, 255, 255, 0.7);
@@ -294,7 +294,7 @@ width: 12px;
 .list-loader-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.6); /* light overlay */
+  background: rgba(255, 255, 255, 0.6); 
   z-index: 10;
 
   display: flex;
@@ -302,8 +302,8 @@ width: 12px;
   align-items: center;
   justify-content: center;
 
-  pointer-events: none; /* optional: allow scrolling */
-}
+  pointer-events: none; 
+} */
 
 /* Responsive */
 @media (max-width: 992px) {

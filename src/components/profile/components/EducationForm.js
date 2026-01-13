@@ -1,32 +1,39 @@
-import { faCheckCircle, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from "react";
-import masterApi from '../../../services/master.api';
 import profileApi from '../services/profile.api';
 import { getDocCodeFromEducationLevelId, mapEducationFormToApi } from '../mappers/EducationMapper';
 import { toast } from 'react-toastify';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import deleteIcon from '../../../assets/delete-icon.png';
-import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import { isValidCollegeName, validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
+import { hasDateCollision, isValidCollegeName, validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
 import Loader from './Loader';
+import { forwardRef, useImperativeHandle } from 'react';
+import { removeParsedEducationById } from '../store/resumeSlice';
+import greenCheck from '../../../assets/green-check.png'
 
-const EducationForm = ({
-  goNext,
-  educationId,
-  onEducationLevelChange,
-  fixedEducationLevelId,
-  fixedDocumentTypeId,
-  disableEducationLevel = false,
-  // showDegree = true,
-  showSpecialization = true,
-  showBoard = true,
-  existingData = null,
-  masterData,
-  refreshEducation,
-  onDirtyChange = () => {}
-}) => {
+const EducationForm = forwardRef((props, ref) => {
+  const {
+    goNext,
+    educationId,
+    onEducationLevelChange,
+    fixedEducationLevelId,
+    fixedDocumentTypeId,
+    disableEducationLevel = false,
+    // showDegree = true,
+    showSpecialization = true,
+    showBoard = true,
+    existingData = null,
+    masterData,
+    refreshEducation,
+    existingRanges = [],
+    onDirtyChange = () => {},
+    parsedId = null,
+    onDelete = null
+  } = props;
+  const dispatch = useDispatch();
+  const parsedList = useSelector((state) => state.resume?.parsed?.education || []);
   const user = useSelector((state) => state?.user?.user?.data);
   const candidateId = user?.user?.id;
   const [loading, setLoading] = useState(false);
@@ -176,7 +183,38 @@ const EducationForm = ({
       isValid = false;
     }
     setFormErrors(errors);
+    // Scroll to first error immediately using the computed errors object
+    if (!isValid) {
+      const firstError = Object.keys(errors)[0];
+      if (firstError) {
+        document.getElementById(firstError)?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
     return { isValid, errors };
+  };
+
+  useImperativeHandle(ref, () => ({
+    validate: () => validateForm(),
+  }));
+
+  const handleDelete = () => {
+    if (parsedId) {
+      // Check if this is a Redux-backed parsed entry or manually added entry
+      const isReduxEntry = parsedList.some(e => e.__tempId === parsedId);
+      
+      if (isReduxEntry) {
+        // Redux entry - remove from Redux
+        dispatch(removeParsedEducationById(parsedId));
+        if (refreshEducation) {
+          refreshEducation(false);
+        }
+      } else {
+        // Manually added entry - call parent callback to remove from local state
+        if (onDelete) {
+          onDelete(parsedId);
+        }
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -190,6 +228,23 @@ const EducationForm = ({
       }
       return;
     }
+
+    const collision = hasDateCollision({
+      from: formData.from,
+      to: formData.to,
+      educationId,
+      existingRanges
+    });
+
+    if (collision) {
+      setFormErrors(prev => ({
+        ...prev,
+        dateRange: "These dates overlap with another education entry"
+      }));
+      setLoading(false);
+      return;
+    }
+
     setLoading(true)
     try {
       // Get the docCode from masterData based on the selected education level
@@ -213,10 +268,10 @@ const EducationForm = ({
       };
       // Validate the document before uploading
       if (certificateFile) {
-        try {
-          await profileApi.ValidateDocument(docCode, certificateFile);
-        } catch (validationErr) {
-          toast.error("Invalid Certificate");
+        const res = await profileApi.ValidateDocument(docCode, certificateFile);
+        console.log(res)
+        if (!res?.success) {
+          toast.error(res?.message || "Invalid Certificate");
           return;
         }
       }
@@ -236,11 +291,36 @@ const EducationForm = ({
       toast.success("Education details saved successfully");
       onDirtyChange(false);
 
-      if (refreshEducation) {
+      // If this form came from parsed resume data, remove that parsed entry from redux by id
+      if (parsedId) {
         try {
-          await refreshEducation();
-        } catch (refreshErr) {
-          console.error("Failed to refresh education details after save", refreshErr);
+          // If there are more parsed entries remaining after this removal, do not force API refresh.
+          // parsedList contains the list BEFORE removal; if its length > 1, others remain.
+          const hadMultiple = Array.isArray(parsedList) && parsedList.length > 1;
+
+          dispatch(removeParsedEducationById(parsedId));
+
+          if (refreshEducation) {
+            try {
+              // Always call with forceUseApi=false so parent checks fresh parsedResume
+              // Parent's fetchEducationDetails is now wrapped in useCallback with parsedResume dependency,
+              // so it will have the updated Redux value after removal
+              await refreshEducation(false);
+            } catch (refreshErr) {
+              console.error("Failed to refresh education details after save", refreshErr);
+            }
+          }
+
+        } catch (e) {
+          console.warn('Failed to remove parsed education from redux by id', e);
+        }
+      } else {
+        if (refreshEducation) {
+          try {
+            await refreshEducation(true);
+          } catch (refreshErr) {
+            console.error("Failed to refresh education details after save", refreshErr);
+          }
         }
       }
       // goNext();
@@ -410,6 +490,9 @@ const EducationForm = ({
         {formErrors.to && (
           <div className="invalid-feedback">{formErrors.to}</div>
         )}
+        {formErrors.dateRange && !formErrors.from && !formErrors.to && (
+          <div className="invalid-feedback">{formErrors.dateRange}</div>
+        )}
       </div>
 
       {/* Percentage */}
@@ -541,9 +624,9 @@ const EducationForm = ({
           >
             {/* LEFT SIDE: Check icon + File name + size */}
             <div className="d-flex align-items-center">
-              <FontAwesomeIcon
-                icon={faCheckCircle}
-                style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+              <img
+                src={greenCheck}
+                style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
               />
               <div>
                 <div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -589,9 +672,9 @@ const EducationForm = ({
           >
             {/* LEFT SIDE: Check icon + File name + size */}
             <div className="d-flex align-items-center">
-              <FontAwesomeIcon
-                icon={faCheckCircle}
-                style={{ color: "green", fontSize: "22px", marginRight: "10px" }}
+              <img
+                src={greenCheck}
+                style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
               />
               <div>
                 <div style={{ fontWeight: 600, color: "#42579f" }}>
@@ -627,7 +710,7 @@ const EducationForm = ({
         )}
       </div>
 
-      <div className="d-flex justify-content-center mt-2">
+      <div className="d-flex justify-content-center gap-2 mt-2">
         <button
           type="submit"
           className="btn btn-primary mt-3"
@@ -640,6 +723,21 @@ const EducationForm = ({
           }}>
           Save
         </button>
+        {parsedId && (
+          <button
+            type="button"
+            className="btn btn-danger mt-3"
+            onClick={handleDelete}
+            style={{
+              border: "1px solid #dc3545",
+              backgroundColor: 'white',
+              padding: "0.5rem 1rem",
+              borderRadius: "4px",
+              color: "#dc3545"
+            }}>
+            Delete
+          </button>
+        )}
       </div>
 
       {loading && (
@@ -647,6 +745,6 @@ const EducationForm = ({
 			)}
     </form>
   );
-};
+});
 
 export default EducationForm;
