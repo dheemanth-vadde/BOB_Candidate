@@ -7,7 +7,7 @@ import {
   faSearch,
   faCalendarAlt,
   faCalendarTimes,
-  faFileLines, faCircleInfo 
+  faFileLines, faCircleInfo
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "react-bootstrap";
 import "../../../css/Relevantjobs.css";
@@ -33,6 +33,8 @@ import Vector from "../../../assets/Vector.png";
 import Group from "../../../assets/Group.png";
 import start from "../../../assets/start.png";
 import end from "../../../assets/end.png";
+import Loader from "../../profile/components/Loader";
+import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +80,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     { label: "11+ years", min: 11, max: Infinity },
   ];
   const [interviewCentres, setInterviewCentres] = useState([]);
- const [currentPage, setCurrentPage] = useState(0); // backend index
+  const [currentPage, setCurrentPage] = useState(0); // backend index
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -86,7 +88,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
 
 
-const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const dispatch = useDispatch();
 
   const [previewData, setPreviewData] = useState();
@@ -133,64 +135,64 @@ const [turnstileToken, setTurnstileToken] = useState("");
     initMasters();
   }, []);
 
- const getExperienceRangeInMonths = () => {
-  if (!selectedExperience || selectedExperience.length === 0) {
-    return { monthMinExp: null, monthMaxExp: null };
-  }
+  const getExperienceRangeInMonths = () => {
+    if (!selectedExperience || selectedExperience.length === 0) {
+      return { monthMinExp: null, monthMaxExp: null };
+    }
 
-  const minYears = Math.min(...selectedExperience.map(e => e.min));
+    const minYears = Math.min(...selectedExperience.map(e => e.min));
 
-  const hasInfinity = selectedExperience.some(e => e.max === Infinity);
+    const hasInfinity = selectedExperience.some(e => e.max === Infinity);
 
-  const maxYears = hasInfinity
-    ? null
-    : Math.max(...selectedExperience.map(e => e.max));
+    const maxYears = hasInfinity
+      ? null
+      : Math.max(...selectedExperience.map(e => e.max));
 
-  return {
-    monthMinExp: minYears * 12,
-    monthMaxExp: maxYears === null ? 0 : maxYears * 12
+    return {
+      monthMinExp: minYears * 12,
+      monthMaxExp: maxYears === null ? 0 : maxYears * 12
+    };
   };
-};
 
 
 
   const fetchJobs = async () => {
-  if (!candidateId || !isMasterReady) return;
+    if (!candidateId || !isMasterReady) return;
 
-  try {
-    setLoading(true);
-     const { monthMinExp, monthMaxExp } = getExperienceRangeInMonths();
-    const payload = {
-      searchText: debouncedSearchTerm || "",
-      candidateId,
-      deptIds: selectedDepartments,
-      stateIds: selectedStates,
-      requisitionId: selectedRequisition || null,
-      page: currentPage,
-      size: pageSize,
-     monthMinExp,
-      monthMaxExp
-    };
+    try {
+      setLoading(true);
+      const { monthMinExp, monthMaxExp } = getExperienceRangeInMonths();
+      const payload = {
+        searchText: debouncedSearchTerm || "",
+        candidateId,
+        deptIds: selectedDepartments,
+        stateIds: selectedStates,
+        requisitionId: selectedRequisition || null,
+        page: currentPage,
+        size: pageSize,
+        monthMinExp,
+        monthMaxExp
+      };
 
-    const res = await jobsApiService.getJobPositions(payload); // POST
+      const res = await jobsApiService.getJobPositions(payload); // POST
 
-    const pageData = res?.data;
-    console.log("pageDta",pageData)
-    const jobsData = pageData?.content || [];
+      const pageData = res?.data;
+      console.log("pageDta", pageData)
+      const jobsData = pageData?.content || [];
 
-    const mappedJobs = mapJobsApiToList(jobsData, masterData);
+      const mappedJobs = mapJobsApiToList(jobsData, masterData);
 
-    setJobs(mappedJobs);
-    setTotalPages(pageData?.totalPages ?? 0);
+      setJobs(mappedJobs);
+      setTotalPages(pageData?.totalPages ?? 0);
 
-  } catch (err) {
-    //toast.error("Failed to load jobs");
-    setJobs([]);
-    setTotalPages(0);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      //toast.error("Failed to load jobs");
+      setJobs([]);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const fetchInterviewCentres = async () => {
@@ -241,71 +243,71 @@ const [turnstileToken, setTurnstileToken] = useState("");
     fetchInterviewCentres();
   }, []);
 
-useEffect(() => {
-  if (!isMasterReady) return;
+  useEffect(() => {
+    if (!isMasterReady) return;
 
-  // 🔹 no search → fetch all
-  if (!debouncedSearchTerm) {
+    // 🔹 no search → fetch all
+    if (!debouncedSearchTerm) {
+      fetchJobs();
+      return;
+    }
+
+    // 🔹 min 3 characters rule
+    if (debouncedSearchTerm.length < 3) return;
+
     fetchJobs();
-    return;
-  }
-
-  // 🔹 min 3 characters rule
-  if (debouncedSearchTerm.length < 3) return;
-
-  fetchJobs();
-}, [
-  isMasterReady,
-  currentPage,
-  debouncedSearchTerm,   // ✅ debounced value
-  selectedDepartments,
-  selectedStates,
-  selectedExperience,
-  selectedRequisition,
-  pageSize
-]);
+  }, [
+    isMasterReady,
+    currentPage,
+    debouncedSearchTerm,   // ✅ debounced value
+    selectedDepartments,
+    selectedStates,
+    selectedExperience,
+    selectedRequisition,
+    pageSize
+  ]);
 
 
   useEffect(() => {
-  if (
-    !candidateId ||
-    !isMasterReady ||
-    !selectedJob?.position_id
-  ) {
-    return;
-  }
-
-  const fetchCandidatePreview = async () => {
-    try {
-      const response = await jobsApiService.getAllDetails(
-        candidateId,
-        selectedJob.position_id
-      );
-
-      const mappedPreviewData = mapCandidateToPreview(
-        response.data,
-        masterData
-      );
-
-      setPreviewData(mappedPreviewData);
-    } catch (error) {
-      console.error("Failed to fetch candidate preview", error);
-      toast.error("Unable to load candidate profile");
+    if (
+      !candidateId ||
+      !isMasterReady ||
+      !selectedJob?.position_id
+    ) {
+      return;
     }
-  };
 
-  fetchCandidatePreview();
-}, [candidateId, isMasterReady, selectedJob]);
+    const fetchCandidatePreview = async () => {
+      try {
+        const response = await jobsApiService.getAllDetails(
+          candidateId,
+          selectedJob.position_id
+        );
 
-  const formatDate = (date) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
-    .replace(/\//g, "-");
-  };
+        const mappedPreviewData = mapCandidateToPreview(
+          response.data,
+          masterData
+        );
+
+        setPreviewData(mappedPreviewData);
+      } catch (error) {
+        console.error("Failed to fetch candidate preview", error);
+        toast.error("Unable to load candidate profile");
+      }
+    };
+
+    fetchCandidatePreview();
+  }, [candidateId, isMasterReady, selectedJob]);
+
+  // const formatDateDDMMYYYY = (date) => {
+  //   if (!date) return "-";
+  //   return new Date(date).toLocaleDateString("en-GB", {
+  //     day: "2-digit",
+  //     month: "2-digit",
+  //     year: "numeric",
+  //   })
+  //   .replace(/\//g, "-");
+  // };
 
   const handlePreCheckConfirm = async () => {
     setShowPreCheckModal(false);
@@ -447,7 +449,7 @@ useEffect(() => {
     setSelectedExperience([]);
     setSearchTerm("");
   };
-  
+
   const handleProceedToPayment = () => {
     const errors = {};
 
@@ -485,19 +487,11 @@ useEffect(() => {
     setShowPreviewModal(false);   // close preview
     setShowPaymentModal(true);    // open payment modal
   };
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
+
   return (
 
     <div className="mx-4 my-3 relevant">
-
+      {loading && <Loader />}
 
       {/* Filters + Job Cards */}
       <div className="row" id="matched-jobs-container">
@@ -515,7 +509,7 @@ useEffect(() => {
             />
             <span className="filter">Filters</span>
           </div>
-          
+
           <div
             className="bob-left-custom-filter-div"
             style={{
@@ -585,7 +579,7 @@ useEffect(() => {
                 ))}
               </div>
 
-              {(selectedDepartments.length > 0 || selectedLocations.length > 0 || selectedExperience.length>0) && (
+              {(selectedDepartments.length > 0 || selectedLocations.length > 0 || selectedExperience.length > 0) && (
                 <button
                   className="btn btn-sm btn-outline-secondary mt-3"
                   onClick={clearFilters}
@@ -638,18 +632,18 @@ useEffect(() => {
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("annexures")}
               >
-                 {/* <FontAwesomeIcon icon={faFileLines} className="me-2" /> */}
-                  <img src={Group} alt="Group" className="annexure_group"/>
-               
+                {/* <FontAwesomeIcon icon={faFileLines} className="me-2" /> */}
+                <img src={Group} alt="Group" className="annexure_group" />
+
                 Annexure Forms
               </button>
               <button
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("generic")}
-              
+
               >
-                  {/* <FontAwesomeIcon icon={faCircleInfo} className="me-2" /> */}
-                   <img src={Vector} alt="Vector"   className="generic_group"/>
+                {/* <FontAwesomeIcon icon={faCircleInfo} className="me-2" /> */}
+                <img src={Vector} alt="Vector" className="generic_group" />
                 Generic Information
               </button>
               <div className="applied-search">
@@ -667,7 +661,7 @@ useEffect(() => {
             </div>
           </div>
           {/* ================= EMPTY STATE (ADDED) ================= */}
-          {jobs.length === 0 && (
+          {!loading && jobs.length === 0 && (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
               <div className="text-center">
                 <FontAwesomeIcon
@@ -703,15 +697,15 @@ useEffect(() => {
 
                       <span className="date-item">
                         {/* <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" /> */}
-                        <img src={start}  className="date-icon" alt="start"></img>
-                        Start: {formatDate(job.registration_start_date)}
+                        <img src={start} className="date-icon" alt="start"></img>
+                        Start: {formatDateDDMMYYYY(job.registration_start_date)}
                       </span>
 
                       <span className="date-divider">|</span>
 
                       <span className="date-item">
-                         <img src={end}  className="date-icon" alt="end"></img>
-                        End: {formatDate(job.registration_end_date)}
+                        <img src={end} className="date-icon" alt="end"></img>
+                        End: {formatDateDDMMYYYY(job.registration_end_date)}
                       </span>
                     </div>
                     <h6 className="job-title titlecolor">
@@ -783,7 +777,7 @@ useEffect(() => {
               </div>
             </div>
           ))}
-          
+
           {jobs.length > 0 && (
             <div className="d-flex justify-content-start mb-3">
               <select
@@ -799,46 +793,46 @@ useEffect(() => {
               </select>
             </div>
           )}
-          
+
           {totalPages > 1 && (
-        <ul className="pagination pagination-sm justify-content-center">
-          <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-            <button
-              className="page-link"
-              onClick={() => setCurrentPage(p => Math.max(p - 1, 0))}
-            >
-              ‹
-            </button>
-          </li>
+            <ul className="pagination pagination-sm justify-content-center">
+              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(p => Math.max(p - 1, 0))}
+                >
+                  ‹
+                </button>
+              </li>
 
-          {Array.from({ length: totalPages }, (_, i) => (
-            <li
-              key={i}
-              className={`page-item ${currentPage === i ? "active" : ""}`}
-            >
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage(i)}
-              >
-                {i + 1}
-              </button>
-            </li>
-          ))}
+              {Array.from({ length: totalPages }, (_, i) => (
+                <li
+                  key={i}
+                  className={`page-item ${currentPage === i ? "active" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(i)}
+                  >
+                    {i + 1}
+                  </button>
+                </li>
+              ))}
 
-          <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
-            <button
-              className="page-link"
-              onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages - 1))}
-            >
-              ›
-            </button>
-          </li>
-        </ul>
-      )}
+              <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages - 1))}
+                >
+                  ›
+                </button>
+              </li>
+            </ul>
+          )}
         </div>
       </div>
 
-      
+
 
       {/* ✅ Original Know More Modal (unchanged) */}
       <KnowMoreModal
@@ -876,7 +870,7 @@ useEffect(() => {
         formErrors={formErrors}                 // ✅ PASS ERRORS
         setFormErrors={setFormErrors}           // ✅ PASS SETTER
         interviewCentres={interviewCentres}
-        setTurnstileToken={setTurnstileToken}  
+        setTurnstileToken={setTurnstileToken}
       />
 
       <PaymentModal
@@ -886,7 +880,7 @@ useEffect(() => {
         candidateId={candidateId}
         user={user}
         onPaymentSuccess={handleConfirmApply}
-        token={turnstileToken} 
+        token={turnstileToken}
       />
       <ConfirmationModal
         show={showPreCheckModal}

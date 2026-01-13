@@ -1,62 +1,18 @@
 import React from "react";
 import { Modal } from "react-bootstrap";
 import "../../../css/Relevantjobs.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheckCircle,
-  faSearch,
-  faLightbulb,
-   faCalendarAlt,
-  faCalendarTimes
-} from "@fortawesome/free-solid-svg-icons";
-import { mapVacancyDistributions }  from "../../jobs/mappers/vacancyDistributionMapper";
-import { mapNationalVacancyDistributions } from "../mappers/NationalVacancyDistributionMapper";
 import LocationWiseVacancyTable from "./LocationWiseVacancyTable";
 import NationalVacancyTable from "./NationalVacancyTable";
 import start from "../../../assets/start.png";
 import end from "../../../assets/end.png";
+import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
 const KnowMoreModal = ({ show, onHide, selectedJob,masterData}) => {
   if (!selectedJob) return null;
 
-    const formatDate = (date) => {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).replace(/\//g, '-');
-};
+
 const reservationCategories = masterData?.reservation_categories || [];
 const disabilities = masterData?.disabilities || [];
 const states = masterData?.states || [];
-// const isLocationWise = selectedJob?.isLocationWise;
-// const vacancyDistribution = mapVacancyDistributions(
-//   selectedJob?.positionStateDistributions || [],
-//   states,
-//   reservationCategories,
-//   disabilities
-// );
-
-
-
-// const stateWiseDistribution = isLocationWise
-//   ? mapVacancyDistributions(
-//       selectedJob?.positionStateDistributions || [],
-//       states,
-//       reservationCategories,
-//       disabilities
-//     )
-//   : null;
-
-// const nationalDistribution = !isLocationWise
-//   ? mapNationalVacancyDistributions(
-//       selectedJob?.positionCategoryNationalDistributions || [],
-//       reservationCategories,
-//       disabilities
-//     )
-//   : null;
-
-console.log("selectedJob111111111",selectedJob)
   return (
     <Modal
       show={show}
@@ -77,7 +33,7 @@ console.log("selectedJob111111111",selectedJob)
             <span className="date-item">
               {/* <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" /> */}
               <img src={start}  className="date-icon" alt="start"></img>
-              Start: {formatDate(selectedJob?.registration_start_date)}
+              Start: {formatDateDDMMYYYY(selectedJob?.registration_start_date)}
             </span>
 
             <span className="date-divider">|</span>
@@ -85,7 +41,7 @@ console.log("selectedJob111111111",selectedJob)
             <span className="date-item">
               {/* <FontAwesomeIcon icon={faCalendarTimes} className="date-icon" /> */}
                <img src={end}  className="date-icon" alt="end"></img>
-              End: {formatDate(selectedJob?.registration_end_date)}
+              End: {formatDateDDMMYYYY(selectedJob?.registration_end_date)}
             </span>
           </div>
 

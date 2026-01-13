@@ -9,6 +9,7 @@ import {
   getSpecialization,
   getMandatoryQualification
 } from "../../../shared/utils/masterHelpers";
+import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
 export const mapCandidateToPreview = (
   apiData = {},
   masters = {}
@@ -36,23 +37,8 @@ const documents = apiData?.documentDetails || [];
   const twinGender = getGender?.(masters, profile.twinGenderId);
   const reservation = getReservation?.(masters, profile.reservationCategoryId);
 
-  //const educationLevels = getEducationLevels?.(masters, educations[0]?.educationLevelId);
-  console.log("gender:", gender);
-  console.log("religion:", religion);
-  console.log("nationality:", nationality);
-  console.log("maritalStatus:", maritalStatus);
-  console.log("reservation:", reservation);
 
-  const formatDate = (date) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
-    .replace(/\//g, "-");
-  };
-  
+
   /* =========================
      DOCUMENT GROUPING
   ========================= */
@@ -76,7 +62,7 @@ const documents = apiData?.documentDetails || [];
       motherName: profile.motherName || "-",
       fatherName: profile.fatherName || "-",
       spouseName: profile.spouseName || "-",
-      dob: formatDate(profile.dateOfBirth) || "-",
+      dob: formatDateDDMMYYYY(profile.dateOfBirth) || "-",
 socialMediaProfileLink: profile.socialMediaProfileLink || "-",
         /* ================= TWIN DETAILS ================= */
   isTwin: yesNo(profile.isTwin),
@@ -137,10 +123,10 @@ socialMediaProfileLink: profile.socialMediaProfileLink || "-",
       org: e.workExperience.organizationName || "-",
       designation: e.workExperience.postHeld || "-",
       department: e.workExperience.role || "-",
-      from: formatDate(e.workExperience.fromDate) || "-",
+      from: formatDateDDMMYYYY(e.workExperience.fromDate) || "-",
       to: e.workExperience.isPresentlyWorking
         ? "Present"
-        : formatDate(e.workExperience.toDate) || "-",
+        : formatDateDDMMYYYY(e.workExperience.toDate) || "-",
       duration: `${e.workExperience.monthsOfExp || 0} Months`,
       nature: e.workExperience.workDescription || "-"
     })),
@@ -195,8 +181,8 @@ console.log("educationLevel", educationLevel)
         qualification_id: e.education.educationTypeId || "-",
         institution: e.education.institutionName || "-",
         percentage: e.education.percentage ?? "-",
-        startDate: formatDate(e.education.startDate) || "-",
-        endDate: formatDate(e.education.endDate) || "-",
+        startDate: formatDateDDMMYYYY(e.education.startDate) || "-",
+        endDate: formatDateDDMMYYYY(e.education.endDate) || "-",
 
         /* 🆕 Display values */
         educationLevel_name:
