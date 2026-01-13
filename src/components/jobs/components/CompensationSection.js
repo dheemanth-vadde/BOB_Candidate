@@ -1,9 +1,9 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpload } from "@fortawesome/free-solid-svg-icons";
-import { useRef, useState } from "react";
+
+import { useRef, useState,useEffect} from "react";
 import jobsApiService from "../../jobs/services/jobsApiService";
 import { toast } from "react-toastify";
-const CompensationSection = ({ onSubmit, onCancel }) => {
+import bulb from "../../../assets/bulb-icon.png";
+const CompensationSection = ({ applicationId }) => {
   const fileInputRef = useRef(null);
   const [salarySlip, setSalarySlip] = useState(null);
 const [currentCTC, setCurrentCTC] = useState("");
@@ -14,10 +14,30 @@ const [loading, setLoading] = useState(false);
     fileInputRef.current.click();
   };
 
-  const handleFileSelect = (e) => {
-      setSalarySlip(e.target.files[0]);
-  setErrors((prev) => ({ ...prev, salarySlip: "" }));
+useEffect(() => {
+  if (!applicationId) return;
+
+  const fetchCompensationDetails = async () => {
+    try {
+      const res = await jobsApiService.getCompensationDetails(applicationId);
+
+      if (res?.success && res?.data) {
+        const { currentCtc, expectedCtc } = res.data;
+
+        // populate fields
+        setCurrentCTC(currentCtc ? String(currentCtc) : "");
+        setExpectedCTC(expectedCtc ? String(expectedCtc) : "");
+      }
+    } catch (error) {
+      console.error("Failed to fetch compensation details", error);
+      // optional toast (usually avoid noisy toasts on auto-load)
+      // toast.error("Failed to load compensation details");
+    }
   };
+
+  fetchCompensationDetails();
+}, [applicationId]);
+
 const formatINR = (value) => {
   if (!value) return "";
   return Number(value).toLocaleString("en-IN");
@@ -41,25 +61,60 @@ const validateCompensation = () => {
     newErrors.expectedCTC =
       "Expected CTC should be greater than or equal to Current CTC";
   }
- if (!salarySlip) {
-    newErrors.salarySlip = "Salary slip is required";
-  }
+//  if (!salarySlip) {
+//     newErrors.salarySlip = "Salary slip is required";
+//   }
   setErrors(newErrors);
   return Object.keys(newErrors).length === 0;
 };
 const handleCompensationSubmit = async () => {
+  if (!applicationId) {
+    toast.error("Application ID missing");
+    return;
+  }
+
   if (!validateCompensation()) return;
 
   try {
     setLoading(true);
 
-    const payload = {
-  //   applicationId: job?.application_id,
+    const compensationPayload = {
+      applicationId,
+      
       currentCtc: Number(currentCTC),
       expectedCtc: Number(expectedCTC),
+      fileName: null,
+      fileUrl: null, // backend will populate this
     };
 
-    //await jobsApiService.updateCompensation(payload);
+    const formData = new FormData();
+
+    // 👇 IMPORTANT: compensation as JSON blob
+    // formData.append(
+    //   "compensation",
+    //   new Blob([JSON.stringify(compensationPayload)], {
+    //     type: "application/json",
+    //   })
+    // );
+
+
+    formData.append(
+      "compensation",
+      new Blob(
+        [
+          JSON.stringify({
+            applicationId,
+            currentCtc: Number(currentCTC),
+            expectedCtc: Number(expectedCTC),
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+    console.log("Submitting compensation payload:");
+    console.log(compensationPayload);
+
+    await jobsApiService.saveCompensationDetails(formData);
 
     toast.success("Compensation details updated successfully");
   } catch (error) {
@@ -69,6 +124,7 @@ const handleCompensationSubmit = async () => {
     setLoading(false);
   }
 };
+
 
   return (
     <div className="query-section bank-style">
@@ -115,8 +171,8 @@ const handleCompensationSubmit = async () => {
         </div>
 
         {/* Upload Salary Slip */}
-        <div className="col-md-5">
-          <label className="form-label">
+        {/* <div className="col-md-6"> */}
+          {/* <label className="form-label">
             Upload Latest Salary Slip <span className="text-danger">*</span>
           </label>
 
@@ -138,8 +194,8 @@ const handleCompensationSubmit = async () => {
             <div className="upload-subtext">
               PDF, DOC, DOCX, JPG, PNG
             </div>
-          </div>
-
+          </div> */}
+{/* 
           <input
             type="file"
             ref={fileInputRef}
@@ -148,27 +204,48 @@ const handleCompensationSubmit = async () => {
             onChange={handleFileSelect}
           />
           {errors.salarySlip && (
-  <div className="invalid-feedback d-block">{errors.salarySlip}</div>
-)}
+              <div className="invalid-feedback d-block">{errors.salarySlip}</div>
+            )} */}
 
-        </div>
-
+        {/* </div> */}
+       
         {/* ACTIONS */}
-        <div className="col-md-7 d-flex align-items-end justify-content-end">
+        <div className="col-12 d-flex align-items-center justify-content-between mt-3">
+          <div className="compensation-info">
+           <img src={bulb} alt="info" className="info-bulb-icon" />
+            <span className="info-text">
+              Please ensure that the requested documents are uploaded in the Document
+              section and the above details are submitted on or before
+               30 December 2025.
+            </span>
+          </div>
+
           <div className="query-actions">
-            <button
+            {/* <button
               className="btn btn-outline-secondary"
               onClick={onCancel}
             >
               Cancel
-            </button>
+            </button> */}
 
             <button
-              className="btn btn-primaryy"
-              onClick={() => handleCompensationSubmit()}
+              type="button"
+              className={`btn btn-primaryy ${loading ? "disabled" : ""}`}
+              onClick={handleCompensationSubmit}
               disabled={loading}
             >
-              {loading ? "Submitting..." : "Submit"}
+              {loading ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Submitting...
+                </>
+              ) : (
+                "Submit"
+              )}
             </button>
           </div>
         </div>

@@ -370,7 +370,7 @@
 }
 
 .info-bulb-icon{
-  color: #f37021;
+  color: #f26522;
   flex-shrink: 0;
   width: 20px;
   height: 20px;
@@ -391,4 +391,24 @@
   font-size: 0.75rem;
   color: #99A1AF;
   font-weight:400;
+}
+/* Compensation Info Section */
+.compensation-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #f26522; /* Bank of Baroda orange */
+  font-size: 0.75rem;
+  max-width: 70%;
+  font-weight:400;
+}
+
+.compensation-info .info-icon {
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.compensation-info .info-text {
+  line-height: 1.4;
+  margin-top:-8px;
 }
