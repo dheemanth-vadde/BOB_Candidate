@@ -22,27 +22,48 @@ const [description, setDescription] = useState("");
 const [currentIndex, setCurrentIndex] = useState(0);
 const [statusHistory, setStatusHistory] = useState([]);
 const [statusMap, setStatusMap] = useState({});
-const steps = [
-  "Applied",
-  "Shortlisted",
-  "Interview Scheduled",
-  "Selected In Interview",
-  "Offer"
-];
+//job?.employment_type 
+const isContract = job?.employment_type === "Contract";
+const steps = isContract
+  ? [
+      "Applied",
+      "Shortlisted",
+      "Interview Scheduled",
+      "Selected In Interview",
+      "Compensation",
+      "Offer",
+    ]
+  : [
+      "Applied",
+      "Shortlisted",
+      "Interview Scheduled",
+      "Selected In Interview",
+      "Offer",
+    ];
 const [errors, setErrors] = useState({});
-const statusToIndexMap = {
-  Applied: 0,
-  Shortlisted: 1,
-  Scheduled: 2,                 // backend
-  "Interview Scheduled": 2,     // UI label
-  "Selected": 3,
-  Offered: 4
-};
+const statusToIndexMap = isContract
+  ? {
+      Applied: 0,
+      Shortlisted: 1,
+      Scheduled: 2,
+      Selected: 3,
+      Compensation: 4,
+      Offered: 5,
+    }
+  : {
+      Applied: 0,
+      Shortlisted: 1,
+      Scheduled: 2,
+      Selected: 3,
+      Offered: 4,
+    };
+
 const stepToStatusMap = {
   "Applied": "Applied",
   "Shortlisted": "Shortlisted",
   "Interview Scheduled": "Scheduled",
   "Selected In Interview": "Selected",
+  "Compensation": "Compensation",
   "Offer": "Offered"
 };
 
@@ -281,9 +302,9 @@ const handleFileSelect = (e) => {
 })}
           </div>
 
-           {/* {job?.employmentType === "Contract" && currentIndex >= steps.indexOf("Compensation") && ( */}
+          {isContract && (
             <CompensationSection applicationId={job?.application_id} />
-           {/* )} */}
+          )}
 
         {/* ===== SUBMIT REQUEST ===== */}
         <div className="query-section bank-style">
