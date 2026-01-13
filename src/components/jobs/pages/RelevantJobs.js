@@ -314,19 +314,20 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
 
     try {
       //later uncomment
-      // const response = await jobsApiService.validateCandidateEligibility({
-      //   candidateId,
-      //   positionId: selectedJob.position_id,
-      // });
+      const response = await jobsApiService.validateCandidateEligibility({
+        candidateId,
+        positionId: selectedJob.position_id,
+      });
 
-      // if (!response?.success) {
-      //   setValidationErrorMsg(
-      //     response?.message ||
-      //       "Your profile does not meet the job requirements."
-      //   );
-      //   setShowValidationErrorModal(true);
-      //   return;
-      // }
+      
+      if (!response?.success) {
+        setValidationErrorMsg(
+          response?.message ||
+            "Your profile does not meet the job requirements."
+        );
+        setShowValidationErrorModal(true);
+        return;
+      }
 
       // ✅ Validation passed
       setApplyForm({
@@ -721,7 +722,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
                     </p>
                     <p className="mb-1 text-mutedd small size30">
                       <span className="subtitle">Experience:</span>{" "}
-                      {job.mandatory_experience} years
+                      {job.mandatory_experience}
                     </p>
                     <p className="mb-1 text-mutedd small size35">
                       <span className="subtitle">Department:</span>{" "}

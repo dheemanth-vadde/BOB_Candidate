@@ -284,7 +284,7 @@ const AppliedJobs = () => {
 
                 <div className="meta-item">
                   <span className="label">Applied On:</span>
-                  <span className="value">{job.application_date ? new Date(job.application_date).toLocaleDateString() : "-"}</span>
+                  <span className="value">{formatDateDDMMYYYY(job.application_date)}</span>
                 </div>
 
                 <div className="meta-item">
@@ -301,7 +301,7 @@ const AppliedJobs = () => {
 
                 <div className="meta-item">
                   <span className="label">Experience:</span>
-                  <span className="value">{job.mandatory_experience} years</span>
+                  <span className="value">{job.mandatory_experience}</span>
                 </div>
 
                 <div className="meta-item">

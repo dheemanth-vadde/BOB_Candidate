@@ -5,19 +5,21 @@ const jobsApiService = {
  
 
 
-  //Relevamnt Jobs
+    //Relevamnt Jobs
 
-  getAllDetails: (candidateId,positionId) => jobsapi.get(`candidate/get-all-details/${candidateId}/${positionId}`),
-  getAppliedJobs: (candidateId, page = 0, size = 5, searchTerm = "") => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}?page=${page}&size=${size}&searchTerm=${searchTerm}`),
-  //getAppliedJobs: (candidateId) => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}`),
-  getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
-  //getJobPositions: (candidateId, page = 0, size = 5) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}?page=${page}&size=${size}`),
-  getJobPositions: (payload) => jobsapi.post(`/current-opportunities/get-job-positions/active`,payload),
-   applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
-   getMasterData:()=>mastersapi.get(`/display/all`),
+    getAllDetails: (candidateId,positionId) => jobsapi.get(`candidate/get-all-details/${candidateId}/${positionId}`),
+    getAppliedJobs: (candidateId, page = 0, size = 5, searchTerm = "") => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}?page=${page}&size=${size}&searchTerm=${searchTerm}`),
+    //getAppliedJobs: (candidateId) => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}`),
+    getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
+    //getJobPositions: (candidateId, page = 0, size = 5) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}?page=${page}&size=${size}`),
+    getJobPositions: (payload) => jobsapi.post(`/current-opportunities/get-job-positions/active`,payload),
+    applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
+    validateCandidateEligibility:(data) => jobsapi.post(`/applications/validate-eligibility`,data),
+    getMasterData:()=>mastersapi.get(`/display/all`),
     getRequestTypes:()=>mastersapi.get(`/master-dd-data/get/request-types`),
     getApplicationStatus:(applicationId) => jobsapi.get(`/track-app-status/status/${applicationId}`),
-getInterviewCentres:() => mastersapi.get(`/master-dd-data/get/interview-centres`),
+    getInterviewCentres:() => mastersapi.get(`/master-dd-data/get/interview-centres`),
+   
     //thread apis 
     createCandidateThread: (candidateId, formData) => jobsapi.post(`/candidate-conversation/create-thread/${candidateId}`, formData, {
       headers: {
