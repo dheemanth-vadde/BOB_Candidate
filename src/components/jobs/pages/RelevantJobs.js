@@ -35,6 +35,7 @@ import start from "../../../assets/start.png";
 import end from "../../../assets/end.png";
 import Loader from "../../profile/components/Loader";
 import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
+import { extractValidationErrors } from "../../../shared/utils/ValidationErrors";
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,9 +54,9 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [masterData, setMasterData] = useState([{}]);
   const [selectedStates, setSelectedStates] = useState([]);
-  const navigate = useNavigate();
   const [isMasterReady, setIsMasterReady] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [validationErrors, setValidationErrors] = useState([]);
   const [applyForm, setApplyForm] = useState({
     state1: "",
     location1: "",
@@ -320,11 +321,10 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
       });
 
       
-      if (!response?.success) {
-        setValidationErrorMsg(
-          response?.message ||
-            "Your profile does not meet the job requirements."
-        );
+      if (response.success) {
+        const errors = extractValidationErrors(response.data);
+console.log(errors)
+        setValidationErrors(errors);
         setShowValidationErrorModal(true);
         return;
       }
@@ -393,21 +393,6 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     setSelectedJob(job);
     setShowModal(true);
   };
-
-  const handleClosePreferenceModal = () => {
-    //setShowPreferenceModal(false);
-    setApplyForm({
-      state1: "",
-      location1: "",
-      state2: "",
-      location2: "",
-      state3: "",
-      location3: "",
-      ctc: "",
-      examCenter: "",
-    });
-  };
-
 
 
   const handleDepartmentChange = (deptId) => {
@@ -891,8 +876,8 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
 
       <ValidationErrorModal
         show={showValidationErrorModal}
-        onClose={() => setShowValidationErrorModal(false)}
-        message={validationErrorMsg}
+       onClose={() => setShowValidationErrorModal(false)}
+  errors={validationErrors}
       />
 
 
