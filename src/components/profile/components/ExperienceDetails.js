@@ -231,6 +231,30 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 		return Object.keys(errors).length === 0;
 	};
 
+	const validateExperienceRow = (row) => {
+		const errors = {};
+
+		if (!row.organization?.trim()) errors.organization = "Organization is required";
+		if (!row.role?.trim()) errors.role = "Role is required";
+		if (!row.postHeld?.trim()) errors.postHeld = "Post Held is required";
+		if (!row.from) errors.from = "From date is required";
+
+		if (!row.working && !row.to) {
+			errors.to = "To date is required";
+		}
+
+		if (!row.description?.trim()) errors.description = "Description is required";
+
+		if (!row.currentCTC || Number(row.currentCTC) <= 0) {
+			errors.currentCTC = "Current CTC is required";
+		}
+
+		if (!row.certificate) {
+			errors.certificate = "Experience certificate is required";
+		}
+
+		return errors;
+	};
 
 	const handleSaveExperience = async () => {
 		if (!validateForm()) return;
@@ -326,6 +350,40 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 			);
 			return;
 		}
+
+		for (let i = 0; i < experienceList.length; i++) {
+			const row = experienceList[i];
+			const errors = validateExperienceRow(row);
+
+			if (Object.keys(errors).length > 0) {
+				// 1. Force edit mode
+				setIsEditMode(true);
+				setEditingRow(row);
+
+				// 2. Populate form with row data
+				setFormData({
+					organization: row.organization,
+					role: row.role,
+					postHeld: row.postHeld,
+					from: row.from,
+					to: row.to,
+					working: row.working === "Yes" || row.working === true,
+					description: row.description,
+					experience: row.experience,
+					currentCTC: String(row.currentCTC || "")
+				});
+
+				setExistingDocument(row.certificate || null);
+				setCertificateFile(null);
+
+				// 3. Inject errors into form
+				setFormErrors(errors);
+
+				toast.error(`Please fill the incomplete details before proceeding`);
+				return; // ⛔ BLOCK NAVIGATION
+			}
+		}
+
 		// ✅ Valid case
 		await saveWorkStatusAndProceed();
 	};
@@ -698,59 +756,136 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 					)}
 				</div>
 
-				<table className='experience_table'>
-					<thead>
-						<tr>
-							<th className='profile_table_th text-center' style={{ textAlign: 'left', width: '5%' }}>S.No</th>
-							<th className='profile_table_th'>Organization</th>
-							<th className='profile_table_th'>From</th>
-							<th className='profile_table_th'>To</th>
-							<th className='profile_table_th'>Experience (in days)</th>
-							<th className='profile_table_th'>Role</th>
-							<th className='profile_table_th'>Post</th>
-							<th className='profile_table_th'>Description</th>
-							<th className='profile_table_th'>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						{experienceList.map((item, index) => (
-							<tr style={{ border: '1px solid #dee2e6' }} key={index}>
-								<td className='profile_table_td text-center'>{index + 1}</td>
-								<td className='profile_table_td'>{item?.organization}</td>
-								<td className='profile_table_td'>{item?.from}</td>
-								<td className='profile_table_td'>{item?.to}</td>
-								<td className='profile_table_td'>{item?.experience}</td>
-								<td className='profile_table_td'>{item?.role}</td>
-								<td className='profile_table_td'>{item?.postHeld}</td>
-								<td className='profile_table_td'>{item?.description}</td>
-								<td className='profile_table_td'>
-									<div className="d-flex gap-2">
-										<div>
-											<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(item)} />
-										</div>
-										<div>
-											<img
-												src={viewIcon}
-												alt="View"
-												style={{ width: "25px", cursor: "pointer" }}
-												onClick={() => {
-													if (!item?.certificate?.fileUrl) {
-													toast.error("No document available");
-													return;
-													}
-													window.open(item.certificate.fileUrl, "_blank", "noopener,noreferrer");
-												}}
-											/>
-										</div>
-										<div>
-											<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(item)} />
-										</div>
-									</div>
-								</td>
+				<div className="d-none d-md-block w-100">
+					<table className='experience_table w-100'>
+						<thead>
+							<tr>
+								<th className='profile_table_th text-center' style={{ textAlign: 'left', width: '5%' }}>S.No</th>
+								<th className='profile_table_th'>Organization</th>
+								<th className='profile_table_th'>From</th>
+								<th className='profile_table_th'>To</th>
+								<th className='profile_table_th'>Experience (in days)</th>
+								<th className='profile_table_th'>Role</th>
+								<th className='profile_table_th'>Post</th>
+								<th className='profile_table_th'>Description</th>
+								<th className='profile_table_th'>Actions</th>
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							{experienceList.map((item, index) => (
+								<tr style={{ border: '1px solid #dee2e6' }} key={index}>
+									<td className='profile_table_td text-center'>{index + 1}</td>
+									<td className='profile_table_td'>{item?.organization}</td>
+									<td className='profile_table_td'>{item?.from}</td>
+									<td className='profile_table_td'>{item?.to}</td>
+									<td className='profile_table_td'>{item?.experience}</td>
+									<td className='profile_table_td'>{item?.role}</td>
+									<td className='profile_table_td'>{item?.postHeld}</td>
+									<td className='profile_table_td'>{item?.description}</td>
+									<td className='profile_table_td'>
+										<div className="d-flex gap-2">
+											<div>
+												<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(item)} />
+											</div>
+											<div>
+												<img
+													src={viewIcon}
+													alt="View"
+													style={{ width: "25px", cursor: "pointer" }}
+													onClick={() => {
+														if (!item?.certificate?.fileUrl) {
+														toast.error("No document available");
+														return;
+														}
+														window.open(item.certificate.fileUrl, "_blank", "noopener,noreferrer");
+													}}
+												/>
+											</div>
+											<div>
+												<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(item)} />
+											</div>
+										</div>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+
+				{/* MOBILE CARDS */}
+				<div className="d-block d-md-none w-100">
+					{experienceList.map((item, index) => (
+						<div
+						key={item.workExperienceId}
+						className="border rounded p-3 mb-3 bg-white shadow-sm"
+						>
+						<div className="d-flex justify-content-between align-items-center mb-2">
+							<strong>Experience #{index + 1}</strong>
+							<div className="d-flex gap-2">
+							<img
+								src={editIcon}
+								width={22}
+								style={{ cursor: "pointer" }}
+								onClick={() => handleEdit(item)}
+							/>
+							<img
+								src={viewIcon}
+								width={22}
+								style={{ cursor: "pointer" }}
+								onClick={() => {
+								if (!item?.certificate?.fileUrl) {
+									toast.error("No document available");
+									return;
+								}
+								window.open(item.certificate.fileUrl, "_blank");
+								}}
+							/>
+							<img
+								src={deleteIcon}
+								width={22}
+								style={{ cursor: "pointer" }}
+								onClick={() => handleDelete(item)}
+							/>
+							</div>
+						</div>
+
+						<div className="mb-1">
+							<small className="text-muted">Organization</small>
+							<div className='wrap-text'>{item.organization}</div>
+						</div>
+
+						<div className="mb-1">
+							<small className="text-muted">Role</small>
+							<div className='wrap-text'>{item.role}</div>
+						</div>
+
+						<div className="mb-1">
+							<small className="text-muted">Post Held</small>
+							<div className='wrap-text'>{item.postHeld}</div>
+						</div>
+
+						<div className="mb-1">
+							<small className="text-muted">From</small>
+							<div className='wrap-text'>{item.from}</div>
+						</div>
+
+						<div className="mb-1">
+							<small className="text-muted">To</small>
+							<div className='wrap-text'>{item.to || "-"}</div>
+						</div>
+
+						<div className="mb-1">
+							<small className="text-muted">Experience (days)</small>
+							<div className='wrap-text'>{item.experience}</div>
+						</div>
+
+						<div>
+							<small className="text-muted">Description</small>
+							<div className='wrap-text'>{item.description}</div>
+						</div>
+						</div>
+					))}
+				</div>
 
 				<div className='d-flex justify-content-center align-items-center gap-2'>
 					<label htmlFor="working" className="form-label mb-0">Total experience in months</label>

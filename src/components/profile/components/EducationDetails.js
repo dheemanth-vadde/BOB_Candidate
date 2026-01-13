@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, createRef, useCallback } from "react";
 import Accordion from "react-bootstrap/Accordion";
+import Badge from "react-bootstrap/Badge";
 import EducationForm from "./EducationForm";
 import profileApi from "../services/profile.api";
 import { getEducationLevelIdFromQualification, mapEducationApiToUi } from "../mappers/EducationMapper";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { removeParsedEducationById } from "../store/resumeSlice";
 import masterApi from '../../../services/master.api';
 import { toast } from "react-toastify";
 import Loader from "./Loader";
@@ -31,13 +33,27 @@ const EducationDetails = ({ goNext, goBack }) => {
     STATIC_EDUCATION_LEVEL_MAP.tenth,
     STATIC_EDUCATION_LEVEL_MAP.intermediate
   ];
-  const [hasApiEducations, setHasApiEducations] = useState(false);
   const [educations, setEducations] = useState([]);
   const [masterData, setMasterData] = useState(EMPTY_MASTER_DATA);
   const [loading, setLoading] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const parsedResume = useSelector((state) => state.resume?.parsed || null);
+  const dispatch = useDispatch();
+  const formRefs = useRef({});
+  const [activeAccordionKey, setActiveAccordionKey] = useState(null);
 
-  const fetchEducationDetails = async () => {
+  const getRef = (key) => {
+    if (!formRefs.current[key]) {
+      formRefs.current[key] = createRef();
+    }
+    return formRefs.current[key];
+  };
+
+  const handleDeleteEducation = (parsedId) => {
+    setEducations(prev => prev.filter(edu => edu.parsedId !== parsedId));
+  };
+
+  const fetchEducationDetails = useCallback(async (forceUseApi = false) => {
     setLoading(true);
     try {
       const [eduRes, masterRes] = await Promise.all([
@@ -56,16 +72,8 @@ const EducationDetails = ({ goNext, goBack }) => {
         educationTypes: raw.educationTypeMaster || []
       });
 
-      if (!list.length) {
-        setHasApiEducations(false);
-        setEducations([]);
-        setIsDirty(false);
-        return;
-      }
-
-      setHasApiEducations(true);
-
-      const mapped = list.map(item => {
+      // Map API data
+      const apiMapped = list.map(item => {
         const qualificationId = item.education.educationQualificationsId;
         const levelId = getEducationLevelIdFromQualification(
           qualificationId,
@@ -81,11 +89,58 @@ const EducationDetails = ({ goNext, goBack }) => {
             mandatoryQualifications,
             raw.educationLevels
           ),
-          data: mapEducationApiToUi(item, mandatoryQualifications)
+          data: mapEducationApiToUi(item, mandatoryQualifications),
+          parsedId: null // API entries don't have parsedId
         };
       });
 
-      setEducations(mapped);
+      // Map parsed resume data (always append to API data)
+      const mapLevelToId = (levelStr) => {
+        if (!levelStr) return STATIC_EDUCATION_LEVEL_MAP.graduation;
+        const s = levelStr.toLowerCase();
+        if (/bachelor|graduate|b\.tech|btech|b\.e|bsc|mba|ms/.test(s)) return STATIC_EDUCATION_LEVEL_MAP.graduation;
+        if (/post|master|m\.tech|mtech|m\.e|mcom|msc/.test(s)) return STATIC_EDUCATION_LEVEL_MAP.postGraduation;
+        if (/intermediate|diploma|12th|higher secondary|hsc/.test(s)) return STATIC_EDUCATION_LEVEL_MAP.intermediate;
+        if (/high school|10th|ssc|secondary|school/.test(s)) return STATIC_EDUCATION_LEVEL_MAP.tenth;
+        return STATIC_EDUCATION_LEVEL_MAP.graduation;
+      };
+
+      const parsedMapped = (parsedResume?.education || []).map((ed) => {
+        const levelId = mapLevelToId(ed.level);
+        const label = (raw.educationLevels || []).find(l => l.documentTypeId === levelId)?.documentName || ed.level || 'Education';
+        const passingYear = ed.passingYear || '';
+        const date = passingYear ? `${passingYear}-01-01` : "";
+
+        return {
+          uiId: crypto.randomUUID(),
+          educationId: null,
+          educationLevelId: levelId,
+          label,
+          parsedId: ed.__tempId,
+          data: {
+            educationLevel: levelId,
+            university: '',
+            college: ed.school || ed.institution || '',
+            specialization: '',
+            educationType: '',
+            from: date,
+            to: date,
+            percentage: ed.percentage || '',
+            document: null
+          }
+        };
+      });
+
+      // Combine API + Parsed data
+      const combined = [...apiMapped, ...parsedMapped];
+
+      if (combined.length === 0) {
+        setEducations([]);
+        setIsDirty(false);
+        return;
+      }
+
+      setEducations(combined);
       setIsDirty(false);
     } catch (err) {
       console.error(err);
@@ -93,17 +148,33 @@ const EducationDetails = ({ goNext, goBack }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [parsedResume, candidateId]);
 
   useEffect(() => {
     fetchEducationDetails();
-  }, [candidateId]);
+  }, [fetchEducationDetails]);
 
   const handleSaveAndNext = () => {
-    if (educations.filter(e => e.educationId).length === 0) {
+    // Validate all rendered EducationForm components via refs
+    if (!educations || educations.length === 0) {
       toast.error("Please add at least 1 education");
       return;
     }
+
+    for (let i = 0; i < educations.length; i++) {
+      const key = String(i);
+      const ref = getRef(key);
+      if (ref && ref.current && typeof ref.current.validate === 'function') {
+        const result = ref.current.validate();
+        if (!result.isValid) {
+          setActiveAccordionKey(key);
+          toast.error("Please fill required fields in the highlighted education");
+          return;
+        }
+      }
+    }
+
+    // All valid
     goNext();
   };
 
@@ -124,111 +195,69 @@ const EducationDetails = ({ goNext, goBack }) => {
     );
   };
 
+  const getExistingRanges = (excludeUiId = null) =>
+  educations
+    .filter(e => e.data?.from && e.data?.to && e.uiId !== excludeUiId)
+    .map(e => ({
+      educationId: e.educationId,
+      from: e.data.from,
+      to: e.data.to,
+      label: e.label
+    }));
+
   return (
-    <div className="px-4 py-3 border rounded bg-white accordion_div">
-        <Accordion>
-          {hasApiEducations ? (
+    <div className="px-4 py-3 border bg-white accordion_div">
+        <Accordion activeKey={activeAccordionKey} onSelect={(k) => setActiveAccordionKey(k)}>
+          {educations.length > 0 ? (
             educations.map((edu, index) => (
               <Accordion.Item key={edu.uiId} eventKey={String(index)}>
                 <Accordion.Header>
-                  <p className="tab_headers mb-0">{edu.label}</p>
+                  <div className="d-flex align-items-center justify-content-between w-100 gap-2">
+                    <p className="tab_headers mb-0">{edu.label}</p>
+                  </div>
                 </Accordion.Header>
                 <Accordion.Body>
                   <EducationForm
                     goNext={goNext}
                     educationId={edu.educationId}
                     existingData={edu.data}
+                    parsedId={edu.parsedId}
                     masterData={masterData}
                     refreshEducation={fetchEducationDetails}
                     onDirtyChange={setIsDirty}
+                    onDelete={handleDeleteEducation}
+                    ref={getRef(String(index))}
+                    existingRanges={getExistingRanges(edu.uiId)}
                   />
                 </Accordion.Body>
               </Accordion.Item>
             ))
-          ) : (
-            <>
-              <Accordion.Item eventKey="0">
-                <Accordion.Header>
-                  <p className="tab_headers mb-0">10th Standard</p>
-                  </Accordion.Header>
-                <Accordion.Body>
-                  <EducationForm
-                    goNext={goNext}
-                    fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.tenth}
-                    disableEducationLevel
-                    // showDegree={false}
-                    // showSpecialization={false}
-                    masterData={masterData}
-                    refreshEducation={fetchEducationDetails}
-                    onDirtyChange={setIsDirty}
-                  />
-                </Accordion.Body>
-              </Accordion.Item>
-
-              <Accordion.Item eventKey="1">
-                <Accordion.Header>
-                  <p className="tab_headers mb-0">Intermediate / Diploma</p>
-                  </Accordion.Header>
-                <Accordion.Body>
-                  <EducationForm
-                    goNext={goNext}
-                    fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.intermediate}
-                    disableEducationLevel
-                    masterData={masterData}
-                    refreshEducation={fetchEducationDetails}
-                    onDirtyChange={setIsDirty}
-                  />
-                </Accordion.Body>
-              </Accordion.Item>
-
-              <Accordion.Item eventKey="2">
-                <Accordion.Header>
-                  <p className="tab_headers mb-0">Graduation</p>
-                  </Accordion.Header>
-                <Accordion.Body>
-                  <EducationForm
-                    goNext={goNext}
-                    fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.graduation}
-                    disableEducationLevel
-                    masterData={masterData}
-                    refreshEducation={fetchEducationDetails}
-                    onDirtyChange={setIsDirty}
-                  />
-                </Accordion.Body>
-              </Accordion.Item>
-
-              <Accordion.Item eventKey="3">
-                <Accordion.Header>
-                  <p className="tab_headers mb-0">Post Graduation</p>
-                  </Accordion.Header>
-                <Accordion.Body>
-                  <EducationForm
-                    goNext={goNext}
-                    fixedEducationLevelId={STATIC_EDUCATION_LEVEL_MAP.postGraduation}
-                    disableEducationLevel
-                    masterData={masterData}
-                    refreshEducation={fetchEducationDetails}
-                    onDirtyChange={setIsDirty}
-                  />
-                </Accordion.Body>
-              </Accordion.Item>
-            </>
-          )}
+          ) : null}
         </Accordion>
 
       <div className="d-flex justify-content-center">
         <button
           className="btn blue-button"
-          onClick={() =>
-            setEducations(prev => [
-              ...prev,
-              {
-                id: crypto.randomUUID(),
-                label: "Select Education Level",
-                data: null
-              }
-            ])
-          }
+          onClick={() => {
+            setEducations(prev => {
+              const nextIndex = prev.length; // index of the new accordion
+              const updated = [
+                ...prev,
+                {
+                  uiId: crypto.randomUUID(),
+                  educationId: null,
+                  label: "Select Education Level",
+                  data: null,
+                  parsedId: crypto.randomUUID()
+                }
+              ];
+
+              // OPEN the newly added accordion and close others
+              setActiveAccordionKey(String(nextIndex));
+
+              return updated;
+            });
+          }}
         >
           + Add Education
         </button>
