@@ -267,7 +267,7 @@ const EducationForm = forwardRef((props, ref) => {
           .trim(),
       };
       // Validate the document before uploading
-      if (certificateFile) {
+      if (certificateFile && docCode === "BOARD") {
         const res = await profileApi.ValidateDocument(docCode, certificateFile);
         console.log(res)
         if (!res?.success) {

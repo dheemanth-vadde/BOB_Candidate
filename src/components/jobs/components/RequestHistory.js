@@ -5,7 +5,7 @@ import { mapRequestHistoryApiToList } from "../mappers/requestHistoryMapper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
-const RequestHistory = ({ applicationId, requestTypes = [] }) => {
+const RequestHistory = ({ applicationId, requestTypes = [],refreshKey}) => {
   const [history, setHistory] = useState([]);
   const [activeKey, setActiveKey] = useState(null);
 
@@ -33,7 +33,7 @@ const RequestHistory = ({ applicationId, requestTypes = [] }) => {
     };
 
     fetchHistory();
-  }, [applicationId]);
+  }, [applicationId,refreshKey]);
   const formatDateTime = (dateString) => {
     if (!dateString) return "-";
 
