@@ -182,7 +182,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 
 		try {
 			const skipValidation =
-				["PHOTO", "SIGN", "OTHERS"].includes(field.docCode) ||
+				["PHOTO", "SIGN", "OTHERS", "IDPROOF"].includes(field.docCode) ||
 				field.customName === true;
 
 			if (!skipValidation) {
