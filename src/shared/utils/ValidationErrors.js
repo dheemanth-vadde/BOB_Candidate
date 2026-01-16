@@ -1,12 +1,11 @@
 export const extractValidationErrors = (data) => {
   const errors = [];
-
   if (!data) return errors;
 
-  // 1️⃣ Age validation
+  // 1️⃣ Age
   const age = data.ageValidation;
   if (age && !age.passed) {
-    if (Array.isArray(age.stateWiseAgeValidations)) {
+    if (Array.isArray(age.stateWiseAgeValidations) && age.stateWiseAgeValidations.length) {
       age.stateWiseAgeValidations.forEach(state => {
         if (!state.passed) {
           errors.push(
@@ -19,7 +18,7 @@ export const extractValidationErrors = (data) => {
     }
   }
 
-  // 2️⃣ Experience validation
+  // 2️⃣ Experience
   const exp = data.experienceValidation;
   if (exp && !exp.passed) {
     errors.push(
@@ -27,13 +26,19 @@ export const extractValidationErrors = (data) => {
     );
   }
 
-  // 3️⃣ Education validation
+  // 3️⃣ Education
   const edu = data.educationValidation;
   if (edu && !edu.passed) {
-    errors.push("Mandatory education qualification requirement not met");
+    if (edu.mandatoryEducation?.length) {
+      errors.push(
+        `Missing mandatory education: ${edu.mandatoryEducation.join(", ")}`
+      );
+    } else {
+      errors.push("Mandatory education qualification requirement not met");
+    }
   }
 
-  // 4️⃣ Document validation
+  // 4️⃣ Documents
   const docs = data.documentValidation;
   if (docs && !docs.passed) {
     const missingDocs = docs.requiredDocuments.filter(
@@ -46,6 +51,6 @@ export const extractValidationErrors = (data) => {
       );
     }
   }
-console.log("errors",errors)
+
   return errors;
 };

@@ -311,43 +311,49 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   // };
 
   const handlePreCheckConfirm = async () => {
-    setShowPreCheckModal(false);
+  setShowPreCheckModal(false);
 
-    try {
-      //later uncomment
-      const response = await jobsApiService.validateCandidateEligibility({
-        candidateId,
-        positionId: selectedJob.position_id,
-      });
+  try {
+    const response = await jobsApiService.validateCandidateEligibility({
+      candidateId,
+      positionId: selectedJob.position_id,
+    });
 
-      
-      if (response.success) {
-        const errors = extractValidationErrors(response.data);
-console.log(errors)
-        setValidationErrors(errors);
-        setShowValidationErrorModal(true);
-        return;
-      }
-
-      // ✅ Validation passed
-      setApplyForm({
-        state1: "",
-        location1: "",
-        state2: "",
-        location2: "",
-        state3: "",
-        location3: "",
-        ctc: "",
-        examCenter: "",
-      });
-
-      // setShowPreferenceModal(true);
-      setShowPreviewModal(true);
-    } catch (err) {
-      setValidationErrorMsg("Unable to validate profile. Please try again.");
+    if (!response?.success) {
+      setValidationErrorMsg("Validation failed. Please try again.");
       setShowValidationErrorModal(true);
+      return;
     }
-  };
+
+    const errors = extractValidationErrors(response.data);
+console.log("relevant errors",errors)
+    // ❌ SHOW ERROR MODAL ONLY IF ERRORS EXIST
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setShowValidationErrorModal(true);
+      return;
+    }
+
+    // ✅ NO ERRORS → OPEN PREVIEW MODAL
+    setApplyForm({
+      state1: "",
+      location1: "",
+      state2: "",
+      location2: "",
+      state3: "",
+      location3: "",
+      ctc: "",
+      examCenter: "",
+    });
+
+    setShowPreviewModal(true);
+
+  } catch (err) {
+    setValidationErrorMsg("Unable to validate profile. Please try again.");
+    setShowValidationErrorModal(true);
+  }
+};
+
   const handleConfirmApply = async () => {
     if (!selectedJob || !candidateId) return;
 
