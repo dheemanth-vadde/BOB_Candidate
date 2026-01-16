@@ -22,6 +22,7 @@ const [description, setDescription] = useState("");
 const [currentIndex, setCurrentIndex] = useState(0);
 const [statusHistory, setStatusHistory] = useState([]);
 const [statusMap, setStatusMap] = useState({});
+const [refreshHistoryKey, setRefreshHistoryKey] = useState(0);
 //job?.employment_type 
 const isContract = job?.employment_type === "Contract";
 const steps = isContract
@@ -159,7 +160,9 @@ const handleSubmitRequest = async () => {
     setSelectedFile(null);
     setErrors({});
 
-    onHide();
+    //onHide();
+     // ✅ Trigger history refresh
+    setRefreshHistoryKey(prev => prev + 1);
   } catch (error) {
     console.error("Submit request failed", error);
     toast.error("Failed to submit request");
@@ -420,7 +423,7 @@ const handleFileSelect = (e) => {
         <div className="query-section bank-style request-history">
           <h6 className="section-title">Request History</h6>
 
-           <RequestHistory applicationId={job?.application_id}   requestTypes={requestTypes}/>
+           <RequestHistory applicationId={job?.application_id}   requestTypes={requestTypes} refreshKey={refreshHistoryKey}/>
 
            
         </div>
