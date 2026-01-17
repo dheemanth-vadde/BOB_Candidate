@@ -1,5 +1,6 @@
 // CandidatePortal.js
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Header from './Header';
 import RelevantJobs from '../../components/jobs/pages/RelevantJobs';
 import AppliedJobs from '../../components/jobs/pages/AppliedJobs';
@@ -12,12 +13,17 @@ import disclaimerApi from '../services/disclaimer.api';
 import Footer from './Footer';
 
 const CandidatePortal = () => {
+  const { requisitionId, positionId } = useParams();
   const user = useSelector((state) => state.user.user);
   const candidateId = user?.data?.user?.id;
+  const isProfileCompleted = user?.data?.user?.isProfileCompleted;
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(null); // null = loading
   const [showModal, setShowModal] = useState(false);
   const [checkboxChecked, setCheckboxChecked] = useState(false);
-  const [activeTab, setActiveTab] = useState('info');
+  // If query params exist and profile is completed, show jobs tab. If profile not completed, show info tab. Otherwise normal flow
+  const [activeTab, setActiveTab] = useState(
+    requisitionId && positionId && isProfileCompleted ? 'jobs' : (requisitionId ? 'info' : 'info')
+  );
   const [resumeFile, setResumeFile] = useState(null);
   const [ResumePublicUrl, setResumePublicUrl] = useState(null);
   const [candidateData, setCandidateData] = useState({});
@@ -143,6 +149,8 @@ const CandidatePortal = () => {
             jobsList={jobsList}
             setJobsList={setJobsList}
             setActiveTab={setActiveTab}
+            requisitionId={requisitionId}
+            positionId={positionId}
           />
         );
 

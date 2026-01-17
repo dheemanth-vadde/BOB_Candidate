@@ -58,6 +58,8 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route element={<Tokenexp />}>
               <Route path="/candidate-portal" element={<CandidatePortal />} />
+              <Route path="/candidate-portal/:requisitionId" element={<CandidatePortal />} />
+              <Route path="/candidate-portal/:requisitionId/:positionId" element={<CandidatePortal />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/digilocker/callback" element={<DigiLockerCallback />} />
             </Route>

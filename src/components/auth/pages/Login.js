@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../../../css/Login.css";
 import pana from "../../../assets/pana.png";
@@ -24,6 +24,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetch("/public_key.pem")
@@ -88,7 +89,8 @@ const Login = () => {
       toast.success("An OTP has been sent to your registered email.");
       navigate("/otp-verification", {
         state: {
-          email: email  // send email for OTP validation
+          email: email,  // send email for OTP validation
+          from: location.state?.from  // preserve the original location with query params
         },
         replace: true
       });

@@ -472,7 +472,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
         {/* Name */}
         <div className="col-md-4">
           <label className="form-label">
-            Certification Name {hasCertification && <span className="text-danger">*</span>}
+            Certification Name {isOtherSelected() && <span className="text-danger">*</span>}
           </label>
           <input id="certificationName" disabled={!hasCertification || !isOtherSelected()} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
           <div className="invalid-feedback">{formErrors.certificationName}</div>

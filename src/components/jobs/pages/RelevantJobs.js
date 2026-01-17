@@ -36,7 +36,8 @@ import end from "../../../assets/end.png";
 import Loader from "../../profile/components/Loader";
 import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
 import { extractValidationErrors } from "../../../shared/utils/validationError";
-const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
+
+const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positionId }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -93,6 +94,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const dispatch = useDispatch();
 
   const [previewData, setPreviewData] = useState();
+  const [selectedPositionId, setSelectedPositionId] = useState(positionId || "");
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
 
   const user = useSelector((state) => state.user.user);
@@ -136,6 +138,41 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     initMasters();
   }, []);
 
+  // Initialize with requisitionId when provided
+  useEffect(() => {
+    if (requisitionId) {
+      // Set the selected requisition from URL
+      setSelectedRequisition(requisitionId);
+      // Clear other filters to show only this requisition
+      setSelectedDepartments([]);
+      setSelectedStates([]);
+      setSelectedExperience([]);
+      setSearchTerm("");
+      setCurrentPage(0);
+    }
+  }, [requisitionId]);
+
+  // Initialize with positionId when provided
+  useEffect(() => {
+    if (positionId) {
+      setSelectedPositionId(positionId);
+      setCurrentPage(0);
+    }
+  }, [positionId]);
+
+  // Auto-trigger apply modal when both requisitionId and positionId are provided
+  useEffect(() => {
+    if (requisitionId && positionId && jobs.length > 0) {
+      // Find the job that matches the positionId
+      const jobToApply = jobs.find(job => job.position_id === positionId);
+      
+      if (jobToApply) {
+        setSelectedJob(jobToApply);
+        setShowPreCheckModal(true);
+      }
+    }
+  }, [jobs, requisitionId, positionId]);
+
   const getExperienceRangeInMonths = () => {
     if (!selectedExperience || selectedExperience.length === 0) {
       return { monthMinExp: null, monthMaxExp: null };
@@ -164,11 +201,11 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
       setLoading(true);
       const { monthMinExp, monthMaxExp } = getExperienceRangeInMonths();
       const payload = {
-        searchText: debouncedSearchTerm || "",
+        searchText: requisitionId ? "" : (debouncedSearchTerm || ""),
         candidateId,
         deptIds: selectedDepartments,
         stateIds: selectedStates,
-        requisitionId: selectedRequisition || null,
+        requisitionId: selectedRequisition || (requisitionId ? requisitionId : null),
         page: currentPage,
         size: pageSize,
         monthMinExp,
@@ -179,12 +216,17 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
 
       const pageData = res?.data;
       console.log("pageDta", pageData)
-      const jobsData = pageData?.content || [];
+      let jobsData = pageData?.content || [];
+
+      // Filter by positionId if provided in URL
+      if (positionId) {
+        jobsData = jobsData.filter(job => job.positionsDTO?.positionId === positionId);
+      }
 
       const mappedJobs = mapJobsApiToList(jobsData, masterData);
 
       setJobs(mappedJobs);
-      setTotalPages(pageData?.totalPages ?? 0);
+      setTotalPages(positionId ? 1 : (pageData?.totalPages ?? 0)); // Show only 1 page if filtering by position
 
     } catch (err) {
       //toast.error("Failed to load jobs");
