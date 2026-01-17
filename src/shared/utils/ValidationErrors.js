@@ -7,7 +7,7 @@ export const extractValidationErrors = (data) => {
   if (age && !age.passed) {
     if (Array.isArray(age.stateWiseAgeValidations) && age.stateWiseAgeValidations.length) {
       age.stateWiseAgeValidations.forEach(state => {
-        if (!state.passed) {
+        if (!state.passed) { 
           errors.push(
             `Your age does not meet the eligibility requirement. Allowed age: ${state.allowedAge}.`
           );
