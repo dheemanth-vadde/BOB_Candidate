@@ -78,7 +78,16 @@ const OtpVerification = () => {
       const res = await authApi.verifyOtp(email, otpValue);
       console.log("OTP Verified:", res.data);
 			dispatch(setUser(res.data));
-      navigate("/candidate-portal", { replace: true, state: { showDisclaimer: true } }); // Replace history entry and pass state
+      
+      // Check if there's an original location to redirect to (with query params)
+      const from = location.state?.from;
+      if (from) {
+        // Redirect to the original location with all query params preserved
+        navigate(from.pathname + from.search, { replace: true, state: { showDisclaimer: true } });
+      } else {
+        // Default redirect to candidate portal
+        navigate("/candidate-portal", { replace: true, state: { showDisclaimer: true } });
+      }
     } catch (err) {
       console.log(err);
       toast.error(err.response?.data?.message || "OTP verification failed. Please try again.");
