@@ -9,12 +9,14 @@ export const extractValidationErrors = (data) => {
       age.stateWiseAgeValidations.forEach(state => {
         if (!state.passed) {
           errors.push(
-            `Age criteria not met for ${state.stateName} (Allowed: ${state.allowedAge})`
+            `Your age does not meet the eligibility requirement. Allowed age: ${state.allowedAge}.`
           );
         }
       });
     } else {
-      errors.push(`Age criteria not met (Allowed: ${age.allowedAge})`);
+      errors.push(
+        `Your age does not meet the eligibility requirement. Allowed age: ${age.allowedAge}.`
+      );
     }
   }
 
@@ -22,7 +24,7 @@ export const extractValidationErrors = (data) => {
   const exp = data.experienceValidation;
   if (exp && !exp.passed) {
     errors.push(
-      `Experience requirement not met (Required: ${exp.requiredExperience}, Yours: ${exp.candidateExperience})`
+      `Your experience does not meet the required criteria. Required: ${exp.requiredExperience}, Your experience: ${exp.candidateExperience}.`
     );
   }
 
@@ -31,10 +33,12 @@ export const extractValidationErrors = (data) => {
   if (edu && !edu.passed) {
     if (edu.mandatoryEducation?.length) {
       errors.push(
-        `Missing mandatory education: ${edu.mandatoryEducation.join(", ")}`
+        `Please update your education details. Required qualification(s): ${edu.mandatoryEducation.join(", ")}.`
       );
     } else {
-      errors.push("Mandatory education qualification requirement not met");
+      errors.push(
+        "Your education details do not meet the eligibility requirements."
+      );
     }
   }
 
@@ -47,7 +51,7 @@ export const extractValidationErrors = (data) => {
 
     if (missingDocs.length > 0) {
       errors.push(
-        `Missing mandatory documents: ${missingDocs.join(", ")}`
+        `Please upload the following mandatory document(s): ${missingDocs.join(", ")}.`
       );
     }
   }

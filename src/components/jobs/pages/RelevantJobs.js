@@ -35,7 +35,7 @@ import start from "../../../assets/start.png";
 import end from "../../../assets/end.png";
 import Loader from "../../profile/components/Loader";
 import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
-import { extractValidationErrors } from "../../../shared/utils/ValidationErrors";
+import { extractValidationErrors } from "../../../shared/utils/validationErrors";
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -320,10 +320,11 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
     });
 
     if (!response?.success) {
-      setValidationErrorMsg("Validation failed. Please try again.");
+      setValidationErrors([response?.message]);
       setShowValidationErrorModal(true);
       return;
     }
+
 
     const errors = extractValidationErrors(response.data);
 console.log("relevant errors",errors)
