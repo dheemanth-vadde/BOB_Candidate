@@ -35,7 +35,7 @@ import start from "../../../assets/start.png";
 import end from "../../../assets/end.png";
 import Loader from "../../profile/components/Loader";
 import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
-import { extractValidationErrors } from "../../../shared/utils/validationErrors";
+import { extractValidationErrors } from "../../../shared/utils/validationError";
 const RelevantJobs = ({ candidateData = {}, setActiveTab }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
