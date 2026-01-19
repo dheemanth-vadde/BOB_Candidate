@@ -189,18 +189,17 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						{formErrors.gender && <div className="invalid-feedback">{formErrors.gender}</div>}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-3">
-						<label htmlFor="dob" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Date of Birth <span className="text-danger">*</span></label>
-						<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} max={new Date().toISOString().split("T")[0]} />
+				<div className="col-md-3 col-sm-12 mt-3">
+					<label htmlFor="dob" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Date of Birth <span className="text-danger">*</span></label>
+					<input type="date" className={`form-control ${formErrors.dob ? 'is-invalid' : ''}`} id="dob" value={formData?.dob} onChange={handleChange} max={new Date().toISOString().split("T")[0]} />
 
-						{isDobMismatch && (
-							<small className="text-danger">
-								Date of Birth not matching with Aadhaar
-							</small>
-						)}
-					</div>
-
-					<div className="col-md-3 col-sm-12 mt-3">
+					{formErrors.dob && <div className="invalid-feedback" style={{ display: 'block' }}>{formErrors.dob}</div>}
+					{/* {isDobMismatch && (
+						<small className="text-danger">
+							Date of Birth not matching with Aadhaar
+						</small>
+					)} */}
+				</div>					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="birthCertificate" className="form-label">Upload 10th/Birth Certificate <span className="text-danger">*</span></label>
 						{!birthFile && !existingBirthDoc && (
 							<div
@@ -253,7 +252,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
-											{existingBirthDoc.displayName ?? existingBirthDoc.fileName}
+											{/* {existingBirthDoc.displayName ?? existingBirthDoc.fileName} */}
+											Birth/10th Certificate
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 											{formatFileSize(certificateFile.size)}
