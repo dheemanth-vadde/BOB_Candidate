@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNavigate } from "react-router-dom";
-
 import {
   faCheckCircle,
   faSearch,
@@ -36,8 +34,9 @@ import end from "../../../assets/end.png";
 import Loader from "../../profile/components/Loader";
 import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
 import { extractValidationErrors } from "../../../shared/utils/validationError";
-
-const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positionId }) => {
+import { useNavigate } from "react-router-dom";
+ 
+const Oppurtunities = ({ candidateData = {}, setActiveTab, requisitionId, positionId }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -88,43 +87,44 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoDocs, setInfoDocs] = useState([]);
   const [activeInfoType, setActiveInfoType] = useState(""); // annexure | general
-
-
+ 
+ 
   const [turnstileToken, setTurnstileToken] = useState("");
   const dispatch = useDispatch();
-
+ 
   const [previewData, setPreviewData] = useState();
   const [selectedPositionId, setSelectedPositionId] = useState(positionId || "");
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
-
+ 
   const user = useSelector((state) => state.user.user);
-
-
-  const candidateId = user?.data?.user?.id;
+ 
+  const navigate = useNavigate();
+ 
+  const candidateId = "00000000-0000-0000-0000-000000000000";
   console.log("candidateddd", candidateId)
-
-
+ 
+ 
   // ✅ Fetch requisitions
-  const fetchRequisitions = async () => {
-    try {
-
-      const response = await jobsApiService.getActiveRequisitions();
-      const apiData = response?.data || [];
-      const mappedRequisitions = mapRequisitionsApiToList(apiData);
-
-      console.log("✅ mapped requisitions:", mappedRequisitions);
-      setRequisitions(mappedRequisitions);
-    } catch (error) {
-      console.error("Error fetching requisitions:", error);
-      toast.error("Failed to load requisitions");
-    }
-  };
+  // const fetchRequisitions = async () => {
+  //   try {
+ 
+  //     const response = await jobsApiService.getActiveRequisitions();
+  //     const apiData = response?.data || [];
+  //     const mappedRequisitions = mapRequisitionsApiToList(apiData);
+ 
+  //     console.log("✅ mapped requisitions:", mappedRequisitions);
+  //     setRequisitions(mappedRequisitions);
+  //   } catch (error) {
+  //     console.error("Error fetching requisitions:", error);
+  //     toast.error("Failed to load requisitions");
+  //   }
+  // };
   useEffect(() => {
     const initMasters = async () => {
       try {
         const masterRes = await jobsApiService.getMasterData();
         const mapped = mapMasterDataApi(masterRes);
-
+ 
         setDepartments(mapped.departments || []);
         setStates(mapped.states || []);
         setLocations(mapped.cities || []);
@@ -134,69 +134,69 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
         toast.error("Failed to load master data");
       }
     };
-
+ 
     initMasters();
   }, []);
-
+ 
   // Initialize with requisitionId when provided
-  useEffect(() => {
-    if (requisitionId) {
-      // Set the selected requisition from URL
-      setSelectedRequisition(requisitionId);
-      // Clear other filters to show only this requisition
-      setSelectedDepartments([]);
-      setSelectedStates([]);
-      setSelectedExperience([]);
-      setSearchTerm("");
-      setCurrentPage(0);
-    }
-  }, [requisitionId]);
-
+  // useEffect(() => {
+  //   if (requisitionId) {
+  //     // Set the selected requisition from URL
+  //     setSelectedRequisition(requisitionId);
+  //     // Clear other filters to show only this requisition
+  //     setSelectedDepartments([]);
+  //     setSelectedStates([]);
+  //     setSelectedExperience([]);
+  //     setSearchTerm("");
+  //     setCurrentPage(0);
+  //   }
+  // }, [requisitionId]);
+ 
   // Initialize with positionId when provided
-  useEffect(() => {
-    if (positionId) {
-      setSelectedPositionId(positionId);
-      setCurrentPage(0);
-    }
-  }, [positionId]);
-
+  // useEffect(() => {
+  //   if (positionId) {
+  //     setSelectedPositionId(positionId);
+  //     setCurrentPage(0);
+  //   }
+  // }, [positionId]);
+ 
   // Auto-trigger apply modal when both requisitionId and positionId are provided
-  useEffect(() => {
-    if (requisitionId && positionId && jobs.length > 0) {
-      // Find the job that matches the positionId
-      const jobToApply = jobs.find(job => job.position_id === positionId);
-      
-      if (jobToApply) {
-        setSelectedJob(jobToApply);
-        setShowPreCheckModal(true);
-      }
-    }
-  }, [jobs, requisitionId, positionId]);
-
+  // useEffect(() => {
+  //   if (requisitionId && positionId && jobs.length > 0) {
+  //     // Find the job that matches the positionId
+  //     const jobToApply = jobs.find(job => job.position_id === positionId);
+     
+  //     if (jobToApply) {
+  //       setSelectedJob(jobToApply);
+  //       setShowPreCheckModal(true);
+  //     }
+  //   }
+  // }, [jobs, requisitionId, positionId]);
+ 
   const getExperienceRangeInMonths = () => {
     if (!selectedExperience || selectedExperience.length === 0) {
       return { monthMinExp: null, monthMaxExp: null };
     }
-
+ 
     const minYears = Math.min(...selectedExperience.map(e => e.min));
-
+ 
     const hasInfinity = selectedExperience.some(e => e.max === Infinity);
-
+ 
     const maxYears = hasInfinity
       ? null
       : Math.max(...selectedExperience.map(e => e.max));
-
+ 
     return {
       monthMinExp: minYears * 12,
       monthMaxExp: maxYears === null ? 0 : maxYears * 12
     };
   };
-
-
-
+ 
+ 
+ 
   const fetchJobs = async () => {
     if (!candidateId || !isMasterReady) return;
-
+ 
     try {
       setLoading(true);
       const { monthMinExp, monthMaxExp } = getExperienceRangeInMonths();
@@ -211,23 +211,23 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
         monthMinExp,
         monthMaxExp
       };
-
-      const res = await jobsApiService.getJobPositions(payload); // POST
-
+ 
+      const res = await jobsApiService.getOpportunitiesJobPositions(payload); // POST
+ 
       const pageData = res?.data;
       console.log("pageDta", pageData)
       let jobsData = pageData?.content || [];
-
+ 
       // Filter by positionId if provided in URL
       if (positionId) {
         jobsData = jobsData.filter(job => job.positionsDTO?.positionId === positionId);
       }
-
+ 
       const mappedJobs = mapJobsApiToList(jobsData, masterData);
-
+ 
       setJobs(mappedJobs);
       setTotalPages(positionId ? 1 : (pageData?.totalPages ?? 0)); // Show only 1 page if filtering by position
-
+ 
     } catch (err) {
       //toast.error("Failed to load jobs");
       setJobs([]);
@@ -236,12 +236,12 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
       setLoading(false);
     }
   };
-
-
+ 
+ 
   const fetchInterviewCentres = async () => {
     try {
       const res = await jobsApiService.getInterviewCentres(); // 🔁 adjust method name if needed
-
+ 
       const mappedCentres = mapInterviewCentresApi(res);
       console.log("mapped", mappedCentres)
       setInterviewCentres(mappedCentres);
@@ -254,16 +254,16 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
   const fetchInfoDocuments = async (type) => {
     try {
       const res = await masterApi.getGenericDocuments();
-
+ 
       const filtered = (res.data?.data || []).filter(
         (doc) => doc.type?.toLowerCase() === type
       );
-
+ 
       if (filtered.length === 0) {
         toast.info("No documents available");
         return;
       }
-
+ 
       setInfoDocs(filtered);
       setActiveInfoType(type);
       setShowInfoModal(true);
@@ -282,22 +282,23 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
     selectedRequisition,
   ]);
   useEffect(() => {
-    fetchRequisitions();
-    fetchInterviewCentres();
+    // fetchRequisitions();
+    // fetchInterviewCentres();
+    fetchJobs();
   }, []);
-
+ 
   useEffect(() => {
     if (!isMasterReady) return;
-
+ 
     // 🔹 no search → fetch all
-    if (!debouncedSearchTerm) {
-      fetchJobs();
-      return;
-    }
-
-    // 🔹 min 3 characters rule
-    if (debouncedSearchTerm.length < 3) return;
-
+    // if (!debouncedSearchTerm) {
+    //   fetchJobs();
+    //   return;
+    // }
+ 
+    // // 🔹 min 3 characters rule
+    // if (debouncedSearchTerm.length < 3) return;
+ 
     fetchJobs();
   }, [
     isMasterReady,
@@ -309,8 +310,8 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
     selectedRequisition,
     pageSize
   ]);
-
-
+ 
+ 
   useEffect(() => {
     if (
       !candidateId ||
@@ -319,29 +320,29 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
     ) {
       return;
     }
-
+ 
     const fetchCandidatePreview = async () => {
       try {
         const response = await jobsApiService.getAllDetails(
           candidateId,
           selectedJob.position_id
         );
-
+ 
         const mappedPreviewData = mapCandidateToPreview(
           response.data,
           masterData
         );
-
+ 
         setPreviewData(mappedPreviewData);
       } catch (error) {
         console.error("Failed to fetch candidate preview", error);
         toast.error("Unable to load candidate profile");
       }
     };
-
+ 
     fetchCandidatePreview();
   }, [candidateId, isMasterReady, selectedJob]);
-
+ 
   // const formatDateDDMMYYYY = (date) => {
   //   if (!date) return "-";
   //   return new Date(date).toLocaleDateString("en-GB", {
@@ -351,23 +352,23 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
   //   })
   //   .replace(/\//g, "-");
   // };
-
+ 
   const handlePreCheckConfirm = async () => {
   setShowPreCheckModal(false);
-
+ 
   try {
     const response = await jobsApiService.validateCandidateEligibility({
       candidateId,
       positionId: selectedJob.position_id,
     });
-
+ 
     if (!response?.success) {
       setValidationErrors([response?.message]);
       setShowValidationErrorModal(true);
       return;
     }
-
-
+ 
+ 
     const errors = extractValidationErrors(response.data);
 console.log("relevant errors",errors)
     // ❌ SHOW ERROR MODAL ONLY IF ERRORS EXIST
@@ -376,7 +377,7 @@ console.log("relevant errors",errors)
       setShowValidationErrorModal(true);
       return;
     }
-
+ 
     // ✅ NO ERRORS → OPEN PREVIEW MODAL
     setApplyForm({
       state1: "",
@@ -388,46 +389,46 @@ console.log("relevant errors",errors)
       ctc: "",
       examCenter: "",
     });
-
+ 
     setShowPreviewModal(true);
-
+ 
   } catch (err) {
     setValidationErrorMsg("Unable to validate profile. Please try again.");
     setShowValidationErrorModal(true);
   }
 };
-
+ 
   const handleConfirmApply = async () => {
     if (!selectedJob || !candidateId) return;
-
+ 
     try {
       const payload = {
         candidateId,
         positionId: selectedJob.position_id,
-
+ 
         statePreference1: applyForm.state1 || null,
         cityPreference1: applyForm.location1 || null,
         locationPreference1: applyForm.location1 || null,
-
+ 
         statePreference2: applyForm.state2 || null,
         cityPreference2: applyForm.location2 || null,
         locationPreference2: applyForm.location2 || null,
-
+ 
         statePreference3: applyForm.state3 || null,
         cityPreference3: applyForm.location3 || null,
         locationPreference3: applyForm.location3 || null,
-
+ 
         expectedCtc: Number(applyForm.ctc) || 0,
         interviewCenter: applyForm.examCenter || "",
       };
-
+ 
       const response = await jobsApiService.applyToJob(payload);
       if (response?.success) {
         toast.success("Job applied Successfully");
         //setShowPreferenceModal(false);
         setShowPaymentModal(false);
         setActiveTab("applied-jobs"); // ✅ correct
-
+ 
       } else {
         toast.error(response?.message || "Failed to apply for the job");
       }
@@ -436,14 +437,14 @@ console.log("relevant errors",errors)
       toast.error("Failed to submit application. Please try again.");
     }
   };
-
-
+ 
+ 
   const handleKnowMore = (job) => {
     setSelectedJob(job);
     setShowModal(true);
   };
-
-
+ 
+ 
   const handleDepartmentChange = (deptId) => {
     setSelectedDepartments((prev) =>
       prev.includes(deptId)
@@ -453,14 +454,14 @@ console.log("relevant errors",errors)
   };
   const isApplicationOpen = (endDate) => {
     if (!endDate) return false;
-
+ 
     const today = new Date();
     const end = new Date(endDate);
-
+ 
     // Normalize time (important)
     today.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
-
+ 
     return today <= end;
   };
   const handleStateChange = (stateId) => {
@@ -470,7 +471,7 @@ console.log("relevant errors",errors)
         : [...prev, stateId]
     );
   };
-
+ 
   const handleExperienceChange = (range) => {
     setSelectedExperience((prev) =>
       prev.some((r) => r.label === range.label)
@@ -484,21 +485,21 @@ console.log("relevant errors",errors)
     setSelectedExperience([]);
     setSearchTerm("");
   };
-
+ 
   const handleProceedToPayment = () => {
     const errors = {};
-
+ 
     const isCtcRequired =
       selectedJob?.employment_type?.toLowerCase() === "contract";
-
+ 
     if (isCtcRequired && !applyForm.ctc) {
       errors.ctc = "Expected CTC is required";
     }
-
+ 
     if (!applyForm.examCenter) {
       errors.examCenter = "Interview Center is required";
     }
-
+ 
     if (!previewData) {
       toast.error("Candidate data not loaded yet");
       return;
@@ -507,10 +508,10 @@ console.log("relevant errors",errors)
       setFormErrors(errors);
       return;
     }
-
+ 
     // ✅ Clear errors
     setFormErrors({});
-
+ 
     dispatch(
       savePreference({
         jobId: selectedJob.position_id,
@@ -518,16 +519,16 @@ console.log("relevant errors",errors)
         preferences: applyForm,
       })
     );
-
+ 
     setShowPreviewModal(false);   // close preview
     setShowPaymentModal(true);    // open payment modal
   };
-
+ 
   return (
-
-    <div className="mx-4 my-3 relevant">
+ 
+    <div className="p-3 relevant">
       {loading && <Loader />}
-
+ 
       {/* Filters + Job Cards */}
       <div className="row" id="matched-jobs-container">
         {/* Left Filters (unchanged) */}
@@ -540,11 +541,11 @@ console.log("relevant errors",errors)
               className="filter-icon"
               src={filtericon}
               alt="filter"
-
+ 
             />
             <span className="filter">Filters</span>
           </div>
-
+ 
           <div
             className="bob-left-custom-filter-div"
             style={{
@@ -573,7 +574,7 @@ console.log("relevant errors",errors)
                   </div>
                 ))}
               </div>
-
+ 
               <h6 className="mt-3 header_filter">States</h6>
               <div style={{ maxHeight: "200px", overflowY: "auto" }}>
                 {states
@@ -613,7 +614,7 @@ console.log("relevant errors",errors)
                   </div>
                 ))}
               </div>
-
+ 
               {(selectedDepartments.length > 0 || selectedLocations.length > 0 || selectedExperience.length > 0) && (
                 <button
                   className="btn btn-sm btn-outline-secondary mt-3"
@@ -625,14 +626,14 @@ console.log("relevant errors",errors)
             </div>
           </div>
         </div>
-
+ 
         {/* Right Job Cards (original style restored) */}
         <div className="col-md-9">
           {/* 🔹 Search and Requisition Dropdown */}
           <div className="d-flex justify-content-between mb-3">
             <div className="d-flex" style={{ flex: 1 }}>
               <div style={{ minWidth: "325px" }}>
-                <select
+                {/* <select
                   className="form-select"
                   value={selectedRequisition}
                   onChange={(e) => setSelectedRequisition(e.target.value)}
@@ -645,10 +646,10 @@ console.log("relevant errors",errors)
                         {req.requisition_title || `Requisition ${req.requisition_id}`}
                       </option>
                     ))}
-                </select>
+                </select> */}
               </div>
             </div>
-
+ 
             {/* <select
               className="form-select form-select-sm"
               style={{ width: "90px" }}
@@ -660,27 +661,11 @@ console.log("relevant errors",errors)
               <option value={20}>20</option>
               <option value={50}>50</option>
             </select> */}
-
-
+ 
+ 
             <div className="d-flex align-items-center gap-2">
-              <button
-                className="info_btn"
-                onClick={() => fetchInfoDocuments("annexures")}
-              >
-                {/* <FontAwesomeIcon icon={faFileLines} className="me-2" /> */}
-                <img src={Group} alt="Group" className="annexure_group" />
-
-                Annexure Forms
-              </button>
-              <button
-                className="info_btn"
-                onClick={() => fetchInfoDocuments("generic")}
-
-              >
-                {/* <FontAwesomeIcon icon={faCircleInfo} className="me-2" /> */}
-                <img src={Vector} alt="Vector" className="generic_group" />
-                Generic Information
-              </button>
+           
+           
               <div className="applied-search">
                 <input
                   type="text"
@@ -729,15 +714,15 @@ console.log("relevant errors",errors)
                       <span className="req-code">
                         {job.requisition_title} ({job.requisition_code})
                       </span>
-
+ 
                       <span className="date-item">
                         {/* <FontAwesomeIcon icon={faCalendarAlt} className="date-icon" /> */}
                         <img src={start} className="date-icon" alt="start"></img>
                         Start: {formatDateDDMMYYYY(job.registration_start_date)}
                       </span>
-
+ 
                       <span className="date-divider">|</span>
-
+ 
                       <span className="date-item">
                         <img src={end} className="date-icon" alt="end"></img>
                         End: {formatDateDDMMYYYY(job.registration_end_date)}
@@ -766,7 +751,7 @@ console.log("relevant errors",errors)
                       <span className="subtitle">Location:</span>{" "}
                       {job.state_name}
                     </p> */}
-                    {job?.employment_type?.toLowerCase() === "contract" && (
+                    {job.employment_type === "contract" && (
                       <p className="mb-1 text-mutedd small size35">
                         <span className="subtitle">Contract Period:</span>{" "}
                         {job.contract_period} Years
@@ -790,8 +775,9 @@ console.log("relevant errors",errors)
                       <button
                         className="btn btn-sm btn-outline-primary hovbtn"
                         onClick={() => {
-                          setSelectedJob(job);
-                          setShowPreCheckModal(true);
+                          console.log(`/candidate-portal/${job.requisition_id}/${job.position_id}`)
+                         navigate(`/candidate-portal/${job.requisition_id}/${job.position_id}`);
+                       
                         }}
                       >
                         Apply Now
@@ -806,13 +792,13 @@ console.log("relevant errors",errors)
                     >
                       Know More
                     </button>
-
+ 
                   </div>
                 </div>
               </div>
             </div>
           ))}
-
+ 
           {jobs.length > 0 && (
             <div className="d-flex justify-content-start mb-3">
               <select
@@ -828,7 +814,7 @@ console.log("relevant errors",errors)
               </select>
             </div>
           )}
-
+ 
           {totalPages > 1 && (
             <ul className="pagination pagination-sm justify-content-center">
               <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
@@ -839,7 +825,7 @@ console.log("relevant errors",errors)
                   ‹
                 </button>
               </li>
-
+ 
               {Array.from({ length: totalPages }, (_, i) => (
                 <li
                   key={i}
@@ -853,7 +839,7 @@ console.log("relevant errors",errors)
                   </button>
                 </li>
               ))}
-
+ 
               <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
                 <button
                   className="page-link"
@@ -866,9 +852,9 @@ console.log("relevant errors",errors)
           )}
         </div>
       </div>
-
-
-
+ 
+ 
+ 
       {/* ✅ Original Know More Modal (unchanged) */}
       <KnowMoreModal
         show={showModal}
@@ -882,7 +868,7 @@ console.log("relevant errors",errors)
         previewData={previewData}
         selectedJob={selectedJob}
         masterData={masterData}
-
+ 
         applyForm={applyForm}
         onApplyFormChange={(name, value) =>
           setApplyForm(prev => ({ ...prev, [name]: value }))
@@ -891,12 +877,12 @@ console.log("relevant errors",errors)
         onEditProfile={() => {
           // 1️⃣ Set step to "Basic Details"
           localStorage.setItem("activeStep", "2");
-
+ 
           // 2️⃣ Switch to PROFILE menu (info tab)
           setActiveTab("info");
           // 2️⃣ Close preview modal
           setShowPreviewModal(false);
-
+ 
         }}
         onBack={() => {
           setShowPreviewModal(false);
@@ -907,7 +893,7 @@ console.log("relevant errors",errors)
         interviewCentres={interviewCentres}
         setTurnstileToken={setTurnstileToken}
       />
-
+ 
       <PaymentModal
         show={showPaymentModal}
         onHide={() => setShowPaymentModal(false)}
@@ -922,14 +908,14 @@ console.log("relevant errors",errors)
         onCancel={() => setShowPreCheckModal(false)}
         onConfirm={handlePreCheckConfirm}
       />
-
+ 
       <ValidationErrorModal
         show={showValidationErrorModal}
        onClose={() => setShowValidationErrorModal(false)}
   errors={validationErrors}
       />
-
-
+ 
+ 
       <Modal
         show={showInfoModal}
         onHide={() => setShowInfoModal(false)}
@@ -944,12 +930,12 @@ console.log("relevant errors",errors)
               : "Generic Information"}
           </Modal.Title>
         </Modal.Header>
-
+ 
         <Modal.Body className="info-modal-body">
           {infoDocs.map((doc) => (
             <div key={doc.id} className="pdf-wrapper">
               <div className="pdf-title">{doc.fileName}</div>
-
+ 
               <iframe
                 src={doc.fileUrl}
                 title={doc.fileName}
@@ -962,5 +948,5 @@ console.log("relevant errors",errors)
     </div>
   );
 };
-
-export default RelevantJobs;
+ 
+export default Oppurtunities;

@@ -11,6 +11,7 @@ const jobsApiService = {
     getAppliedJobs: (candidateId, page = 0, size = 5, searchTerm = "") => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}?page=${page}&size=${size}&searchTerm=${searchTerm}`),
     //getAppliedJobs: (candidateId) => jobsapi.get(`/applied-jobs/get-applied-jobs/${candidateId}`),
     getActiveRequisitions: () => jobsapi.get(`/current-opportunities/get-job-requisition/active`),
+    getOpportunitiesJobPositions: (payload) => jobsapi.post(`/current-opportunities/get-job-positions/active`,payload),
     //getJobPositions: (candidateId, page = 0, size = 5) => jobsapi.get(`/current-opportunities/get-job-positions/active/${candidateId}?page=${page}&size=${size}`),
     getJobPositions: (payload) => jobsapi.post(`/current-opportunities/get-job-positions/active`,payload),
     applyToJob: (data) => jobsapi.post(`/applications/apply/job`,data),
