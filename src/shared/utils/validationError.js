@@ -2,23 +2,71 @@ export const extractValidationErrors = (data) => {
   const errors = [];
   if (!data) return errors;
 
-  // 1️⃣ Age
+  /* ======================
+   1️⃣ AGE VALIDATION
+   ====================== */
   const age = data.ageValidation;
-  if (age && !age.passed) {
-    if (Array.isArray(age.stateWiseAgeValidations) && age.stateWiseAgeValidations.length) {
-      age.stateWiseAgeValidations.forEach(state => {
-        if (!state.passed) { 
-          errors.push(
-            `Your age does not meet the eligibility requirement. Allowed age: ${state.allowedAge}.`
-          );
-        }
-      });
-    } else {
-      errors.push(
-        `Your age does not meet the eligibility requirement. Allowed age: ${age.allowedAge}.`
-      );
+
+  if (age) {
+    const failedStates =
+      Array.isArray(age.stateWiseAgeValidations)
+        ? age.stateWiseAgeValidations.filter(s => !s.passed)
+        : [];
+
+    // ❌ HARD FAILURE (no state eligible)
+    if (!age.passed) {
+      if (failedStates.length > 0) {
+        const stateNames = failedStates.map(s => s.stateName);
+
+        errors.push(
+          <span>
+            Your age does not meet the eligibility requirement in{" "}
+            <strong>{stateNames.join(", ")}</strong>. Allowed age:{" "}
+            {failedStates[0].allowedAge}.
+          </span>
+        );
+      } else {
+        errors.push(
+          <span>
+            Your age does not meet the eligibility requirement.
+          </span>
+        );
+      }
     }
+
+
+    // // ⚠️ PARTIAL RESTRICTION (some states blocked)
+    // else if (failedStates.length > 0) {
+    //   const passedStates = age.stateWiseAgeValidations.filter(s => s.passed);
+
+    //   const allowedStateNames = passedStates.map(s => s.stateName).join(", ");
+    //   const blockedStateNames = failedStates.map(s => s.stateName).join(", ");
+
+    //   errors.push(
+    //     `You are eligible to apply for positions in the following state(s): ${allowedStateNames}. ` +
+    //     `You cannot apply for positions in: ${blockedStateNames}, due to age criteria.`
+    //   );
+    // }
+      else if (failedStates.length > 0) {
+        const passedStates = age.stateWiseAgeValidations.filter(s => s.passed);
+
+        const allowedStateNames = passedStates.map(s => s.stateName).join(", ");
+        const blockedStateNames = failedStates.map(s => s.stateName).join(", ");
+
+        const allowedAge = failedStates[0]?.allowedAge;
+
+        errors.push(
+          <span>
+            You are eligible to apply for positions in the following state(s):{" "}
+            {allowedStateNames}.{" "}
+            You cannot apply for positions in:{" "}
+            <strong>{blockedStateNames}</strong>, due to age criteria.{" "}
+            Allowed age: {allowedAge}.
+          </span>
+        );
+      }
   }
+
 
   // 2️⃣ Experience
   const exp = data.experienceValidation;
