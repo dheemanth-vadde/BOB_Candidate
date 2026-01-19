@@ -61,7 +61,7 @@ const states = masterData?.states || [];
             <div className="col-md-4 mb-2">
               <span className="stat-label">Employment Type:</span> <span className="stat-value">{selectedJob.employment_type || "N/A"}</span>
             </div>
-            {selectedJob.employment_type === "contract" && (
+            {selectedJob.employment_type?.toLowerCase() === "contract" && (
             <div className="col-md-4 mb-2">
               <span className="stat-label">Contract Period:</span> <span className="stat-value">{selectedJob.contract_period || "N/A"}</span>
             </div>

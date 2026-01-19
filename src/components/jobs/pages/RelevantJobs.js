@@ -766,7 +766,7 @@ console.log("relevant errors",errors)
                       <span className="subtitle">Location:</span>{" "}
                       {job.state_name}
                     </p> */}
-                    {job.employment_type === "contract" && (
+                    {job?.employment_type?.toLowerCase() === "contract" && (
                       <p className="mb-1 text-mutedd small size35">
                         <span className="subtitle">Contract Period:</span>{" "}
                         {job.contract_period} Years
