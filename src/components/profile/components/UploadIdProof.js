@@ -348,6 +348,9 @@ const UploadIdProof = ({ goNext, goBack }) => {
             <span className="text-muted mt-2" style={{ fontSize: "12px" }}>
               Supported: PDF, JPG, PNG, DOC, DOCX (Max 2MB)
             </span>
+            <span className="text-muted" style={{ fontSize: "12px" }}>
+              (Please upload a clear image)
+            </span>
           </div>
 
           <input
