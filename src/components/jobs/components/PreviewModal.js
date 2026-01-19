@@ -656,10 +656,10 @@ const PreviewModal = ({
 
 
           {/* Footer Buttons */}
-          <div className="d-flex justify-content-between align-items-center mt-4">
-            <button className="btn btn-outline-secondary" onClick={onBack}>
+          <div className="d-flex justify-content-end align-items-center mt-4">
+            {/* <button className="btn btn-outline-secondary" onClick={onBack}>
               ← Back
-            </button>
+            </button> */}
             <div className="d-flex gap-3">
               {onEditProfile && (
                 <button

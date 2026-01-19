@@ -704,6 +704,13 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			}
 		});
 
+		// ----------- DOB MISMATCH VALIDATION -----------
+		if (aadhaarDob && cleanedFormData.dob) {
+			if (normalizeDate(cleanedFormData.dob) !== normalizeDate(aadhaarDob)) {
+				errors.dob = "Date of Birth does not match with Aadhaar";
+			}
+		}
+
 		const mobile = cleanedFormData.contactNumber?.trim();
 
 		if (mobile) {
