@@ -43,8 +43,6 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		setTouched,
 		isNameMismatch,
 		isDobMismatch,
-		isAadhaarLocked,
-		setIsAadhaarLocked,
 		selectedCategory,
 		isGeneralCategory,
 		getAvailableLanguages,
@@ -115,24 +113,24 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						{formErrors.lastName && <div className="invalid-feedback">{formErrors.lastName}</div>}
 					</div>
 
-					<div className="col-md-3 col-sm-12 mt-2">
-						<label htmlFor="fullNameAadhar" className="form-label">Full Name as per Aadhar Card <span className="text-danger">*</span></label>
-						<input
-							type="text"
-							id="fullNameAadhar"
-							value={formData.fullNameAadhar}
-							readOnly
-							className={`form-control bg-light text-muted`}
-						/>
-						{isNameMismatch && (
-							<small className="text-danger">
-								Name not matching with Aadhaar
-							</small>
-						)}
-						{formErrors.fullNameAadhar && <div className="invalid-feedback">{formErrors.fullNameAadhar}</div>}
-					</div>
-
-					<div className="col-md-3 col-sm-12 mt-3">
+				<div className="col-md-3 col-sm-12 mt-2">
+					<label htmlFor="fullNameAadhar" className="form-label">Full Name as per Aadhar Card <span className="text-danger">*</span></label>
+					<input
+						type="text"
+						id="fullNameAadhar"
+						value={formData.fullNameAadhar}
+						onChange={handleChange}
+						onKeyDown={handleNameKeyDown}
+						className={`form-control ${parsedClass("fullNameAadhar")} ${formErrors.fullNameAadhar ? 'is-invalid' : ''}`}
+						placeholder="Enter full name as per Aadhaar"
+					/>
+					{isNameMismatch && (
+						<small className="text-danger">
+							Name not matching with Aadhaar
+						</small>
+					)}
+					{formErrors.fullNameAadhar && <div className="invalid-feedback">{formErrors.fullNameAadhar}</div>}
+				</div>					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="fullNameSSC" className="form-label">Full Name as per 10th/Birth Certificate <span className="text-danger">*</span></label>
 						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your full name' />
 						{formErrors.fullNameSSC && <div className="invalid-feedback">{formErrors.fullNameSSC}</div>}
