@@ -15,9 +15,9 @@ const ValidationErrorModal = ({
       keyboard={false}
       dialogClassName="validation-modal"
     >
-      <Modal.Header closeButton>
+      {/* <Modal.Header closeButton> */}
         {/* <Modal.Title>Eligibility Check Failed</Modal.Title> */}
-      </Modal.Header>
+      {/* </Modal.Header> */}
 
       <Modal.Body>
         <p className="mb-3">
