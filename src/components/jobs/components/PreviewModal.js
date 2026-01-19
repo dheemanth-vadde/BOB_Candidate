@@ -458,40 +458,39 @@ const PreviewModal = ({
             <Accordion.Body>
               <div className="row g-3">
 
-                {/* ✅ STATE + LOCATION (ONLY when enabled) */}
-                {selectedJob?.is_location_preference_enabled && (
-                  <>
-                    {[1, 2, 3].map((i) => (
-                      <React.Fragment key={i}>
-                        {/* STATE */}
-                        <div className="col-md-4">
-                          <label className="form-label">
-                            State Preference {i}
-                          </label>
+                  {/* LOCATION PREFERENCES */}
+                  {selectedJob?.isLocationWise && (
+                    <>
+                      {[1, 2, 3].map((i) => (
+                        <React.Fragment key={i}>
+                          <div className="col-md-4">
+                            <label className="form-label">
+                              State Preference {i}
+                            </label>
+                            <select
+                              className="form-control"
+                              value={applyForm[`state${i}`]}
+                              onChange={(e) => {
+                                onApplyFormChange(`state${i}`, e.target.value);
+                                onApplyFormChange(`location${i}`, "");
+                              }}
+                            >
+                              <option value="">Select State</option>
 
-                          <select
-                            className="form-control"
-                            value={applyForm[`state${i}`]}
-                            onChange={(e) => {
-                              onApplyFormChange(`state${i}`, e.target.value);
-                              onApplyFormChange(`location${i}`, "");
-                            }}
-                          >
-                            <option value="">Select State</option>
+                              {(
+                                selectedJob?.isLocationWise
+                                  ? masterData.states.filter(s =>
+                                    selectedJob?.state_id_array?.includes(s.state_id)
+                                  )
+                                  : masterData.states
+                              ).map(s => (
+                                <option key={s.state_id} value={s.state_id}>
+                                  {s.state_name}
+                                </option>
+                              ))}
+                            </select>
 
-                            {(
-                              selectedJob?.isLocationWise
-                                ? masterData.states.filter(s =>
-                                  selectedJob?.state_id_array?.includes(s.state_id)
-                                )
-                                : masterData.states
-                            ).map(s => (
-                              <option key={s.state_id} value={s.state_id}>
-                                {s.state_name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                          </div>
 
                         {/* LOCATION */}
                         <div className="col-md-4">
