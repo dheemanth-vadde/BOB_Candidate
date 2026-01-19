@@ -14,6 +14,16 @@ const api = axios.create({
   timeout: 15000,
 });
 
+// Axios Instance
+const azureBlobApi = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "X-Client": "candidate",
+    "Content-Type": "application/json",
+  },
+  timeout: 15000,
+});
+
 // ---------------- PROFILE APIs ----------------
 
 export const getMasterData = () => {
@@ -59,6 +69,8 @@ export const downloadFile = (filePath) => {
       responseType: "blob",               // ✅ REQUIRED
       headers: {
         "X-Client": "candidate",
+        Accept: "*/*",              // ✅ IMPORTANT
+        "Content-Type": undefined,  // ✅ REMOVE JSON ASSUMPTION
       }
     }
   );
