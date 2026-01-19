@@ -71,7 +71,7 @@ const states = masterData?.states || [];
                       {selectedJob.eligibility_age_max} years</span>
             </div>
             <div className="col-md-4 mb-2">
-              <span className="stat-label">Experience:</span> <span className="stat-value">  {selectedJob.mandatory_experience} years</span>
+              <span className="stat-label">Experience:</span> <span className="stat-value">  {selectedJob.mandatory_experience} </span>
             </div>
             <div className="col-md-4">
               <span className="stat-label">Department:</span> <span className="stat-value">{selectedJob.dept_name}</span>
