@@ -264,6 +264,25 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	}, [aadhaarName, isNewAadhaarUpload]);
 
 	useEffect(() => {
+		if (!aadhaarDob || !isNewAadhaarUpload) return;
+		const normalizedDob = normalizeDate(aadhaarDob);
+		setFormData(prev => ({
+			...prev,
+			dob: normalizedDob
+		}));
+
+		setFormErrors(prev => ({
+			...prev,
+			dob: ""
+		}));
+
+		setTouched(prev => ({
+			...prev,
+			dob: true
+		}));
+	}, [aadhaarDob, isNewAadhaarUpload]);
+
+	useEffect(() => {
 		if (!candidateId || !communityDoc?.docCode) return;
 		const fetchCommunity = async () => {
 			setLoading(true);
