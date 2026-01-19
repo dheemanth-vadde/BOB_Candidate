@@ -460,7 +460,7 @@ const PreviewModal = ({
                 <div className="row g-3">
 
                   {/* LOCATION PREFERENCES */}
-                  {selectedJob?.is_location_preference_enabled && (
+                  {selectedJob?.isLocationWise && (
                     <>
                       {[1, 2, 3].map((i) => (
                         <React.Fragment key={i}>
@@ -477,16 +477,20 @@ const PreviewModal = ({
                               }}
                             >
                               <option value="">Select State</option>
-                              {masterData.states
-                                .filter(s =>
-                                  selectedJob?.state_id_array?.includes(s.state_id)
-                                )
-                                .map(s => (
-                                  <option key={s.state_id} value={s.state_id}>
-                                    {s.state_name}
-                                  </option>
-                                ))}
+
+                              {(
+                                selectedJob?.isLocationWise
+                                  ? masterData.states.filter(s =>
+                                    selectedJob?.state_id_array?.includes(s.state_id)
+                                  )
+                                  : masterData.states
+                              ).map(s => (
+                                <option key={s.state_id} value={s.state_id}>
+                                  {s.state_name}
+                                </option>
+                              ))}
                             </select>
+
                           </div>
 
                           <div className="col-md-4">

@@ -103,7 +103,7 @@ export const mapJobApiToModel = (apiJob, masters = {}) => {
          STATE (NEW DATA ADDED)
       ========================= */
       state_id: stateIds.join(",") || "",
-      state_name: stateNames.join(", ") || "—",
+      state_name: stateNames.join(", ") || "Any",
 
       state_id_array: stateIds || [],
       state_name_array: stateNames || [],
