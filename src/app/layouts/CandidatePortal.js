@@ -73,7 +73,6 @@ const CandidatePortal = () => {
   useEffect(() => {
     const fetchCandidateData = async () => {
       if (!user?.candidate_id) return;
-      const response = await apiService.getCandidateDetails(user.candidate_id);
 
       try {
         const response = await apiService.getCandidateDetails(user.candidate_id);
