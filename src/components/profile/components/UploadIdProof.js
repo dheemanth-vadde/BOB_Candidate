@@ -123,7 +123,13 @@ const UploadIdProof = ({ goNext, goBack }) => {
         );
         const doc = res?.data;
         if (!doc) return;
-
+        const url =
+          doc.fileUrl ||
+          doc.publicUrl ||
+          doc.publicUrlString ||
+          "";
+        setIdProofPublicUrl(url);
+        setUploadedFileName(doc.displayName || doc.fileNameString || "");
         setParsedIdProofData(doc);
         setIdProofPublicUrl(doc.fileUrl || "");
         setUploadedFileName(doc.fileName || "");
