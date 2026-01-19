@@ -450,141 +450,138 @@ const PreviewModal = ({
               </table>
             </Accordion.Body>
           </Accordion.Item>
-          {selectedJob?.is_location_preference_enabled === true && (
-            <Accordion.Item eventKey="4">
-              <Accordion.Header>
-                Add Preference
-              </Accordion.Header>
+          <Accordion.Item eventKey="4">
+            <Accordion.Header>
+              Add Preference
+            </Accordion.Header>
 
-              <Accordion.Body>
-                <div className="row g-3">
+            <Accordion.Body>
+              <div className="row g-3">
 
-                  {/* LOCATION PREFERENCES */}
-                  {selectedJob?.isLocationWise && (
-                    <>
-                      {[1, 2, 3].map((i) => (
-                        <React.Fragment key={i}>
-                          <div className="col-md-4">
-                            <label className="form-label">
-                              State Preference {i}
-                            </label>
-                            <select
-                              className="form-control"
-                              value={applyForm[`state${i}`]}
-                              onChange={(e) => {
-                                onApplyFormChange(`state${i}`, e.target.value);
-                                onApplyFormChange(`location${i}`, "");
-                              }}
-                            >
-                              <option value="">Select State</option>
+                {/* ✅ STATE + LOCATION (ONLY when enabled) */}
+                {selectedJob?.is_location_preference_enabled && (
+                  <>
+                    {[1, 2, 3].map((i) => (
+                      <React.Fragment key={i}>
+                        {/* STATE */}
+                        <div className="col-md-4">
+                          <label className="form-label">
+                            State Preference {i}
+                          </label>
 
-                              {(
-                                selectedJob?.isLocationWise
-                                  ? masterData.states.filter(s =>
-                                    selectedJob?.state_id_array?.includes(s.state_id)
-                                  )
-                                  : masterData.states
-                              ).map(s => (
-                                <option key={s.state_id} value={s.state_id}>
-                                  {s.state_name}
+                          <select
+                            className="form-control"
+                            value={applyForm[`state${i}`]}
+                            onChange={(e) => {
+                              onApplyFormChange(`state${i}`, e.target.value);
+                              onApplyFormChange(`location${i}`, "");
+                            }}
+                          >
+                            <option value="">Select State</option>
+
+                            {(
+                              selectedJob?.isLocationWise
+                                ? masterData.states.filter(s =>
+                                  selectedJob?.state_id_array?.includes(s.state_id)
+                                )
+                                : masterData.states
+                            ).map(s => (
+                              <option key={s.state_id} value={s.state_id}>
+                                {s.state_name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* LOCATION */}
+                        <div className="col-md-4">
+                          <label className="form-label">
+                            Location Preference {i}
+                          </label>
+
+                          <select
+                            className="form-control"
+                            value={applyForm[`location${i}`]}
+                            disabled={!applyForm[`state${i}`]}
+                            onChange={(e) =>
+                              onApplyFormChange(`location${i}`, e.target.value)
+                            }
+                          >
+                            <option value="">Select Location</option>
+
+                            {masterData.cities
+                              .filter(c => c.state_id === applyForm[`state${i}`])
+                              .map(c => (
+                                <option key={c.city_id} value={c.city_id}>
+                                  {c.city_name}
                                 </option>
                               ))}
-                            </select>
-
-                          </div>
-
-                          <div className="col-md-4">
-                            <label className="form-label">
-                              Location Preference {i}
-                            </label>
-                            <select
-                              className="form-control"
-                              value={applyForm[`location${i}`]}
-                              disabled={!applyForm[`state${i}`]}
-                              onChange={(e) =>
-                                onApplyFormChange(`location${i}`, e.target.value)
-                              }
-                            >
-                              <option value="">Select Location</option>
-                              {masterData.cities
-                                .filter(c => c.state_id === applyForm[`state${i}`])
-                                .map(c => (
-                                  <option key={c.city_id} value={c.city_id}>
-                                    {c.city_name}
-                                  </option>
-                                ))}
-                            </select>
-                          </div>
-                        </React.Fragment>
-                      ))}
-                    </>
-                  )}
-
-                  {/* EXPECTED CTC */}
-                  {selectedJob?.employment_type?.toLowerCase() === "contract" && (
-                    <div className="col-md-4">
-                      <label className="form-label">
-                        Expected CTC (in Lakhs) <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={applyForm.ctc}
-                        onChange={(e) => {
-                          onApplyFormChange("ctc", e.target.value);
-                          setFormErrors(prev => ({ ...prev, ctc: "" }));
-                        }}
-                      />
-                      {formErrors?.ctc && (
-                        <div className="invalid-feedback d-block">
-                          {formErrors.ctc}
+                          </select>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </React.Fragment>
+                    ))}
+                  </>
+                )}
 
-                  {/* INTERVIEW CENTER */}
+                {/* ✅ EXPECTED CTC (ONLY FOR CONTRACT) */}
+                {selectedJob?.employment_type?.toLowerCase() === "contract" && (
                   <div className="col-md-4">
                     <label className="form-label">
-                      Exam / Interview Center <span className="text-danger">*</span>
+                      Expected CTC (in Lakhs) <span className="text-danger">*</span>
                     </label>
 
-                    <select
+                    <input
+                      type="text"
                       className="form-control"
-                      value={applyForm.examCenter}
+                      value={applyForm.ctc}
                       onChange={(e) => {
-                        onApplyFormChange("examCenter", e.target.value);
-
-                        // clear error on change
-                        setFormErrors((prev) => ({
-                          ...prev,
-                          examCenter: null,
-                        }));
+                        onApplyFormChange("ctc", e.target.value);
+                        setFormErrors(prev => ({ ...prev, ctc: "" }));
                       }}
-                    >
-                      <option value="">Select Interview Center</option>
+                    />
 
-                      {interviewCentres.map((centre) => (
-                        <option key={centre.id} value={centre.id}>
-                          {centre.Interview_Centre}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* ❌ Error message */}
-                    {formErrors.examCenter && (
+                    {formErrors?.ctc && (
                       <div className="invalid-feedback d-block">
-                        {formErrors.examCenter}
+                        {formErrors.ctc}
                       </div>
                     )}
                   </div>
+                )}
 
+                {/* ✅ EXAM / INTERVIEW CENTER (ALWAYS SHOW) */}
+                <div className="col-md-4">
+                  <label className="form-label">
+                    Exam / Interview Center <span className="text-danger">*</span>
+                  </label>
+
+                  <select
+                    className="form-control"
+                    value={applyForm.examCenter}
+                    onChange={(e) => {
+                      onApplyFormChange("examCenter", e.target.value);
+                      setFormErrors(prev => ({ ...prev, examCenter: null }));
+                    }}
+                  >
+                    <option value="">Select Interview Center</option>
+
+                    {interviewCentres.map((centre) => (
+                      <option key={centre.id} value={centre.id}>
+                        {centre.Interview_Centre}
+                      </option>
+                    ))}
+                  </select>
+
+                  {formErrors.examCenter && (
+                    <div className="invalid-feedback d-block">
+                      {formErrors.examCenter}
+                    </div>
+                  )}
                 </div>
 
-              </Accordion.Body>
-            </Accordion.Item>
+              </div>
+            </Accordion.Body>
+          </Accordion.Item>
 
-          )}
         </Accordion>
 
 
