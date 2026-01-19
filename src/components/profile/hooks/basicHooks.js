@@ -160,7 +160,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	);
 	console.log("IS NEW UPLOAD:", isNewAadhaarUpload);
 
-	const [isAadhaarLocked, setIsAadhaarLocked] = useState(false);
+
 
 	const getAvailableDisabilityTypes = (currentIndex) => {
 		const selectedIds = formData.disabilities
@@ -224,10 +224,6 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				setIsDirty(false);
 				console.log("Mapped Form Data:", mappedForm);
 
-				setIsAadhaarLocked(
-					Boolean(aadhaarName || mappedForm.fullNameAadhar)
-				);
-
 				setParsedFields(prev => {
 					const updated = { ...prev };
 
@@ -265,7 +261,6 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			...prev,
 			fullNameAadhar: aadhaarName
 		}));
-		setIsAadhaarLocked(true);
 	}, [aadhaarName, isNewAadhaarUpload]);
 
 	useEffect(() => {
@@ -936,7 +931,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		}
 	}, [formData.isDisabledPerson]);
 
-	// when OCR/extracted data arrives, populate form and lock fullNameAadhar
+	// when OCR/extracted data arrives, populate form
 	useEffect(() => {
 		if (aadhaarName) {
 			setFormData(prev => ({
@@ -953,18 +948,14 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				...prev,
 				fullNameAadhar: true
 			}));
-
-			setIsAadhaarLocked(true);
-		} else {
-			setIsAadhaarLocked(false);
 		}
 	}, [aadhaarName]);
 
 	useEffect(() => {
-		if (isAadhaarLocked || aadhaarName) return;
+		if (aadhaarName) return;
 		const combined = [formData.firstName, formData.middleName, formData.lastName].filter(Boolean).join(' ');
 		setFormData(prev => ({ ...prev, fullNameAadhar: combined }));
-	}, [formData.firstName, formData.middleName, formData.lastName, isAadhaarLocked, aadhaarName]);
+	}, [formData.firstName, formData.middleName, formData.lastName, aadhaarName]);
 
 	useEffect(() => {
 		if (!parsedData?.personal?.name) return;
@@ -1018,8 +1009,6 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		setTouched,
 		isNameMismatch,
 		isDobMismatch,
-		isAadhaarLocked,
-		setIsAadhaarLocked,
 		selectedCategory,
 		isGeneralCategory,
 		getAvailableLanguages,
