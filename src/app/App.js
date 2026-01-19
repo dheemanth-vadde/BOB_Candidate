@@ -27,6 +27,7 @@ import DigiLockerCallback from '../components/integrations/digilocker/DigiLocker
 import OtpVerification from '../components/auth/pages/OtpVerification';
 import ChangePasswordVerification from '../components/auth/pages/ChangePasswordVerification';
 import ChangePassword from '../components/auth/pages/ChangePassword';
+import Oppurtunities from '../components/jobs/pages/Oppurtunities';
 function App() {
   const location = useLocation(); // Get current path
   // Only show chat on specific routes
@@ -47,6 +48,7 @@ function App() {
 
           {/* Public routes (accessible without login) */}
           {/* <Route path="/careers-portal" element={<Home />} /> */}
+          <Route path="/current-oppurtunities" element={<Oppurtunities />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
