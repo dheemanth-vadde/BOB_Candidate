@@ -187,7 +187,8 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
         const resumeData = res.data; // IMPORTANT
         if (resumeData?.fileUrl) {
           setResumePublicUrl(resumeData.fileUrl);
-          setFileName(resumeData.fileName);
+          // setFileName(resumeData.displayName || resumeData.fileName);
+          setFileName("RESUME")
           setResumeFile(null); // DO NOT fake File object
         }
       } catch (err) {

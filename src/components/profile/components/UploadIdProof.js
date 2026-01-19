@@ -124,7 +124,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
           doc.publicUrlString ||
           "";
         setIdProofPublicUrl(url);
-        setUploadedFileName(doc.fileName || doc.fileNameString || "");
+        setUploadedFileName(doc.displayName || doc.fileNameString || "");
         setParsedIdProofData(doc);
       } catch (err) {
         console.error("Failed to fetch ID proof", err);
