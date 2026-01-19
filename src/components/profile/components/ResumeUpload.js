@@ -12,6 +12,7 @@ import { setParsedExperience } from '../store/experienceSlice';
 import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
 import greenCheck from '../../../assets/green-check.png'
+import masterApi from '../../../services/master.api';
 
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl, goNext, goBack, resumePublicUrl, isBasicDetailsSubmitted }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
@@ -36,6 +37,42 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       }
     }
   }, [isBasicDetailsSubmitted]);
+
+  const handleEyeClick = async () => {
+    // ✅ CASE 1: Local file → preview
+    if (resumeFile && localBlobUrl) {
+      window.open(localBlobUrl, "_blank");
+      return;
+    }
+
+    // ✅ CASE 2: Backend file → download
+    if (!resumeFile && resumePublicUrl) {
+      try {
+        const res = await masterApi.downloadFile(resumePublicUrl);
+
+        const contentType =
+          res.headers["content-type"] || "application/octet-stream";
+
+        const blob = new Blob([res.data], { type: contentType });
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName || "resume";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Resume download failed", err);
+        toast.error("Failed to download resume");
+      }
+      return;
+    }
+
+    toast.error("No resume available");
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -187,7 +224,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
         const resumeData = res.data; // IMPORTANT
         if (resumeData?.fileUrl) {
           setResumePublicUrl(resumeData.fileUrl);
-          setFileName(resumeData.fileName);
+          setFileName(resumeData.displayName);
           setResumeFile(null); // DO NOT fake File object
         }
       } catch (err) {
@@ -247,7 +284,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
           {/* Right: Action icons */}
           <div className="d-flex gap-2">
 
-            <div onClick={() => window.open(localBlobUrl || resumePublicUrl, "_blank")}>
+            <div onClick={handleEyeClick}>
               <img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
             </div>
 

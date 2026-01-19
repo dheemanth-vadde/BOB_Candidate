@@ -12,6 +12,7 @@ import { setExtractedData, clearExtractedData } from '../store/idProofSlice';
 import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
 import greenCheck from '../../../assets/green-check.png'
+import masterApi from '../../../services/master.api';
 
 const normalize = (s) =>
   s
@@ -79,6 +80,10 @@ const UploadIdProof = ({ goNext, goBack }) => {
   const auth = useSelector((state) => state.user.authUser);
   const token = user?.accessToken;
   const candidateId = user?.user?.id;
+  const displayFileName =
+  idProofFile?.name ||
+  parsedIdProofData?.fileName ||
+  "Uploaded Document";
 
   const isImage = (fileName) => {
     if (!fileName) return false;
@@ -118,19 +123,18 @@ const UploadIdProof = ({ goNext, goBack }) => {
         );
         const doc = res?.data;
         if (!doc) return;
-        const url =
-          doc.fileUrl ||
-          doc.publicUrl ||
-          doc.publicUrlString ||
-          "";
-        setIdProofPublicUrl(url);
-        setUploadedFileName(doc.fileName || doc.fileNameString || "");
+
         setParsedIdProofData(doc);
+        setIdProofPublicUrl(doc.fileUrl || "");
+        setUploadedFileName(doc.fileName || "");
+
+        // 🔥 THIS IS CRITICAL
+        setIdProofFile(null);
+
       } catch (err) {
         console.error("Failed to fetch ID proof", err);
       }
     };
-
     fetchIdProof();
   }, [candidateId, documentCode]);
 
@@ -150,6 +154,43 @@ const UploadIdProof = ({ goNext, goBack }) => {
     };
     runOCR();
   }, [idProofPublicUrl]);
+
+  const handleEyeClick = async () => {
+    // ✅ CASE 1: Local file → preview
+    if (idProofFile) {
+      const url = URL.createObjectURL(idProofFile);
+      window.open(url, "_blank");
+      return;
+    }
+
+    // ✅ CASE 2: Backend file → download
+    if (parsedIdProofData?.fileUrl) {
+      try {
+        const res = await masterApi.downloadFile(parsedIdProofData.fileUrl);
+
+        const contentType =
+          res.headers["content-type"] || "application/octet-stream";
+
+        const blob = new Blob([res.data], { type: contentType });
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = parsedIdProofData.fileName; // 🔴 preserves format
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        toast.error("Download failed");
+      }
+      return;
+    }
+
+    toast.error("No document available");
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -207,9 +248,10 @@ const UploadIdProof = ({ goNext, goBack }) => {
 
       const uploadedDoc = res?.data;
 
-      setIdProofPublicUrl(uploadedDoc?.publicUrl || "");
+      setIdProofPublicUrl(uploadedDoc?.fileUrl || "");
       setParsedIdProofData(uploadedDoc);
 
+      setIdProofFile(null);
       goNext();
     } catch (err) {
       console.error(err);
@@ -309,15 +351,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
 
           <div className="d-flex gap-2">
             <div
-              onClick={() => {
-                // If we have a public URL open it, otherwise preview selected file
-                if (idProofPublicUrl) {
-                  window.open(idProofPublicUrl, "_blank");
-                } else if (idProofFile) {
-                  const url = URL.createObjectURL(idProofFile);
-                  window.open(url, "_blank");
-                }
-              }}
+              onClick={handleEyeClick}
             >
               <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
             </div>

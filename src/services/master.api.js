@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //const BASE_URL = "http://192.168.20.111:8080/api";
-const BASE_URL = 'https://dev.bobjava.sentrifugo.com:8443/dev-master-app/api'
+const BASE_URL = 'https://stage.bobjava.sentrifugo.com/master-portal/api'
 
 
 // Axios Instance
@@ -46,11 +46,30 @@ export const getCertifications = () => {
   return api.get(`/v1/master/certificates-master/all`);
 };
 
+// Download file API (Azure Blob proxy)
+export const downloadFile = (filePath) => {
+  if (!filePath) {
+    throw new Error("filePath is required");
+  }
+
+  return api.get(
+    `/v1/master/azureblob/download-file`, // ✅ FIXED
+    {
+      params: { path: filePath },
+      responseType: "blob",               // ✅ REQUIRED
+      headers: {
+        "X-Client": "candidate",
+      }
+    }
+  );
+};
+
 export default {
   getMasterData,
   getDocumentTypes,
   getChatFAQReply,
   getChatQueryReply,
   getGenericDocuments,
-  getCertifications
+  getCertifications,
+  downloadFile
 };

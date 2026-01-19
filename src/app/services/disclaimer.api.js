@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const BASE_URL =
-  "https://dev.bobjava.sentrifugo.com:8443/dev-candidate-app/api/v1/candidate";
+  "https://stage.bobjava.sentrifugo.com/candidate-portal/api/v1/candidate";
 
 const api = axios.create({
   baseURL: BASE_URL,
