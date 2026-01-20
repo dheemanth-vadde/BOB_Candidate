@@ -73,7 +73,7 @@
 .bob-table th {
   padding: 6px 8px !important;
   font-size: 0.8rem;
-  font-weight:300;
+  font-weight:400;
   vertical-align: middle !important;
   color: #000 !important;
   border: 1px solid #ddd !important;
@@ -86,7 +86,7 @@
 
 /* === Table Header === */
 .bob-preview-modal .table-header th {
-  background: #002d62 !important;
+  background: #42579f !important;
   color: #fff !important;
   font-weight: 500 !important;
   /* text-align: center; */
@@ -104,12 +104,12 @@
 .bob-table td.fw-med {
 	font-weight: 500;
 	color: #000;
-	font-size: 0.698rem;
+	font-size: 0.8rem;
 }
 .bob-table td.fw-reg {
 	font-weight: 400;
 	color: #333333;
-	font-size: 0.698rem;
+	font-size: 0.8rem;
 }
 
 /* === PHOTO + SIGNATURE SECTION === */
