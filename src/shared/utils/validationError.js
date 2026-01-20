@@ -91,18 +91,22 @@ export const extractValidationErrors = (data) => {
   }
 
   // 4️⃣ Documents
-  const docs = data.documentValidation;
-  if (docs && !docs.passed) {
-    const missingDocs = docs.requiredDocuments.filter(
-      d => !docs.submittedDocuments.includes(d)
-    );
+const docs = data.documentValidation;
 
-    if (missingDocs.length > 0) {
-      errors.push(
-        `Please upload the following mandatory document(s): ${missingDocs.join(", ")}.`
-      );
-    }
+if (docs && !docs.passed) {
+  const missingDocs = docs.requiredDocuments.filter(requiredDoc =>
+    !docs.submittedDocuments.some(submittedDoc =>
+      submittedDoc.startsWith(requiredDoc)
+    )
+  );
+
+  if (missingDocs.length > 0) {
+    errors.push(
+      `Please upload the following mandatory document(s): ${missingDocs.join(", ")}.`
+    );
   }
+}
+
 
   return errors;
 };
