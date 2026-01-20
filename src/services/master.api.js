@@ -9,7 +9,6 @@ const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     "X-Client": "candidate",
-    "Content-Type": "application/json",
   },
   timeout: 15000,
 });
@@ -57,25 +56,33 @@ export const getCertifications = () => {
 };
 
 // Download file API (Azure Blob proxy)
+// export const downloadFile = (filePath) => {
+//   if (!filePath) {
+//     throw new Error("filePath is required");
+//   }
+
+//   return api.get(
+//     `/v1/master/azureblob/download-file`, // ✅ FIXED
+//     {
+//       params: { path: filePath },
+//       responseType: "blob",               // ✅ REQUIRED
+//       headers: {
+//         "X-Client": "candidate",
+//         Accept: "*/*",              // ✅ IMPORTANT
+//         "Content-Type": undefined,  // ✅ REMOVE JSON ASSUMPTION
+//       }
+//     }
+//   );
+// };
 export const downloadFile = (filePath) => {
-  if (!filePath) {
-    throw new Error("filePath is required");
-  }
+  if (!filePath) throw new Error("filePath is required");
 
-  return api.get(
-    `/v1/master/azureblob/download-file`, // ✅ FIXED
-    {
-      params: { path: filePath },
-      responseType: "blob",               // ✅ REQUIRED
-      headers: {
-        "X-Client": "candidate",
-        Accept: "*/*",              // ✅ IMPORTANT
-        "Content-Type": undefined,  // ✅ REMOVE JSON ASSUMPTION
-      }
-    }
-  );
+  return api.get("/v1/master/azureblob/download-file", {
+    params: { path: filePath },
+    responseType: "blob",
+   
+  });
 };
-
 export default {
   getMasterData,
   getDocumentTypes,

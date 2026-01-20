@@ -155,42 +155,38 @@ const UploadIdProof = ({ goNext, goBack }) => {
     runOCR();
   }, [idProofPublicUrl]);
 
-  const handleEyeClick = async () => {
-    // ✅ CASE 1: Local file → preview
-    if (idProofFile) {
-      const url = URL.createObjectURL(idProofFile);
-      window.open(url, "_blank");
-      return;
-    }
-
-    // ✅ CASE 2: Backend file → download
-    if (parsedIdProofData?.fileUrl) {
-      try {
-        const res = await masterApi.downloadFile(parsedIdProofData.fileUrl);
-
-        const contentType =
-          res.headers["content-type"] || "application/octet-stream";
-
-        const blob = new Blob([res.data], { type: contentType });
-        const url = window.URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = parsedIdProofData.fileName; // 🔴 preserves format
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        window.URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error(err);
-        toast.error("Download failed");
-      }
-      return;
-    }
-
+const handleEyeClick = async () => {
+  if (!parsedIdProofData?.fileUrl) {
     toast.error("No document available");
-  };
+    return;
+  }
+
+  try {
+    const res = await masterApi.downloadFile(parsedIdProofData.fileUrl);
+    console.log("Content-Type:", res.headers["content-type"]);
+
+    const blob = new Blob([res.data], {
+      type: res.headers["content-type"] || "application/octet-stream",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+      console.log("Download fileUrl:", parsedIdProofData.fileUrl);
+    console.log("Download filename:", parsedIdProofData.fileName);
+    const fileName = parsedIdProofData.fileUrl.split("/").pop();
+    console.log("fileName", fileName);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName || "document";
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(error);
+    toast.error("Download failed");
+  }
+};
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
