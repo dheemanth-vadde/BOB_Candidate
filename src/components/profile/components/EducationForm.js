@@ -177,6 +177,13 @@ const EducationForm = forwardRef((props, ref) => {
         isValid = false;
       }
     }
+
+    const pct = Number(formData.percentage);
+    if (Number.isNaN(pct) || pct < 0 || pct > 100) {
+      errors.percentage = "Enter a valid percentage between 0 and 100";
+      isValid = false;
+    }
+
     // Certificate file validation
     if (!certificateFile && !existingDocument) {
       errors.certificateFile = "Certificate file is required";
@@ -215,6 +222,22 @@ const EducationForm = forwardRef((props, ref) => {
         }
       }
     }
+  };
+
+  const handlePercentageChange = (e) => {
+    const value = e.target.value;
+
+    // allow empty
+    if (value === "") {
+      setFormData(prev => ({ ...prev, percentage: "" }));
+      return;
+    }
+
+    // allow numbers with up to 2 decimals
+    if (!/^\d{0,3}(\.\d{0,2})?$/.test(value)) return;
+
+    setFormErrors(prev => ({ ...prev, percentage: undefined }));
+    setFormData(prev => ({ ...prev, percentage: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -259,6 +282,7 @@ const EducationForm = forwardRef((props, ref) => {
 
       const normalizedFormData = {
         ...formData,
+        percentage: Number(formData.percentage),
         college: formData.college
           ?.replace(/\s+/g, " ")
           .trim(),
@@ -500,35 +524,14 @@ const EducationForm = forwardRef((props, ref) => {
         <label className="form-label">Percentage/CGPA <span className="text-danger">*</span></label>
         <input
           type="number"
-          min={0}
-          max={100}
+          step="0.01"
+          min="0"
+          max="100"
+          inputMode="decimal"
           id="percentage"
           className={`form-control ${formErrors.percentage ? 'is-invalid' : ''}`}
           value={formData.percentage}
-          onChange={(e) => {
-            let value = e.target.value;
-            // Clear error when user starts typing
-            setFormErrors(prev => ({
-              ...prev,
-              percentage: undefined
-            }));
-
-            // allow empty while typing
-            if (value === "") {
-              setFormData(prev => ({ ...prev, percentage: "" }));
-              return;
-            }
-            // convert to number
-            let numericValue = Number(value);
-            if (Number.isNaN(numericValue)) return;
-            // clamp between 0 and 100
-            if (numericValue < 0) numericValue = 0;
-            if (numericValue > 100) numericValue = 100;
-            setFormData(prev => ({
-              ...prev,
-              percentage: numericValue
-            }));
-          }}
+          onChange={handlePercentageChange}
         />
         {formErrors.percentage && (
           <div className="invalid-feedback">{formErrors.percentage}</div>

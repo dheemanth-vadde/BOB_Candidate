@@ -45,6 +45,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		isDobMismatch,
 		selectedCategory,
 		isGeneralCategory,
+		isBirthDocLocked,
 		getAvailableLanguages,
 		handleCommunityFileChange,
 		handleCommunityBrowse,
@@ -157,11 +158,11 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						className={`form-control ${parsedClass("fullNameAadhar")} ${formErrors.fullNameAadhar ? 'is-invalid' : ''}`}
 						placeholder="Enter full name as per Aadhaar"
 					/>
-					{isNameMismatch && (
+					{/* {isNameMismatch && (
 						<small className="text-danger">
 							Name not matching with Aadhaar
 						</small>
-					)}
+					)} */}
 					{formErrors.fullNameAadhar && <div className="invalid-feedback">{formErrors.fullNameAadhar}</div>}
 				</div>					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="fullNameSSC" className="form-label">Full Name as per 10th/Birth Certificate <span className="text-danger">*</span></label>
@@ -197,8 +198,42 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							Date of Birth not matching with Aadhaar
 						</small>
 					)} */}
-				</div>					<div className="col-md-3 col-sm-12 mt-3">
+				</div>
+				<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="birthCertificate" className="form-label">Upload 10th/Birth Certificate <span className="text-danger">*</span></label>
+						<div className="d-flex gap-4 mt-2 mb-2">
+							<div className="form-check">
+								<input
+									className="form-check-input"
+									type="radio"
+									name="dobProofType"
+									id="birthRadio"
+									value="BIRTH_CERT"
+									checked={formData.dobProofType === "BIRTH_CERT"}
+									onChange={handleRadio}
+									disabled={isBirthDocLocked}
+								/>
+								<label className="form-check-label" htmlFor="birthRadio">
+									Birth Certificate
+								</label>
+							</div>
+
+							<div className="form-check">
+								<input
+									className="form-check-input"
+									type="radio"
+									name="dobProofType"
+									id="tenthRadio"
+									value="TENTH"
+									checked={formData.dobProofType === "TENTH"}
+									onChange={handleRadio}
+									disabled={isBirthDocLocked}
+								/>
+								<label className="form-check-label" htmlFor="tenthRadio">
+									10th Certificate
+								</label>
+							</div>
+						</div>
 						{!birthFile && !existingBirthDoc && (
 							<div
 								className={`border rounded d-flex flex-column align-items-center justify-content-center ${formErrors.birthCertificate ? "border-danger" : ""}`}
@@ -251,7 +286,8 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 									<div>
 										<div style={{ fontWeight: 600, color: "#42579f" }}>
 											{/* {existingBirthDoc.displayName ?? existingBirthDoc.fileName} */}
-											Birth/10th Certificate
+											{formData.dobProofType === "BIRTH_CERT" ? "Birth Certificate" : "10th Certificate"}
+											{/* Birth/10th Certificate */}
 										</div>
 										{/* <div className="text-muted" style={{ fontSize: "12px" }}>
 											{formatFileSize(certificateFile.size)}

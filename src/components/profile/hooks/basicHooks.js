@@ -41,6 +41,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	const disabilityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "DISABILITY"));
 	const serviceDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "SERVICE"));
 	const birthDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT"));
+	const tenthDoc = useSelector(state => state.documentTypes?.list?.data?.find(doc => doc.docCode === "TENTH"));
 	const [loading, setLoading] = useState(false);
 	const [isDirty, setIsDirty] = useState(false);
 	const [formData, setFormData] = useState({
@@ -65,6 +66,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		altNumber: "",
 		cibilScore: "",
 		socialMediaLink: "",
+		dobProofType: "BIRTH_CERT",
 
 		twinSibling: false,
 		siblingName: "",
@@ -158,9 +160,8 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	const isNewAadhaarUpload = useSelector(
 		state => state.idProof?.isNewUpload
 	);
-	console.log("IS NEW UPLOAD:", isNewAadhaarUpload);
-
-
+	
+	const isBirthDocLocked = Boolean(birthFile || existingBirthDoc);
 
 	const getAvailableDisabilityTypes = (currentIndex) => {
 		const selectedIds = formData.disabilities
@@ -211,6 +212,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				setCandidateProfileId(apiData?.candidateProfile?.candidateProfileId || null);
 				if (!apiData) return;
 				const mappedForm = mapBasicDetailsApiToForm(apiData);
+				const normalizedAadhaarDob = aadhaarDob ? normalizeDate(aadhaarDob) : null;
 
 				setFormData(prev => ({
 					...prev,
@@ -219,7 +221,10 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 					middleName: prev.middleName || mappedForm.middleName,
 					lastName: prev.lastName || mappedForm.lastName,
 					// 👇 Use extracted Aadhaar name if available, else DB data
-					fullNameAadhar: aadhaarName || mappedForm.fullNameAadhar
+					fullNameAadhar: aadhaarName || mappedForm.fullNameAadhar,
+					// 👇 Use extracted Aadhaar DOB if available, else DB data
+					dob: normalizedAadhaarDob || mappedForm.dob,
+					dobProofType: mappedForm.dobProofType || prev.dobProofType
 				}));
 				setIsDirty(false);
 				console.log("Mapped Form Data:", mappedForm);
@@ -300,22 +305,37 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	}, [candidateId, communityDoc?.docCode]);
 
 	useEffect(() => {
-		if (!candidateId || !birthDoc?.docCode) return;
+  if (!candidateId) return;
 
-		const fetchBirth = async () => {
-			setLoading(true);
-			try {
-				const res = await profileApi
-					.getDocumentDetailsByCode(candidateId, birthDoc.docCode);
-				setExistingBirthDoc(res?.data || null);
-			} catch (err) {
-				console.error("Birth cert fetch failed", err);
-			} finally {
-				setLoading(false);
-			}
-		};
-		fetchBirth();
-	}, [candidateId, birthDoc?.docCode]);
+  const fetchDobDoc = async () => {
+    setLoading(true);
+    try {
+      let docCode = null;
+
+      if (formData.dobProofType === "BIRTH_CERT") {
+        docCode = "BIRTH_CERT";
+      } else if (formData.dobProofType === "TENTH") {
+        docCode = "TENTH";
+      }
+
+      if (!docCode) return;
+
+      const res = await profileApi.getDocumentDetailsByCode(
+        candidateId,
+        docCode
+      );
+
+      setExistingBirthDoc(res?.data || null);
+    } catch (err) {
+      console.error("DOB document fetch failed", err);
+      setExistingBirthDoc(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDobDoc();
+}, [candidateId, formData.dobProofType]);
 
 	useEffect(() => {
 		if (!candidateId || !disabilityDoc?.docCode) return;
@@ -489,18 +509,29 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		const file = input.files && input.files[0];
 		if (!file) return;
 
-		if (!validateFile({ file, errorPrefix: "Birth / Board Certificate" })) {
+		if (!validateFile({ file, errorPrefix: "Birth / 10th Certificate" })) {
 			input.value = "";
 			return;
 		}
 
 		setLoading(true);
 		try {
-			let validationResponse = await validateDoc("BIRTH_CERT", file);
+			const docCode =
+			formData.dobProofType === "BIRTH_CERT"
+				? "BIRTH_CERT"
+				: "TENTH";
 
-			// If Birth Cert fails, try Board
+			const validationResponse = await validateDoc(docCode, file);
+
 			if (!validationResponse || validationResponse?.success === false) {
-				validationResponse = await validateDoc("BOARD", file);
+			toast.error(
+				validationResponse?.data?.message ||
+				`Invalid ${formData.dobProofType === "BIRTH_CERT"
+				? "Birth Certificate"
+				: "10th Certificate"}`
+			);
+			input.value = "";
+			return;
 			}
 
 			// If both fail → reject
@@ -532,6 +563,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			return false;
 		}
 	}
+
 	const handleBirthBrowse = () => {
 		document.getElementById("birthCertificate").click();
 	};
@@ -865,19 +897,71 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			await profileApi.postBasicDetails(candidateId, payload);
 
 			// Handle file uploads...
+			// ---------------- DOCUMENT UPLOADS ----------------
 			const uploadPromises = [];
-			if (communityFile) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, communityDoc.documentTypeId, communityFile));
-			}
+
+			// Resolve DOB documentTypeId based on radio selection
+			let dobDocumentTypeId = null;
+
 			if (birthFile) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, birthDoc.documentTypeId, birthFile));
+				if (formData.dobProofType === "BIRTH_CERT") {
+					dobDocumentTypeId = birthDoc?.documentTypeId;
+				} else if (formData.dobProofType === "TENTH") {
+					dobDocumentTypeId = tenthDoc?.documentTypeId;
+				}
 			}
+
+			// Hard stop if DOB proof type is invalid
+			if (birthFile && !dobDocumentTypeId) {
+				toast.error("Invalid DOB proof type. Please reselect Birth / 10th certificate.");
+				setLoading(false);
+				return;
+			}
+
+			// Community Certificate
+			if (communityFile) {
+				uploadPromises.push(
+					profileApi.postDocumentDetails(
+					candidateId,
+					communityDoc.documentTypeId,
+					communityFile
+					)
+				);
+			}
+
+			// Birth / 10th Certificate (radio-driven)
+			if (birthFile) {
+			uploadPromises.push(
+				profileApi.postDocumentDetails(
+				candidateId,
+				dobDocumentTypeId,
+				birthFile
+				)
+			);
+			}
+
+			// Disability Certificate
 			if (disabilityFile && formData.isDisabledPerson) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, disabilityDoc.documentTypeId, disabilityFile));
+			uploadPromises.push(
+				profileApi.postDocumentDetails(
+				candidateId,
+				disabilityDoc.documentTypeId,
+				disabilityFile
+				)
+			);
 			}
+
+			// Service Certificate
 			if (serviceFile && formData.isExService) {
-				uploadPromises.push(profileApi.postDocumentDetails(candidateId, serviceDoc.documentTypeId, serviceFile));
+			uploadPromises.push(
+				profileApi.postDocumentDetails(
+				candidateId,
+				serviceDoc.documentTypeId,
+				serviceFile
+				)
+			);
 			}
+
 			await Promise.all(uploadPromises);
 
 			toast.success("Basic details have been saved successfully");
