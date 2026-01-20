@@ -38,7 +38,14 @@ const PreviewModal = ({
     (state) => state.preference.preferenceData
   );
   const preferences = preferenceData?.preferences || {};
-  const [activeAccordion, setActiveAccordion] = useState(["0"]);
+  // const [activeAccordion, setActiveAccordion] = useState(["0"]);
+  const [activeAccordion, setActiveAccordion] = useState([
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+  ]);
   const state1 = getState(masterData, preferences.state1);
   const location1 = getLocation(masterData, preferences.location1);
 
@@ -81,7 +88,7 @@ const PreviewModal = ({
     <Modal
       show={show}
       onHide={onHide}
-      size="lg"
+      size="xl"
       centered
       dialogClassName="bob-preview-modal"
     >

@@ -38,6 +38,7 @@ import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
 import { extractValidationErrors } from "../../../shared/utils/validationError";
 
 const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positionId }) => {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -157,6 +158,9 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
     if (positionId) {
       setSelectedPositionId(positionId);
       setCurrentPage(0);
+    } else {
+      // Clear position when URL param is removed
+      setSelectedPositionId("");
     }
   }, [positionId]);
 
@@ -205,7 +209,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
         candidateId,
         deptIds: selectedDepartments,
         stateIds: selectedStates,
-        requisitionId: selectedRequisition || (requisitionId ? requisitionId : null),
+        requisitionId: selectedRequisition || null, // Use selectedRequisition or null (not the URL param)
         page: currentPage,
         size: pageSize,
         monthMinExp,
@@ -218,15 +222,15 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
       console.log("pageDta", pageData)
       let jobsData = pageData?.content || [];
 
-      // Filter by positionId if provided in URL
-      if (positionId) {
-        jobsData = jobsData.filter(job => job.positionsDTO?.positionId === positionId);
+      // Filter by selectedPositionId if it's set
+      if (selectedPositionId) {
+        jobsData = jobsData.filter(job => job.positionsDTO?.positionId === selectedPositionId);
       }
 
       const mappedJobs = mapJobsApiToList(jobsData, masterData);
 
       setJobs(mappedJobs);
-      setTotalPages(positionId ? 1 : (pageData?.totalPages ?? 0)); // Show only 1 page if filtering by position
+      setTotalPages(selectedPositionId ? 1 : (pageData?.totalPages ?? 0)); // Show only 1 page if filtering by position
 
     } catch (err) {
       //toast.error("Failed to load jobs");
@@ -635,7 +639,23 @@ console.log("relevant errors",errors)
                 <select
                   className="form-select"
                   value={selectedRequisition}
-                  onChange={(e) => setSelectedRequisition(e.target.value)}
+                  onChange={(e) => {
+                    const newRequisitionId = e.target.value;
+                    
+                    // Clear URL params and navigate to /candidate-portal
+                    if (newRequisitionId !== requisitionId) {
+                      // User selected from dropdown (not from URL params)
+                      navigate('/candidate-portal', { replace: true });
+                      setActiveTab('jobs');
+                      setSelectedPositionId(""); // Clear selected position
+                      setSelectedRequisition(newRequisitionId);
+                      // Reset current page to 0 to show fresh results
+                      setCurrentPage(0);
+                    } else {
+                      // Still update the selected requisition even if no URL change
+                      setSelectedRequisition(newRequisitionId);
+                    }
+                  }}
                 >
                   <option value="">All Requisitions</option>
                   {requisitions

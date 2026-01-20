@@ -590,7 +590,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
             {isEditMode ? "Update" : "Submit"}
           </button>
           {isEditMode && (
-            <button type="button" className="btn btn-outline-secondary" onClick={resetForm}>
+            <button type="button" className="btn btn-outline-secondary text-muted" onClick={resetForm}>
               Cancel
             </button>
           )}
