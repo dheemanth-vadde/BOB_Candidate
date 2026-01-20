@@ -22,6 +22,7 @@ export const mapBasicDetailsFormToApi = ({
 
       genderId: formData.gender || null,
       dateOfBirth: formData.dob || null,
+		  dobProofType: formData.dobProofType || "",
 
       maritalStatusId: formData.maritalStatus || null,
       nationality: formData.nationality || null,
@@ -123,6 +124,7 @@ export const mapBasicDetailsApiToForm = (apiData) => {
 
     gender: profile.genderId || "",
     dob: profile.dateOfBirth || "",
+    dobProofType: profile.dobProofType || "",
 
     maritalStatus: profile.maritalStatusId || "",
     nationality: profile.nationality || "",
