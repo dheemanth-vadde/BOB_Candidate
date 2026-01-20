@@ -14,6 +14,8 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.user?.user?.data);
+  const isProfileCompleted = user?.user?.isProfileCompleted;
+  const canAccessJobs = Boolean(isProfileCompleted);
   console.log("Header User:", user);
 
   const [showDropdown, setShowDropdown] = useState(false);
@@ -202,8 +204,12 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
 
               <li className="nav-item">
                 <button
-                  className={`nav-link ${activeTab === 'jobs' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('jobs')}
+                  className={`nav-link ${activeTab === 'jobs' ? 'active' : ''} ${!canAccessJobs ? 'disabled' : ''}`}
+                  onClick={() => canAccessJobs && setActiveTab('jobs')}
+                  style={{
+                    cursor: canAccessJobs ? 'pointer' : 'not-allowed',
+                    opacity: canAccessJobs ? 1 : 0.5
+                  }}
                 >
                   Current Opportunities
                 </button>
@@ -211,8 +217,12 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
 
               <li className="nav-item">
                 <button
-                  className={`nav-link ${activeTab === 'applied-jobs' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('applied-jobs')}
+                  className={`nav-link ${activeTab === 'applied-jobs' ? 'active' : ''} ${!canAccessJobs ? 'disabled' : ''}`}
+                  onClick={() => canAccessJobs && setActiveTab('applied-jobs')}
+                  style={{
+                    cursor: canAccessJobs ? 'pointer' : 'not-allowed',
+                    opacity: canAccessJobs ? 1 : 0.5
+                  }}
                 >
                   Applied Jobs
                 </button>
@@ -230,8 +240,15 @@ const Header = ({ hideIcons, activeTab, setActiveTab }) => {
               ].map(tab => (
                 <li key={tab.key} className="nav-item">
                   <button
-                    className={`nav-link text-start w-100 ${activeTab === tab.key ? 'active' : ''}`}
+                    className={`nav-link text-start w-100 ${activeTab === tab.key ? 'active' : ''} ${
+                      !canAccessJobs && tab.key !== 'info' ? 'disabled' : ''
+                    }`}
+                    style={{
+                      cursor: !canAccessJobs && tab.key !== 'info' ? 'not-allowed' : 'pointer',
+                      opacity: !canAccessJobs && tab.key !== 'info' ? 0.5 : 1
+                    }}
                     onClick={() => {
+                      if (!canAccessJobs && tab.key !== 'info') return;
                       setActiveTab(tab.key);
                       setShowMobileMenu(false);
                     }}

@@ -32,7 +32,7 @@ const CandidateProfileStepper = ({
 
     // ✅ HARD OVERRIDE
     if (srvUser?.isProfileCompleted === true) {
-      return 2; // Basic Details
+      return 7; // Basic Details
     }
 
     const cs = Number(srvUser?.currentStep);
