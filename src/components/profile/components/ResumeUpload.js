@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import '../../../css/Resumeupload.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faChevronRight, faUpload } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from '../../../assets/delete-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
 import profileApi from '../services/profile.api';
@@ -288,7 +288,11 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       {/* Next button */}
       <div className="mt-4 d-flex justify-content-between">
         <div>
-          <button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button>
+          <button type="button" className="btn grey_border text-muted" onClick={goBack} style={{ fontSize: '0.875rem', padding: "0.6rem 1rem" }}>
+            <FontAwesomeIcon icon={faChevronLeft} size='sm' style={{ marginRight: '0.25rem' }} />
+            Back
+          </button>
+          {/* <button type="button" className="btn btn-outline-secondary text-muted" onClick={goBack}>Back</button> */}
         </div>
         <div>
           <button

@@ -460,15 +460,6 @@ const CertificationDetails = ({ goNext, goBack }) => {
           </div>
         </div>
 
-        {/* Issued By */}
-        <div className="col-md-4">
-          <label className="form-label">
-            Certification Issued By {hasCertification && <span className="text-danger">*</span>}
-          </label>
-          <input id="issuedBy" disabled={!hasCertification} className={`form-control ${formErrors.issuedBy ? "is-invalid" : ""}`} value={formData.issuedBy} onChange={handleChange} />
-          <div className="invalid-feedback">{formErrors.issuedBy}</div>
-        </div>
-
         {/* Name */}
         <div className="col-md-4">
           <label className="form-label">
@@ -476,6 +467,15 @@ const CertificationDetails = ({ goNext, goBack }) => {
           </label>
           <input id="certificationName" disabled={!hasCertification || !isOtherSelected()} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
           <div className="invalid-feedback">{formErrors.certificationName}</div>
+        </div>
+
+        {/* Issued By */}
+        <div className="col-md-4">
+          <label className="form-label">
+            Certification Issued By {hasCertification && <span className="text-danger">*</span>}
+          </label>
+          <input id="issuedBy" disabled={!hasCertification} className={`form-control ${formErrors.issuedBy ? "is-invalid" : ""}`} value={formData.issuedBy} onChange={handleChange} />
+          <div className="invalid-feedback">{formErrors.issuedBy}</div>
         </div>
 
         {/* Certification Date */}
