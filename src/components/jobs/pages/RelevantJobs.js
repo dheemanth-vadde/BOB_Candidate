@@ -138,7 +138,9 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
 
     initMasters();
   }, []);
-
+ useEffect(() => {
+    setCurrentPage(0);
+  }, [pageSize]);
   // Initialize with requisitionId when provided
   useEffect(() => {
     if (requisitionId) {
