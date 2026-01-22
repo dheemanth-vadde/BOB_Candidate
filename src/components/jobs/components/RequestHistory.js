@@ -4,7 +4,8 @@ import jobsApiService from "../services/jobsApiService";
 import { mapRequestHistoryApiToList } from "../mappers/requestHistoryMapper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-
+import viewIcon from '../../../assets/view-icon.png';
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 const RequestHistory = ({ applicationId, requestTypes = [],refreshKey}) => {
   const [history, setHistory] = useState([]);
   const [activeKey, setActiveKey] = useState(null);
@@ -129,13 +130,19 @@ const RequestHistory = ({ applicationId, requestTypes = [],refreshKey}) => {
                           </p>
 
                           {msg.attachment && (
-                            <a
-                              href={msg.attachment}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              View Attachment
-                            </a>
+                            // <a
+                            // onClick={() => handleEyeClick(msg.attachment)}
+                            //   target="_blank"
+                            //   rel="noreferrer"
+                            // >
+                            //   View Attachment
+                            // </a>
+
+                              <div onClick={() => handleEyeClick(msg.attachment)}>
+                                  <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+                                </div>
+
+                            
                           )}
                         </div>
                       </div>
