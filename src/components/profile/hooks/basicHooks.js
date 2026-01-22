@@ -5,6 +5,7 @@ import { mapBasicDetailsApiToForm, mapBasicDetailsFormToApi } from '../mappers/B
 import masterApi from '../../../services/master.api';
 import { toast } from 'react-toastify';
 import { isAllowedNameChar, isValidName, sanitizeName, validateEndDateAfterStart, validateFile, validateNonEmptyText } from '../../../shared/utils/validation';
+import { useStepTracking } from './useStepTracking';
 
 const normalizeName = (name = "") =>
 	name
@@ -26,6 +27,7 @@ const normalizeDate = (date = "") => {
 
 export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	const [formErrors, setFormErrors] = useState({});
+	const { updateStep } = useStepTracking();
 	const aadhaarName = useSelector(state => state.idProof.name);
 	const aadhaarDob = useSelector(state => state.idProof.dob);
 	console.log("AADHAAR FROM REDUX:", aadhaarName);
@@ -966,6 +968,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 			toast.success("Basic details have been saved successfully");
 			setIsDirty(false);
+			updateStep(2); // Step 3 (Basic Details) = index 2
 			goNext();
 		} catch (err) {
 			console.error(err);
