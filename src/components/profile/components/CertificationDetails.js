@@ -13,7 +13,7 @@ import { Form } from 'react-bootstrap';
 import Loader from "./Loader";
 import greenCheck from '../../../assets/green-check.png'
 import masterApi from "../../../services/master.api";
-
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 /* ================= HELPERS ================= */
 const isFutureDate = (dateStr) =>
   dateStr && new Date(dateStr) > new Date();
@@ -615,14 +615,18 @@ const CertificationDetails = ({ goNext, goBack }) => {
                   <td className="profile_table_td">{c.expiryDate || "-"}</td>
                   <td className="profile_table_td">
                     <div className="d-flex gap-2">
-                      <div>
+                      {/* <div>
                         <img
                           src={viewIcon}
                           alt="View"
                           style={{ width: "25px", cursor: "pointer" }}
                           onClick={() => window.open(c.certificate?.fileUrl, "_blank")}
                         />
-                      </div>
+                      </div> */}
+
+                       <div onClick={() => handleEyeClick(c.certificate?.fileUrl)}>
+                            <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+                        </div>
                       <div>
                         <img src={editIcon} alt="Edit" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(c)} />
                       </div>
@@ -647,13 +651,17 @@ const CertificationDetails = ({ goNext, goBack }) => {
               <div className="d-flex justify-content-between mb-2">
                 <strong>Certification #{i + 1}</strong>
                 <div className="d-flex gap-2">
-                  <div>
+                  {/* <div>
                     <img
                       src={viewIcon}
                       alt="View"
                       style={{ width: "25px", cursor: "pointer" }}
                       onClick={() => window.open(c.certificate?.fileUrl, "_blank")}
                     />
+                  </div> */}
+
+                   <div onClick={() => handleEyeClick(c.certificate?.fileUrl)}>
+                    <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
                   </div>
                   <div>
                     <img src={editIcon} alt="Edit" style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(c)} />

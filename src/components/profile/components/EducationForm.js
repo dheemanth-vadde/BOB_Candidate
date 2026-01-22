@@ -12,7 +12,7 @@ import Loader from './Loader';
 import { forwardRef, useImperativeHandle } from 'react';
 import { removeParsedEducationById } from '../store/resumeSlice';
 import greenCheck from '../../../assets/green-check.png'
-
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 const EducationForm = forwardRef((props, ref) => {
   const {
     goNext,
@@ -641,12 +641,15 @@ const EducationForm = forwardRef((props, ref) => {
             {/* RIGHT SIDE: View / Edit / Delete */}
             <div className="d-flex gap-2">
               {/* View */}
-              <img
+              {/* <img
                 src={viewIcon}
                 alt="View"
                 style={{ width: "25px", cursor: "pointer" }}
                 onClick={() => window.open(existingDocument.fileUrl, "_blank")}
-              />
+              /> */}
+              <div onClick={() => handleEyeClick(existingDocument.fileUrl)}>
+                <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+              </div>
               {/* Delete */}
               <img
                 src={deleteIcon}
@@ -695,6 +698,7 @@ const EducationForm = forwardRef((props, ref) => {
                 style={{ width: "25px", cursor: "pointer" }}
                 onClick={() => window.open(URL.createObjectURL(certificateFile), "_blank")}
               />
+              
               {/* Delete */}
               <img
                 src={deleteIcon}

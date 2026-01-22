@@ -6,7 +6,7 @@ import viewIcon from '../../assets/view-icon.png';
 import profileApi from "../../components/profile/services/profile.api";
 import { useSelector } from "react-redux";
 import greenCheck from '../../assets/green-check.png'
-
+import { handleEyeClick } from "../utils/fileDownload";
 const UploadField = forwardRef(({
   label,
   required,
@@ -135,9 +135,14 @@ const UploadField = forwardRef(({
           {/* Right: Action icons */}
           <div className="d-flex gap-2">
 
-            <div>
+            {/* <div>
               <img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} onClick={handleView} />
-            </div>
+            </div> */}
+
+              <div onClick={() => handleEyeClick(file?.url)}>
+                                        <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+                              </div>
+            
 
             <div>
               <img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={handleDelete} />

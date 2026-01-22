@@ -13,7 +13,7 @@ import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
 import greenCheck from '../../../assets/green-check.png'
 import masterApi from '../../../services/master.api';
-
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 const normalize = (s) =>
   s
     .replace(/[^\w\s/]/g, "") // remove OCR junk
@@ -155,38 +155,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
     runOCR();
   }, [idProofPublicUrl]);
 
-const handleEyeClick = async () => {
-  if (!parsedIdProofData?.fileUrl) {
-    toast.error("No document available");
-    return;
-  }
 
-  try {
-    const res = await masterApi.downloadFile(parsedIdProofData.fileUrl);
-    console.log("Content-Type:", res.headers["content-type"]);
-
-    const blob = new Blob([res.data], {
-      type: res.headers["content-type"] || "application/octet-stream",
-    });
-
-    const url = window.URL.createObjectURL(blob);
-      console.log("Download fileUrl:", parsedIdProofData.fileUrl);
-    console.log("Download filename:", parsedIdProofData.fileName);
-    const fileName = parsedIdProofData.fileUrl.split("/").pop();
-    console.log("fileName", fileName);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName || "document";
-    document.body.appendChild(link);
-    link.click();
-
-    link.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error(error);
-    toast.error("Download failed");
-  }
-};
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -346,16 +315,19 @@ const handleEyeClick = async () => {
           </div>
 
           <div className="d-flex gap-2">
-            <div
-              onClick={handleEyeClick}
-            >
-              <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
-            </div>
-
-            {/* <div onClick={handleBrowseClick}>
-              <img src={editIcon} alt="Edit" style={{ width: "25px", cursor: "pointer" }} />
-            </div> */}
-
+             <div onClick={() => {
+                if (idProofPublicUrl) {
+                  handleEyeClick(idProofPublicUrl);
+                } else if (idProofFile) {
+                  // For local files, create an object URL and open in new tab
+                  const url = URL.createObjectURL(idProofFile);
+                  window.open(url, "_blank");
+                  // Clean up the object URL after the window opens
+                  setTimeout(() => URL.revokeObjectURL(url), 100);
+                }
+              }}>
+                <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+              </div>
             <div>
               <img src={deleteIcon} alt="Delete" style={{ width: "25px", cursor: "pointer" }} onClick={handleDelete} />
             </div>

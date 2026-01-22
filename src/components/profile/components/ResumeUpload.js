@@ -13,7 +13,7 @@ import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
 import greenCheck from '../../../assets/green-check.png'
 import masterApi from '../../../services/master.api';
-
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl, goNext, goBack, resumePublicUrl, isBasicDetailsSubmitted }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
@@ -37,42 +37,6 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       }
     }
   }, [isBasicDetailsSubmitted]);
-
-  const handleEyeClick = async () => {
-    // ✅ CASE 1: Local file → preview
-    if (resumeFile && localBlobUrl) {
-      window.open(localBlobUrl, "_blank");
-      return;
-    }
-
-    // ✅ CASE 2: Backend file → download
-    if (!resumeFile && resumePublicUrl) {
-      try {
-        const res = await masterApi.downloadFile(resumePublicUrl);
-
-        const contentType =
-          res.headers["content-type"] || "application/octet-stream";
-
-        const blob = new Blob([res.data], { type: contentType });
-        const url = window.URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName || "resume";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        window.URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error("Resume download failed", err);
-        toast.error("Failed to download resume");
-      }
-      return;
-    }
-
-    toast.error("No resume available");
-  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -283,15 +247,17 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
 
           {/* Right: Action icons */}
           <div className="d-flex gap-2">
-
-            <div onClick={handleEyeClick}>
+          <div onClick={() => {
+              if (resumePublicUrl) {
+                handleEyeClick(resumePublicUrl);
+              } else if (resumeFile) {
+                const url = URL.createObjectURL(resumeFile);
+                window.open(url, "_blank");
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+              }
+            }}>
               <img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
             </div>
-
-            {/* <div>
-          <img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} />
-        </div> */}
-
             <div>
               <img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={handleDelete} />
             </div>

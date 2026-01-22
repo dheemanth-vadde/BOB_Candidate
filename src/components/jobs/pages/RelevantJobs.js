@@ -116,7 +116,7 @@ const RelevantJobs = ({ candidateData = {}, setActiveTab, requisitionId, positio
       setRequisitions(mappedRequisitions);
     } catch (error) {
       console.error("Error fetching requisitions:", error);
-      toast.error("Failed to load requisitions");
+      toast.error("No active requisitions found");
     }
   };
   useEffect(() => {

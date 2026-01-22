@@ -12,7 +12,7 @@ import Loader from './Loader';
 import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
 import { Form } from 'react-bootstrap';
 import greenCheck from '../../../assets/green-check.png'
-
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
 	const candidateId = user?.user?.id;
@@ -72,6 +72,39 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		loading,
 		isDirty
 	} = useBasicDetails({ goNext, goBack, parsedData });
+
+	// const handleEyeClick = async (fileUrl) => {
+	// 	console.log("fileurl",fileUrl)
+	//   if (!fileUrl) {
+	// 	toast.error("No document available");
+	// 	return;
+	//   }
+	
+	//   try {
+	// 	const res = await masterApi.downloadFile(fileUrl);
+	
+	// 	const blob = new Blob([res.data], {
+	// 	  type: res.headers["content-type"] || "application/octet-stream",
+	// 	});
+	
+	// 	const url = window.URL.createObjectURL(blob);
+	// 	  console.log("Download fileUrl:", fileUrl);
+	// 	console.log("Download filename:", fileUrl.split("/").pop());
+	// 	const fileName = fileUrl.split("/").pop();
+	// 	console.log("fileName", fileName);
+	// 	const link = document.createElement("a");
+	// 	link.href = url;
+	// 	link.download = fileName || "document";
+	// 	document.body.appendChild(link);
+	// 	link.click();
+	
+	// 	link.remove();
+	// 	window.URL.revokeObjectURL(url);
+	//   } catch (error) {
+	// 	console.error(error);
+	// 	toast.error("Download failed");
+	//   }
+	// };
 
 	return (
 		<div>
@@ -231,12 +264,16 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
 									{/* View */}
-									<img
+								{/*	<img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingBirthDoc.fileUrl, "_blank")}
-									/>
+									/>*/}
+										<div onClick={() => handleEyeClick(existingBirthDoc.fileUrl)}>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+										</div>
+									
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -291,6 +328,9 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(birthFile), "_blank")}
 									/>
+									{/* <div onClick={() => handleEyeClick(birthFile)}>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+									</div> */}
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -639,12 +679,19 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
 									{/* View */}
-									<img
+									{/* <img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingCommunityDoc.fileUrl, "_blank")}
-									/>
+									/> */} 
+									{/* <div onClick={handleEyeClick(existingCommunityDoc.fileUrl)}>
+												  <img src={viewIcon} alt='View' style={{ width: '25px', cursor: 'pointer' }} />
+									</div> */}
+									<div onClick={() => handleEyeClick(existingCommunityDoc.fileUrl)}>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+									</div>
+
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -693,12 +740,16 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
 									{/* View */}
-									<img
+								 	<img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(communityFile), "_blank")}
-									/>
+									/> 
+									{/* 
+									<div onClick={() => handleEyeClick(communityFile)}>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+									</div> */}
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -915,12 +966,17 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
 									{/* View */}
-									<img
+									{/* <img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingDisabilityDoc.fileUrl, "_blank")}
-									/>
+									/> */}
+
+									<div onClick={() => handleEyeClick(existingDisabilityDoc.fileUrl)}>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+										</div>
+									
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -969,12 +1025,15 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
 									{/* View */}
-									<img
+									 <img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(disabilityFile), "_blank")}
 									/>
+									{/* <div onClick={() => handleEyeClick(disabilityFile)}>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+									</div> */}
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -1288,12 +1347,15 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
 									{/* View */}
-									<img
+									{/* <img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingServiceDoc.fileUrl, "_blank")}
-									/>
+									/> */}
+									<div onClick={() => handleEyeClick(existingServiceDoc.fileUrl)}>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+										</div>
 									{/* Delete */}
 									<img
 										src={deleteIcon}
@@ -1342,12 +1404,13 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								{/* RIGHT SIDE: View / Edit / Delete */}
 								<div className="d-flex gap-2">
 									{/* View */}
-									<img
+									 <img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(URL.createObjectURL(serviceFile), "_blank")}
-									/>
+									/> 
+								
 									{/* Delete */}
 									<img
 										src={deleteIcon}

@@ -14,7 +14,7 @@ import { Form } from 'react-bootstrap';
 import bulbIcon from '../../../assets/bulb-icon.png';
 import Loader from './Loader';
 import greenCheck from '../../../assets/green-check.png'
-
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 const ExperienceDetails = ({ goNext, goBack }) => {
 	const user = useSelector((state) => state?.user?.user?.data);
 	const candidateId = user?.user?.id;
@@ -787,19 +787,10 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 											<div>
 												<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(item)} />
 											</div>
-											<div>
-												<img
-													src={viewIcon}
-													alt="View"
-													style={{ width: "25px", cursor: "pointer" }}
-													onClick={() => {
-														if (!item?.certificate?.fileUrl) {
-														toast.error("No document available");
-														return;
-														}
-														window.open(item.certificate.fileUrl, "_blank", "noopener,noreferrer");
-													}}
-												/>
+											
+
+											<div onClick={() => handleEyeClick(item?.certificate?.fileUrl)}>
+													<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
 											</div>
 											<div>
 												<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(item)} />
