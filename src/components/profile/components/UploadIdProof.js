@@ -11,7 +11,8 @@ import { createWorker } from 'tesseract.js';
 import { setExtractedData, clearExtractedData } from '../store/idProofSlice';
 import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
-import greenCheck from '../../../assets/green-check.png'
+import greenCheck from '../../../assets/green-check.png';
+import { useStepTracking } from '../hooks/useStepTracking';
 
 const normalize = (s) =>
   s
@@ -56,6 +57,7 @@ const parseAadhaarText = (text) => {
 
 const UploadIdProof = ({ goNext, goBack }) => {
   const dispatch = useDispatch();
+  const { updateStep } = useStepTracking();
   const aadhaarDoc = useSelector((state) =>
     state.documentTypes?.list?.data?.find(
       (doc) => doc.docCode === "ADHAR"
@@ -193,6 +195,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
 
     // already uploaded → just move next
     if (idProofPublicUrl && !idProofFile) {
+      updateStep(0); // Step 1 (Upload Aadhar) = index 0
       goNext();
       return;
     }
@@ -210,6 +213,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
       setIdProofPublicUrl(uploadedDoc?.publicUrl || "");
       setParsedIdProofData(uploadedDoc);
 
+      updateStep(0); // Step 1 (Upload Aadhar) = index 0
       goNext();
     } catch (err) {
       console.error(err);

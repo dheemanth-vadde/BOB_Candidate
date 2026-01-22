@@ -11,13 +11,15 @@ import { setParsedResume } from '../store/resumeSlice';
 import { setParsedExperience } from '../store/experienceSlice';
 import { MAX_FILE_SIZE_BYTES } from '../../../shared/utils/validation';
 import { toast } from 'react-toastify';
-import greenCheck from '../../../assets/green-check.png'
+import greenCheck from '../../../assets/green-check.png';
+import { useStepTracking } from '../hooks/useStepTracking';
 
 const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePublicUrl, goNext, goBack, resumePublicUrl, isBasicDetailsSubmitted }) => {
   const [fileName, setFileName] = useState(resumeFile ? resumeFile.name : '');
   const [loading, setLoading] = useState(false);
   const [localBlobUrl, setLocalBlobUrl] = useState(null);
   const dispatch = useDispatch();
+  const { updateStep } = useStepTracking();
   const user = useSelector((state) => state?.user?.user?.data);
   const auth = useSelector((state) => state.user.authUser);
   const token = user?.accessToken;
@@ -82,8 +84,9 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
       alert("Candidate ID missing");
       return;
     }
-    // If resume already exists and user didn’t change it
+    // If resume already exists and user didn't change it
     if (!resumeFile && resumePublicUrl) {
+      updateStep(1); // Step 2 (Upload Resume) = index 1
       goNext();
       return;
     }
@@ -150,6 +153,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
           console.warn('Failed to dispatch parsed resume/experience', e);
         }
       }
+      updateStep(1); // Step 2 (Upload Resume) = index 1
       goNext(); // ✅ success only
     } catch (err) {
       alert(

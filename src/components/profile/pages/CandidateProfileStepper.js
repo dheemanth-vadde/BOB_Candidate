@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useStepTracking } from "../hooks/useStepTracking";
 import ResumeUpload from "../components/ResumeUpload";
 import Stepper from "../../../shared/components/Stepper";
 import AddressDetails from "../components/AddressDetails";
@@ -20,6 +21,7 @@ const CandidateProfileStepper = ({
   onSubmit,
   setActiveTab
 }) => {
+  const { updateStep } = useStepTracking();
 
   const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Certification",  "Experience", "Document"];
 
@@ -60,8 +62,17 @@ const CandidateProfileStepper = ({
     }
   }, [activeStep]);
 
-  const goNext = () => setActiveStep(prev => Math.min(prev + 1, steps.length - 1));
-  const goBack = () => setActiveStep(prev => Math.max(prev - 1, 0));
+  const goNext = () => {
+    const nextStep = Math.min(activeStep + 1, steps.length - 1);
+    updateStep(nextStep);
+    setActiveStep(nextStep);
+  };
+  
+  const goBack = () => {
+    const prevStep = Math.max(activeStep - 1, 0);
+    updateStep(prevStep);
+    setActiveStep(prevStep);
+  };
 
   const renderStepContent = () => {
     switch (activeStep) {

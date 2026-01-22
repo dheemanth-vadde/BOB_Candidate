@@ -29,6 +29,12 @@ const userSlice = createSlice({
       // 🔥 IMPORTANT: currentStep is meaningless after completion
       state.user.data.user.currentStep = null;
     },
+
+    // ✅ Update the current step in Redux
+    updateCurrentStep(state, action) {
+      if (!state.user?.data?.user) return;
+      state.user.data.user.currentStep = action.payload;
+    },
   },
 });
 
@@ -36,7 +42,8 @@ export const {
   setUser,
   setAuthUser,
   clearUser,
-  markProfileCompleted
+  markProfileCompleted,
+  updateCurrentStep
 } = userSlice.actions;
 
 export default userSlice.reducer;
