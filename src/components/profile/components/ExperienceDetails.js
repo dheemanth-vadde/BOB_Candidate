@@ -656,12 +656,15 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 								</div>
 
 								<div className='d-flex gap-2'>
-									<img
+									{/* <img
 										src={viewIcon}
 										alt="View"
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => window.open(existingDocument.fileUrl, "_blank")}
-									/>
+									/> */}
+									<div onClick={() => handleEyeClick(existingDocument.fileUrl)}>
+																			<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+																			</div>
 									<img
 										src={deleteIcon}
 										alt="Delete"

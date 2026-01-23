@@ -384,7 +384,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
 
 		// CASE 2: Existing document from API
 		if (existingDocument?.fileUrl) {
-			window.open(existingDocument.fileUrl, "_blank");
+ handleEyeClick(existingDocument?.fileUrl);
 			return;
 		}
 
@@ -554,6 +554,10 @@ const CertificationDetails = ({ goNext, goBack }) => {
                       handleViewCertificate();
                     }}
                   />
+
+                  {/* <div onClick={() => handleEyeClick(certificateFile)}>
+                            <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+                        </div> */}
 
                   <img src={deleteIcon} width={25} height={25} alt="Delete" onClick={(e) => {
                     e.stopPropagation();
