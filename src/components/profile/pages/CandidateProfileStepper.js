@@ -28,32 +28,40 @@ const CandidateProfileStepper = ({
   // Use server-provided user info from Redux to determine start step
   const serverData = useSelector((state) => state?.user?.user?.data); // matches other components
   const computeInitialStep = () => {
-    if (!serverData) return 0;
+  if (!serverData) return 0;
 
-    const srvUser = serverData?.user;
+  const srvUser = serverData.user;
+  console.log("srvUser", srvUser)
 
-    // ✅ HARD OVERRIDE
-    if (srvUser?.isProfileCompleted === true) {
-      return 7; // Basic Details
-    }
+  // 🔒 Only for FIRST LOAD / EDIT PROFILE
+  if (srvUser?.isProfileCompleted === true) {
+    return steps.length - 1; // Document
+  }
 
-    const cs = Number(srvUser?.currentStep);
-    if (!Number.isNaN(cs) && cs >= 1 && cs <= steps.length) {
-      return cs - 1;
-    }
+  const cs = Number(srvUser?.currentStep);
+  if (!Number.isNaN(cs) && cs >= 1 && cs <= steps.length) {
+    return cs - 1;
+  }
 
-    return 0;
-  };
+  return 0;
+};
 
 
   const [activeStep, setActiveStep] = useState(computeInitialStep);
-
+const [isNavigating, setIsNavigating] = useState(false);
   // If server data changes after login, update active step accordingly
   useEffect(() => {
-    if (!serverData) return;
-    const next = computeInitialStep();
-    setActiveStep(next);
-  }, [serverData]);
+  if (!serverData) return;
+
+  // 🚫 Do not override user navigation
+  if (isNavigating) {
+    setIsNavigating(false);
+    return;
+  }
+
+  const next = computeInitialStep();
+  setActiveStep(next);
+}, [serverData]);
 
   useEffect(() => {
     if (activeStep === 1) {
@@ -62,17 +70,34 @@ const CandidateProfileStepper = ({
     }
   }, [activeStep]);
 
-  const goNext = () => {
-    const nextStep = Math.min(activeStep + 1, steps.length - 1);
-    updateStep(nextStep);
-    setActiveStep(nextStep);
-  };
+  // const goNext = () => {
+  //   const nextStep = Math.min(activeStep + 1, steps.length - 1);
+  //   updateStep(nextStep);
+  //   setActiveStep(nextStep);
+  // };
   
-  const goBack = () => {
-    const prevStep = Math.max(activeStep - 1, 0);
-    updateStep(prevStep);
-    setActiveStep(prevStep);
-  };
+  // const goBack = () => {
+  //   const prevStep = Math.max(activeStep - 1, 0);
+  //   updateStep(prevStep);
+  //   setActiveStep(prevStep);
+  // };
+
+  const goNext = () => {
+  setIsNavigating(true);
+
+  const nextStep = Math.min(activeStep + 1, steps.length - 1);
+  updateStep(nextStep + 1);
+  setActiveStep(nextStep);
+};
+
+const goBack = () => {
+  setIsNavigating(true);
+
+  const prevStep = Math.max(activeStep - 1, 0);
+  updateStep(prevStep + 1);
+  setActiveStep(prevStep);
+};
+
 
   const renderStepContent = () => {
     switch (activeStep) {
