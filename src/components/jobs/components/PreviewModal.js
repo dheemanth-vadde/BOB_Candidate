@@ -5,9 +5,9 @@ import logo_Bob from "../../../assets/bob-logo.png";
 import sign from "../../../assets/download.png";
 import { useSelector } from "react-redux";
 import viewIcon from "../../../assets/view-icon.png";
-import { getState, getLocation } from "../../../shared/utils/masterHelpers";
 import TurnstileWidget from "../../integrations/Cpatcha/TurnstileWidget";
-import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
+import masterApi from "../../../services/master.api";
+import { handleEyeClick } from "../../../shared/utils/fileDownload";
 const PreviewModal = ({
   show,
   onHide,
@@ -46,14 +46,9 @@ const PreviewModal = ({
     "3",
     "4",
   ]);
-  const state1 = getState(masterData, preferences.state1);
-  const location1 = getLocation(masterData, preferences.location1);
+  const [photoSrc, setPhotoSrc] = useState(null);
+  const [signatureSrc, setSignatureSrc] = useState(null);
 
-  const state2 = getState(masterData, preferences.state2);
-  const location2 = getLocation(masterData, preferences.location2);
-
-  const state3 = getState(masterData, preferences.state3);
-  const location3 = getLocation(masterData, preferences.location3);
 
   useEffect(() => {
     if (
@@ -63,26 +58,47 @@ const PreviewModal = ({
       setActiveAccordion(["4"]); // 👈 Add Preference section
     }
   }, [formErrors]);
+
+  // ✅ PHOTO
+  const photoUrl = previewData?.documents?.photo?.[0]?.url || null;
+
+  // ✅ SIGNATURE
+  const signatureUrl = previewData?.documents?.signature?.[0]?.url || null;
+
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        if (photoUrl) {
+          const res = await masterApi.getSasUrl(photoUrl);
+          setPhotoSrc(res.data); // ✅ SAS URL
+        }
+
+        if (signatureUrl) {
+          const res = await masterApi.getSasUrl(signatureUrl);
+          setSignatureSrc(res.data); // ✅ SAS URL
+        }
+      } catch (err) {
+        console.error("Failed to load images", err);
+      }
+    };
+
+    loadImages();
+  }, [photoUrl, signatureUrl]);
+
   if (!previewData) {
     return null;
   }
 
-
-
-  // ✅ PHOTO
-  const photoUrl =
-    previewData.documents?.photo?.[0]?.url || null;
-
-  // ✅ SIGNATURE
-  const signatureUrl =
-    previewData.documents?.signature?.[0]?.url || null;
   console.log("Photo URL:", photoUrl);
   console.log("Signature URL:", signatureUrl);
-
 
   console.log("Stored preference:", preferenceData);
   console.log("Preview previewData:", previewData);
   const allDocuments = Object.values(previewData.documents || {}).flat();
+
+
+
+
 
   return (
     <Modal
@@ -143,13 +159,13 @@ const PreviewModal = ({
                       >
                         <div className="bob-photo-box">
                           <img
-                            src={photoUrl || logo_Bob}
+                            src={photoSrc || logo_Bob}
                             alt="Applicant Photo"
                             className="img-fluid img1"
                           />
 
                           <img
-                            src={signatureUrl || sign}
+                            src={signatureSrc || sign}
                             alt="Signature"
                             className="img-fluid img2"
                           />
@@ -417,15 +433,12 @@ const PreviewModal = ({
                         {/* LEFT DOCUMENT */}
                         <td>{doc.displayname ? doc.displayname : doc.name}</td>
                         <td className="textCenter">
-                          <a
-                            href={doc.url}
-                            target="_blank"
-                            rel="noreferrer"
-
-                          >
-                            <img src={viewIcon} alt="View"
-                              style={{ width: "25px", cursor: "pointer" }} />
-                          </a>
+                           <img
+                              src={viewIcon}
+                              alt="View"
+                              style={{ width: "25px", cursor: "pointer" }}
+                              onClick={() => handleEyeClick(doc.url)}
+                            />
                         </td>
 
                         {/* RIGHT DOCUMENT */}
@@ -433,15 +446,12 @@ const PreviewModal = ({
                           <>
                             <td>{nextDoc.displayname ? nextDoc.displayname : nextDoc.name}</td>
                             <td className="textCenter">
-                              <a
-                                href={nextDoc.url}
-                                target="_blank"
-                                rel="noreferrer"
-
-                              >
-                                <img src={viewIcon} alt="View"
-                                  style={{ width: "25px", cursor: "pointer" }} />
-                              </a>
+                               <img
+                                src={viewIcon}
+                                alt="View"
+                                style={{ width: "25px", cursor: "pointer" }}
+                                onClick={() => handleEyeClick(nextDoc.url)}
+                              />
                             </td>
                           </>
                         ) : (

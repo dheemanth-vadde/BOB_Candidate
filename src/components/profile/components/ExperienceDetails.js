@@ -883,7 +883,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className='d-flex justify-content-center align-items-center gap-2'>
 					<label htmlFor="working" className="form-label mb-0">Total experience in months</label>
-					<input type="number" className="form-control text-center" style={{ width: '70px', paddingLeft: '25px' }} id="to" disabled value={totalExperienceMonths} />
+					<input type="number" className="form-control text-center" style={{ width: '90px', paddingLeft: '25px' }} id="to" disabled value={totalExperienceMonths} />
 				</div>
 
 				{/* <div className='d-flex justify-content-center align-items-center gap-2 py-1' style={{ backgroundColor: '#fff7ed', borderLeft: '3px solid #f26623' }}>
