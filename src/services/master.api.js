@@ -83,6 +83,13 @@ export const downloadFile = (filePath) => {
    
   });
 };
+
+
+export const getSasUrl = (filePath) => {
+  return api.get(`/v1/master/azureblob/file/sas-url`, {
+    params: { dir: filePath },
+  });
+};
 export default {
   getMasterData,
   getDocumentTypes,
@@ -90,5 +97,6 @@ export default {
   getChatQueryReply,
   getGenericDocuments,
   getCertifications,
-  downloadFile
+  downloadFile,
+  getSasUrl
 };
