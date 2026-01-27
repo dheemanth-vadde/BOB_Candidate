@@ -36,7 +36,7 @@ const EducationForm = forwardRef((props, ref) => {
   const parsedList = useSelector((state) => state.resume?.parsed?.education || []);
   const user = useSelector((state) => state?.user?.user?.data);
   const candidateId = user?.user?.id;
-  const [loading, setLoading] = useState(false);
+  //const [loading, setLoading] = useState(false);
   const [certificateFile, setCertificateFile] = useState(null);
   const [existingDocument, setExistingDocument] = useState(null);
   const [formErrors, setFormErrors] = useState({});
@@ -264,11 +264,11 @@ const EducationForm = forwardRef((props, ref) => {
         ...prev,
         dateRange: "These dates overlap with another education entry"
       }));
-      setLoading(false);
+     // setLoading(false);
       return;
     }
 
-    setLoading(true)
+ //   setLoading(true)
     try {
       // Get the docCode from masterData based on the selected education level
       const selectedEducationLevel = masterData.educationLevels.find(
@@ -352,7 +352,7 @@ const EducationForm = forwardRef((props, ref) => {
       console.error(err);
       toast.error("Failed to save education");
     } finally {
-      setLoading(false)
+      // setLoading(false)
     }
   };
 
@@ -747,9 +747,9 @@ const EducationForm = forwardRef((props, ref) => {
         )}
       </div>
 
-      {loading && (
+      {/* {loading && (
 				<Loader />
-			)}
+			)} */}
     </form>
   );
 });

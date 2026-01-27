@@ -104,6 +104,15 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 	// 	toast.error("Download failed");
 	//   }
 	// };
+	const MARRIED_ID = masterData?.maritalStatus?.find(
+		ms => ms.maritalStatus === "Married"
+	)?.maritalStatusId;
+const isMarried = formData.maritalStatus === MARRIED_ID;
+
+const HINDU_RELIGION_ID = masterData?.religions?.find(
+  r => r.religion === "Hindu"
+)?.religionId;
+const isHindu = formData.religion === HINDU_RELIGION_ID;
 
 	return (
 		<div>
@@ -423,11 +432,12 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							</div>
 						)}
 					</div>
-
+				{isMarried && (
 					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="spouseName" className="form-label">Spouse Name</label>
 						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your spouse name' />
 					</div>
+					)}
 
 					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="contactNumber" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Contact Number <span className="text-danger">*</span></label>
@@ -1693,7 +1703,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							/>
 						</div>
 					</div>
-
+{!isHindu && formData.religion && (
 					<div className="col-md-6 col-sm-12 mt-3 d-grid">
 						<div>
 							<label className="form-label">
@@ -1725,6 +1735,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							/>
 						</div>
 					</div>
+)}
 
 					<div className="col-md-6 col-sm-12 mt-3 d-grid">
 						<div>
