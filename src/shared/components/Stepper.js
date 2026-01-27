@@ -2,22 +2,25 @@ import React from "react";
 import "./../../css/Stepper.css";
 import whiteCheck from '../../assets/white-check.png'
 
-const Stepper = ({ steps, activeStep }) => {
+const Stepper = ({ steps, activeStep, isProfileCompleted }) => {
   return (
     <div className="stepper-container">
       {steps.map((step, index) => {
         const isActive = index === activeStep;
-        const isCompleted = index < activeStep;
+
+        // 🔑 All completed if profile completed
+        const isCompleted = isProfileCompleted || index < activeStep;
 
         return (
           <React.Fragment key={index}>
             <div
-              className={`step-item ${isActive ? "active" : ""} ${
-                isCompleted ? "completed" : ""
-              }`}
+              className={`step-item
+                ${isCompleted ? "completed" : ""}
+                ${isActive ? "active" : ""}
+              `}
             >
-              <div className="step_circle">
-                {isCompleted ? (
+             <div className="step_circle">
+                {isCompleted && !(isProfileCompleted && isActive) ? (
                   <img
                     src={whiteCheck}
                     alt="Completed"
@@ -30,9 +33,12 @@ const Stepper = ({ steps, activeStep }) => {
               <div className="step-label">{step}</div>
             </div>
 
-            {/* Render line only if it's not the last step */}
             {index !== steps.length - 1 && (
-              <div className={`step-line ${isCompleted ? "completed" : ""}`} />
+              <div
+                className={`step-line ${
+                  isCompleted ? "completed" : ""
+                }`}
+              />
             )}
           </React.Fragment>
         );
@@ -40,5 +46,6 @@ const Stepper = ({ steps, activeStep }) => {
     </div>
   );
 };
+
 
 export default Stepper;

@@ -27,6 +27,7 @@ const CandidateProfileStepper = ({
 
   // Use server-provided user info from Redux to determine start step
   const serverData = useSelector((state) => state?.user?.user?.data); // matches other components
+  const isProfileCompleted = serverData?.user?.isProfileCompleted === true;
   const computeInitialStep = () => {
   if (!serverData) return 0;
 
@@ -155,7 +156,7 @@ const goBack = () => {
 
   return (
     <div className="pb-3">
-      <Stepper steps={steps} activeStep={activeStep} />
+      <Stepper steps={steps} activeStep={activeStep} isProfileCompleted={isProfileCompleted}/>
 
       <div className="p-3" style={{ margin: '0 auto', width: '82%' }}>
         {renderStepContent()}
