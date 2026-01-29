@@ -39,7 +39,7 @@ export default function TurnstileWidget({ onTokenChange }) {
     }}>
  
       <Turnstile
-        sitekey="0x4AAAAAACJt2YP9AbuhUTuE"
+        sitekey="0x4AAAAAACRy_X23T8leCn_Z"
         appearance="always"
         execution="render"
         onSuccess={handleSuccess}
@@ -50,7 +50,7 @@ export default function TurnstileWidget({ onTokenChange }) {
       />
 
       {/* Styled badge */}
-      {isVerified &&(
+      {/* {isVerified &&(
       <div style={{
         padding: "8px 12px",
         background: "#e8f5e9",
@@ -62,7 +62,7 @@ export default function TurnstileWidget({ onTokenChange }) {
       }}>
         ✔ Verified by Cloudflare Turnstile
       </div>
-)}
+)} */}
     </div>
   );
 }
