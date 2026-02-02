@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import profileApi from '../services/profile.api';
 import { mapBasicDetailsApiToForm, mapBasicDetailsFormToApi } from '../mappers/BasicMapper';
@@ -966,7 +966,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 
 			await Promise.all(uploadPromises);
 
-			toast.success("Basic details have been saved successfully");
+			toast.success("Basic details saved successfully");
 			setIsDirty(false);
 			updateStep(2); // Step 3 (Basic Details) = index 2
 			goNext();
@@ -1095,6 +1095,19 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		}));
 		}, [parsedData]);
 
+		const marriedId = useMemo(
+			() => masterData.maritalStatus?.find(m => m.maritalStatus === "Married")?.maritalStatusId,
+			[masterData.maritalStatus]
+		);
+
+		const hinduReligionId = useMemo(
+			() => masterData.religions?.find(r => r.religion === "Hindu")?.religionId,
+			[masterData.religions]
+		);
+
+		const isMarried = formData.maritalStatus === marriedId;
+		const isHindu = formData.religion === hinduReligionId;
+
 	return {
 		formData,
 		setFormData,
@@ -1147,6 +1160,8 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		handleNameKeyDown,
 		getAvailableDisabilityTypes,
 		loading,
-		isDirty
+		isDirty,
+		isMarried,
+		isHindu
 	};
 };

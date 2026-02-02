@@ -7,7 +7,6 @@ const PrivateRoute = () => {
   const location = useLocation();
 
   if (!user) {
-    // Store the intended location (including query params) in state
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

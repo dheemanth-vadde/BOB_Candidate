@@ -1,31 +1,19 @@
-import axios from "axios";
+import { candidateApi } from "../../services/apiService";
 
-const BASE_URL =
-  "https://stage.bobjava.sentrifugo.com/candidate-portal/api/v1/candidate";
-
-const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "X-Client": "candidate",
-    "Content-Type": "application/json",
-  },
-  timeout: 15000,
-});
-
-// ✅ GET disclaimer status
+// GET disclaimer status
 export const getDisclaimerStatus = (candidateId) => {
   if (!candidateId) throw new Error("candidateId is required");
 
-  return api.get(
+  return candidateApi.get(
     `/profile/get-personal-disclaimer/${candidateId}`
   );
 };
 
-// ✅ POST disclaimer acceptance
+// POST disclaimer acceptance
 export const saveDisclaimerStatus = (candidateId, value) => {
   if (!candidateId) throw new Error("candidateId is required");
 
-  return api.post(
+  return candidateApi.post(
     `/profile/save-personal-disclaimer/${candidateId}`,
     null,
     {

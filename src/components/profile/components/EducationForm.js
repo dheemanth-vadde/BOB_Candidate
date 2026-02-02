@@ -7,12 +7,13 @@ import { toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux';
 import deleteIcon from '../../../assets/delete-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import { hasDateCollision, isValidCollegeName, validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
-import Loader from './Loader';
+import { hasDateCollision, isValidCollegeName, validateEndDateAfterStart } from '../../../shared/utils/validation';
+import Loader from '../../../shared/components/Loader';
 import { forwardRef, useImperativeHandle } from 'react';
 import { removeParsedEducationById } from '../store/resumeSlice';
 import greenCheck from '../../../assets/green-check.png'
 import { handleEyeClick } from "../../../shared/utils/fileDownload";
+
 const EducationForm = forwardRef((props, ref) => {
   const {
     goNext,

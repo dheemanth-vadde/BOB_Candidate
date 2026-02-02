@@ -1,415 +1,43 @@
-import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import deleteIcon from "../../../assets/delete-icon.png";
 import viewIcon from "../../../assets/view-icon.png";
 import editIcon from "../../../assets/edit-icon.png";
-import profileApi from "../services/profile.api";
-import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { mapCertificationApiToUi, mapCertificationFormToApi } from "../mappers/CertificationMapper";
 import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
 import { Form } from 'react-bootstrap';
-import Loader from "./Loader";
+import Loader from "../../../shared/components/Loader";
 import greenCheck from '../../../assets/green-check.png'
-import masterApi from "../../../services/master.api";
 import { handleEyeClick } from "../../../shared/utils/fileDownload";
-/* ================= HELPERS ================= */
-const isFutureDate = (dateStr) =>
-  dateStr && new Date(dateStr) > new Date();
+import { useCertificationDetails } from "../hooks/certificationHooks";
 
-const addYears = (dateStr, years) => {
-  if (!dateStr) return undefined;
-
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return undefined;
-
-  d.setFullYear(d.getFullYear() + years);
-  return d.toISOString().split("T")[0];
-};
-const MAX_CERT_FILE_SIZE_BYTES = 2 * 1024 * 1024;
-const ALLOWED_CERT_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
-const formatFileSize = (bytes) => {
-  if (!bytes) return "";
-  const kb = bytes / 1024;
-  if (kb < 1024) return `${kb.toFixed(1)} KB`;
-  return `${(kb / 1024).toFixed(1)} MB`;
-};
-const isAtLeastOneYearLater = (start, end) =>
-  new Date(end) >= new Date(addYears(start, 1));
-/* ================= COMPONENT ================= */
 const CertificationDetails = ({ goNext, goBack }) => {
-  const user = useSelector((state) => state?.user?.user?.data);
-  const candidateId = user?.user?.id;
-  const [certList, setCertList] = useState([]);
-  const [certificateFile, setCertificateFile] = useState(null);
-  const [existingDocument, setExistingDocument] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingRow, setEditingRow] = useState(null);
-  const [formErrors, setFormErrors] = useState({});
-  const [formData, setFormData] = useState({
-    issuedBy: "",
-    certificationMasterId: "",
-    certificationName: "",
-    certificationDate: "",
-    expiryDate: ""
-  });
-  const [nextError, setNextError] = useState("");
-  const [isDirty, setIsDirty] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [hasCertification, setHasCertification] = useState(false);
-  const [certMasterOptions, setCertMasterOptions] = useState([]);
-
-  /* ================= FETCH ================= */
-  const fetchCertifications = async () => {
-    try {
-      setLoading(true);
-      const res = await profileApi.getCertifications(candidateId);
-      console.log("Certification masters fetched:", res.data);
-      const mapped = Array.isArray(res?.data)
-        ? res.data.map(mapCertificationApiToUi)
-        : [];
-
-      setCertList(mapped);
-      setIsDirty(false);
-    } catch (err) {
-      console.error("Failed to fetch certifications", err);
-      setCertList([]);
-      setIsDirty(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const fetchCertificationMasters = async () => {
-      try {
-        const res = await masterApi.getCertifications();
-        
-        const options = Array.isArray(res?.data?.data)
-          ? res?.data?.data.map(c => ({
-              value: c.certificationMasterId,
-              label: c.certificationName
-            }))
-          : [];
-
-        setCertMasterOptions(options);
-      } catch (err) {
-        console.error("Failed to fetch certification masters", err);
-        setCertMasterOptions([]);
-      }
-    };
-
-    fetchCertificationMasters();
-  }, []);
-
-  useEffect(() => {
-    if (candidateId && hasCertification) {
-      fetchCertifications();
-    }
-  }, [candidateId, hasCertification]);
-
-  useEffect(() => {
-    if (!candidateId) return;
-
-    const initHasCertification = async () => {
-      try {
-        const res = await profileApi.getHasCertification(candidateId);
-        const hasCert = Boolean(res?.data);
-
-        setHasCertification(hasCert);
-
-        // If backend says YES, load certifications
-        if (hasCert) {
-          fetchCertifications();
-        } else {
-          resetForm();
-          setCertList([]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch hasCertification", err);
-        setHasCertification(false);
-      }
-    };
-
-    initHasCertification();
-  }, [candidateId]);
-
-  const isOtherSelected = () => {
-    const selected = certMasterOptions.find(
-      opt => opt.value === formData.certificationMasterId
-    );
-    return selected?.label === "Other";
-  };
-
-  /* ================= HANDLERS ================= */
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-
-    setFormData((prev) => {
-      const updated = { ...prev, [id]: value };
-
-      if (id === "certificationMasterId") {
-        const selected = certMasterOptions.find(opt => opt.value === value);
-
-        if (selected?.label === "Other") {
-          // Enable manual entry
-          updated.certificationName = "";
-        } else {
-          // Lock name to selected certification
-          updated.certificationName = selected?.label || "";
-        }
-      }
-
-      if (id === "certificationDate") {
-        updated.expiryDate = "";
-      }
-      return updated;
-    });
-    setIsDirty(true);
-
-    if (formErrors[id]) {
-      setFormErrors((p) => ({ ...p, [id]: "" }));
-    }
-
-    setNextError(""); // ✅ CLEAR "Please add certification" error
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    // 1️⃣ Validate file type
-    if (!ALLOWED_CERT_TYPES.includes(file.type)) {
-      setFormErrors((p) => ({
-        ...p,
-        certificate: "Invalid file type. Upload PDF, JPG, Word or PNG only",
-      }));
-      e.target.value = "";
-      return;
-    }
-    // 2️⃣ Validate file size (2 MB)
-    if (file.size > MAX_CERT_FILE_SIZE_BYTES) {
-      setFormErrors((p) => ({
-        ...p,
-        certificate: "File size must be 2 MB or less",
-      }));
-      e.target.value = "";
-      return;
-    }
-    // 3️⃣ Accept file
-    setCertificateFile(file);
-    setIsDirty(true);
-    setExistingDocument(null);
-    setFormErrors((p) => ({ ...p, certificate: "" }));
-    setNextError("");
-  };
-  const handleBrowse = () => {
-    document.getElementById("certInput").click();
-  };
-  /* ================= VALIDATION ================= */
-  const validateForm = () => {
-    if (!hasCertification) {
-      setFormErrors({});
-      return true;
-    }
-    const errors = {};
-
-    if (!formData.certificationMasterId) {
-      errors.certificationMasterId = "This field is required";
-    }
-
-    if (!formData.issuedBy.trim()) {
-      errors.issuedBy = "This field is required";
-    }
-
-    if (isOtherSelected() && !formData.certificationName.trim()) {
-      errors.certificationName = "This field is required";
-    }
-
-    if (!formData.certificationDate) {
-      errors.certificationDate = "This field is required";
-    } else if (isFutureDate(formData.certificationDate)) {
-      errors.certificationDate = "Certification date cannot be in the future";
-    }
-
-    if (formData.expiryDate) {
-      if (
-        new Date(formData.expiryDate) <
-        new Date(formData.certificationDate)
-      ) {
-        errors.expiryDate =
-          "Expiry date cannot be before certification date";
-      }
-    }
-
-    // Expiry Date — OPTIONAL
-    // if (formData.expiryDate) {
-    //   if (
-    //     new Date(formData.expiryDate) <=
-    //     new Date(formData.certificationDate)
-    //   ) {
-    //     errors.expiryDate = "Expiry date must be after certification date";
-    //   } else if (
-    //     !isAtLeastOneYearLater(
-    //       formData.certificationDate,
-    //       formData.expiryDate
-    //     )
-    //   ) {
-    //     errors.expiryDate =
-    //       "Expiry date must be at least 1 year after certification date";
-    //   } else if (
-    //     new Date(formData.expiryDate) >
-    //     new Date(addYears(formData.certificationDate, 30))
-    //   ) {
-    //     errors.expiryDate = "Expiry date is unrealistically far";
-    //   }
-    // }
-
-    if (!certificateFile && !existingDocument) {
-      errors.certificate = "This field is required";
-    }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-  /* ================= SAVE ================= */
-  const handleSave = async () => {
-    if (!validateForm()) return;
-
-    try {
-      const payload = mapCertificationFormToApi(
-        formData,
-        candidateId,
-        isEditMode ? editingRow?.certificateId : null, // ✅ REQUIRED
-        certificateFile,
-        existingDocument
-      );
-      console.log("Payload to save:", payload);
-      setLoading(true);
-
-      await profileApi.saveCertification(
-        candidateId,
-        payload,
-        certificateFile instanceof File ? certificateFile : undefined
-      );
-
-      toast.success(isEditMode ? "Updated successfully" : "Saved successfully");
-      setIsDirty(false);
-      setNextError("");
-      resetForm();
-      fetchCertifications();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to save certification");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveAndNext = () => {
-    if (!hasCertification) {
-      setNextError("");
-      goNext();
-      return;
-    }
-
-    if (certList.length === 0) {
-      setNextError("Please add at least one certification before proceeding");
-      return;
-    }
-
-    setNextError("");
-    goNext();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      issuedBy: "",
-      certificationMasterId: "",
-      certificationName: "",
-      certificationDate: "",
-      expiryDate: ""
-    });
-    setCertificateFile(null);
-    setExistingDocument(null);
-    setIsEditMode(false);
-    setEditingRow(null);
-    setFormErrors({});
-  };
-  /* ================= EDIT / DELETE ================= */
-  const handleEdit = (row) => {
-    setIsEditMode(true);
-    setEditingRow(row);
-    setFormData({
-      issuedBy: row.issuedBy,
-      certificationMasterId: row.certificationMasterId,
-      certificationName: row.certificationName,
-      certificationDate: row.certificationDate,
-      expiryDate: row.expiryDate || ""
-    });
-    setExistingDocument(row.certificate);
-    setCertificateFile(null);
-    setNextError(""); 
-  };
-  const handleDelete = async (row) => {
-    try {
-      setLoading(true);
-      console.log("Deleting certificateId:", row);
-      await profileApi.deleteCertification(row.certificateId);
-      toast.success("Deleted successfully");
-      fetchCertifications();
-      if (editingRow?.certificationId === row.certificationId) resetForm();
-    } catch {
-      toast.error("Delete failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewCertificate = () => {
-		// CASE 1: Newly uploaded file (local preview)
-		if (certificateFile instanceof File) {
-			const fileURL = URL.createObjectURL(certificateFile);
-			window.open(fileURL, "_blank");
-
-			// Prevent memory leaks
-			setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
-			return;
-		}
-
-		// CASE 2: Existing document from API
-		if (existingDocument?.fileUrl) {
- handleEyeClick(existingDocument?.fileUrl);
-			return;
-		}
-
-		toast.error("No certificate available to view");
-	};
-
-  const handleHasCertificationToggle = async (checked) => {
-    setHasCertification(checked);
-    setNextError(""); // ✅ CLEAR ERROR IMMEDIATELY
-
-    try {
-      await profileApi.saveHasCertification(candidateId, checked);
-      setIsDirty(false);
-
-      if (!checked) {
-        resetForm();
-        setCertList([]);
-      } else {
-        fetchCertifications();
-      }
-    } catch (err) {
-      setHasCertification((prev) => !prev);
-      toast.error("Failed to update certification status");
-    }
-  };
+  const {
+    certList,
+    certMasterOptions,
+    hasCertification,
+    formData,
+    formErrors,
+    certificateFile,
+    existingDocument,
+    isEditMode,
+    nextError,
+    isDirty,
+    loading,
+    fileInputRef,
+    isOtherSelected,
+    handleChange,
+    handleFileChange,
+    handleBrowse,
+    handleViewCertificate,
+    handleEdit,
+    handleDelete,
+    handleSave,
+    handleHasCertificationToggle,
+    saveAndNext,
+    clearCertificate,
+    formatFileSize,
+    handleCancelEdit
+  } = useCertificationDetails({ goNext });
 
 
   /* ================= UI ================= */
@@ -463,9 +91,9 @@ const CertificationDetails = ({ goNext, goBack }) => {
         {/* Name */}
         <div className="col-md-4">
           <label className="form-label">
-            Certification Name {isOtherSelected() && <span className="text-danger">*</span>}
+            Certification Name {isOtherSelected && <span className="text-danger">*</span>}
           </label>
-          <input id="certificationName" disabled={!hasCertification || !isOtherSelected()} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
+          <input id="certificationName" disabled={!hasCertification || !isOtherSelected} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
           <div className="invalid-feedback">{formErrors.certificationName}</div>
         </div>
 
@@ -559,22 +187,25 @@ const CertificationDetails = ({ goNext, goBack }) => {
                             <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
                         </div> */}
 
-                  <img src={deleteIcon} width={25} height={25} alt="Delete" onClick={(e) => {
-                    e.stopPropagation();
-                    if (!hasCertification) return;
-                      setCertificateFile(null);
-                      setExistingDocument(null);
-                      // Reset file input so the same file can be uploaded again
-                      const fileInput = document.getElementById("certInput");
-                      if (fileInput) fileInput.value = "";
-                      setFormErrors((p) => ({ ...p, certificate: "" }));
+                  <img src={deleteIcon} width={25} height={25} alt="Delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!hasCertification) return;
+                      clearCertificate();
                     }}
                     style={{ cursor: hasCertification ? "pointer" : "not-allowed", opacity: hasCertification ? 1 : 0.5 }}
                   />
                 </div>
               </div>
             )}
-            <input id="certInput" type="file" hidden accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={handleFileChange} disabled={!hasCertification} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              hidden
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              onChange={handleFileChange}
+              disabled={!hasCertification}
+            />
           </div>
           {hasCertification && formErrors.certificate && (
             <div className="invalid-feedback d-block">
@@ -590,7 +221,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
             {isEditMode ? "Update" : "Submit"}
           </button>
           {isEditMode && (
-            <button type="button" className="btn btn-outline-secondary text-muted" onClick={resetForm}>
+            <button type="button" className="btn btn-outline-secondary text-muted" onClick={handleCancelEdit}>
               Cancel
             </button>
           )}
@@ -713,7 +344,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
               color: "#fff",
               fontSize: '0.875rem'
             }}
-            onClick={handleSaveAndNext}
+            onClick={saveAndNext}
           >
             Save & Next
             <FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />

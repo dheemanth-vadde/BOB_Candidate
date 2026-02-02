@@ -1,324 +1,36 @@
 // components/Tabs/AddressDetails.jsx
-import React, { useEffect, useState } from "react";
-import { mapAddressApiToForm, mapAddressFormToApi } from "../mappers/AddressMapper";
-import masterApi from "../../../services/master.api";
-import { useSelector } from "react-redux";
-import profileApi from "../services/profile.api";
-import { toast } from "react-toastify";
-import { validateNonEmptyText } from "../../../shared/utils/validation";
 import BackButtonWithConfirmation from "../../../shared/components/BackButtonWithConfirmation";
 import { Form } from 'react-bootstrap';
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useAddressDetails } from "../hooks/addressHooks";
 
 const AddressDetails = ({ goNext, goBack }) => {
-	const user = useSelector((state) => state?.user?.user?.data);
-	const [formErrors, setFormErrors] = useState({
-    corrAddress: {},
-    permAddress: {}
-  });
-
-	const candidateId = user?.user?.id;
-	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
-	const [corrAddress, setCorrAddress] = useState({
-		line1: "",
-		line2: "",
-		city: "",
-		district: "",
-		state: "",
-		pincode: ""
-	});
-	const [permAddress, setPermAddress] = useState({
-		line1: "",
-		line2: "",
-		city: "",
-		district: "",
-		state: "",
-		pincode: ""
-	});
-	const [sameAsCorrespondence, setSameAsCorrespondence] = useState(false);
-	const [isDirty, setIsDirty] = useState(false);
-	const [masters, setMasters] = useState({
-		states: [],
-		districts: [],
-		cities: [],
-		pincodes: []
-	});
-	const EMPTY_ADDRESS = {
-		line1: "",
-		line2: "",
-		city: "",
-		district: "",
-		state: "",
-		pincode: ""
-	};
-
-	useEffect(() => {
-		async function loadMasters() {
-			const res = await masterApi.getMasterData();
-			const data = res?.data?.data;
-			console.log("Master Data loaded:", data);
-			setMasters({
-				states: data.states || [],
-				districts: data.districts || [],
-				cities: data.cities || [],
-				pincodes: data.pincodes || []
-			});
-		}
-		loadMasters();
-	}, []);
-
-	const filteredDistricts = masters.districts.filter(
-		d => d.stateId === corrAddress.state
-	);
-
-	const filteredCities = masters.cities.filter(
-		c => c.districtId === corrAddress.district
-	);
-
-	const filteredPincodes = masters.pincodes.filter(
-		p => p.cityId === corrAddress.city
-	);
-
-	const permFilteredDistricts = masters.districts.filter(
-		d => d.stateId === permAddress.state
-	);
-
-	const permFilteredCities = masters.cities.filter(
-		c => c.districtId === permAddress.district
-	);
-
-	const permFilteredPincodes = masters.pincodes.filter(
-		p => p.cityId === permAddress.city
-	);
-
-	const fetchAddressDetails = async (candidateId) => {
-		if (!candidateId) return;
-		try {
-			const res = await profileApi.getAddressDetails(candidateId);
-			const apiData = res?.data;
-			console.log("Fetched Address Details:", apiData);
-			if (!apiData) return;
-			const mapped = mapAddressApiToForm(apiData);
-			setCorrAddress(mapped.corrAddress);
-			setPermAddress(mapped.permAddress);
-			setSameAsCorrespondence(mapped.sameAsCorrespondence);
-			setIsDirty(false);
-		} catch (error) {
-			console.error("Error fetching address details:", error);
-		}
-	};
-
-	useEffect(() => {
-		if (!candidateId) return;
-		fetchAddressDetails(candidateId);
-	}, [candidateId]);
-
-	useEffect(() => {
-		if (sameAsCorrespondence) {
-			setPermAddress({ ...corrAddress });
-		}
-	}, [sameAsCorrespondence, corrAddress]);
-
-	const trimAddress = (address) => ({
-		...address,
-		line1: address.line1.trim(),
-		line2: address.line2.trim(),
-	});
-
-	const handleCorrChange = (e) => {
-		const { id, value } = e.target;
-
-		// Clear the error for the current field
-		setFormErrors(prev => ({
-			...prev,
-			corrAddress: {
-				...prev.corrAddress,
-				[id]: undefined
-			}
-		}));
-
-		setCorrAddress(prev => {
-			let updated = { ...prev, [id]: value };
-
-			if (id === "state") {
-				updated.district = "";
-				updated.city = "";
-				updated.pincode = "";
-			}
-
-			if (id === "district") {
-				updated.city = "";
-				updated.pincode = "";
-			}
-
-			if (id === "city") {
-				updated.pincode = "";
-			}
-
-			return updated;
-		});
-		setIsDirty(true);
-
-		if (sameAsCorrespondence) {
-			setPermAddress(prev => ({ ...prev, [id]: value }));
-		}
-	};
-
-	const handlePermChange = (e) => {
-		const { id, value } = e.target;
-
-		// Clear the error for the current field
-		setFormErrors(prev => ({
-			...prev,
-			permAddress: {
-				...prev.permAddress,
-				[id]: undefined
-			}
-		}));
-
-		setPermAddress(prev => {
-			let updated = { ...prev, [id]: value };
-
-			if (id === "state") {
-				updated.district = "";
-				updated.city = "";
-				updated.pincode = "";
-			}
-
-			if (id === "district") {
-				updated.city = "";
-				updated.pincode = "";
-			}
-
-			if (id === "city") {
-				updated.pincode = "";
-			}
-
-			return updated;
-		});
-		setIsDirty(true);
-	};
-
-	const validateForm = () => {
-    let isValid = true;
-    const newErrors = {
-      corrAddress: {},
-      permAddress: {}
-    };
-
-    // Validate Correspondence Address
-    if (!corrAddress.line1.trim()) {
-      newErrors.corrAddress.line1 = 'This field is required';
-      isValid = false;
-    }
-    if (!corrAddress.line2.trim()) {
-      newErrors.corrAddress.line2 = 'This field is required';
-      isValid = false;
-    }
-    if (!corrAddress.state) {
-      newErrors.corrAddress.state = 'This field is required';
-      isValid = false;
-    }
-    if (!corrAddress.district) {
-      newErrors.corrAddress.district = 'This field is required';
-      isValid = false;
-    }
-    if (!corrAddress.city) {
-      newErrors.corrAddress.city = 'This field is required';
-      isValid = false;
-    }
-    if (!corrAddress.pincode) {
-      newErrors.corrAddress.pincode = 'This field is required';
-      isValid = false;
-    }
-
-    // Validate Permanent Address if different from correspondence
-    if (!sameAsCorrespondence) {
-      if (!permAddress.line1.trim()) {
-        newErrors.permAddress.line1 = 'This field is required';
-        isValid = false;
-      }
-      if (!permAddress.line2.trim()) {
-        newErrors.permAddress.line2 = 'This field is required';
-        isValid = false;
-      }
-      if (!permAddress.state) {
-        newErrors.permAddress.state = 'This field is required';
-        isValid = false;
-      }
-      if (!permAddress.district) {
-        newErrors.permAddress.district = 'This field is required';
-        isValid = false;
-      }
-      if (!permAddress.city) {
-        newErrors.permAddress.city = 'This field is required';
-        isValid = false;
-      }
-      if (!permAddress.pincode) {
-        newErrors.permAddress.pincode = 'This field is required';
-        isValid = false;
-      }
-    }
-
-    setFormErrors(newErrors);
-    return isValid;
-  };
-
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-		
-		if (!validateForm()) return;
-
-		try {
-			const trimmedCorr = trimAddress(corrAddress);
-			const trimmedPerm = sameAsCorrespondence
-				? trimmedCorr
-				: trimAddress(permAddress);
-			const payload = mapAddressFormToApi({
-				corrAddress: trimmedCorr,
-      			permAddress: trimmedPerm,
-				sameAsCorrespondence,
-				candidateId,
-			});
-			await profileApi.postAddressDetails(candidateId, payload);
-			toast.success("Address details have been saved successfully");
-			setIsDirty(false);
-			goNext();
-		} catch (err) {
-			console.error(err);
-			toast.error("Failed to save address details");
-		}
-	};
-
-	const handleCheckboxToggle = (e) => {
-		const checked = e.target.checked;
-		setSameAsCorrespondence(checked);
-		setIsDirty(true);
-
-		if (checked) {
-			// copy values and clear permanent address errors
-			setPermAddress({ ...corrAddress });
-			setFormErrors(prev => ({
-				...prev,
-				permAddress: {}
-			}));
-		} else {
-			// Clear any existing errors when unchecking
-			setPermAddress({ ...EMPTY_ADDRESS });
-			setFormErrors(prev => ({
-				...prev,
-				permAddress: {}
-			}));
-		}
-	};
+	const {
+    corrAddress,
+    permAddress,
+    sameAsCorrespondence,
+    masters,
+    filteredDistricts,
+    filteredCities,
+    filteredPincodes,
+    permFilteredDistricts,
+    permFilteredCities,
+    permFilteredPincodes,
+    formErrors,
+    isDirty,
+    handleCorrChange,
+    handlePermChange,
+    handleSameAsToggle,
+    handleSubmit
+  } = useAddressDetails({ goNext });
 
 	return (
 		<div className="px-4 py-3 border rounded bg-white">
 			<form className="row g-4 formfields"
 				onSubmit={handleSubmit}
-			// onInvalid={handleInvalid}
-			// onInput={handleInput}
+				// onInvalid={handleInvalid}
+				// onInput={handleInput}
 			>
 				<p className="tab_headers" style={{ marginBottom: '0px' }}>Address of Correspondence</p>
 
@@ -448,7 +160,8 @@ const AddressDetails = ({ goNext, goBack }) => {
 						id="sameCheckbox"
 						label="Same as Address of Correspondence"
 						checked={sameAsCorrespondence}
-						onChange={handleCheckboxToggle}
+						// onChange={handleCheckboxToggle}
+						onChange={(e) => handleSameAsToggle(e.target.checked)}
 					/>
 				</div>
 

@@ -1,5 +1,4 @@
 // utils/validation.js
-
 import { toast } from "react-toastify";
 
 export const validateWithConfirm = (value, confirmValue, options = {}) => {
@@ -272,4 +271,3 @@ export const hasDateCollision = ({
     return start <= rEnd && end >= rStart;
   });
 };
-

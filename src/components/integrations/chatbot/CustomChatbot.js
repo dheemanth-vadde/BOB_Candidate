@@ -47,8 +47,8 @@ const CustomChatbot = () => {
     try {
       const res = await masterApi.getChatFAQReply(question);
 
-      if (res.data?.success && res.data?.data) {
-        return JSON.parse(res.data.data); 
+      if (res.data?.success && res.data) {
+        return JSON.parse(res.data); 
       }
 
       return [];
@@ -62,8 +62,8 @@ const CustomChatbot = () => {
     try {
       const res = await masterApi.getChatQueryReply(question, candidateId);
 
-      if (res?.data?.success && res?.data?.data) {
-        return JSON.parse(res.data.data); 
+      if (res?.data?.success && res?.data) {
+        return JSON.parse(res.data); 
       }
 
       return [];

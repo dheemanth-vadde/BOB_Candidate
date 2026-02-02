@@ -8,7 +8,7 @@ import { useBasicDetails } from '../hooks/basicHooks';
 import profileApi from '../services/profile.api';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import Loader from './Loader';
+import Loader from '../../../shared/components/Loader';
 import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
 import { Form } from 'react-bootstrap';
 import greenCheck from '../../../assets/green-check.png'
@@ -69,50 +69,10 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 		handleNameKeyDown,
 		getAvailableDisabilityTypes,
 		loading,
-		isDirty
+		isDirty,
+		isMarried,
+		isHindu
 	} = useBasicDetails({ goNext, goBack, parsedData });
-
-	// const handleEyeClick = async (fileUrl) => {
-	// 	console.log("fileurl",fileUrl)
-	//   if (!fileUrl) {
-	// 	toast.error("No document available");
-	// 	return;
-	//   }
-	
-	//   try {
-	// 	const res = await masterApi.downloadFile(fileUrl);
-	
-	// 	const blob = new Blob([res.data], {
-	// 	  type: res.headers["content-type"] || "application/octet-stream",
-	// 	});
-	
-	// 	const url = window.URL.createObjectURL(blob);
-	// 	  console.log("Download fileUrl:", fileUrl);
-	// 	console.log("Download filename:", fileUrl.split("/").pop());
-	// 	const fileName = fileUrl.split("/").pop();
-	// 	console.log("fileName", fileName);
-	// 	const link = document.createElement("a");
-	// 	link.href = url;
-	// 	link.download = fileName || "document";
-	// 	document.body.appendChild(link);
-	// 	link.click();
-	
-	// 	link.remove();
-	// 	window.URL.revokeObjectURL(url);
-	//   } catch (error) {
-	// 	console.error(error);
-	// 	toast.error("Download failed");
-	//   }
-	// };
-	const MARRIED_ID = masterData?.maritalStatus?.find(
-		ms => ms.maritalStatus === "Married"
-	)?.maritalStatusId;
-const isMarried = formData.maritalStatus === MARRIED_ID;
-
-const HINDU_RELIGION_ID = masterData?.religions?.find(
-  r => r.religion === "Hindu"
-)?.religionId;
-const isHindu = formData.religion === HINDU_RELIGION_ID;
 
 	return (
 		<div>
@@ -1703,39 +1663,39 @@ const isHindu = formData.religion === HINDU_RELIGION_ID;
 							/>
 						</div>
 					</div>
-{!isHindu && formData.religion && (
-					<div className="col-md-6 col-sm-12 mt-3 d-grid">
-						<div>
-							<label className="form-label">
-								Do you belong to Religious Minority Community?
-							</label>
+					{!isHindu && formData.religion && (
+						<div className="col-md-6 col-sm-12 mt-3 d-grid">
+							<div>
+								<label className="form-label">
+									Do you belong to Religious Minority Community?
+								</label>
+							</div>
+							<div>
+								<Form.Check
+									type="radio"
+									id="minorityCommunityYes"
+									name="minorityCommunity"
+									value="Yes"
+									label="Yes"
+									checked={formData?.minorityCommunity === "Yes"}
+									onChange={handleRadio}
+									inline
+									style={{ fontSize: "12px" }}
+								/>
+								<Form.Check
+									type="radio"
+									id="minorityCommunityNo"
+									name="minorityCommunity"
+									value="No"
+									label="No"
+									checked={formData?.minorityCommunity === "No"}
+									onChange={handleRadio}
+									inline
+									style={{ fontSize: "12px", marginLeft: '1rem' }}
+								/>
+							</div>
 						</div>
-						<div>
-							<Form.Check
-								type="radio"
-								id="minorityCommunityYes"
-								name="minorityCommunity"
-								value="Yes"
-								label="Yes"
-								checked={formData?.minorityCommunity === "Yes"}
-								onChange={handleRadio}
-								inline
-								style={{ fontSize: "12px" }}
-							/>
-							<Form.Check
-								type="radio"
-								id="minorityCommunityNo"
-								name="minorityCommunity"
-								value="No"
-								label="No"
-								checked={formData?.minorityCommunity === "No"}
-								onChange={handleRadio}
-								inline
-								style={{ fontSize: "12px", marginLeft: '1rem' }}
-							/>
-						</div>
-					</div>
-)}
+					)}
 
 					<div className="col-md-6 col-sm-12 mt-3 d-grid">
 						<div>

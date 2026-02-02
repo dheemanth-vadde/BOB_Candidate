@@ -60,7 +60,6 @@ export const getExperienceDetails = (candidateId) => {
   return candidateApi.get(`/experience/get-exp-details/${candidateId}`);
 };
 
-// Experience Details APIs
 export const postExperienceDetails = (
   candidateId,
   workExperiencePayload,
@@ -91,7 +90,6 @@ export const postExperienceDetails = (
   );
 };
 
-// Experience Details APIs
 export const deleteExperienceDetails = (workExperienceId) => {
   return candidateApi.delete(
     `/experience/delete-exp/${workExperienceId}`,
@@ -142,7 +140,7 @@ export const postDocumentDetails = (
   );
 };
 
-//Validate Document  API
+// Validate Document API
 export const ValidateDocument = (
   documentName,
   file
@@ -242,6 +240,7 @@ export const postWorkStatus = (candidateId, isFresher) => {
     }
   );
 };
+
 // Profile Complete API
 export const saveProfileComplete = (candidateId, isProfileCompleted = true) => {
   if (!candidateId) {
@@ -259,6 +258,7 @@ export const saveProfileComplete = (candidateId, isProfileCompleted = true) => {
     }
   );
 };
+
 // Certification APIs
 export const getHasCertification = (candidateId) => {
   if (!candidateId) {
@@ -274,6 +274,7 @@ export const getHasCertification = (candidateId) => {
     }
   );
 };
+
 // Save hasCertification flag
 export const saveHasCertification = (candidateId, hasCertification) => {
   if (!candidateId) {
@@ -291,6 +292,7 @@ export const saveHasCertification = (candidateId, hasCertification) => {
     }
   );
 };
+
 export const saveCertification = (
   candidateId,
   certificationPayload,
@@ -323,7 +325,7 @@ export const saveCertification = (
   );
 };
 
-// ✅ Get certification details
+// Get certification details
 export const getCertifications = (candidateId) => {
   if (!candidateId) {
     throw new Error("candidateId is required");
@@ -339,7 +341,7 @@ export const getCertifications = (candidateId) => {
   );
 };
 
-// ✅ Delete certification
+// Delete certification
 export const deleteCertification = (certificationId) => {
   if (!certificationId) {
     throw new Error("certificationId is required");
@@ -355,8 +357,6 @@ export const deleteCertification = (certificationId) => {
   );
 };
 
-
-// Export all
 export default {
   getBasicDetails,
   postBasicDetails,

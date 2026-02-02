@@ -52,7 +52,7 @@ const CandidatePortal = () => {
     const fetchDisclaimer = async () => {
       try {
         const res = await disclaimerApi.getDisclaimerStatus(candidateId);
-        const accepted = res?.data.data === true;
+        const accepted = res?.data === true;
 
         setDisclaimerAccepted(accepted);
         setShowModal(!accepted && disclaimerAccepted !== true);

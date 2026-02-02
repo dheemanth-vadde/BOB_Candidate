@@ -1,486 +1,47 @@
 import { faChevronRight, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useEffect, useState } from 'react'
 import deleteIcon from '../../../assets/delete-icon.png';
 import editIcon from '../../../assets/edit-icon.png';
 import viewIcon from '../../../assets/view-icon.png';
-import profileApi from '../services/profile.api';
-import { useSelector } from 'react-redux';
-import { mapExperienceApiToUi, mapExperienceDetailsFormToApi } from '../mappers/ExperienceMapper';
 import { toast } from 'react-toastify';
-import { validateEndDateAfterStart, validateNonEmptyText } from '../../../shared/utils/validation';
 import BackButtonWithConfirmation from '../../../shared/components/BackButtonWithConfirmation';
 import { Form } from 'react-bootstrap';
 import bulbIcon from '../../../assets/bulb-icon.png';
-import Loader from './Loader';
+import Loader from '../../../shared/components/Loader';
 import greenCheck from '../../../assets/green-check.png'
 import { handleEyeClick } from "../../../shared/utils/fileDownload";
+import { useExperienceDetails } from '../hooks/experienceHooks';
+
 const ExperienceDetails = ({ goNext, goBack }) => {
-	const user = useSelector((state) => state?.user?.user?.data);
-	const candidateId = user?.user?.id;
-	const email = user?.user?.email
-	const createdBy = user?.user?.id;
-	const [formErrors, setFormErrors] = useState({});
-	// const email = "sumanthsangam2@gmail.com"
-	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
-	// const createdBy = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
-	const [experienceList, setExperienceList] = useState([]);
-	const [certificateFile, setCertificateFile] = useState(null);
-	const [existingDocument, setExistingDocument] = useState(null);
-	const [totalExperienceMonths, setTotalExperienceMonths] = useState(0);
-	const [isFresher, setIsFresher] = useState(false);
-	const [isEditMode, setIsEditMode] = useState(false);
-	const [editingRow, setEditingRow] = useState(null);
-	const [showFresherOption, setShowFresherOption] = useState(false);
-	const [isDirty, setIsDirty] = useState(false);
-	const [loading, setLoading] = useState(false);
-	const [formData, setFormData] = useState({
-		organization: "",
-		role: "",
-		postHeld: "",
-		from: "",
-		to: "",
-		working: false,
-		description: "",
-		experience: 0,
-		currentCTC: ""
-	});
-
-
-	useEffect(() => {
-		let totalDays = experienceList.reduce((sum, item) => sum + (item.experience || 0), 0);
-		let months = Math.floor(totalDays / 30);
-		setTotalExperienceMonths(months);
-	}, [experienceList]);
-
-	useEffect(() => {
-		if (formData.working === true) {
-			setFormData(prev => ({
-				...prev,
-				to: ""
-			}));
-		}
-	}, [formData.working]);
-
-	// useEffect(() => {
-	// 	if (!formData.working || !formData.from) return;
-	// 	const interval = setInterval(() => {
-	// 		setFormData(prev => ({
-	// 			...prev,
-	// 			experience: calculateExperienceDays(prev.from, null)
-	// 		}));
-	// 	}, 24 * 60 * 60 * 1000); // every day
-	// 	return () => clearInterval(interval);
-	// }, [formData.working, formData.from]);
-
-	useEffect(() => {
-		const fetchWorkStatus = async () => {
-			try {
-				const res = await profileApi.getWorkStatus(candidateId);
-				const fresherStatus = Boolean(res?.data);
-				setIsFresher(fresherStatus);
-			} catch (err) {
-				console.error("Failed to fetch work status", err);
-			}
-		};
-		if (candidateId) {
-			fetchWorkStatus();
-		}
-	}, [candidateId]);
-
-	useEffect(() => {
-		if (!isFresher) return;
-
-		// 1. Reset form completely
-		setFormData({
-			organization: "",
-			role: "",
-			postHeld: "",
-			from: "",
-			to: "",
-			working: false,
-			description: "",
-			experience: 0,
-			currentCTC: ""
-		});
-
-		// 2. Clear files
-		setCertificateFile(null);
-		setExistingDocument(null);
-
-		// 3. Clear errors
-		setFormErrors({});
-
-		// 4. Exit edit mode
-		setIsEditMode(false);
-		setEditingRow(null);
-
-		// 5. Mark dirty (this IS a meaningful change)
-		setIsDirty(true);
-	}, [isFresher]);
-
-	const trimStrings = (obj) =>
-		Object.fromEntries(
-			Object.entries(obj).map(([key, value]) => [
-			key,
-			typeof value === "string" ? value.trim() : value
-			])
-		);
-
-	const calculateExperienceDays = (fromDate, toDate) => {
-		if (!fromDate) return 0;
-		const start = new Date(fromDate);
-		const end = toDate ? new Date(toDate) : new Date(); // 🔑 TODAY if working
-		const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
-		return diff > 0 ? diff : 0;
-	};
-
-	const handleChange = (e) => {
-		const { id, value } = e.target;
-
-		setFormData(prev => ({
-			...prev,
-			[id]: value
-		}));
-		setIsDirty(true);
-
-		if (formErrors[id]) {
-			setFormErrors(prev => ({
-				...prev,
-				[id]: ""
-			}));
-		}
-	};
-
-
-	const fetchExperienceDetails = async () => {
-		try {
-			setLoading(true);
-			const res = await profileApi.getExperienceDetails(candidateId);
-			const apiList = Array.isArray(res?.data)
-				? res?.data
-				: [];
-			const mappedList = apiList.map(mapExperienceApiToUi);
-			setExperienceList(mappedList);
-			setIsDirty(false);
-			// 🔑 CORE LOGIC
-			if (mappedList.length > 0) {
-				setShowFresherOption(false);
-				setIsFresher(false); // force consistency
-			} else {
-				setShowFresherOption(true);
-			}
-		} catch (err) {
-			console.error("Failed to fetch experience details", err);
-			setShowFresherOption(true); // safe fallback
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchExperienceDetails();
-	}, [candidateId]);
-
-	const validateForm = () => {
-		const errors = {};
-
-		if (!formData.organization.trim()) {
-			errors.organization = "This field is required";
-		}
-
-		if (!formData.role.trim()) {
-			errors.role = "This field is required";
-		}
-
-		if (!formData.postHeld.trim()) {
-			errors.postHeld = "This field is required";
-		}
-
-		if (!formData.from) {
-			errors.from = "This field is required";
-		}
-
-		if (!formData.working && !formData.to) {
-			errors.to = "This field is required";
-		}
-
-		if (!formData.working && formData.from && formData.to) {
-			const { isValid, error } = validateEndDateAfterStart(
-				formData.from,
-				formData.to
-			);
-			if (!isValid) {
-				errors.to = error;
-			}
-		}
-
-		if (!formData.description.trim()) {
-			errors.description = "This field is required";
-		}
-
-		if (!formData.currentCTC.trim() || isNaN(Number(formData.currentCTC)) || Number(formData.currentCTC) <= 0) {
-			errors.currentCTC = "This field is required";
-		}
-
-		if (!certificateFile && !existingDocument) {
-			errors.certificate = "This field is required";
-		}
-
-		setFormErrors(errors);
-		return Object.keys(errors).length === 0;
-	};
-
-	const validateExperienceRow = (row) => {
-		const errors = {};
-
-		if (!row.organization?.trim()) errors.organization = "Organization is required";
-		if (!row.role?.trim()) errors.role = "Role is required";
-		if (!row.postHeld?.trim()) errors.postHeld = "Post Held is required";
-		if (!row.from) errors.from = "From date is required";
-
-		if (!row.working && !row.to) {
-			errors.to = "To date is required";
-		}
-
-		if (!row.description?.trim()) errors.description = "Description is required";
-
-		if (!row.currentCTC || Number(row.currentCTC) <= 0) {
-			errors.currentCTC = "Current CTC is required";
-		}
-
-		if (!row.certificate) {
-			errors.certificate = "Experience certificate is required";
-		}
-
-		return errors;
-	};
-
-	const handleSaveExperience = async () => {
-		if (!validateForm()) return;
-
-		const effectiveToDate = formData.working
-			? new Date().toISOString().split("T")[0]
-			: formData.to;
-
-		const experienceDays = calculateExperienceDays(
-			formData.from,
-			effectiveToDate
-		);
-
-		const sanitizedFormData = trimStrings(formData);
-
-		const normalizedFormData = {
-			...sanitizedFormData,
-			to: sanitizedFormData.working ? null : sanitizedFormData.to,
-			experience: experienceDays
-		};
-
-		try {
-			const basePayload = mapExperienceDetailsFormToApi(normalizedFormData, candidateId);
-
-			const payload = isEditMode
-				? { ...basePayload, workExperienceId: editingRow.workExperienceId }
-				: basePayload;
-
-			setLoading(true);
-
-			await profileApi.postExperienceDetails(
-				candidateId,
-				payload,
-				certificateFile
-			);
-
-			toast.success(
-				isEditMode
-					? "Experience updated successfully"
-					: "Experience saved successfully"
-			);
-			setIsDirty(false);
-
-			handleCancelEdit();
-			fetchExperienceDetails();
-		} catch (err) {
-			console.error(err);
-			toast.error("Failed to save experience");
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const handleFileChange = (e) => {
-		const file = e.target.files[0];
-		if (file) {
-			setCertificateFile(file);
-			setIsDirty(true);
-			setFormErrors(prev => ({ ...prev, certificate: "" }));
-		}
-	};
-
-	const handleBrowse = () => {
-		document.getElementById("educationCertInput").click();
-	};
-
-	const saveWorkStatusAndProceed = async () => {
-		try {
-			const effectiveFresherStatus = showFresherOption ? isFresher : false;
-			const payload = { isFresher: effectiveFresherStatus };
-			
-			await profileApi.postWorkStatus(candidateId, effectiveFresherStatus);
-
-			setIsDirty(false);
-			goNext();
-		} catch (err) {
-			console.error(err);
-			toast.error("Failed to save work status");
-		}
-	};
-
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-		// RULE 1: Fresher is allowed
-		if (isFresher === true) {
-			await saveWorkStatusAndProceed();
-			return;
-		}
-		// RULE 2: At least one experience must exist
-		if (experienceList.length === 0) {
-			toast.error(
-				"Please add at least one experience or mark yourself as a fresher"
-			);
-			return;
-		}
-
-		for (let i = 0; i < experienceList.length; i++) {
-			const row = experienceList[i];
-			const errors = validateExperienceRow(row);
-
-			if (Object.keys(errors).length > 0) {
-				// 1. Force edit mode
-				setIsEditMode(true);
-				setEditingRow(row);
-
-				// 2. Populate form with row data
-				setFormData({
-					organization: row.organization,
-					role: row.role,
-					postHeld: row.postHeld,
-					from: row.from,
-					to: row.to,
-					working: row.working === "Yes" || row.working === true,
-					description: row.description,
-					experience: row.experience,
-					currentCTC: String(row.currentCTC || "")
-				});
-
-				setExistingDocument(row.certificate || null);
-				setCertificateFile(null);
-
-				// 3. Inject errors into form
-				setFormErrors(errors);
-
-				toast.error(`Please fill the incomplete details before proceeding`);
-				return; // ⛔ BLOCK NAVIGATION
-			}
-		}
-
-		// ✅ Valid case
-		await saveWorkStatusAndProceed();
-	};
-
-	const handleEdit = (item) => {
-		setIsEditMode(true);
-		setEditingRow(item);
-		setFormData({
-			organization: item.organization,
-			role: item.role,
-			postHeld: item.postHeld,
-			from: item.from,
-			to: item.to,
-			working: item.working === "Yes" || item.working === true,
-			description: item.description,
-			experience: item.experience,
-			currentCTC: String(item.currentCTC || "")
-		});
-		console.log(item)
-		// 🔑 EXISTING FILE FROM API
-		setExistingDocument(item.certificate || null);
-		// User has NOT uploaded a new file yet
-		setCertificateFile(null);
-	};
-
-	const handleCancelEdit = () => {
-		setIsEditMode(false);
-		setEditingRow(null);
-		setCertificateFile(null);
-		setExistingDocument(null);
-		setFormData({
-			organization: "",
-			role: "",
-			postHeld: "",
-			from: "",
-			to: "",
-			working: false,
-			description: "",
-			experience: 0,
-			currentCTC: ""
-		});
-	};
-
-	const handleDelete = async (item) => {
-		if (!item?.workExperienceId) {
-			toast.error("Invalid experience selected");
-			return;
-		}
-		// const confirmDelete = window.confirm(
-		// 	"Are you sure you want to delete this experience?"
-		// );
-		// if (!confirmDelete) return;
-		try {
-			setLoading(true);
-			await profileApi.deleteExperienceDetails(item.workExperienceId);
-			toast.success("Experience deleted successfully");
-			// Always re-fetch — backend is source of truth
-			fetchExperienceDetails();
-			// If user was editing the same row, reset form
-			if (editingRow?.workExperienceId === item.workExperienceId) {
-				handleCancelEdit();
-			}
-		} catch (err) {
-			console.error(err);
-			toast.error("Failed to delete experience");
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const handleCTCChange = (e) => {
-		let value = e.target.value;
-
-		setFormData(prev => ({
-			...prev,
-			currentCTC: value
-		}));
-
-		if (formErrors.currentCTC) {
-			setFormErrors(prev => ({ ...prev, currentCTC: "" }));
-		}
-	};
-
-
-	const blockCTCKeys = (e) => {
-		const blocked = ["e", "E", "+", "-", ","];
-		if (blocked.includes(e.key)) {
-			e.preventDefault();
-		}
-	};
-
-	const formatFileSize = (size) => {
-		if (!size) return "";
-		const kb = size / 1024;
-		if (kb < 1024) return kb.toFixed(1) + " KB";
-		return (kb / 1024).toFixed(1) + " MB";
-	};
+	const {
+    experienceList,
+    formData,
+    formErrors,
+    certificateFile,
+    existingDocument,
+    isEditMode,
+    isFresher,
+    showFresherOption,
+    totalExperienceMonths,
+    isDirty,
+    loading,
+    fileInputRef,
+
+    setIsFresher,
+    handleChange,
+    handleCTCChange,
+    handleFileChange,
+		handleWorkingChange,
+    handleBrowse,
+    saveExperience,
+    handleEdit,
+    handleDelete,
+    handleCancelEdit,
+    saveAndNext,
+		blockCTCKeys,
+		clearExistingDocument,
+		formatFileSize
+  } = useExperienceDetails({ goNext });
 
 	return (
 		<div className="px-4 py-3 border rounded bg-white">
@@ -493,14 +54,17 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						checked={isFresher}
 						onChange={(e) => {
 							setIsFresher(e.target.checked);
-							setIsDirty(true);
 						}}
 						style={{ fontSize: '14px', color: '#6e6e6e', fontWeight: 500 }}
 					/>
 				</div>
 			)}
 			<form className="row g-4 formfields mt-2"
-				onSubmit={handleSubmit}
+				// onSubmit={handleSubmit}
+				onSubmit={(e) => {
+					e.preventDefault();
+					saveAndNext();
+				}}
 				// onInvalid={handleInvalid}
 				// onInput={handleInput}
 				noValidate
@@ -552,12 +116,13 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						className={`form-select ${formErrors.working ? "is-invalid" : ""}`}
 						id="working"
 						value={String(formData.working)}
-						onChange={(e) =>
-							setFormData(prev => ({
-								...prev,
-								working: e.target.value === "true"
-							}))
-						}
+						// onChange={(e) =>
+						// 	setFormData(prev => ({
+						// 		...prev,
+						// 		working: e.target.value === "true"
+						// 	}))
+						// }
+						onChange={(e) => handleWorkingChange(e.target.value)}
 						disabled={isFresher}
 						required={isFresher === false}
 					>
@@ -627,7 +192,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 								</div>
 
 								<input
-									id="educationCertInput"
+									ref={fileInputRef}
 									type="file"
 									accept=".jpg,.jpeg,.png,.pdf"
 									hidden
@@ -669,7 +234,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 										src={deleteIcon}
 										alt="Delete"
 										style={{ width: "22px", cursor: "pointer" }}
-										onClick={() => setExistingDocument(null)}
+										onClick={clearExistingDocument}
 									/>
 								</div>
 							</div>
@@ -708,7 +273,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 										src={deleteIcon}
 										alt="Delete"
 										style={{ width: "22px", cursor: "pointer" }}
-										onClick={() => setCertificateFile(null)}
+										onClick={clearExistingDocument}
 									/>
 								</div>
 							</div>
@@ -733,7 +298,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						<button
 							type="button"
 							className="btn blue-button px-4"
-							onClick={handleSaveExperience}
+							onClick={saveExperience}
 							disabled={isFresher}
 						>
 							Submit
@@ -751,7 +316,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 							<button
 								type="button"
 								className="btn blue-button px-4"
-								onClick={handleSaveExperience}
+								onClick={saveExperience}
 							>
 								Update
 							</button>

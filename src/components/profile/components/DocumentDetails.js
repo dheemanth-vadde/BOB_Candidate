@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import UploadField from '../../../shared/components/UploadField';
 import { useSelector } from 'react-redux';
 import profileApi from '../services/profile.api';
@@ -8,9 +8,9 @@ import { markProfileCompleted } from '../../../components/auth/store/userSlice';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import bulbIcon from '../../../assets/bulb-icon.png';
-import Loader from './Loader';
+import Loader from '../../../shared/components/Loader';
 
-const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
+const DocumentDetails = ({ goBack, setActiveTab }) => {
 	const dispatch = useDispatch();
 	const [isFresher, setIsFresher] = useState(false);
 	const [formErrors, setFormErrors] = useState({});
@@ -72,7 +72,7 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 			try {
 				const res = await profileApi.getWorkStatus(candidateId);
 				let fresherStatus = false;
-
+				console.log(res)
 				if (
 					res?.data === true ||
 					res?.data === "true" ||
@@ -83,18 +83,16 @@ const DocumentDetails = ({ goNext, goBack, setActiveTab }) => {
 				} else if (typeof res?.data === "object" && res.data !== null) {
 					if (typeof res.data.isFresher !== "undefined") {
 						fresherStatus = Boolean(res.data.isFresher);
-					} else if (typeof res.data.data !== "undefined") {
-						fresherStatus = Boolean(res.data.data);
+					} else if (typeof res.data !== "undefined") {
+						fresherStatus = Boolean(res.data);
 					}
 				}
-
 				setIsFresher(fresherStatus);
 			} catch (err) {
 				console.error("Failed to fetch work status", err);
 				setIsFresher(false);
 			}
 		};
-
 		fetchFresherStatus();
 	}, [candidateId]);
 
