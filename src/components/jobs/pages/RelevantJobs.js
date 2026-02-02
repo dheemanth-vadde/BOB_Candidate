@@ -17,9 +17,15 @@ import start from "../../../assets/start.png";
 import end from "../../../assets/end.png";
 import Loader from "../../../shared/components/Loader";
 import { formatDateDDMMYYYY } from "../../../shared/utils/dateUtils";
-import { useRelevantJobs } from "../hooks/relevantJobsHooks";
+import { useRelevantJobs } from "../hooks/useRelevantJobs";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user.user);
+  const candidateId = user?.data?.user?.id;
+
   const {
     /* ================= DATA ================= */
     jobs,
@@ -30,16 +36,12 @@ const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
     masterData,
     interviewCentres,
     previewData,
-    user,
-    candidateId,
-    navigate,
     activeInfoType,
     infoDocs,
 
     /* ================= FILTER STATE ================= */
     selectedDepartments,
     selectedStates,
-    selectedLocations,
     selectedExperience,
     selectedRequisition,
     searchTerm,
@@ -86,21 +88,25 @@ const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
     setFormErrors,
     setTurnstileToken,
     setSelectedPositionId,
-    setShowApplyModal,
 
     /* ================= ACTIONS ================= */
     handleDepartmentChange,
     handleStateChange,
     handleExperienceChange,
     clearFilters,
+    handleConfirmApply,
+    isApplicationOpen,
+
     handleKnowMore,
     handlePreCheckConfirm,
-    handleConfirmApply,
     handleProceedToPayment,
     fetchInfoDocuments,
-    isApplicationOpen,
   } = useRelevantJobs({ requisitionId, positionId, setActiveTab });
-  console.log(experienceOptions)
+
+
+console.log("showPreviewModal", showPreviewModal)
+
+  
 
   return (
     <div className="mx-4 my-3 relevant">
@@ -190,7 +196,9 @@ const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
                 ))}
               </div>
 
-              {(selectedDepartments.length > 0 || selectedLocations.length > 0 || selectedExperience.length > 0) && (
+              {(selectedDepartments.length > 0 ||
+ selectedStates.length > 0 ||
+ selectedExperience.length > 0) && (
                 <button
                   className="btn btn-sm btn-outline-secondary mt-3"
                   onClick={clearFilters}
@@ -455,10 +463,10 @@ const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
           setActiveTab("info");
           setShowPreviewModal(false);
         }}
-        onBack={() => {
-          setShowPreviewModal(false);
-          setShowApplyModal(true);
-        }}
+        // onBack={() => {
+        //   setShowPreviewModal(false);
+        //   setShowApplyModal(true);
+        // }}
         formErrors={formErrors}                 // ✅ PASS ERRORS
         setFormErrors={setFormErrors}           // ✅ PASS SETTER
         interviewCentres={interviewCentres}
