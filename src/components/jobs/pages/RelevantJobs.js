@@ -37,8 +37,6 @@ const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
     interviewCentres,
     previewData,
     activeInfoType,
-    infoDocs,
-
     /* ================= FILTER STATE ================= */
     selectedDepartments,
     selectedStates,
@@ -78,9 +76,7 @@ const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
     setShowValidationErrorModal,
     setShowInfoModal,
     setSearchTerm,
-    setSelectedDepartments,
-    setSelectedStates,
-    setSelectedExperience,
+   
     setSelectedRequisition,
     setCurrentPage,
     setPageSize,
@@ -101,7 +97,10 @@ const RelevantJobs = ({ setActiveTab, requisitionId, positionId }) => {
     handlePreCheckConfirm,
     handleProceedToPayment,
     fetchInfoDocuments,
+    sasDocs,
   } = useRelevantJobs({ requisitionId, positionId, setActiveTab });
+
+  
 
 
 console.log("showPreviewModal", showPreviewModal)
@@ -511,17 +510,17 @@ console.log("showPreviewModal", showPreviewModal)
         </Modal.Header>
 
         <Modal.Body className="info-modal-body">
-          {infoDocs.map((doc) => (
-            <div key={doc.id} className="pdf-wrapper">
-              <div className="pdf-title">{doc.fileName}</div>
+          { sasDocs.map((doc) => (
+      <div key={doc.id} className="pdf-wrapper">
+        <div className="pdf-title">{doc.fileName}</div>
 
-              <iframe
-                src={doc.fileUrl}
-                title={doc.fileName}
-                className="pdf-iframe"
-              />
-            </div>
-          ))}
+        <iframe
+          src={doc.sasUrl}
+          title={doc.fileName}
+          className="pdf-iframe"
+        />
+      </div>
+    ))}
         </Modal.Body>
       </Modal>
     </div>

@@ -78,6 +78,7 @@ export const useRelevantJobs = ({ requisitionId, positionId, setActiveTab }) => 
   });
 
   const [selectedPositionId, setSelectedPositionId] = useState(positionId || "");
+  const [sasDocs, setSasDocs] = useState([]);
 
   /* ---------------- CONSTANTS ---------------- */
   const experienceOptions = [
@@ -174,6 +175,36 @@ const clearFilters = () => {
       setSelectedPositionId("");
     }
   }, [positionId]);
+
+
+  useEffect(() => {
+  if (!infoDocs?.length) return;
+
+  const fetchSasUrls = async () => {
+    setLoading(true);
+    try {
+      const results = await Promise.all(
+        infoDocs.map(async (doc) => {
+          const res = await masterApi.getSasUrl(doc.fileUrl);
+          return {
+            ...doc,
+            sasUrl: res.data, // SAS URL from backend
+          };
+        })
+      );
+
+      setSasDocs(results);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load documents");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchSasUrls();
+}, [infoDocs]);
+
 
   // Auto-trigger apply modal when both requisitionId and positionId are provided
   useEffect(() => {
@@ -567,5 +598,7 @@ console.log("relevant errors",errors)
     handlePreCheckConfirm,
     handleProceedToPayment,
     fetchInfoDocuments,
+
+    sasDocs,
   };
 };
