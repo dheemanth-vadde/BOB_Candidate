@@ -2,30 +2,29 @@ import axios from "axios";
 import { candidateApi } from "../../../services/apiService";
 
 // Basic Details APIs
-export const getBasicDetails = (candidateId) => {
-  return candidateApi.get(`/profile/get-details/${candidateId}`);
+export const getBasicDetails = () => {
+  return candidateApi.get(`/profile/get-details`);
 };
 
-export const postBasicDetails = (candidateId, payload) => {
-  return candidateApi.post(`/profile/save-profile-details/${candidateId}`, payload);
+export const postBasicDetails = (payload) => {
+  return candidateApi.post(`/profile/save-profile-details`, payload);
 };
 
 // Address Details APIs
-export const getAddressDetails = (candidateId) => {
-  return candidateApi.get(`/address/get-address/${candidateId}`);
+export const getAddressDetails = () => {
+  return candidateApi.get(`/address/get-address`);
 };
 
-export const postAddressDetails = (candidateId, payload) => {
-  return candidateApi.post(`/address/save-address/${candidateId}`, payload);
+export const postAddressDetails = (payload) => {
+  return candidateApi.post(`/address/save-address`, payload);
 };
 
 // Education Details APIs
-export const getEducationDetails = (candidateId) => {
-  return candidateApi.get(`/education/get-edu-details/${candidateId}`);
+export const getEducationDetails = () => {
+  return candidateApi.get(`/education/get-edu-details`);
 };
 
 export const postEducationDetails = (
-  candidateId,
   educationPayload,
   file,
   docCode
@@ -44,7 +43,7 @@ export const postEducationDetails = (
   );
 
   return candidateApi.post(
-    `/education/save-edu-details/${candidateId}/${docCode}`,
+    `/education/save-edu-details/${docCode}`,
     formData,
     {
       headers: {
@@ -56,12 +55,12 @@ export const postEducationDetails = (
 };
 
 // Experience Details APIs
-export const getExperienceDetails = (candidateId) => {
-  return candidateApi.get(`/experience/get-exp-details/${candidateId}`);
+export const getExperienceDetails = () => {
+  return candidateApi.get(`/experience/get-exp-details`);
 };
 
 export const postExperienceDetails = (
-  candidateId,
+  // candidateId,
   workExperiencePayload,
   file
 ) => {
@@ -79,7 +78,7 @@ export const postExperienceDetails = (
   );
 
   return candidateApi.post(
-    `/experience/save-exp-details/${candidateId}`,
+    `/experience/save-exp-details`,
     formData,
     {
       headers: {
@@ -102,17 +101,17 @@ export const deleteExperienceDetails = (workExperienceId) => {
 };
 
 // Document Details APIs
-export const getDocumentDetails = (candidateId) => {
-  return candidateApi.get(`/documents/get-doc/${candidateId}`);
+export const getDocumentDetails = () => {
+  return candidateApi.get(`/documents/get-doc`);
 };
 
-export const getDocumentDetailsByCode = (candidateId, docCode) => {
-  return candidateApi.get(`/documents/get-doc-by-doccode/${candidateId}/${docCode}`);
+export const getDocumentDetailsByCode = (docCode) => {
+  return candidateApi.get(`/documents/get-doc-by-doccode/${docCode}`);
 };
 
 // Document Upload API
 export const postDocumentDetails = (
-  candidateId,
+  // candidateId,
   documentId,
   file,
   isOther,
@@ -127,7 +126,7 @@ export const postDocumentDetails = (
 
   const formData = new FormData();
   formData.append("documents", file); // key name MUST match backend
-  const Url = isOther ? `/documents/upload-other/${candidateId}/${documentName}` : `/documents/upload/${candidateId}/${documentId}`;
+  const Url = isOther ? `/documents/upload-other/${documentName}` : `/documents/upload/${documentId}`;
   return candidateApi.post(
     Url,
     formData,
@@ -168,13 +167,13 @@ export const ValidateDocument = (
 };
 
 // Document Delete API
-export const deleteDocument = (candidateId, documentId) => {
-  if (!candidateId || !documentId) {
-    throw new Error("candidateId and documentId are required");
+export const deleteDocument = (documentId) => {
+  if (!documentId) {
+    throw new Error("documentId is required");
   }
 
   return candidateApi.delete(
-    `/documents/delete-doc/${candidateId}/${documentId}`,
+    `/documents/delete-doc/${documentId}`,
     {
       headers: {
         "X-Client": "candidate",
@@ -184,12 +183,12 @@ export const deleteDocument = (candidateId, documentId) => {
 };
 
 // Resume Upload API
-export const parseResumeDetails = (candidateId, resumeFile) => {
+export const parseResumeDetails = (resumeFile) => {
   const formData = new FormData();
   formData.append("resume", resumeFile);
 
   return candidateApi.post(
-    `/resume/upload/${candidateId}`,
+    `/resume/upload`,
     formData,
     {
       headers: {
@@ -201,14 +200,14 @@ export const parseResumeDetails = (candidateId, resumeFile) => {
   );
 };
 
-export const getResumeDetails = (candidateId) => {
-  return candidateApi.get(`/resume/get-resume-details/${candidateId}`);
+export const getResumeDetails = () => {
+  return candidateApi.get(`/resume/get-resume-details`);
 };
 
 // Save All Experience Details from Resume
-export const saveAllExperienceDetails = (candidateId, experiencePayload) => {
+export const saveAllExperienceDetails = (experiencePayload) => {
   return candidateApi.post(
-    `/experience/save-all-exp-details/${candidateId}`,
+    `/experience/save-all-exp-details`,
     experiencePayload,
     {
       headers: {
@@ -219,8 +218,8 @@ export const saveAllExperienceDetails = (candidateId, experiencePayload) => {
 };
 
 // GET work status (isFresher)
-export const getWorkStatus = (candidateId) => {
-  return candidateApi.get(`/profile/get-work-status/${candidateId}`, {
+export const getWorkStatus = () => {
+  return candidateApi.get(`/profile/get-work-status`, {
     headers: {
       "X-Client": "candidate",
     },
@@ -228,9 +227,9 @@ export const getWorkStatus = (candidateId) => {
 };
 
 // POST work status (isFresher)
-export const postWorkStatus = (candidateId, isFresher) => {
+export const postWorkStatus = (isFresher) => {
   return candidateApi.post(
-    `/profile/save-work-status/${candidateId}`,
+    `/profile/save-work-status`,
     null,
     {
       params: { isFresher: isFresher }, // ⚠️ backend expects QUERY param
@@ -242,13 +241,9 @@ export const postWorkStatus = (candidateId, isFresher) => {
 };
 
 // Profile Complete API
-export const saveProfileComplete = (candidateId, isProfileCompleted = true) => {
-  if (!candidateId) {
-    throw new Error("candidateId is required");
-  }
-
+export const saveProfileComplete = (isProfileCompleted = true) => {
   return candidateApi.post(
-    `/candidate/save-profile-complete/${candidateId}`,
+    `/candidate/save-profile-complete`,
     null,
     {
       params: { isProfileCompleted },
@@ -260,13 +255,9 @@ export const saveProfileComplete = (candidateId, isProfileCompleted = true) => {
 };
 
 // Certification APIs
-export const getHasCertification = (candidateId) => {
-  if (!candidateId) {
-    throw new Error("candidateId is required");
-  }
-
+export const getHasCertification = () => {
   return candidateApi.get(
-    `/certifications/get-has-cert/${candidateId}`,
+    `/certifications/get-has-cert`,
     {
       headers: {
         "X-Client": "candidate",
@@ -276,13 +267,9 @@ export const getHasCertification = (candidateId) => {
 };
 
 // Save hasCertification flag
-export const saveHasCertification = (candidateId, hasCertification) => {
-  if (!candidateId) {
-    throw new Error("candidateId is required");
-  }
-
+export const saveHasCertification = (hasCertification) => {
   return candidateApi.post(
-    `/certifications/save-has-cert/${candidateId}`,
+    `/certifications/save-has-cert`,
     null,
     {
       params: { hasCertification },
@@ -294,7 +281,7 @@ export const saveHasCertification = (candidateId, hasCertification) => {
 };
 
 export const saveCertification = (
-  candidateId,
+  // candidateId,
   certificationPayload,
   file
 ) => {
@@ -314,7 +301,7 @@ export const saveCertification = (
   );
 
   return candidateApi.post(
-    `/certifications/save-cert-details/${candidateId}`,
+    `/certifications/save-cert-details`,
     formData,
     {
       headers: {
@@ -326,13 +313,9 @@ export const saveCertification = (
 };
 
 // Get certification details
-export const getCertifications = (candidateId) => {
-  if (!candidateId) {
-    throw new Error("candidateId is required");
-  }
-
+export const getCertifications = () => {
   return candidateApi.get(
-    `/certifications/get-cert-details/${candidateId}`,
+    `/certifications/get-cert-details`,
     {
       headers: {
         "X-Client": "candidate",

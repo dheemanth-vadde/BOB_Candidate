@@ -73,7 +73,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="organization" className="form-label">Organization <span className="text-danger">*</span></label>
-					<input type="text" className={`form-control ${formErrors.organization ? "is-invalid" : ""}`} id="organization" value={formData.organization} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<input type="text" maxLength={200} className={`form-control ${formErrors.organization ? "is-invalid" : ""}`} id="organization" value={formData.organization} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 					{formErrors.organization && (
 						<div className="invalid-feedback">{formErrors.organization}</div>
 					)}
@@ -81,7 +81,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="role" className="form-label">Role <span className="text-danger">*</span></label>
-					<input type="text" className={`form-control ${formErrors.role ? "is-invalid" : ""}`} id="role" value={formData.role} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<input type="text" maxLength={200} className={`form-control ${formErrors.role ? "is-invalid" : ""}`} id="role" value={formData.role} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 					{formErrors.role && (
 						<div className="invalid-feedback">{formErrors.role}</div>
 					)}
@@ -89,7 +89,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className="col-md-4 col-sm-12 mt-2">
 					<label htmlFor="postHeld" className="form-label">Post Held <span className="text-danger">*</span></label>
-					<input type="text" className={`form-control ${formErrors.postHeld ? "is-invalid" : ""}`} id="postHeld" value={formData.postHeld} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<input type="text" maxLength={200} className={`form-control ${formErrors.postHeld ? "is-invalid" : ""}`} id="postHeld" value={formData.postHeld} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 					{formErrors.postHeld && (
 						<div className="invalid-feedback">{formErrors.postHeld}</div>
 					)}
@@ -116,12 +116,6 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 						className={`form-select ${formErrors.working ? "is-invalid" : ""}`}
 						id="working"
 						value={String(formData.working)}
-						// onChange={(e) =>
-						// 	setFormData(prev => ({
-						// 		...prev,
-						// 		working: e.target.value === "true"
-						// 	}))
-						// }
 						onChange={(e) => handleWorkingChange(e.target.value)}
 						disabled={isFresher}
 						required={isFresher === false}
@@ -154,7 +148,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className="col-md-4 col-sm-12 mt-3">
 					<label htmlFor="description" className="form-label">Brief Description <span className="text-danger">*</span></label>
-					<textarea className={`form-control ${formErrors.description ? "is-invalid" : ""}`} id="description" rows={4} value={formData.description} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
+					<textarea className={`form-control ${formErrors.description ? "is-invalid" : ""}`} maxLength={2000} id="description" rows={4} value={formData.description} onChange={handleChange} disabled={isFresher === true} required={isFresher === false} />
 					{formErrors.description && (
 						<div className="invalid-feedback">{formErrors.description}</div>
 					)}
@@ -162,7 +156,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 
 				<div className="col-md-4 col-sm-12 mt-3">
 					<label className="form-label">
-						Experience Certificate <span className="text-danger">*</span>
+						Experience Certificate {formData.working === false && <span className="text-danger">*</span>}
 					</label>
 
 					{/* Wrapper to show red border on error */}
@@ -184,7 +178,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 								<FontAwesomeIcon icon={faUpload} className="text-secondary" />
 
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: 500 }}>
-									Click to upload or drag and drop
+									Click to upload
 								</div>
 
 								<div className="text-muted" style={{ fontSize: "12px" }}>
@@ -228,8 +222,8 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 										onClick={() => window.open(existingDocument.fileUrl, "_blank")}
 									/> */}
 									<div onClick={() => handleEyeClick(existingDocument.fileUrl)}>
-																			<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
-																			</div>
+										<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
+										</div>
 									<img
 										src={deleteIcon}
 										alt="Delete"
@@ -345,7 +339,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 									<td className='profile_table_td text-center'>{index + 1}</td>
 									<td className='profile_table_td'>{item?.organization}</td>
 									<td className='profile_table_td'>{item?.from}</td>
-									<td className='profile_table_td'>{item?.to}</td>
+									<td className='profile_table_td'>{item?.to || "-"}</td>
 									<td className='profile_table_td'>{item?.experience}</td>
 									<td className='profile_table_td'>{item?.role}</td>
 									<td className='profile_table_td'>{item?.postHeld}</td>
@@ -355,11 +349,11 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 											<div>
 												<img src={editIcon} alt='Edit' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleEdit(item)} />
 											</div>
-											
-
-											<div onClick={() => handleEyeClick(item?.certificate?.fileUrl)}>
+											{item?.certificate?.fileUrl && (
+												<div onClick={() => handleEyeClick(item?.certificate?.fileUrl)}>
 													<img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
-											</div>
+												</div>
+											)}
 											<div>
 												<img src={deleteIcon} alt='Delete' style={{ width: '25px', cursor: 'pointer' }} onClick={() => handleDelete(item)} />
 											</div>

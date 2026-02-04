@@ -51,7 +51,7 @@ const CandidatePortal = () => {
 
     const fetchDisclaimer = async () => {
       try {
-        const res = await disclaimerApi.getDisclaimerStatus(candidateId);
+        const res = await disclaimerApi.getDisclaimerStatus();
         const accepted = res?.data === true;
 
         setDisclaimerAccepted(accepted);
@@ -114,7 +114,7 @@ const CandidatePortal = () => {
 
   const handleDisclaimerAccept = async () => {
     try {
-      const res = await disclaimerApi.saveDisclaimerStatus(candidateId, true);
+      const res = await disclaimerApi.saveDisclaimerStatus(true);
       console.log("POST DISCLAIMER RESPONSE:", res);
 
       setDisclaimerAccepted(true);

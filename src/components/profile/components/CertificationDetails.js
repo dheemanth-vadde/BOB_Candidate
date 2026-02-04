@@ -93,7 +93,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
           <label className="form-label">
             Certification Name {isOtherSelected && <span className="text-danger">*</span>}
           </label>
-          <input id="certificationName" disabled={!hasCertification || !isOtherSelected} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
+          <input id="certificationName" maxLength={200} disabled={!hasCertification || !isOtherSelected} className={`form-control ${formErrors.certificationName ? "is-invalid" : ""}`} value={formData.certificationName} onChange={handleChange} />
           <div className="invalid-feedback">{formErrors.certificationName}</div>
         </div>
 
@@ -102,7 +102,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
           <label className="form-label">
             Certification Issued By {hasCertification && <span className="text-danger">*</span>}
           </label>
-          <input id="issuedBy" disabled={!hasCertification} className={`form-control ${formErrors.issuedBy ? "is-invalid" : ""}`} value={formData.issuedBy} onChange={handleChange} />
+          <input id="issuedBy" maxLength={200} disabled={!hasCertification} className={`form-control ${formErrors.issuedBy ? "is-invalid" : ""}`} value={formData.issuedBy} onChange={handleChange} />
           <div className="invalid-feedback">{formErrors.issuedBy}</div>
         </div>
 
@@ -142,7 +142,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
             {!certificateFile && !existingDocument && (
               <div className="text-center">
                 <FontAwesomeIcon icon={faUpload} className="mb-2" />
-                <div>Click to upload or drag and drop</div>
+                <div>Click to upload</div>
 
                 {/* helper text */}
                 <small

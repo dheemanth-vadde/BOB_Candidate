@@ -94,7 +94,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
     // Otherwise upload new resume
     setLoading(true);
     try {
-      const res = await profileApi.parseResumeDetails(candidateId, resumeFile);
+      const res = await profileApi.parseResumeDetails(resumeFile);
       if (res?.publicUrl) {
         setResumePublicUrl(res.publicUrl);
       }
@@ -142,7 +142,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
 
             // Call API to save all experience details
             try {
-              await profileApi.saveAllExperienceDetails(candidateId, experiencePayload);
+              await profileApi.saveAllExperienceDetails(experiencePayload);
               toast.success("Experience details saved successfully");
             } catch (expErr) {
               console.error("Failed to save experience details", expErr);
@@ -188,7 +188,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
     if (!candidateId) return;
     const fetchResume = async () => {
       try {
-        const res = await profileApi.getResumeDetails(candidateId);
+        const res = await profileApi.getResumeDetails();
         const resumeData = res.data; // IMPORTANT
         if (resumeData?.fileUrl) {
           setResumePublicUrl(resumeData.fileUrl);
@@ -275,7 +275,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
           <div className="d-flex flex-column align-items-center" style={{ lineHeight: "2rem" }}>
             <FontAwesomeIcon icon={faUpload} className="text-secondary mb-2" size="2x" />
 
-            <div>Drag & drop your resume here, or</div>
+            {/* <div>Drag & drop your resume here, or</div> */}
             <span style={{ color: "#42579f", cursor: "pointer" }}>Click to Upload</span>
             <span className="text-muted mt-2" style={{ fontSize: "12px" }}>
               Supported: PDF, DOC, DOCX (Max 2MB)

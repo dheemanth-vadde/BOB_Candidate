@@ -83,7 +83,7 @@ export const useEducationDetails = ({ goNext }) => {
     setLoading(true);
     try {
       const [eduRes, masterRes] = await Promise.all([
-        profileApi.getEducationDetails(candidateId),
+        profileApi.getEducationDetails(),
         masterApi.getMasterData()
       ]);
 

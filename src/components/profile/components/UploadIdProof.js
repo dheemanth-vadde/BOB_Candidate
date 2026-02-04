@@ -120,7 +120,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
     const fetchIdProof = async () => {
       try {
         const res = await profileApi.getDocumentDetailsByCode(
-          candidateId,
+          // candidateId,
           documentCode
         );
         const doc = res?.data;
@@ -215,7 +215,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
 
     try {
       const res = await profileApi.postDocumentDetails(
-        candidateId,
+        // candidateId,
         documentId,
         idProofFile
       );
@@ -264,7 +264,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
       try {
         setLoading(true);
         await profileApi.deleteDocument(
-          candidateId,
+          // candidateId,
           parsedIdProofData.documentId
         );
 
@@ -346,7 +346,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
         <div className="dropzone" onClick={handleBrowseClick}>
           <div className="d-flex flex-column align-items-center" style={{ lineHeight: "2rem" }}>
             <FontAwesomeIcon icon={faUpload} className="text-secondary mb-2" size="2x" />
-            <div>Drag & drop your Aadhar here, or</div>
+            {/* <div>Drag & drop your Aadhar here, or</div> */}
             <span style={{ color: "#42579f", cursor: "pointer" }}>Click to Upload</span>
             <span className="text-muted mt-2" style={{ fontSize: "12px" }}>
               Supported: PDF, JPG, PNG, DOC, DOCX (Max 2MB)

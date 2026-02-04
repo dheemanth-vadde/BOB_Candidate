@@ -41,7 +41,8 @@ const AddressDetails = ({ goNext, goBack }) => {
                     className={`form-control ${formErrors.corrAddress?.line1 ? 'is-invalid' : ''}`} 
                     id="line1" 
                     value={corrAddress.line1} 
-                    onChange={handleCorrChange} 
+                    onChange={handleCorrChange}
+					maxLength={200}
                   />
                   {formErrors.corrAddress?.line1 && (
                     <div className="invalid-feedback">{formErrors.corrAddress.line1}</div>
@@ -55,7 +56,8 @@ const AddressDetails = ({ goNext, goBack }) => {
                     className={`form-control ${formErrors.corrAddress?.line2 ? 'is-invalid' : ''}`} 
                     id="line2" 
                     value={corrAddress.line2} 
-                    onChange={handleCorrChange} 
+                    onChange={handleCorrChange}
+					maxLength={200}
                   />
                   {formErrors.corrAddress?.line2 && (
                     <div className="invalid-feedback">{formErrors.corrAddress.line2}</div>

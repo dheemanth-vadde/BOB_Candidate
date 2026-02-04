@@ -208,7 +208,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 		const fetchBasicDetails = async () => {
 			setLoading(true);
 			try {
-				const res = await profileApi.getBasicDetails(candidateId);
+				const res = await profileApi.getBasicDetails();
 				const apiData = res?.data;
 				console.log(apiData);
 				setCandidateProfileId(apiData?.candidateProfile?.candidateProfileId || null);
@@ -295,7 +295,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			setLoading(true);
 			try {
 				const res = await profileApi
-					.getDocumentDetailsByCode(candidateId, communityDoc.docCode);
+					.getDocumentDetailsByCode(communityDoc.docCode);
 				setExistingCommunityDoc(res?.data || null);
 			} catch (err) {
 				console.error(err);
@@ -323,7 +323,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
       if (!docCode) return;
 
       const res = await profileApi.getDocumentDetailsByCode(
-        candidateId,
+        // candidateId,
         docCode
       );
 
@@ -346,7 +346,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			setLoading(true);
 			try {
 				const res = await profileApi
-					.getDocumentDetailsByCode(candidateId, disabilityDoc.docCode);
+					.getDocumentDetailsByCode(disabilityDoc.docCode);
 				setExistingDisabilityDoc(res?.data || null);
 			} catch (err) {
 				console.error("Disability Certificate fetch failed", err);
@@ -364,7 +364,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			setLoading(true);
 			try {
 				const res = await profileApi
-					.getDocumentDetailsByCode(candidateId, serviceDoc.docCode);
+					.getDocumentDetailsByCode(serviceDoc.docCode);
 				setExistingServiceDoc(res?.data || null);
 			} catch (err) {
 				console.error("Service Certificate fetch failed", err);
@@ -896,7 +896,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 				email,
 			});
 
-			await profileApi.postBasicDetails(candidateId, payload);
+			await profileApi.postBasicDetails(payload);
 
 			// Handle file uploads...
 			// ---------------- DOCUMENT UPLOADS ----------------
@@ -924,7 +924,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			if (communityFile) {
 				uploadPromises.push(
 					profileApi.postDocumentDetails(
-					candidateId,
+					// candidateId,
 					communityDoc.documentTypeId,
 					communityFile
 					)
@@ -935,7 +935,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			if (birthFile) {
 			uploadPromises.push(
 				profileApi.postDocumentDetails(
-				candidateId,
+				// candidateId,
 				dobDocumentTypeId,
 				birthFile
 				)
@@ -946,7 +946,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			if (disabilityFile && formData.isDisabledPerson) {
 			uploadPromises.push(
 				profileApi.postDocumentDetails(
-				candidateId,
+				// candidateId,
 				disabilityDoc.documentTypeId,
 				disabilityFile
 				)
@@ -957,7 +957,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			if (serviceFile && formData.isExService) {
 			uploadPromises.push(
 				profileApi.postDocumentDetails(
-				candidateId,
+				// candidateId,
 				serviceDoc.documentTypeId,
 				serviceFile
 				)
@@ -977,20 +977,25 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			setLoading(false);
 		}
 	};
+
 	const calculateServicePeriodInMonths = (start, end) => {
 		if (!start || !end) return "";
+
 		const startDate = new Date(start);
 		const endDate = new Date(end);
+
 		if (endDate < startDate) return "";
-		let months =
-			(endDate.getFullYear() - startDate.getFullYear()) * 12 +
-			(endDate.getMonth() - startDate.getMonth());
-		// count partial month if end day >= start day
-		if (endDate.getDate() >= startDate.getDate()) {
-			months += 1;
-		}
-		return months;
+
+		const MS_PER_DAY = 1000 * 60 * 60 * 24;
+		const diffInMs = endDate - startDate;
+		const diffInDays = diffInMs / MS_PER_DAY;
+
+		const AVERAGE_DAYS_IN_MONTH = 30.44;
+		const months = diffInDays / AVERAGE_DAYS_IN_MONTH;
+
+		return Number(months.toFixed(2)); // e.g. 1.05
 	};
+
 	useEffect(() => {
 		if (!formData.isExService) {
 			setFormErrors(prev => {

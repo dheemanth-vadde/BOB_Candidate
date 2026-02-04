@@ -40,7 +40,7 @@ const UploadField = forwardRef(({
     if (!file) return;
     try {
       if (file.isFromApi && file.documentTypeId) {
-        await profileApi.deleteDocument(candidateId, file.documentTypeId);
+        await profileApi.deleteDocument(file.documentTypeId);
       }
       // refresh parent state from backend
       onDelete?.();
@@ -87,7 +87,7 @@ const UploadField = forwardRef(({
 
           <div className="d-flex flex-column" style={{ marginTop: '-10px' }}>
             <div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500", fontSize: '14px' }}>
-              Click to upload or drag and drop
+              Click to upload
             </div>
             <div className="text-muted" style={{ fontSize: "12px" }}>
               JPG, PNG (Max 2MB)

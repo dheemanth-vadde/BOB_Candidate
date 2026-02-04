@@ -87,7 +87,7 @@ export const useCertificationDetails = ({ goNext }) => {
 
     const init = async () => {
       try {
-        const res = await profileApi.getHasCertification(candidateId);
+        const res = await profileApi.getHasCertification();
         const hasCert = Boolean(res?.data);
         setHasCertification(hasCert);
         if (hasCert) fetchCertifications();
@@ -107,7 +107,7 @@ export const useCertificationDetails = ({ goNext }) => {
   const fetchCertifications = async () => {
     try {
       setLoading(true);
-      const res = await profileApi.getCertifications(candidateId);
+      const res = await profileApi.getCertifications();
       const mapped = Array.isArray(res?.data)
         ? res.data.map(mapCertificationApiToUi)
         : [];
@@ -269,7 +269,7 @@ export const useCertificationDetails = ({ goNext }) => {
       );
 
       await profileApi.saveCertification(
-        candidateId,
+        // candidateId,
         payload,
         certificateFile instanceof File ? certificateFile : undefined
       );
@@ -305,7 +305,7 @@ export const useCertificationDetails = ({ goNext }) => {
     setNextError("");
 
     try {
-      await profileApi.saveHasCertification(candidateId, checked);
+      await profileApi.saveHasCertification(checked);
       setIsDirty(false);
       if (!checked) {
         resetForm();

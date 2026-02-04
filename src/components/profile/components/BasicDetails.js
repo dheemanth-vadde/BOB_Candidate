@@ -102,17 +102,18 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							onChange={handleChange}
 							onKeyDown={handleNameKeyDown}
 							placeholder='Enter your first name'
+							maxLength={200}
 						/>
 						{formErrors.firstName && <div className="invalid-feedback">{formErrors.firstName}</div>}
 					</div>
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="middleName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Middle Name</label>
-						<input type="text" className={`form-control ${parsedClass("middleName")}`} id="middleName" value={formData?.middleName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your middle name' />
+						<input type="text" maxLength={200} className={`form-control ${parsedClass("middleName")}`} id="middleName" value={formData?.middleName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your middle name' />
 					</div>
 
 					<div className="col-md-3 col-sm-12 mt-2">
 						<label htmlFor="lastName" className="form-label" style={{ color: '#42579f', fontWeight: 500 }}>Last Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${parsedClass("lastName")} ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your last name' />
+						<input type="text" maxLength={200} className={`form-control ${parsedClass("lastName")} ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" value={formData?.lastName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your last name' />
 						{formErrors.lastName && <div className="invalid-feedback">{formErrors.lastName}</div>}
 					</div>
 
@@ -126,6 +127,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						onKeyDown={handleNameKeyDown}
 						className={`form-control ${parsedClass("fullNameAadhar")} ${formErrors.fullNameAadhar ? 'is-invalid' : ''}`}
 						placeholder="Enter full name as per Aadhaar"
+						maxLength={200}
 					/>
 					{/* {isNameMismatch && (
 						<small className="text-danger">
@@ -133,9 +135,10 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						</small>
 					)} */}
 					{formErrors.fullNameAadhar && <div className="invalid-feedback">{formErrors.fullNameAadhar}</div>}
-				</div>					<div className="col-md-3 col-sm-12 mt-3">
+				</div>					
+					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="fullNameSSC" className="form-label">Full Name as per 10th/Birth Certificate <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your full name' />
+						<input type="text" maxLength={200} className={`form-control ${formErrors.fullNameSSC ? 'is-invalid' : ''}`} id="fullNameSSC" value={formData?.fullNameSSC} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your full name' />
 						{formErrors.fullNameSSC && <div className="invalid-feedback">{formErrors.fullNameSSC}</div>}
 					</div>
 
@@ -220,7 +223,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								/>
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-									Click to upload or drag and drop
+									Click to upload
 								</div>
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
@@ -284,7 +287,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => {
 											if (existingBirthDoc?.documentId) {
-												profileApi.deleteDocument(candidateId, existingBirthDoc.documentId).then(() => {
+												profileApi.deleteDocument(existingBirthDoc.documentId).then(() => {
 													setExistingBirthDoc(null);
 												}).catch(err => {
 													console.error("Failed to delete", err);
@@ -375,7 +378,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="motherName" className="form-label">Mother Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your mother name' />
+						<input type="text" maxLength={200} className={`form-control ${formErrors.motherName ? 'is-invalid' : ''}`} id="motherName" value={formData?.motherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your mother name' />
 						{formErrors.motherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.motherName}
@@ -385,7 +388,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="fatherName" className="form-label">Father Name <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your father name' />
+						<input type="text" maxLength={200} className={`form-control ${formErrors.fatherName ? 'is-invalid' : ''}`} id="fatherName" value={formData?.fatherName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your father name' />
 						{formErrors.fatherName && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.fatherName}
@@ -395,7 +398,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 				{isMarried && (
 					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="spouseName" className="form-label">Spouse Name</label>
-						<input type="text" className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your spouse name' />
+						<input type="text" maxLength={200} className="form-control" id="spouseName" value={formData?.spouseName} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your spouse name' />
 					</div>
 					)}
 
@@ -516,7 +519,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="socialMediaLink" className="form-label">Socail Media Profile Link</label>
-						<input type="text" className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} placeholder='Enter your social media profile link' />
+						<input type="text" maxLength={200} className="form-control" id="socialMediaLink" value={formData?.socialMediaLink} onChange={handleChange} placeholder='Enter your social media profile link' />
 					</div>
 				</div>
 
@@ -591,7 +594,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 
 					<div className="col-md-3 col-sm-12 mt-3">
 						<label htmlFor="caste" className="form-label">Community/Caste <span className="text-danger">*</span></label>
-						<input type="text" className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your community/caste' />
+						<input type="text" maxLength={200} className={`form-control ${formErrors.caste ? 'is-invalid' : ''}`} id="caste" value={formData?.caste} onChange={handleChange} onKeyDown={handleNameKeyDown} placeholder='Enter your community/caste' />
 						{formErrors.caste && (
 							<div className="text-danger mt-1" style={{ fontSize: "12px" }}>
 								{formErrors.caste}
@@ -638,7 +641,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								/>
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-									Click to upload or drag and drop
+									Click to upload
 								</div>
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
@@ -703,7 +706,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => {
 											if (existingCommunityDoc?.documentId) {
-												profileApi.deleteDocument(candidateId, existingCommunityDoc.documentId).then(() => {
+												profileApi.deleteDocument(existingCommunityDoc.documentId).then(() => {
 													setExistingCommunityDoc(null);
 												}).catch(err => {
 													console.error("Failed to delete", err);
@@ -815,6 +818,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 							onChange={handleChange}
 							onKeyDown={handleNameKeyDown}
 							placeholder={`Enter your twin sibling's name`}
+							maxLength={200}
 						/>
 						{formErrors.siblingName && <div className="invalid-feedback">{formErrors.siblingName}</div>}
 					</div>
@@ -925,7 +929,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								/>
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-									Click to upload or drag and drop
+									Click to upload
 								</div>
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
@@ -988,7 +992,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => {
 											if (existingDisabilityDoc?.documentId) {
-												profileApi.deleteDocument(candidateId, existingDisabilityDoc.documentId).then(() => {
+												profileApi.deleteDocument(existingDisabilityDoc.documentId).then(() => {
 													setExistingDisabilityDoc(null);
 												}).catch(err => {
 													console.error("Failed to delete", err);
@@ -1288,7 +1292,6 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 						<label htmlFor="serviceCertificate" className="form-label">Upload Certificate</label>
 						{!serviceFile && !existingServiceDoc && (
 							<div
-
 								className={`border rounded d-flex flex-column align-items-center justify-content-center ${formErrors.serviceCertificate ? "border-danger" : ""
 									}`}
 								style={{
@@ -1305,7 +1308,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 								/>
 								{/* Upload Text */}
 								<div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-									Click to upload or drag and drop
+									Click to upload
 								</div>
 								<div className="text-muted" style={{ fontSize: "12px" }}>
 									Max: 2MB picture
@@ -1367,7 +1370,7 @@ const BasicDetails = ({ goNext, goBack, parsedData }) => {
 										style={{ width: "25px", cursor: "pointer" }}
 										onClick={() => {
 											if (existingServiceDoc?.documentId) {
-												profileApi.deleteDocument(candidateId, existingServiceDoc.documentId).then(() => {
+												profileApi.deleteDocument(existingServiceDoc.documentId).then(() => {
 													setExistingServiceDoc(null);
 												}).catch(err => {
 													console.error("Failed to delete", err);

@@ -17,7 +17,8 @@ const processQueue = (error = null) => {
 
 // ---- Refresh API instance ----
 const refreshApi = axios.create({
-  baseURL: "https://stage.bobjava.sentrifugo.com/candidate-portal/api/v1",
+  // baseURL: "https://stage.bobjava.sentrifugo.com/auth-portal/api/v1",
+  baseURL: "https://uat.bobjava.sentrifugo.com/auth-portal/api/v1",
   withCredentials: true // REQUIRED for HttpOnly cookies
 });
 

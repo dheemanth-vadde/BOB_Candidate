@@ -308,7 +308,7 @@ const EducationForm = forwardRef((props, ref) => {
       });
       console.log(payload)
       await profileApi.postEducationDetails(
-        candidateId,
+        // candidateId,
         payload,
         certificateFile,
         docCode
@@ -456,6 +456,7 @@ const EducationForm = forwardRef((props, ref) => {
             setFormErrors(prev => ({ ...prev, college: undefined }));
             setFormData(prev => ({ ...prev, college: e.target.value }));
           }}
+          maxLength={200}
         />
         {formErrors.college && (
           <div className="invalid-feedback">{formErrors.college}</div>
@@ -601,7 +602,7 @@ const EducationForm = forwardRef((props, ref) => {
             />
             {/* Upload Text */}
             <div className="mt-2" style={{ color: "#7b7b7b", fontWeight: "500" }}>
-              Click to upload or drag and drop
+              Click to upload
             </div>
             <div className="text-muted" style={{ fontSize: "12px" }}>
               Max: 2MB picture

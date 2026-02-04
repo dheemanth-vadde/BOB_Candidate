@@ -867,3 +867,10 @@ font-family: 'poppins';
   z-index: 1028; /* below header */
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
 }
+
+/* Hide Edge password reveal icon */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+

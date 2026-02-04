@@ -451,7 +451,7 @@ console.log("relevant errors",errors)
     const fetchCandidatePreview = async () => {
       try {
         const response = await jobsApiService.getAllDetails(
-          candidateId,
+          // candidateId,
           selectedJob.position_id
         );
 

@@ -150,7 +150,7 @@ const handleSubmitRequest = async () => {
       formData.append("file", selectedFile);
     }
 
-    await jobsApiService.createCandidateThread(candidateId, formData);
+    await jobsApiService.createCandidateThread(formData);
 
     toast.success("Request submitted successfully");
 

@@ -80,7 +80,7 @@ const AppliedJobs = () => {
     try {
       setListLoading(true);
       const res = await jobsApiService.getAppliedJobs(
-        candidateId,
+        // candidateId,
         currentPage,
         pageSize,
         debouncedSearchTerm

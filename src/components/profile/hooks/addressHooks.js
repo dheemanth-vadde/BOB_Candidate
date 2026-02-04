@@ -60,7 +60,7 @@ export const useAddressDetails = ({ goNext }) => {
 
     const fetchAddress = async () => {
       try {
-        const res = await profileApi.getAddressDetails(candidateId);
+        const res = await profileApi.getAddressDetails();
         const mapped = mapAddressApiToForm(res?.data);
         setCorrAddress(mapped.corrAddress);
         setPermAddress(mapped.permAddress);
@@ -184,7 +184,7 @@ export const useAddressDetails = ({ goNext }) => {
         candidateId
       });
 
-      await profileApi.postAddressDetails(candidateId, payload);
+      await profileApi.postAddressDetails(payload);
       toast.success("Address details saved successfully");
       setIsDirty(false);
       goNext();

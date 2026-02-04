@@ -149,6 +149,8 @@ const Login = () => {
               }}
               size="sm"
               title={showPassword ? 'Hide password' : 'Show password'}
+              // autoComplete="new-password"
+              // data-ms-editor="false"
             />
           </div>
           {formErrors.password && <div className="invalid-feedback d-block">{formErrors.password}</div>}

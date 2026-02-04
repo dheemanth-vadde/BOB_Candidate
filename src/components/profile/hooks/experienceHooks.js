@@ -75,7 +75,7 @@ export const useExperienceDetails = ({ goNext }) => {
 
     try {
       setLoading(true);
-      const res = await profileApi.getExperienceDetails(candidateId);
+      const res = await profileApi.getExperienceDetails();
       const apiList = Array.isArray(res?.data) ? res.data : [];
       const mapped = apiList.map(mapExperienceApiToUi);
 
@@ -164,7 +164,7 @@ export const useExperienceDetails = ({ goNext }) => {
     if (!formData.currentCTC || Number(formData.currentCTC) <= 0)
       errors.currentCTC = "Required";
 
-    if (!certificateFile && !existingDocument)
+    if (formData.working === false && !certificateFile && !existingDocument)
       errors.certificate = "Required";
 
     setFormErrors(errors);
@@ -202,7 +202,7 @@ export const useExperienceDetails = ({ goNext }) => {
     try {
       setLoading(true);
       await profileApi.postExperienceDetails(
-        candidateId,
+        // candidateId,
         payload,
         certificateFile
       );
@@ -258,7 +258,7 @@ export const useExperienceDetails = ({ goNext }) => {
 
   const saveAndNext = async () => {
     if (isFresher) {
-      await profileApi.postWorkStatus(candidateId, true);
+      await profileApi.postWorkStatus(true);
       goNext();
       return;
     }
@@ -268,23 +268,28 @@ export const useExperienceDetails = ({ goNext }) => {
       return;
     }
 
-    await profileApi.postWorkStatus(candidateId, false);
+    await profileApi.postWorkStatus(false);
     goNext();
   };
 
-	const handleWorkingChange = (value) => {
-		setFormData(prev => ({
-			...prev,
-			working: value === "true"
-		}));
+  const handleWorkingChange = (value) => {
+    const isWorking = value === "true";
 
-		// 🔑 THIS LINE FIXES YOUR BUG
-		if (fileInputRef.current) {
-			fileInputRef.current.value = "";
-		}
+    setFormData(prev => ({
+      ...prev,
+      working: isWorking,
+      to: isWorking ? "" : prev.to
+    }));
 
-		setIsDirty(true);
-	};
+    if (isWorking) {
+      setFormErrors(prev => {
+        const { certificate, to, ...rest } = prev;
+        return rest;
+      });
+    }
+
+    setIsDirty(true);
+  };
 
 	const blockCTCKeys = (e) => {
 		const blocked = ["e", "E", "+", "-", ","];

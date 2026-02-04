@@ -1,6 +1,7 @@
 import axios from "axios";
 
- const BASE_URL = "https://stage.bobjava.sentrifugo.com/auth-portal/api/v1";
+//  const BASE_URL = "https://stage.bobjava.sentrifugo.com/auth-portal/api/v1";
+ const BASE_URL = "https://uat.bobjava.sentrifugo.com/auth-portal/api/v1";
 
 // Axios Instance
 const api = axios.create({

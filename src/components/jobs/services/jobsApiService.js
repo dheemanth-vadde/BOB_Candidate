@@ -9,11 +9,11 @@ const jobsApiService = {
 
   //Relevamnt Jobs
 	
-  getAllDetails: (candidateId, positionId) =>
-    candidateApi.get(`candidate/get-all-details/${candidateId}/${positionId}`),
-  getAppliedJobs: (candidateId, page = 0, size = 5, searchTerm = "") =>
+  getAllDetails: (positionId) =>
+    candidateApi.get(`candidate/get-all-details/${positionId}`),
+  getAppliedJobs: (page = 0, size = 5, searchTerm = "") =>
     candidateApi.get(
-      `/applied-jobs/get-applied-jobs/${candidateId}?page=${page}&size=${size}&searchTerm=${searchTerm}`,
+      `/applied-jobs/get-applied-jobs?page=${page}&size=${size}&searchTerm=${searchTerm}`,
     ),
   getActiveRequisitions: () =>
     candidateApi.get(`/current-opportunities/get-job-requisition/active`),
@@ -53,9 +53,9 @@ const jobsApiService = {
 
   //THREAD APIs
 
-  createCandidateThread: (candidateId, formData) =>
+  createCandidateThread: (formData) =>
     candidateApi.post(
-      `/candidate-conversation/create-thread/${candidateId}`,
+      `/candidate-conversation/create-thread`,
       formData,
       {
         headers: {

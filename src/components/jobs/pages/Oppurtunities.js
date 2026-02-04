@@ -247,7 +247,7 @@ const Oppurtunities = ({ setActiveTab, requisitionId, positionId }) => {
     const fetchCandidatePreview = async () => {
       try {
         const response = await jobsApiService.getAllDetails(
-          candidateId,
+          // candidateId,
           selectedJob.position_id
         );
  

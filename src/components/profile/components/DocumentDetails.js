@@ -70,7 +70,7 @@ const DocumentDetails = ({ goBack, setActiveTab }) => {
 			if (!candidateId) return;
 
 			try {
-				const res = await profileApi.getWorkStatus(candidateId);
+				const res = await profileApi.getWorkStatus();
 				let fresherStatus = false;
 				console.log(res)
 				if (
@@ -123,7 +123,7 @@ const DocumentDetails = ({ goBack, setActiveTab }) => {
 
 		try {
 			setLoading(true);
-			const res = await profileApi.getDocumentDetails(candidateId);
+			const res = await profileApi.getDocumentDetails();
 			const docs = (res?.data || []).filter(d => d.documentId !== null);
 			const populatedFiles = {};
 
@@ -205,7 +205,7 @@ const DocumentDetails = ({ goBack, setActiveTab }) => {
 			setLoading(true);
 
 			await profileApi.postDocumentDetails(
-				candidateId,
+				// candidateId,
 				field.documentId,
 				file,
 				isOther,
@@ -290,7 +290,7 @@ const DocumentDetails = ({ goBack, setActiveTab }) => {
 		if (Object.keys(errors).length > 0) return;
 
 		try {
-			await profileApi.saveProfileComplete(candidateId, true);
+			await profileApi.saveProfileComplete(true);
 			dispatch(markProfileCompleted());
 			setActiveTab("jobs");
 		} catch (err) {
