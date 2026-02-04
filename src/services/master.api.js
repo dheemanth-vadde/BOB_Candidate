@@ -2,7 +2,8 @@ import axios from "axios";
 
 //const BASE_URL = "http://192.168.20.111:8080/api";
 // const BASE_URL = 'https://stage.bobjava.sentrifugo.com/master-portal/api'
-const BASE_URL = 'https://uat.bobjava.sentrifugo.com/master-portal/api'
+// const BASE_URL = 'https://uat.bobjava.sentrifugo.com/master-portal/api'
+const BASE_URL = 'https://dev.bobjava.sentrifugo.com/master-portal/api'
 
 // Axios Instance
 const api = axios.create({
