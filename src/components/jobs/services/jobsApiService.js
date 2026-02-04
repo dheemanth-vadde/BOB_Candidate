@@ -42,14 +42,14 @@ const jobsApiService = {
       },
     ),
 
-  getMasterData: () => mastersapi.get(`/display/all`),
-  getRequestTypes: () => mastersapi.get(`/master-dd-data/get/request-types`),
+  getMasterData: () => mastersapi.get(`/v1/master/display/all`),
+  getRequestTypes: () => mastersapi.get(`/v1/master/master-dd-data/get/request-types`),
   getApplicationStatus: (applicationId) =>
     candidateApi.get(`/track-app-status/status/${applicationId}`),
   getInterviewCentres: () =>
-    mastersapi.get(`/master-dd-data/get/interview-centres`),
+    mastersapi.get(`/v1/master/master-dd-data/get/interview-centres`),
   getMedicalLocations: () =>
-    mastersapi.get(`/master-dd-data/get/medical-centres`),
+    mastersapi.get(`/v1/master/master-dd-data/get/medical-centres`),
 
   //THREAD APIs
 

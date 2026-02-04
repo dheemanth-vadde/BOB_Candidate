@@ -10,7 +10,7 @@ import { applyInterceptors } from './interceptor';
 // const CANDIDATE_BASE_URL = "https://uat.bobjava.sentrifugo.com/candidate-portal/api/v1/candidate";
 
 const RAZOR_BASE_URL='https://dev.bobjava.sentrifugo.com/candidate-portal/api/v1/razorpay';
-const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com/master-portal/api/v1/master';
+const MASTER_BASE_URLs='https://dev.bobjava.sentrifugo.com/master-portal/api';
 const CANDIDATE_BASE_URL = "https://dev.bobjava.sentrifugo.com/candidate-portal/api/v1/candidate";
 
 const razorpayapi = axios.create({

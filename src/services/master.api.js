@@ -1,59 +1,33 @@
-import axios from "axios";
-
-//const BASE_URL = "http://192.168.20.111:8080/api";
-// const BASE_URL = 'https://stage.bobjava.sentrifugo.com/master-portal/api'
-// const BASE_URL = 'https://uat.bobjava.sentrifugo.com/master-portal/api'
-const BASE_URL = 'https://dev.bobjava.sentrifugo.com/master-portal/api'
-
-// Axios Instance
-const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "X-Client": "candidate",
-  },
-  timeout: 15000,
-});
-
-// Axios Instance
-const azureBlobApi = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "X-Client": "candidate",
-    "Content-Type": "application/json",
-  },
-  timeout: 15000,
-});
-
-// ---------------- PROFILE APIs ----------------
+import { mastersapi } from "./apiService";
 
 export const getMasterData = () => {
-  return api.get(`/v1/master/display/all`);
+  return mastersapi.get(`/v1/master/display/all`);
 }
 
 export const getChatFAQReply = (question) => {
-  return api.get("/v1/master/chatbot/getChatFAQReply", {
+  return mastersapi.get("/v1/master/chatbot/getChatFAQReply", {
     params: { question },
   });
 };
 export const getChatQueryReply = (question, candidateId) => {
-  return api.get(`/v1/master/chatbot/getChatQueryReply`, {
+  return mastersapi.get(`/v1/master/chatbot/getChatQueryReply`, {
     params: { question, candidateId }
   });
 };
 
 
 export const getDocumentTypes = () => {
-  return api.get(`/v1/master/document-types/all`);
+  return mastersapi.get(`/v1/master/document-types/all`);
 };
 
 export const getGenericDocuments = () => {
-  return api.get(
+  return mastersapi.get(
     "/v1/master/rec-generic-documents/unique-document-types"
   );
 };
 
 export const getCertifications = () => {
-  return api.get(`/v1/master/certificates-master/all`);
+  return mastersapi.get(`/v1/master/certificates-master/all`);
 };
 
 // Download file API (Azure Blob proxy)
@@ -78,7 +52,7 @@ export const getCertifications = () => {
 export const downloadFile = (filePath) => {
   if (!filePath) throw new Error("filePath is required");
 
-  return api.get("/v1/master/azureblob/download-file", {
+  return mastersapi.get("/v1/master/azureblob/download-file", {
     params: { path: filePath },
     responseType: "blob",
    
@@ -87,7 +61,7 @@ export const downloadFile = (filePath) => {
 
 
 export const getSasUrl = (filePath) => {
-  return api.get(`/v1/master/azureblob/file/sas-url`, {
+  return mastersapi.get(`/v1/master/azureblob/file/sas-url`, {
     params: { dir: filePath },
   });
 };

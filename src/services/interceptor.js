@@ -63,7 +63,7 @@ export function applyInterceptors(axiosInstance) {
       console.log("❌ [INTERCEPTOR] Error status:", status);
 
       // Not unauthorized or already retried → fail fast
-      if (status !== 401 || originalRequest._retry) {
+      if ((status !== 401 && status !== 403) || originalRequest._retry) {
         return Promise.reject(error);
       }
 
