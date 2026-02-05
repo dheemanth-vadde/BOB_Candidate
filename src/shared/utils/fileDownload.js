@@ -46,9 +46,15 @@ export const handleEyeClick = async (filePath) => {
 
   try {
     const res = await masterApi.getSasUrl(filePath);
-console.log("view res",res.data);
+    console.log("view res",res);
+    const cleanUrl = res.data ? res?.data?.replace(/\s+/g, "") : res?.replace(/\s+/g, "");
+
+    if (!cleanUrl) {
+      toast.error("Invalid document URL");
+      return;
+    }
     // res.data is already a downloadable URL
-    window.open(res.data, "_blank", "noopener,noreferrer");
+    window.open(cleanUrl, "_blank", "noopener,noreferrer");
   } catch (error) {
     console.error(error);
     toast.error("Unable to open document");
