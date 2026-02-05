@@ -60,11 +60,11 @@ const UploadIdProof = ({ goNext, goBack }) => {
   const dispatch = useDispatch();
   const { updateStep } = useStepTracking();
   const aadhaarDoc = useSelector((state) =>
-    state.documentTypes?.list?.data?.find(
+    state.documentTypes?.list?.find(
       (doc) => doc.docCode === "ADHAR"
     ) || null
   );
-  console.log(aadhaarDoc)
+  console.log(useSelector((state) => state.documentTypes))
   const documentId = aadhaarDoc?.documentTypeId;
   const documentCode = aadhaarDoc?.docCode;
   const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
@@ -214,6 +214,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
     setLoading(true);
 
     try {
+      console.log(documentId)
       const res = await profileApi.postDocumentDetails(
         // candidateId,
         documentId,

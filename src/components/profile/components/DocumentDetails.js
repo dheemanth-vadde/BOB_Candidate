@@ -19,28 +19,28 @@ const DocumentDetails = ({ goBack, setActiveTab }) => {
 	const candidateId = user?.user?.id;
 
 	const photoDoc = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "PHOTO") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "PHOTO") || null
 	);
 	const signDoc = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "SIGN") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "SIGN") || null
 	);
 	const idProofDoc = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "IDPROOF") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "IDPROOF") || null
 	);
 	const birthDoc = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "BIRTH_CERT") || null
 	);
 	const payslipDoc1 = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "PAYSLIP1") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "PAYSLIP1") || null
 	);
 	const payslipDoc2 = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "PAYSLIP2") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "PAYSLIP2") || null
 	);
 	const payslipDoc3 = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "PAYSLIP3") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "PAYSLIP3") || null
 	);
 	const othersDoc = useSelector((state) =>
-		state.documentTypes?.list?.data?.find(doc => doc.docCode === "OTHERS") || null
+		state.documentTypes?.list?.find(doc => doc.docCode === "OTHERS") || null
 	);
 
 	const uploadFieldsConfig = [

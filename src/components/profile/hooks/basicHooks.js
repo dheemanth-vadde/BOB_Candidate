@@ -39,11 +39,11 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 	// const email = "sumanthsangam2@gmail.com"
 	// const candidateId = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
 	// const createdBy = "70721aa9-0b00-4f34-bea2-3bf268f1c212";
-	const communityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "COMMUNITY_CERT"));
-	const disabilityDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "DISABILITY"));
-	const serviceDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "SERVICE"));
-	const birthDoc = useSelector((state) => state.documentTypes?.list?.data?.find(doc => doc.docCode === "BIRTH_CERT"));
-	const tenthDoc = useSelector(state => state.documentTypes?.list?.data?.find(doc => doc.docCode === "TENTH"));
+	const communityDoc = useSelector((state) => state.documentTypes?.list?.find(doc => doc.docCode === "COMMUNITY_CERT"));
+	const disabilityDoc = useSelector((state) => state.documentTypes?.list?.find(doc => doc.docCode === "DISABILITY"));
+	const serviceDoc = useSelector((state) => state.documentTypes?.list?.find(doc => doc.docCode === "SERVICE"));
+	const birthDoc = useSelector((state) => state.documentTypes?.list?.find(doc => doc.docCode === "BIRTH_CERT"));
+	const tenthDoc = useSelector(state => state.documentTypes?.list?.find(doc => doc.docCode === "TENTH"));
 	const [loading, setLoading] = useState(false);
 	const [isDirty, setIsDirty] = useState(false);
 	const [formData, setFormData] = useState({
@@ -181,7 +181,7 @@ export const useBasicDetails = ({ goNext, goBack, parsedData }) => {
 			setLoading(true);
 			try {
 				const res = await masterApi.getMasterData();
-				const data = res?.data?.data;
+				const data = res?.data;
 				setMasterData({
 					genders: data.genderMasters || [],
 					maritalStatus: data.maritalStatusMaster || [],

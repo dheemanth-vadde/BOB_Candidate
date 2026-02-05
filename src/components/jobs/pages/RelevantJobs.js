@@ -233,7 +233,7 @@ console.log("showPreviewModal", showPreviewModal)
                 >
                   <option value="">All Requisitions</option>
                   {requisitions
-                    .filter((req) => req.requisition_status === "Approved")
+                    .filter((req) => req.requisition_status === "APPROVED")
                     .map((req) => (
                       <option key={req.requisition_id} value={req.requisition_id}>
                         {req.requisition_title || `Requisition ${req.requisition_id}`}

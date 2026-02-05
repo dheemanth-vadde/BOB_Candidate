@@ -67,8 +67,8 @@ export const useCertificationDetails = ({ goNext }) => {
     const fetchMasters = async () => {
       try {
         const res = await masterApi.getCertifications();
-        const options = Array.isArray(res?.data?.data)
-          ? res.data.data.map(c => ({
+        const options = Array.isArray(res?.data)
+          ? res.data.map(c => ({
               value: c.certificationMasterId,
               label: c.certificationName
             }))

@@ -38,8 +38,8 @@ async function createOrder({ amountPaise, receipt, notes, candidate_id, position
       currency: "INR",
       receipt,
       notes,
-      candidate_id,
-      position_id
+      candidateId: candidate_id,
+      positionId: position_id
     };
 
     const r = await jobsApiService.getRazorOrder(data);

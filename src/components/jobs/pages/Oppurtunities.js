@@ -189,7 +189,7 @@ const Oppurtunities = ({ setActiveTab, requisitionId, positionId }) => {
     try {
       const res = await masterApi.getGenericDocuments();
  
-      const filtered = (res.data?.data || []).filter(
+      const filtered = (res.data || []).filter(
         (doc) => doc.type?.toLowerCase() === type
       );
  

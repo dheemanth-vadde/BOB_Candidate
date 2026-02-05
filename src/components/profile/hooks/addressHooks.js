@@ -40,7 +40,7 @@ export const useAddressDetails = ({ goNext }) => {
     const loadMasters = async () => {
       try {
         const res = await masterApi.getMasterData();
-        const data = res?.data?.data || {};
+        const data = res?.data || {};
         setMasters({
           states: data.states || [],
           districts: data.districts || [],

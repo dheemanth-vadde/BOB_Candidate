@@ -88,7 +88,7 @@ export const useEducationDetails = ({ goNext }) => {
       ]);
 
       const list = eduRes?.data || [];
-      const raw = masterRes?.data?.data || {};
+      const raw = masterRes?.data || {};
       const mandatoryQualifications = raw.mandatoryQualification || [];
 
       setMasterData({
