@@ -38,9 +38,8 @@ function getToken() {
   return token;
 }
 
-// const DIGILOCKER_API_URL = 'https://stage.bobjava.sentrifugo.com/candidate-portal/api/v1';
-// const DIGILOCKER_API_URL = 'https://uat.bobjava.sentrifugo.com/candidate-portal/api/v1';
-const DIGILOCKER_API_URL = 'https://dev.bobjava.sentrifugo.com/candidate-portal/api/v1';
+const DIGILOCKER_API_URL = 'https://stage.bobjava.sentrifugo.com/candidate-portal/api/v1';
+
 
 // Create a primary axios instance for most API calls
 const digiLockerApis = axios.create({
