@@ -10,6 +10,8 @@ import RequestHistory from "../../jobs/components/RequestHistory";
 import CompensationSection from "../../jobs/components/CompensationSection";
 import { toast } from "react-toastify";
 import bulb from "../../../assets/bulb-icon.png";
+import DiscrepancyUploadSection from "./DiscrepancyUploadSection";
+
 const TrackApplicationModal = ({ show, onHide, job }) => {
   const [activeKey, setActiveKey] = useState("0");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -41,22 +43,23 @@ const steps = isContract
       "Selected In Interview",
       "Offer",
     ];
+
 const [errors, setErrors] = useState({});
 const statusToIndexMap = isContract
   ? {
-      Applied: 0,
-      Shortlisted: 1,
-      Scheduled: 2,
-      Selected: 3,
-      Compensation: 4,
-      Offered: 5,
+      APPLIED: 0,
+      SHORTLISTED: 1,
+      SCHEDULED: 2,
+      SELECTED: 3,
+      COMPENSATION: 4,
+      OFFERED: 5,
     }
   : {
-      Applied: 0,
-      Shortlisted: 1,
-      Scheduled: 2,
-      Selected: 3,
-      Offered: 4,
+      APPLIED: 0,
+      SHORTLISTED: 1,
+      SCHEDULED: 2,
+      SELECTED: 3,
+      OFFERED: 4,
     };
 
 const stepToStatusMap = {
@@ -67,6 +70,10 @@ const stepToStatusMap = {
   "Compensation": "Compensation",
   "Offer": "Offered"
 };
+
+const hasActiveDiscrepancy =
+  statusMap["DISCREPANCY"] &&
+  !statusMap["SHORTLISTED"];
 
 console.log("selected jobs",job)
 useEffect(() => {
@@ -279,6 +286,7 @@ const handleFileSelect = (e) => {
           const stepDate = statusMap[backendStatus];
 
           return (
+
             <div className={`step ${state}`} key={index}>
               <div className="circle-wrapper">
                 <div className={`circle ${state}`}>
@@ -305,11 +313,26 @@ const handleFileSelect = (e) => {
         })}
           </div>
 
-          {isContract && (
+          {hasActiveDiscrepancy && (
+            <div className="alert alert-danger mb-3">
+              <strong>Documents Rejected!</strong> Please re-upload required documents to proceed.
+            </div>
+          )}
+
+          {hasActiveDiscrepancy && (
+  <DiscrepancyUploadSection
+    applicationId={job?.application_id}
+    onSuccess={fetchApplicationStatus}
+  />
+)}
+
+          {!hasActiveDiscrepancy && isContract && (
+
             <CompensationSection applicationId={job?.application_id} />
           )}
 
         {/* ===== SUBMIT REQUEST ===== */}
+        {!hasActiveDiscrepancy && (
         <div className="query-section bank-style">
           <h6 className="section-title">Submit Your Request</h6>
 
@@ -419,7 +442,9 @@ const handleFileSelect = (e) => {
 
 
         </div>
+        )}
         {/* ===== REQUEST HISTORY ===== */}
+        {!hasActiveDiscrepancy && (
         <div className="query-section bank-style request-history">
           <h6 className="section-title">Request History</h6>
 
@@ -427,6 +452,7 @@ const handleFileSelect = (e) => {
 
            
         </div>
+        )}
       </Modal.Body>
     </Modal>
   );
