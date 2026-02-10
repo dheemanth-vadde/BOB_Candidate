@@ -634,7 +634,7 @@ const EducationForm = forwardRef((props, ref) => {
                 style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
               />
               <div>
-                <div style={{ fontWeight: 600, color: "#42579f" }}>
+                <div style={{ fontWeight: 600, color: "#42579f" }} >
                   {existingDocument.displayName ?? existingDocument.fileName}
                 </div>
                 {/* <div className="text-muted" style={{ fontSize: "12px" }}>
@@ -685,7 +685,7 @@ const EducationForm = forwardRef((props, ref) => {
                 style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
               />
               <div>
-                <div style={{ fontWeight: 600, color: "#42579f" }}>
+                <div style={{ fontWeight: 600, color: "#42579f" }} className="wraptext">
                   {certificateFile?.name}
                 </div>
                 <div className="text-muted" style={{ fontSize: "12px" }}>

@@ -158,7 +158,7 @@ const CertificationDetails = ({ goNext, goBack }) => {
                 <div className="d-flex align-items-center gap-2">
                   <img src={greenCheck} className="text-success" style={{ width: '22px', height: '22px' }} />
                   <div>
-                    <div style={{ fontWeight: 600 }}>
+                    <div style={{ fontWeight: 600 }} className="wrap-text">
                       {certificateFile?.name || existingDocument?.displayName}
                     </div>
 

@@ -874,3 +874,8 @@ input::-ms-clear {
   display: none;
 }
 
+.wraptext{
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
