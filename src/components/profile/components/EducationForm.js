@@ -53,6 +53,8 @@ const EducationForm = forwardRef((props, ref) => {
     educationLevel: "",
     educationDocCode: ""
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const [localDirty, setLocalDirty] = useState(false);
 
   useEffect(() => {
     if (!existingData) return;
@@ -94,16 +96,37 @@ const EducationForm = forwardRef((props, ref) => {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    // Clear the error for the current field when user starts typing/selecting
-    setFormErrors(prev => ({
-      ...prev,
-      [id]: undefined
-    }));
 
     setFormData(prev => ({
       ...prev,
       [id]: value
     }));
+
+    clearErrors(id);
+
+    if (id === "from" || id === "to") {
+      clearErrors("dateRange");
+    }
+
+    if (id === "educationLevel") {
+      const selected = masterData.educationLevels.find(
+        el => el.documentTypeId === value
+      );
+
+      setFormData(prev => ({
+        ...prev,
+        educationDocCode: selected?.docCode || "",
+        university: ""
+      }));
+
+      clearErrors("educationLevel", "university");
+
+      if (educationId && onEducationLevelChange && selected) {
+        onEducationLevelChange(educationId, selected.documentName);
+      }
+    }
+
+    setLocalDirty(true);
     onDirtyChange(true);
   };
 
@@ -114,12 +137,9 @@ const EducationForm = forwardRef((props, ref) => {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Clear any previous file error
-    setFormErrors(prev => ({
-      ...prev,
-      certificateFile: undefined
-    }));
-    // Optional validation
+
+    clearErrors("certificateFile");
+
     if (file.size > 2 * 1024 * 1024) {
       setFormErrors(prev => ({
         ...prev,
@@ -127,7 +147,13 @@ const EducationForm = forwardRef((props, ref) => {
       }));
       return;
     }
+
     setCertificateFile(file);
+    markDirty();
+  };
+
+  const markDirty = () => {
+    setLocalDirty(true);
     onDirtyChange(true);
   };
 
@@ -228,30 +254,27 @@ const EducationForm = forwardRef((props, ref) => {
   const handlePercentageChange = (e) => {
     const value = e.target.value;
 
-    // allow empty
     if (value === "") {
       setFormData(prev => ({ ...prev, percentage: "" }));
+      clearErrors("percentage");
+      markDirty();
       return;
     }
 
-    // allow numbers with up to 2 decimals
     if (!/^\d{0,3}(\.\d{0,2})?$/.test(value)) return;
 
-    setFormErrors(prev => ({ ...prev, percentage: undefined }));
     setFormData(prev => ({ ...prev, percentage: value }));
+    clearErrors("percentage");
+    markDirty();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSaving) return;
     const { isValid } = validateForm();
-    if (!isValid) {
-      // Scroll to the first error
-      const firstError = Object.keys(formErrors)[0];
-      if (firstError) {
-        document.getElementById(firstError)?.scrollIntoView({ behavior: 'smooth' });
-      }
-      return;
-    }
+
+    if (!isValid) return;
+    setIsSaving(true);
 
     const collision = hasDateCollision({
       from: formData.from,
@@ -314,6 +337,8 @@ const EducationForm = forwardRef((props, ref) => {
         docCode
       );
       toast.success("Education details saved successfully");
+      // onDirtyChange(false);
+      setLocalDirty(false);
       onDirtyChange(false);
 
       // If this form came from parsed resume data, remove that parsed entry from redux by id
@@ -361,6 +386,14 @@ const EducationForm = forwardRef((props, ref) => {
     return null; // THIS LINE FIXES CRASHES
   }
 
+  const clearErrors = (...keys) => {
+    setFormErrors(prev => {
+      const updated = { ...prev };
+      keys.forEach(k => delete updated[k]);
+      return updated;
+    });
+  };
+
   return (
     <form className="row g-4 formfields pt-2" onSubmit={handleSubmit}>
       <div className="col-md-4 col-sm-12 mt-3">
@@ -372,34 +405,7 @@ const EducationForm = forwardRef((props, ref) => {
           className={`form-select ${formErrors.educationLevel ? 'is-invalid' : ''}`}
           value={formData.educationLevel}
           disabled={disableEducationLevel}
-          onChange={(e) => {
-            if (disableEducationLevel) return;
-            const documentTypeId = e.target.value;
-            const selected = masterData?.educationLevels.find(
-              el => el.documentTypeId === documentTypeId
-            );
-            const docCode = getDocCodeFromEducationLevelId(
-              documentTypeId,
-              masterData.educationLevels
-            );
-            // Clear error when user selects an option
-            setFormErrors(prev => ({
-              ...prev,
-              educationLevel: undefined,
-              university: undefined
-            }));
-            setFormData(prev => ({
-              ...prev,
-              educationLevel: documentTypeId,
-              educationDocCode: docCode,
-              university: ""
-            }));
-            if (!educationId || !onEducationLevelChange || !selected) return;
-            onEducationLevelChange(
-              educationId,
-              selected.documentName
-            );
-          }}
+          onChange={handleChange}
         >
           <option value="">Select Education Level</option>
           {masterData?.educationLevels.map(e => (
@@ -408,6 +414,9 @@ const EducationForm = forwardRef((props, ref) => {
             </option>
           ))}
         </select>
+        {formErrors.educationLevel && (
+          <div className="invalid-feedback">{formErrors.educationLevel}</div>
+        )}
       </div>
 
       {/* DEGREE → only visible if showDegree = true
@@ -440,22 +449,14 @@ const EducationForm = forwardRef((props, ref) => {
           className={`form-control ${formErrors.college ? 'is-invalid' : ''}`}
           value={formData.college}
           onBeforeInput={(e) => {
-            // block anything that is not letter or space
-            if (!/^[A-Za-z ]$/.test(e.data)) {
-              e.preventDefault();
-            }
+            if (!/^[A-Za-z ]$/.test(e.data)) e.preventDefault();
           }}
           onPaste={(e) => {
-            const pasted = e.clipboardData.getData("text");
-            if (!/^[A-Za-z ]+$/.test(pasted)) {
+            if (!/^[A-Za-z ]+$/.test(e.clipboardData.getData("text"))) {
               e.preventDefault();
             }
           }}
-          onChange={(e) => {
-            // only valid chars ever reach here
-            setFormErrors(prev => ({ ...prev, college: undefined }));
-            setFormData(prev => ({ ...prev, college: e.target.value }));
-          }}
+          onChange={handleChange}
           maxLength={200}
         />
         {formErrors.college && (
@@ -723,14 +724,18 @@ const EducationForm = forwardRef((props, ref) => {
         <button
           type="submit"
           className="btn btn-primary mt-3"
+          disabled={isSaving || !localDirty}
           style={{
             backgroundColor: "#ff7043",
             border: "none",
             padding: "0.5rem 1rem",
             borderRadius: "4px",
-            color: "#fff"
-          }}>
-          Save
+            color: "#fff",
+            opacity: isSaving || !localDirty ? 0.6 : 1,
+            cursor: isSaving || !localDirty ? "not-allowed" : "pointer"
+          }}
+        >
+          {isSaving ? "Saving..." : "Save"}
         </button>
         {parsedId && (
           <button

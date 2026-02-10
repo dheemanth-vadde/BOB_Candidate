@@ -215,25 +215,28 @@ console.log("educationLevel", educationLevel)
     /* =========================
        DOCUMENT DETAILS (NEW)
     ========================= */
+    // documents: {
+    //   photo: groupDocs(d => d.fileName?.includes("Photo")),
+    //   signature: groupDocs(d => d.fileName?.includes("Signature")),
+    //   resume: groupDocs(d => d.fileName?.includes("Resume")),
+    //   payslips: groupDocs(d => d.fileName?.includes("Payslip")),
+    //   educationCertificates: groupDocs(d =>
+    //     d.fileName?.includes("Board") ||
+    //     d.fileName?.includes("Intermediate")
+    //   ),
+    //   identityProofs: groupDocs(d =>
+    //     d.fileName?.includes("Aadhar") ||
+    //     d.fileName?.includes("Proof")
+    //   ),
+    //   communityCertificates: groupDocs(d =>
+    //     d.fileName?.includes("Community")
+    //   ),
+    //   disabilityCertificates: groupDocs(d =>
+    //     d.fileName?.includes("DISABILITY")
+    //   ),
+    // }
     documents: {
-      photo: groupDocs(d => d.fileName?.includes("Photo")),
-      signature: groupDocs(d => d.fileName?.includes("Signature")),
-      resume: groupDocs(d => d.fileName?.includes("Resume")),
-      payslips: groupDocs(d => d.fileName?.includes("Payslip")),
-      educationCertificates: groupDocs(d =>
-        d.fileName?.includes("Board") ||
-        d.fileName?.includes("Intermediate")
-      ),
-      identityProofs: groupDocs(d =>
-        d.fileName?.includes("Aadhar") ||
-        d.fileName?.includes("Proof")
-      ),
-      communityCertificates: groupDocs(d =>
-        d.fileName?.includes("Community")
-      ),
-      disabilityCertificates: groupDocs(d =>
-        d.fileName?.includes("DISABILITY")
-      ),
+      allDocs: groupDocs(() => true),
     }
   };
 };

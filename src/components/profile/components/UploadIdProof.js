@@ -172,7 +172,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
     const ext = file.name.split(".").pop().toLowerCase();
 
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      toast.error("Invalid file type. Only PDF, JPG, PNG, DOC, DOCX are allowed.");
+      toast.error("Invalid file type. Only PDF, JPG, PNG are allowed.");
       e.target.value = ""; // reset input
       return;
     }
@@ -350,7 +350,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
             {/* <div>Drag & drop your Aadhar here, or</div> */}
             <span style={{ color: "#42579f", cursor: "pointer" }}>Click to Upload</span>
             <span className="text-muted mt-2" style={{ fontSize: "12px" }}>
-              Supported: PDF, JPG, PNG, DOC, DOCX (Max 2MB)
+              Supported: PDF, JPG, PNG (Max 2MB)
             </span>
             <span className="text-muted" style={{ fontSize: "12px" }}>
               (Please upload a clear image)
@@ -360,7 +360,7 @@ const UploadIdProof = ({ goNext, goBack }) => {
           <input
             type="file"
             id="idproof-input"
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+            accept=".pdf,.jpg,.jpeg,.png"
             style={{ display: "none" }}
             onChange={handleFileChange}
           />

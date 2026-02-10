@@ -267,42 +267,42 @@ const handleFileSelect = (e) => {
 
         {/* ===== STATUS STEPPER ===== */}
         <div className="status-stepper">
-            {steps.map((step, index) => {
-  const state =
-    index < currentIndex
-      ? "completed"
-      : index === currentIndex
-      ? "current"
-      : "pending";
+          {steps.map((step, index) => {
+          const state =
+            index < currentIndex
+              ? "completed"
+              : index === currentIndex
+              ? "current"
+              : "pending";
 
-  const backendStatus = stepToStatusMap[step];
-  const stepDate = statusMap[backendStatus];
+          const backendStatus = stepToStatusMap[step];
+          const stepDate = statusMap[backendStatus];
 
-  return (
-    <div className={`step ${state}`} key={index}>
-      <div className="circle-wrapper">
-        <div className={`circle ${state}`}>
-          {state === "completed" && "✓"}
-        </div>
-      </div>
+          return (
+            <div className={`step ${state}`} key={index}>
+              <div className="circle-wrapper">
+                <div className={`circle ${state}`}>
+                  {state === "completed" && "✓"}
+                </div>
+              </div>
 
-      <div className="step-label">{step}</div>
+              <div className="step-label">{step}</div>
 
-      {/* ✅ DATE NOW WORKS */}
-      <div className="step-date">
-        {stepDate ? formatDateTime(stepDate) : ""}
-      </div>
+              {/* ✅ DATE NOW WORKS */}
+              <div className="step-date">
+                {stepDate ? formatDateTime(stepDate) : ""}
+              </div>
 
-      <div className={`step-badge ${state}`}>
-        {state === "completed"
-          ? "Completed"
-          : state === "current"
-          ? "Current Stage"
-          : "Pending"}
-      </div>
-    </div>
-  );
-})}
+              <div className={`step-badge ${state}`}>
+                {state === "completed"
+                  ? "Completed"
+                  : state === "current"
+                  ? "Current Stage"
+                  : "Pending"}
+              </div>
+            </div>
+          );
+        })}
           </div>
 
           {isContract && (

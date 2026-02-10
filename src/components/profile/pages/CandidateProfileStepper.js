@@ -22,34 +22,38 @@ const CandidateProfileStepper = ({
   setActiveTab
 }) => {
   const { updateStep } = useStepTracking();
-
-  const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Certification",  "Experience", "Document"];
-
-  // Use server-provided user info from Redux to determine start step
+  const [visitedSteps, setVisitedSteps] = useState(new Set([0]));
   const serverData = useSelector((state) => state?.user?.user?.data); // matches other components
   const isProfileCompleted = serverData?.user?.isProfileCompleted === true;
+  
+  const steps = ["Upload Aadhar", "Upload Resume", "Basic Details", "Address", "Education", "Certification",  "Experience", "Document"];
+
   const computeInitialStep = () => {
-  if (!serverData) return 0;
+    if (!serverData) return 0;
 
-  const srvUser = serverData.user;
-  console.log("srvUser", srvUser)
+    const srvUser = serverData.user;
+    console.log("srvUser", srvUser)
 
-  // 🔒 Only for FIRST LOAD / EDIT PROFILE
-  if (srvUser?.isProfileCompleted === true) {
-    return steps.length - 1; // Document
-  }
+    // 🔒 Only for FIRST LOAD / EDIT PROFILE
+    if (srvUser?.isProfileCompleted === true) {
+      return steps.length - 1; // Document
+    }
 
-  const cs = Number(srvUser?.currentStep);
-  if (!Number.isNaN(cs) && cs >= 1 && cs <= steps.length) {
-    return cs - 1;
-  }
+    const cs = Number(srvUser?.currentStep);
+    if (!Number.isNaN(cs) && cs >= 1 && cs <= steps.length) {
+      return cs - 1;
+    }
 
-  return 0;
-};
-
+    return 0;
+  };
 
   const [activeStep, setActiveStep] = useState(computeInitialStep);
-const [isNavigating, setIsNavigating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  useEffect(() => {
+    setVisitedSteps(prev => new Set(prev).add(activeStep));
+  }, [activeStep]);
+
   // If server data changes after login, update active step accordingly
   useEffect(() => {
   if (!serverData) return;
@@ -156,7 +160,7 @@ const goBack = () => {
 
   return (
     <div className="pb-3">
-      <Stepper steps={steps} activeStep={activeStep} isProfileCompleted={isProfileCompleted}/>
+      <Stepper steps={steps} activeStep={activeStep} isProfileCompleted={isProfileCompleted} visitedSteps={visitedSteps} />
 
       <div className="p-3" style={{ margin: '0 auto', width: '82%' }}>
         {renderStepContent()}

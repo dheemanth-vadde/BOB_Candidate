@@ -8,7 +8,7 @@ import masterApi from "../../../services/master.api";
 
 import { mapJobsApiToList } from "../../jobs/mappers/jobMapper";
 import { mapRequisitionsApiToList } from "../../jobs/mappers/requisitionMapper";
-import { mapMasterDataApi } from "../../jobs/mappers/masterDataMapper";
+import { mapMasterDataApi, mapZonalStatesApi } from "../../jobs/mappers/masterDataMapper";
 import { mapCandidateToPreview } from "../../jobs/mappers/candidatePreviewMapper";
 import { mapInterviewCentresApi } from "../../jobs/mappers/interviewCentreMapper";
 
@@ -138,17 +138,33 @@ const clearFilters = () => {
   /* ---------------- FETCHERS ---------------- */
   useEffect(() => {
     const loadMasters = async () => {
-      const res = await jobsApiService.getMasterData();
-      const mapped = mapMasterDataApi(res);
-      setDepartments(mapped.departments || []);
-      setStates(mapped.states || []);
-      setLocations(mapped.cities || []);
-      setMasterData(mapped);
-      setIsMasterReady(true);
+      try {
+        const res = await jobsApiService.getMasterData();
+        const mapped = mapMasterDataApi(res);
+
+        const statesRes = await masterApi.getStatesData();
+        const zonalStates = Array.isArray(statesRes)
+          ? mapZonalStatesApi(statesRes)
+          : [];
+        console.log("mapped zonal states", zonalStates)
+        setMasterData({
+          ...mapped,
+          states: zonalStates,     // 🔥 THIS is what PreviewModal uses
+        });
+
+        setStates(zonalStates);
+        setDepartments(mapped.departments || []);
+        setLocations(mapped.cities || []);
+        setIsMasterReady(true);
+      } catch (err) {
+        console.error("Failed to load masters", err);
+      }
     };
+
     loadMasters();
   }, []);
- useEffect(() => {
+
+  useEffect(() => {
     setCurrentPage(0);
   }, [pageSize]);
   // Initialize with requisitionId when provided
@@ -178,32 +194,33 @@ const clearFilters = () => {
 
 
   useEffect(() => {
-  if (!infoDocs?.length) return;
+    if (!infoDocs?.length) return;
 
-  const fetchSasUrls = async () => {
-    setLoading(true);
-    try {
-      const results = await Promise.all(
-        infoDocs.map(async (doc) => {
-          const res = await masterApi.getSasUrl(doc.fileUrl);
-          return {
-            ...doc,
-            sasUrl: res.data, // SAS URL from backend
-          };
-        })
-      );
+    const fetchSasUrls = async () => {
+      setLoading(true);
+      try {
+        const results = await Promise.all(
+          infoDocs.map(async (doc) => {
+            const res = await masterApi.getSasUrl(doc.fileUrl);
+            const cleanedFileUrl = res.replace(/\s+/g, "");
+            return {
+              ...doc,
+              sasUrl: cleanedFileUrl, // SAS URL from backend
+            };
+          })
+        );
 
-      setSasDocs(results);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load documents");
-    } finally {
-      setLoading(false);
-    }
-  };
+        setSasDocs(results);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load documents");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchSasUrls();
-}, [infoDocs]);
+    fetchSasUrls();
+  }, [infoDocs]);
 
 
   // Auto-trigger apply modal when both requisitionId and positionId are provided

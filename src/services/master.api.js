@@ -65,6 +65,30 @@ export const getSasUrl = (filePath) => {
     params: { dir: filePath },
   });
 };
+
+export const getStatesData = () => {
+  return mastersapi.get(`/v1/master/zonal-states/all`);
+}
+
+export const getInterviewCentresByState = (zonalStateId) => {
+  if (!zonalStateId) {
+    throw new Error("zonalStateId is required");
+  }
+
+  return mastersapi.post(
+    "/v1/master/interview-centres/search",
+    {
+      organizationTypes: ["Regional Office", "Zonal Office"],
+      zonalStateId,
+    },
+    {
+      headers: {
+        "X-Client": "candidate",
+      },
+    }
+  );
+};
+
 export default {
   getMasterData,
   getDocumentTypes,
@@ -73,5 +97,7 @@ export default {
   getGenericDocuments,
   getCertifications,
   downloadFile,
-  getSasUrl
+  getSasUrl,
+  getStatesData,
+  getInterviewCentresByState
 };

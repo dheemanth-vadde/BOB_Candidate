@@ -36,6 +36,7 @@ export const useEducationDetails = ({ goNext }) => {
   const [loading, setLoading] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [activeAccordionKey, setActiveAccordionKey] = useState(null);
+  const [hasSavedEducation, setHasSavedEducation] = useState(false);
 
   const formRefs = useRef({});
 
@@ -88,6 +89,7 @@ export const useEducationDetails = ({ goNext }) => {
       ]);
 
       const list = eduRes?.data || [];
+      setHasSavedEducation(list.length > 0);
       const raw = masterRes?.data || {};
       const mandatoryQualifications = raw.mandatoryQualification || [];
 
@@ -201,6 +203,12 @@ export const useEducationDetails = ({ goNext }) => {
 
   /* -------------------- VALIDATION -------------------- */
   const saveAndNext = () => {
+    // If backend already has education → allow next
+    if (hasSavedEducation) {
+      goNext();
+      return;
+    }
+
     if (!educations.length) {
       toast.error("Please add at least 1 education");
       return;
@@ -234,6 +242,7 @@ export const useEducationDetails = ({ goNext }) => {
     refreshEducation: fetchEducationDetails,
     getExistingRanges,
     saveAndNext,
-    setIsDirty
+    setIsDirty,
+    hasSavedEducation
   };
 };

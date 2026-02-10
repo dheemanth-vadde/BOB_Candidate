@@ -17,12 +17,16 @@ const CandidatePortal = () => {
   const user = useSelector((state) => state.user.user);
   const candidateId = user?.data?.user?.id;
   const isProfileCompleted = user?.data?.user?.isProfileCompleted;
+  // console.log("isProfileCompleted: ", isProfileCompleted)
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(null); // null = loading
   const [showModal, setShowModal] = useState(false);
   const [checkboxChecked, setCheckboxChecked] = useState(false);
   // If query params exist and profile is completed, show jobs tab. If profile not completed, show info tab. Otherwise normal flow
+  // const [activeTab, setActiveTab] = useState(
+  //   requisitionId && positionId && isProfileCompleted ? 'jobs' : (requisitionId ? 'info' : 'info')
+  // );
   const [activeTab, setActiveTab] = useState(
-    requisitionId && positionId && isProfileCompleted ? 'jobs' : (requisitionId ? 'info' : 'info')
+    isProfileCompleted ? 'jobs' : 'info'
   );
   const [resumeFile, setResumeFile] = useState(null);
   const [ResumePublicUrl, setResumePublicUrl] = useState(null);

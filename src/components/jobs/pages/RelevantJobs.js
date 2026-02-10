@@ -248,14 +248,14 @@ console.log("showPreviewModal", showPreviewModal)
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("annexures")}
               >
-                <img src={Group} alt="Group" className="annexure_group" />
+                <img src={Group} alt="Group" className="annexure_group me-2" />
                 Annexure Forms
               </button>
               <button
                 className="info_btn"
                 onClick={() => fetchInfoDocuments("generic")}
               >
-                <img src={Vector} alt="Vector" className="generic_group" />
+                <img src={Vector} alt="Vector" className="generic_group me-2" />
                 Generic Information
               </button>
               <div className="applied-search">
@@ -369,9 +369,9 @@ console.log("showPreviewModal", showPreviewModal)
                       >
                         Apply Now
                       </button>) : (
-                      <span className="text-danger fw-semibold small">
+                      <p className="text-danger fw-semibold small mb-2">
                         Application Closed
-                      </span>
+                      </p>
                     )}
                     <button
                       className="btn btn-sm knowntb"

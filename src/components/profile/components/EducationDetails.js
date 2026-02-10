@@ -5,6 +5,7 @@ import BackButtonWithConfirmation from "../../../shared/components/BackButtonWit
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEducationDetails } from "../hooks/educationHooks";
+import NextButtonWithConfirmation from "../../../shared/components/NextButtonWithConfirmation";
 
 const EducationDetails = ({ goNext, goBack }) => {
   const {
@@ -65,8 +66,11 @@ const EducationDetails = ({ goNext, goBack }) => {
       {/* Bottom Nav Buttons — UNCHANGED */}
       <div className="d-flex justify-content-between mt-5">
         <BackButtonWithConfirmation goBack={goBack} isDirty={isDirty} />
-
-        <button
+        <NextButtonWithConfirmation
+          onNext={saveAndNext}
+          isDirty={isDirty}
+        />
+        {/* <button
           type="button"
           className="btn btn-primary"
           style={{
@@ -81,7 +85,7 @@ const EducationDetails = ({ goNext, goBack }) => {
         >
           Save & Next
           <FontAwesomeIcon icon={faChevronRight} size='sm' className="ms-2" />
-        </button>
+        </button> */}
       </div>
 
       {loading && (

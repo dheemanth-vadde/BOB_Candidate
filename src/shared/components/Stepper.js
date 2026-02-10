@@ -2,14 +2,18 @@ import React from "react";
 import "./../../css/Stepper.css";
 import whiteCheck from '../../assets/white-check.png'
 
-const Stepper = ({ steps, activeStep, isProfileCompleted }) => {
+const Stepper = ({ steps, activeStep, visitedSteps, isProfileCompleted }) => {
   return (
     <div className="stepper-container">
       {steps.map((step, index) => {
         const isActive = index === activeStep;
+        const isVisited = visitedSteps.has(index);
 
-        // 🔑 All completed if profile completed
-        const isCompleted = isProfileCompleted || index < activeStep;
+        const isCompleted =
+          (isVisited && index < activeStep) || isProfileCompleted;
+
+        const isRevisited =
+          isVisited && index === activeStep && index < Math.max(...visitedSteps);
 
         return (
           <React.Fragment key={index}>
@@ -17,15 +21,12 @@ const Stepper = ({ steps, activeStep, isProfileCompleted }) => {
               className={`step-item
                 ${isCompleted ? "completed" : ""}
                 ${isActive ? "active" : ""}
+                ${isRevisited ? "revisited" : ""}
               `}
             >
-             <div className="step_circle">
-                {isCompleted && !(isProfileCompleted && isActive) ? (
-                  <img
-                    src={whiteCheck}
-                    alt="Completed"
-                    className="step-check-icon"
-                  />
+              <div className="step_circle">
+                {isCompleted && !isActive ? (
+                  <img src={whiteCheck} alt="Completed" className="step-check-icon" />
                 ) : (
                   index + 1
                 )}
@@ -34,11 +35,7 @@ const Stepper = ({ steps, activeStep, isProfileCompleted }) => {
             </div>
 
             {index !== steps.length - 1 && (
-              <div
-                className={`step-line ${
-                  isCompleted ? "completed" : ""
-                }`}
-              />
+              <div className={`step-line ${isCompleted ? "completed" : ""}`} />
             )}
           </React.Fragment>
         );
@@ -46,6 +43,5 @@ const Stepper = ({ steps, activeStep, isProfileCompleted }) => {
     </div>
   );
 };
-
 
 export default Stepper;

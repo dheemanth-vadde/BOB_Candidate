@@ -80,3 +80,14 @@
   width: 18px;
   height: 18px;
 }
+
+.step-item.revisited .step_circle {
+  border-color: #ff6600;   /* orange */
+  background: #ff6600;
+  color: white;
+}
+
+.step-item.revisited .step-label {
+  color: #ff6600;
+  font-weight: 600;
+}

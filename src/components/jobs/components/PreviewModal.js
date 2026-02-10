@@ -29,6 +29,9 @@ const PreviewModal = ({
     decl2: false,
     decl3: false,
   });
+  const [selectedStateId, setSelectedStateId] = useState("");
+  const [locations, setLocations] = useState([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
   const allChecked =
     declarations.decl1 &&
     declarations.decl2 &&
@@ -49,6 +52,17 @@ const PreviewModal = ({
   const [photoSrc, setPhotoSrc] = useState(null);
   const [signatureSrc, setSignatureSrc] = useState(null);
 
+  const states = masterData?.states ?? [];
+  const stateIds = selectedJob?.state_id_array ?? [];
+
+  const hasInvalidIds =
+    stateIds.length &&
+    !stateIds.some(id => states.some(s => s.zonal_state_id === id));
+
+  const availableStates =
+    !selectedJob?.isLocationWise || hasInvalidIds
+      ? states   // ⚠️ fallback
+      : states.filter(s => stateIds.includes(s.zonal_state_id));
 
   useEffect(() => {
     if (
@@ -58,6 +72,26 @@ const PreviewModal = ({
       setActiveAccordion(["4"]); // 👈 Add Preference section
     }
   }, [formErrors]);
+
+  useEffect(() => {
+    if (!selectedStateId) return;
+    // console.log("Selected state ID for fetching interview centres:", selectedStateId);
+    setLoadingLocations(true);
+
+    masterApi.getInterviewCentresByState(selectedStateId)
+      .then((res) => {
+        // console.log("Interview centres response:", res);
+        setLocations(Array.isArray(res) ? res : []);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch interview centres", err);
+        setLocations([]);
+      })
+      .finally(() => {
+        setLoadingLocations(false);
+      });
+
+  }, [selectedStateId]);
 
   // ✅ PHOTO
   const photoUrl = previewData?.documents?.photo?.[0]?.url || null;
@@ -95,10 +129,6 @@ const PreviewModal = ({
   console.log("Stored preference:", preferenceData);
   console.log("Preview previewData:", previewData);
   const allDocuments = Object.values(previewData.documents || {}).flat();
-
-
-
-
 
   return (
     <Modal
@@ -488,20 +518,18 @@ const PreviewModal = ({
                               className="form-control"
                               value={applyForm[`state${i}`]}
                               onChange={(e) => {
-                                onApplyFormChange(`state${i}`, e.target.value);
+                                const stateId = e.target.value;
+
+                                onApplyFormChange(`state${i}`, stateId);
                                 onApplyFormChange(`location${i}`, "");
+
+                                setSelectedStateId(stateId); // 🔥 THIS WAS MISSING
                               }}
                             >
                               <option value="">Select State</option>
 
-                              {(
-                                selectedJob?.isLocationWise
-                                  ? masterData.states.filter(s =>
-                                    selectedJob?.state_id_array?.includes(s.state_id)
-                                  )
-                                  : masterData.states
-                              ).map(s => (
-                                <option key={s.state_id} value={s.state_id}>
+                              {availableStates.map(s => (
+                                <option key={s.zonal_state_id} value={s.zonal_state_id}>
                                   {s.state_name}
                                 </option>
                               ))}
@@ -525,13 +553,18 @@ const PreviewModal = ({
                           >
                             <option value="">Select Location</option>
 
-                            {masterData.cities
-                              .filter(c => c.state_id === applyForm[`state${i}`])
-                              .map(c => (
-                                <option key={c.city_id} value={c.city_id}>
-                                  {c.city_name}
-                                </option>
-                              ))}
+                            {locations.length === 0 && (
+                              <option disabled>Loading locations...</option>
+                            )}
+
+                            {locations.map((loc) => (
+                              <option
+                                key={loc.interviewCentreId}
+                                value={loc.interviewCentreId}
+                              >
+                                {loc.interviewCentre}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </React.Fragment>

@@ -250,3 +250,22 @@ const safeBool = (v) => v ?? true;
 
   };
 };
+
+/**
+ * Maps zonal states API response to internal format
+ * @param {Array} apiResponse - Array of zonal states from getStatesData API
+ * @returns {Array} Mapped states array
+ */
+export const mapZonalStatesApi = (apiResponse) => {
+  const safeStr = (v) => (typeof v === "string" ? v.trim() : "");
+  
+  return (apiResponse || [])
+    .filter(state => state.zonalStateID || state.stateName)
+    .map(state => ({
+      state_id: state.zonalStateID,
+      state_name: safeStr(state.stateName),
+      zonal_state_id: state.zonalStateID,
+      is_active: true,
+    }));
+};
+
