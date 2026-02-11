@@ -63,12 +63,12 @@ const statusToIndexMap = isContract
     };
 
 const stepToStatusMap = {
-  "Applied": "Applied",
-  "Shortlisted": "Shortlisted",
-  "Interview Scheduled": "Scheduled",
-  "Selected In Interview": "Selected",
-  "Compensation": "Compensation",
-  "Offer": "Offered"
+  "Applied": "APPLIED",
+  "Shortlisted": "SHORTLISTED",
+  "Interview Scheduled": "SCHEDULED",
+  "Selected In Interview": "SELECTED",
+  "Compensation": "COMPENSATION",
+  "Offer": "OFFERED"
 };
 
 const hasActiveDiscrepancy =
@@ -103,7 +103,7 @@ const fetchApplicationStatus = async () => {
         maxIndex = idx;
       }
     });
-
+    console.log("status history", map);
     setStatusMap(map);
     setCurrentIndex(maxIndex); // ✅ THIS drives the stepper
 
@@ -282,8 +282,9 @@ const handleFileSelect = (e) => {
               ? "current"
               : "pending";
 
-          const backendStatus = stepToStatusMap[step];
-          const stepDate = statusMap[backendStatus];
+          // const backendStatus = stepToStatusMap[step];
+          // const stepDate = statusMap[backendStatus];
+          const stepDate = statusMap[Object.keys(statusToIndexMap)[index]];
 
           return (
 

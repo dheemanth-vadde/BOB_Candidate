@@ -480,7 +480,7 @@ const EducationForm = forwardRef((props, ref) => {
             <option value="">Select Board</option>
             {masterData?.boards.filter(b => b.levelId === formData.educationLevel).map(e => (
               <option key={e.educationQualificationsId} value={e.educationQualificationsId}>
-                {e.qualificationCode}
+                {e.qualificationName}
               </option>
             ))}
           </select>

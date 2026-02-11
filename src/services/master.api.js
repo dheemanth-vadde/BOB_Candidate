@@ -70,15 +70,11 @@ export const getStatesData = () => {
   return mastersapi.get(`/v1/master/zonal-states/all`);
 }
 
-export const getInterviewCentresByState = (zonalStateId) => {
-  if (!zonalStateId) {
-    throw new Error("zonalStateId is required");
-  }
-
+export const getInterviewCentresByState = (organizationTypes, zonalStateId) => {
   return mastersapi.post(
     "/v1/master/interview-centres/search",
     {
-      organizationTypes: ["Regional Office", "Zonal Office"],
+      organizationTypes: organizationTypes,
       zonalStateId,
     },
     {

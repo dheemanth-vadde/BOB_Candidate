@@ -143,8 +143,8 @@ const clearFilters = () => {
         const mapped = mapMasterDataApi(res);
 
         const statesRes = await masterApi.getStatesData();
-        const zonalStates = Array.isArray(statesRes)
-          ? mapZonalStatesApi(statesRes)
+        const zonalStates = Array.isArray(statesRes.data)
+          ? mapZonalStatesApi(statesRes.data)
           : [];
         console.log("mapped zonal states", zonalStates)
         setMasterData({

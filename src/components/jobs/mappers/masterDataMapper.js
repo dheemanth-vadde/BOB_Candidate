@@ -269,3 +269,12 @@ export const mapZonalStatesApi = (apiResponse) => {
     }));
 };
 
+// export const mapZonalStatesApi = (apiResponse = []) => {
+//   return apiResponse
+//     .filter(state => state?.zonalStateID)
+//     .map(state => ({
+//       state_id: state.zonalStateID,
+//       state_name: (state.stateName || "").trim(),
+//       is_active: true,
+//     }));
+// };

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import jobsApiService from "../services/jobsApiService";
 import "../../../css/Offerletter.css";
+import masterApi from "../../../services/master.api";
 
 const OfferLetterModal = ({ show, onHide, offerData, onDecisionSuccess }) => {
   const [comments, setComments] = useState("");
@@ -15,10 +16,10 @@ const OfferLetterModal = ({ show, onHide, offerData, onDecisionSuccess }) => {
   useEffect(() => {
     const fetchMedicalLocations = async () => {
       if (!show) return;
-
       setIsLoadingLocations(true);
+      const orgTypes = ["Zonal Office", "Regional Office"];
       try {
-        const response = await jobsApiService.getMedicalLocations();
+        const response = await masterApi.getInterviewCentresByState(orgTypes, "");
         setMedicalLocations(response.data || []);
       } catch (error) {
         console.error("Failed to fetch medical locations:", error);
@@ -74,11 +75,11 @@ const OfferLetterModal = ({ show, onHide, offerData, onDecisionSuccess }) => {
 
   return (
     <Modal show={show} onHide={onHide} size="lg" centered dialogClassName="offer-modal">
-      <Modal.Header closeButton>
+      <Modal.Header className="py-3 px-3" closeButton>
         <Modal.Title className="lettertitle">Offer Letter</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body style={{ height: "75vh", padding: 0 }}>
+      <Modal.Body style={{ height: "57vh", padding: 0 }}>
         {/* <iframe
           src={offerData.fileUrl}   // FROM API
           title="Offer Letter"
@@ -129,8 +130,11 @@ const OfferLetterModal = ({ show, onHide, offerData, onDecisionSuccess }) => {
               >
                 <option value="">Select Medical Location</option>
                 {medicalLocations.map((location) => (
-                  <option key={location.medicalCentreId} value={location.medicalCentreId}>
-                    {location.medicalCentre}
+                  <option
+                    key={location.interviewCentreId}
+                    value={location.interviewCentreId}
+                  >
+                    {location.interviewCentre}
                   </option>
                 ))}
               </select>

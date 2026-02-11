@@ -30,8 +30,11 @@ const PreviewModal = ({
     decl3: false,
   });
   const [selectedStateId, setSelectedStateId] = useState("");
-  const [locations, setLocations] = useState([]);
+  // const [locations, setLocations] = useState([]);
+  const [locationsMap, setLocationsMap] = useState({});
   const [loadingLocations, setLoadingLocations] = useState(false);
+  const [interviewCentreOptions, setInterviewCentreOptions] = useState([]);
+  const [loadingInterviewCentres, setLoadingInterviewCentres] = useState(false);
   const allChecked =
     declarations.decl1 &&
     declarations.decl2 &&
@@ -73,43 +76,81 @@ const PreviewModal = ({
     }
   }, [formErrors]);
 
-  useEffect(() => {
-    if (!selectedStateId) return;
-    // console.log("Selected state ID for fetching interview centres:", selectedStateId);
+  const fetchLocationsForState = async (stateId, index) => {
+    if (!stateId) return;
+
     setLoadingLocations(true);
 
-    masterApi.getInterviewCentresByState(selectedStateId)
+    try {
+      const res = await masterApi.getInterviewCentresByState(
+        ["Regional Office", "Zonal Office"],
+        stateId
+      );
+
+      setLocationsMap(prev => ({
+        ...prev,
+        [index]: Array.isArray(res.data) ? res.data : []
+      }));
+
+    } catch (err) {
+      console.error("Failed to fetch locations", err);
+    } finally {
+      setLoadingLocations(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!show) return;
+
+    setLoadingInterviewCentres(true);
+    const orgTypes = ["Zonal Office"];
+    masterApi
+      .getInterviewCentresByState(orgTypes, "") // 👈 explicitly empty
       .then((res) => {
-        // console.log("Interview centres response:", res);
-        setLocations(Array.isArray(res) ? res : []);
+        setInterviewCentreOptions(Array.isArray(res.data) ? res.data : []);
+        console.log("Fetched interview centres for preview modal:", res.data);
       })
       .catch((err) => {
         console.error("Failed to fetch interview centres", err);
-        setLocations([]);
+        setInterviewCentreOptions([]);
       })
       .finally(() => {
-        setLoadingLocations(false);
+        setLoadingInterviewCentres(false);
       });
+  }, [show]);
 
-  }, [selectedStateId]);
+  const allDocs = previewData?.documents?.allDocs || [];
 
-  // ✅ PHOTO
-  const photoUrl = previewData?.documents?.photo?.[0]?.url || null;
+  const photoDoc = allDocs.find(
+    (doc) => doc.displayname?.toLowerCase() === "photo"
+  );
 
-  // ✅ SIGNATURE
-  const signatureUrl = previewData?.documents?.signature?.[0]?.url || null;
+  const signatureDoc = allDocs.find(
+    (doc) => doc.displayname?.toLowerCase() === "signature"
+  );
+
+  const photoUrl = photoDoc?.url || null;
+  const signatureUrl = signatureDoc?.url || null;
+
+  const photoDisplayName = photoDoc?.displayname || null;
+  const signatureDisplayName = signatureDoc?.displayname || null;
+
+  console.log("Photo:", photoUrl, photoDisplayName);
+  console.log("Signature:", signatureUrl, signatureDisplayName);
 
   useEffect(() => {
     const loadImages = async () => {
       try {
         if (photoUrl) {
           const res = await masterApi.getSasUrl(photoUrl);
-          setPhotoSrc(res.data); // ✅ SAS URL
+          setPhotoSrc(res.replace(/\s+/g, "")); // ✅ SAS URL
+          console.log("Photo SAS URL:", res.replace(/\s+/g, ""));
         }
 
         if (signatureUrl) {
           const res = await masterApi.getSasUrl(signatureUrl);
-          setSignatureSrc(res.data); // ✅ SAS URL
+          setSignatureSrc(res.replace(/\s+/g, "")); // ✅ SAS URL
+          console.log("Signature SAS URL:", res.replace(/\s+/g, ""));
         }
       } catch (err) {
         console.error("Failed to load images", err);
@@ -523,7 +564,7 @@ const PreviewModal = ({
                                 onApplyFormChange(`state${i}`, stateId);
                                 onApplyFormChange(`location${i}`, "");
 
-                                setSelectedStateId(stateId); // 🔥 THIS WAS MISSING
+                                fetchLocationsForState(stateId, i);
                               }}
                             >
                               <option value="">Select State</option>
@@ -553,11 +594,11 @@ const PreviewModal = ({
                           >
                             <option value="">Select Location</option>
 
-                            {locations.length === 0 && (
+                            {applyForm[`state${i}`] && !(locationsMap[i]?.length) && (
                               <option disabled>Loading locations...</option>
                             )}
 
-                            {locations.map((loc) => (
+                            {(locationsMap[i] || []).map((loc) => (
                               <option
                                 key={loc.interviewCentreId}
                                 value={loc.interviewCentreId}
@@ -613,9 +654,13 @@ const PreviewModal = ({
                   >
                     <option value="">Select Interview Center</option>
 
-                    {interviewCentres.map((centre) => (
-                      <option key={centre.id} value={centre.id}>
-                        {centre.Interview_Centre}
+                    {loadingInterviewCentres && (
+                      <option disabled>Loading interview centres...</option>
+                    )}
+
+                    {interviewCentreOptions.map((centre) => (
+                      <option key={centre.interviewCentreId} value={centre.interviewCentreId}>
+                        {centre.interviewCentre}
                       </option>
                     ))}
                   </select>

@@ -874,3 +874,14 @@ input::-ms-clear {
   display: none;
 }
 
+.fw-600 {
+  font-weight: 600 !important;
+}
+
+.fw-500 {
+  font-weight: 500 !important;
+}
+
+.dark_text {
+  color: #4A5565 !important
+}

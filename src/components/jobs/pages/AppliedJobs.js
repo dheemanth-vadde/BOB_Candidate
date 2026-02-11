@@ -138,7 +138,7 @@ const AppliedJobs = () => {
   };
 
   const formatStatusLabel = (status) => {
-    if (!status) return "Applied";
+    // if (!status) return "APPLIED";
     return status
       .replace(/_/g, " ")          // Offer_Accepted → Offer Accepted
       .toLowerCase()
@@ -208,112 +208,119 @@ const AppliedJobs = () => {
       {appliedJobs.map((job) => (
         <div className="applied-job-card mb-3" key={job.position_id}>
           {/* Header */}
-          <div className="applied-job-header">
-            <div className="req-date-row">
-              <span className="req-code">
-                {job.requisition_title} ({job.requisition_code})
-              </span>
+          <div className="row  align-items-center">
+            <div className="col-md-10 d-grid">
+              <div className="d-flex gap-2">
+                <span className="req-code">
+                  {job.requisition_title} ({job.requisition_code})
+                </span>
 
-              <span className="date-item">
-                <img src={start} className="date-icon" alt="start"></img>
-                Start: {formatDateDDMMYYYY(job.registration_start_date)}
-              </span>
+                <span className="date-item">
+                  <img src={start} className="date-icon" alt="start"></img>
+                  Start: {formatDateDDMMYYYY(job.registration_start_date)}
+                </span>
 
-              <span className="date-divider">|</span>
+                <span className="date-divider">|</span>
 
-              <span className="date-item">
-                <img src={end} className="date-icon" alt="end"></img>
-                End: {formatDateDDMMYYYY(job.registration_end_date)}
-              </span>
-              <h6 className="job-title titlecolor">
+                <span className="date-item">
+                  <img src={end} className="date-icon" alt="end"></img>
+                  End: {formatDateDDMMYYYY(job.registration_end_date)}
+                </span>
+              </div>
+              <h6 className="job-title titlecolor mt-1">
                 {job.position_title}
               </h6>
-              <div className="job-meta-grid row-1">
-                <div className="meta-item">
-                  <span className="label">Reference No:</span>
+              <div className="row mt-2">
+                <div className="col-md-4">
+                  <span className="label me-1 fw-500 dark_text">Reference No:</span>
                   <span className="value"> {job?.reference_number?.trim() ? job.reference_number : "-"}</span>
                 </div>
 
-                <div className="meta-item">
-                  <span className="label">Eligibility Age:</span>
+                <div className="col-md-4">
+                  <span className="label me-1 fw-500 dark_text">Eligibility Age:</span>
                   <span className="value">
                     {job.eligibility_age_min} – {job.eligibility_age_max} years
                   </span>
                 </div>
 
-                <div className="meta-item">
-                  <span className="label">Applied On:</span>
+                <div className="col-md-4">
+                  <span className="label me-1 fw-500 dark_text">Applied On:</span>
                   <span className="value">{formatDateDDMMYYYY(job.application_date)}</span>
                 </div>
 
-                <div className="meta-item">
-                  <span className="label">Employment Type:</span>
+                <div className="col-md-4 my-2">
+                  <span className="label me-1 fw-500 dark_text">Employment Type:</span>
                   <span className="value">{job.employment_type}</span>
                 </div>
-              </div>
 
-              <div className="job-meta-grid row-2">
-                <div className="meta-item">
-                  <span className="label">Department:</span>
-                  <span className="value">{job.dept_name}</span>
-                </div>
-
-                <div className="meta-item">
-                  <span className="label">Experience:</span>
+                <div className="col-md-4 my-2">
+                  <span className="label me-1 fw-500 dark_text">Experience:</span>
                   <span className="value">{job.mandatory_experience}</span>
                 </div>
 
-                <div className="meta-item">
-                  <span className="label">Vacancies:</span>
+                <div className="col-md-4 my-2">
+                  <span className="label me-1 fw-500 dark_text">Vacancies:</span>
                   <span className="value">{job.no_of_vacancies}</span>
                 </div>
-              </div>
-              <br></br>
-              <div className="job-meta-grid row-3">
-                <div className="meta-item meta-item-education">
-                  <span className="label">Qualification:</span>
+
+                <div className="col-md-12">
+                  <span className="label me-1 fw-500 dark_text">Department:</span>
+                  <span className="value">{job.dept_name}</span>
+                </div>
+
+                <div className="col-md-12 mt-2">
+                  <span className="label me-1 fw-500 dark_text">Qualification:</span>
                   <span className="value">{job.mandatory_qualification}</span>
                 </div>
               </div>
             </div>
-            <div className="actionbtns">
-              <span className={`status-badge ${job.application_status?.toLowerCase() || "applied"}`}>
-                {/* {job.application_status || "Applied"} */}
-                {formatStatusLabel(job.application_status)}
-              </span>
+            <div className="col-md-2 align-items-center">
+              <div className="col-md-12 justify-content-end d-flex">
+                <div
+                  className={`status-badge ${job.application_status
+                    ? job.application_status.toLowerCase().replace(/_/g, "-")
+                    : "applied"}`}
+                  style={{ width: 'fit-content' }}
+                  >
+                  {/* {job.application_status || "Applied"} */}
+                  {formatStatusLabel(job.application_status)}
+                </div>
+              </div>
+              <div className="col-md-12 justify-content-end d-flex">
+                <button
+                  className="footer-link downloadbtn"
+                  onClick={() => handleDownloadApplication(job)}
+                >
+                <img src={download} className="dowload-icon" alt="end"></img>Download Application
+                </button>
+              </div>
+              <div className="col-md-12 justify-content-end d-flex">
+                {(
+                  job.application_status === "OFFERED" ||
+                  job.application_status === "OFFER_ACCEPTED" ||
+                  job.application_status === "OFFER_REJECTED"
+                ) && (
+                    <>
+                      <button
+                        className="footer-link me-2"
+                        onClick={() => handleViewOffer(job)}
+                      >
+                        View Offer
+                      </button>
 
-              <button
-                className="footer-link downloadbtn"
-                onClick={() => handleDownloadApplication(job)}
-              >
-               <img src={download} className="dowload-icon" alt="end"></img>Download Application
-              </button>
-
-              {(
-                job.application_status === "Offered" ||
-                job.application_status === "Offer_Accepted" ||
-                job.application_status === "Offer_Rejected"
-              ) && (
-                  <>
-                    <button
-                      className="footer-link"
-                      onClick={() => handleViewOffer(job)}
-                    >
-                      View Offer
-                    </button>
-
-                    <span className="footer-separator">|</span>
-                  </>
-                )}
-              <button
-                className="footer-link action_items"
-                onClick={() => {
-                  setSelectedJob(job);
-                  setShowTrackModal(true);
-                }}
-              >
-                Track Application
-              </button>
+                      <span className="footer-separator me-2">|</span>
+                    </>
+                  )}
+                <button
+                  className="footer-link action_items"
+                  onClick={() => {
+                    setSelectedJob(job);
+                    setShowTrackModal(true);
+                  }}
+                >
+                  Track Application
+                </button>
+              </div>
             </div>
           </div>
         </div>

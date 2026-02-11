@@ -130,18 +130,21 @@ width: 12px;
 .status-badge.applied {
   background: #e7f0ff;
   color: #0C5DFF;
-  float: right;
+  width: fit-content;
+  /* float: right; */
 }
 
 .status-badge.interview,
 .status-badge.interview\ scheduled {
   background: #efe7ff;
   color: #7C3BED;
+  width: fit-content;
 }
 
 .status-badge.offered {
   background: rgba(34, 197, 94, 0.1);
   color: #35B729;
+  width: fit-content;
 }
 
 /* =========================================================

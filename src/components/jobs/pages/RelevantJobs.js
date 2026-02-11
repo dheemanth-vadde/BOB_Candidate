@@ -210,7 +210,7 @@ console.log("showPreviewModal", showPreviewModal)
         </div>
 
         {/* Right Job Cards (original style restored) */}
-        <div className="col-md-9">
+        <div className="col-md-9 mb-3">
           {/* 🔹 Search and Requisition Dropdown */}
           <div className="d-flex justify-content-between mb-3">
             <div className="d-flex" style={{ flex: 1 }}>
