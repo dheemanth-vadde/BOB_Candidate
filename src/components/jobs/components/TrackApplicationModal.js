@@ -34,7 +34,7 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
   const steps = [
     { label: "Applied", key: "APPLIED" },
     { label: "Shortlisted", key: "SHORTLISTED" },
-    { label: "Interview", key: "INTERVIEW" },
+    { label: "Interview Scheduled", key: "SCHEDULED" },
     { label: "Selected", key: "SELECTED" },
     { label: "Offer", key: "OFFERED" }
   ];
@@ -43,7 +43,7 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
   const mainStatusToIndex = {
     APPLIED: 0,
     SHORTLISTED: 1,
-    INTERVIEW: 2,
+    SCHEDULED: 2,
     SELECTED: 3,
     OFFERED: 4
   };
@@ -57,31 +57,31 @@ const TrackApplicationModal = ({ show, onHide, job }) => {
 
   const [errors, setErrors] = useState({});
 
-  const statusToIndexMap = isContract
-    ? {
-      APPLIED: 0,
-      SHORTLISTED: 1,
-      SCHEDULED: 2,
-      SELECTED: 3,
-      COMPENSATION: 4,
-      OFFERED: 5,
-    }
-    : {
-      APPLIED: 0,
-      SHORTLISTED: 1,
-      SCHEDULED: 2,
-      SELECTED: 3,
-      OFFERED: 4,
-    };
+  // const statusToIndexMap = isContract
+  //   ? {
+  //     APPLIED: 0,
+  //     SHORTLISTED: 1,
+  //     SCHEDULED: 2,
+  //     SELECTED: 3,
+  //     COMPENSATION: 4,
+  //     OFFERED: 5,
+  //   }
+  //   : {
+  //     APPLIED: 0,
+  //     SHORTLISTED: 1,
+  //     SCHEDULED: 2,
+  //     SELECTED: 3,
+  //     OFFERED: 4,
+  //   };
 
-  const stepToStatusMap = {
-    "Applied": "Applied",
-    "Shortlisted": "Shortlisted",
-    "Interview Scheduled": "Scheduled",
-    "Selected In Interview": "Selected",
-    "Compensation": "Compensation",
-    "Offer": "Offered"
-  };
+  // const stepToStatusMap = {
+  //   "Applied": "Applied",
+  //   "Shortlisted": "Shortlisted",
+  //   "Interview Scheduled": "Scheduled",
+  //   "Selected": "Selected",
+  //   "Compensation": "Compensation",
+  //   "Offer": "Offered"
+  // };
 
   const hasActiveDiscrepancy =
     currentSubStatus === "DISCREPANCY";
@@ -131,9 +131,9 @@ const sorted = [...list].sort(
       let mainStage = latest.status;
 
       // Normalize Interview stage
-      if (["SCHEDULED", "RESCHEDULED", "QUALIFIED", "DISQUALIFIED"]
+      if (["SCHEDULED", "RESCHEDULED","PROVISIONALLY_APPROVED", "QUALIFIED", "DISQUALIFIED"]
         .includes(mainStage)) {
-        mainStage = "INTERVIEW";
+        mainStage = "SCHEDULED";
 
       }
 
@@ -383,15 +383,18 @@ const sorted = [...list].sort(
           </div>
         )}
 
-        {hasActiveDiscrepancy && (
+      {(currentSubStatus === "DISCREPANCY" ||
+          currentSubStatus === "PROVISIONALLY_APPROVED") && (
           <DiscrepancyUploadSection
             applicationId={job?.application_id}
+            status={currentSubStatus}
             onSuccess={fetchApplicationStatus}
           />
         )}
 
-        {!hasActiveDiscrepancy && isContract && (
-
+       {!hasActiveDiscrepancy &&
+        isContract &&
+        steps[currentIndex]?.key === "SELECTED" && (
           <CompensationSection applicationId={job?.application_id} />
         )}
 

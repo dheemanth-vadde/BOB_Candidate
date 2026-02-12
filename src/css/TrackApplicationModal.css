@@ -491,7 +491,7 @@
 }
 
 .track-application-modal .step-line.active {
-  background: linear-gradient(90deg, #0d6efd 0%, #0056b3 100%);
+  background: #162b75;
   box-shadow: 0 0 8px rgba(13, 110, 253, 0.3);
 }
 

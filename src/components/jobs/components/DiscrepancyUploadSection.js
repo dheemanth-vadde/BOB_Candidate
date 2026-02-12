@@ -13,7 +13,7 @@ const allowedTypes = [
   "image/png"
 ];
 
-const DiscrepancyUploadSection = ({ applicationId, onSuccess }) => {
+const DiscrepancyUploadSection = ({ applicationId,status, onSuccess }) => {
   const [docs, setDocs] = useState([]);
   const [uploads, setUploads] = useState({});
   const [loading, setLoading] = useState(false);
@@ -25,33 +25,18 @@ const DiscrepancyUploadSection = ({ applicationId, onSuccess }) => {
 const fetchDocs = async () => {
   try {
 
-    // const staticData = {
-    //   success: true,
-    //   message: "Reject documents found",
-    //   data: [
-    //     {
-    //       candidateDocumentId: "cafdb0fd-d52a-407f-9976-b56338d9630a",
-    //       fileUrl: "/documents/Candidate/candidate_doc/Candidate_Aadhar.png",
-    //       displayName: "Aadhar Card"
-    //     },
-    //     {
-    //       candidateDocumentId: "89757b2b-8528-44e9-9145-46e6f5928cbd",
-    //       fileUrl: "/documents/Candidate/Resume.pdf",
-    //       displayName: "RESUME"
-    //     },
-    //     {
-    //       candidateDocumentId: "08e0d007-57c0-45cf-a7fd-4f4f87c125c8",
-    //       fileUrl: "/documents/Candidate/Signature.png",
-    //       displayName: "Signature"
-    //     },
-    //     {
-    //       candidateDocumentId: "9cdf931a-eda0-4be9-92c9-49d6abb4025f",
-    //       fileUrl: "/documents/Candidate/Certificate.png",
-    //       displayName: "Certificate_Python"
-    //     }
-    //   ]
-    // };
-    const response = await jobsApiService.getRejectDocuments(applicationId);
+
+    let response;
+
+    if (status === "DISCREPANCY") {
+      response = await jobsApiService.getRejectDocuments(applicationId);
+    }
+
+    if (status === "PROVISIONALLY_APPROVED") {
+      response = await jobsApiService.getProvisionallyApprovedDocs(applicationId);
+    }
+
+    //const response = await jobsApiService.getRejectDocuments(applicationId);
     console.log("Fetch Response1111:", response);
     if(response.success){
       setDocs(response.data || []);
