@@ -274,7 +274,6 @@ const EducationForm = forwardRef((props, ref) => {
     const { isValid } = validateForm();
 
     if (!isValid) return;
-    setIsSaving(true);
 
     const collision = hasDateCollision({
       from: formData.from,
@@ -289,8 +288,10 @@ const EducationForm = forwardRef((props, ref) => {
         dateRange: "These dates overlap with another education entry"
       }));
      // setLoading(false);
+     setIsSaving(false);
       return;
     }
+    setIsSaving(true);
 
  //   setLoading(true)
     try {
@@ -301,6 +302,7 @@ const EducationForm = forwardRef((props, ref) => {
       const docCode = selectedEducationLevel?.docCode;
       if (!docCode) {
         toast.error("Education level docCode not found");
+        setIsSaving(false);
         return;
       }
 
@@ -320,6 +322,7 @@ const EducationForm = forwardRef((props, ref) => {
         console.log(res)
         if (!res?.success) {
           toast.error(res?.message || "Invalid Certificate");
+          setIsSaving(false);
           return;
         }
       }
@@ -379,6 +382,7 @@ const EducationForm = forwardRef((props, ref) => {
       toast.error("Failed to save education");
     } finally {
       // setLoading(false)
+      setIsSaving(false);
     }
   };
 
