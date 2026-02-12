@@ -24,115 +24,110 @@ const DiscrepancyUploadSection = ({ applicationId, onSuccess }) => {
 const fetchDocs = async () => {
   try {
 
-    const staticData = {
-      success: true,
-      message: "Reject documents found",
-      data: [
-        {
-          candidateDocumentId: "cafdb0fd-d52a-407f-9976-b56338d9630a",
-          fileUrl: "/documents/Candidate/candidate_doc/Candidate_Aadhar.png",
-          displayName: "Aadhar Card"
-        },
-        {
-          candidateDocumentId: "89757b2b-8528-44e9-9145-46e6f5928cbd",
-          fileUrl: "/documents/Candidate/Resume.pdf",
-          displayName: "RESUME"
-        },
-        {
-          candidateDocumentId: "08e0d007-57c0-45cf-a7fd-4f4f87c125c8",
-          fileUrl: "/documents/Candidate/Signature.png",
-          displayName: "Signature"
-        },
-        {
-          candidateDocumentId: "9cdf931a-eda0-4be9-92c9-49d6abb4025f",
-          fileUrl: "/documents/Candidate/Certificate.png",
-          displayName: "Certificate_Python"
-        }
-      ]
-    };
+    // const staticData = {
+    //   success: true,
+    //   message: "Reject documents found",
+    //   data: [
+    //     {
+    //       candidateDocumentId: "cafdb0fd-d52a-407f-9976-b56338d9630a",
+    //       fileUrl: "/documents/Candidate/candidate_doc/Candidate_Aadhar.png",
+    //       displayName: "Aadhar Card"
+    //     },
+    //     {
+    //       candidateDocumentId: "89757b2b-8528-44e9-9145-46e6f5928cbd",
+    //       fileUrl: "/documents/Candidate/Resume.pdf",
+    //       displayName: "RESUME"
+    //     },
+    //     {
+    //       candidateDocumentId: "08e0d007-57c0-45cf-a7fd-4f4f87c125c8",
+    //       fileUrl: "/documents/Candidate/Signature.png",
+    //       displayName: "Signature"
+    //     },
+    //     {
+    //       candidateDocumentId: "9cdf931a-eda0-4be9-92c9-49d6abb4025f",
+    //       fileUrl: "/documents/Candidate/Certificate.png",
+    //       displayName: "Certificate_Python"
+    //     }
+    //   ]
+    // };
+    const response = await jobsApiService.getRejectDocuments(applicationId);
+    console.log("Fetch Response1111:", response);
+    if(response.success){
+      setDocs(response.data || []);
+    }
+    else{
+      toast.error(response.message || "Failed to load rejected documents");
+    }
 
-    setDocs(staticData.data || []);
 
   } catch {
     toast.error("Failed to load rejected documents");
   }
 };
-
-const handleChange = async (e, doc) => {
+const handleChange = (e, doc) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  // File type validation
   if (!allowedTypes.includes(file.type)) {
     toast.error("Only PDF, DOC, DOCX, JPG, PNG files are allowed");
     return;
   }
 
+  // Just store file in state
+  setUploads(prev => ({
+    ...prev,
+    [doc.verificationId]: file
+  }));
+
+  toast.success(`${doc.displayName} selected successfully`);
+};
+
+const handleSubmit = async () => {
+  if (Object.keys(uploads).length !== docs.length) {
+    toast.error("Please upload all rejected documents");
+    return;
+  }
+
   try {
-    setLoading(true); // 🔥 start loader
+    setLoading(true);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("candidateDocumentId", doc.candidateDocumentId);
+    for (const doc of docs) {
+      const file = uploads[doc.verificationId];
 
-    const response = await jobsApiService.reUploadSingleDocument(formData);
+      const formData = new FormData();
+      formData.append("file", file);
 
-    if (response?.success === false) {
-      throw new Error(response?.message || "Upload failed");
+      const response = await jobsApiService.reUploadSingleDocument(
+        formData,
+        doc.verificationId
+      );
+
+      if (response?.success === false) {
+        throw new Error(
+          response?.message || `Upload failed for ${doc.displayName}`
+        );
+      }
     }
 
-    toast.success(`${doc.displayName} uploaded successfully`);
-
-    // // Mark document as uploaded
-    // setUploadedDocIds(prev => [...prev, doc.candidateDocumentId]);
-
-    // Optional: refresh discrepancy list
+    toast.success("All documents uploaded successfully");
     await fetchDocs();
+    onSuccess();
+    setUploads({});
 
   } catch (error) {
     console.error("Upload Error:", error);
 
-    const errorMessage =
+    toast.error(
       error?.response?.data?.message ||
       error?.message ||
-      "Upload failed. Please try again.";
-
-    toast.error(errorMessage);
+      "Upload failed. Please try again."
+    );
 
   } finally {
-    setLoading(false); // 🔥 stop loader
+    setLoading(false);
   }
 };
 
-
-  const handleSubmit = async () => {
-    if (Object.keys(uploads).length !== docs.length) {
-      toast.error("Please upload all rejected documents");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-
-      docs.forEach(doc => {
-        formData.append("files", uploads[doc.candidateDocumentId]);
-        formData.append("candidateDocumentIds", doc.candidateDocumentId);
-      });
-
-      await jobsApiService.reUploadRejectedDocuments(formData);
-
-      toast.success("Documents uploaded successfully");
-      onSuccess(); // refresh status
-      setUploads({});
-
-    } catch {
-      toast.error("Upload failed");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
 

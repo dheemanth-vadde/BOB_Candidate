@@ -92,6 +92,20 @@ const jobsApiService = {
     candidateApi.get(`/offer-letter/get-offer/by-app-id/${applicationId}`),
   updateOfferDecision: (data) =>
     candidateApi.post(`/applications/update-offer-decision`, data),
+
+
+  getRejectDocuments: (applicationId) =>
+    candidateApi.get(`/rejected-documents/screening/get-rejected-doc/${applicationId}`),
+
+
+  
+  reUploadSingleDocument: (formData, verificationId) =>
+    candidateApi.post(`/rejected-documents/screening/upload-rejected-doc/${verificationId}`, formData, {
+      headers: {
+        "X-Client": "candidate",
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 };
 
 export default jobsApiService;
