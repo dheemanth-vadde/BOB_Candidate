@@ -304,7 +304,7 @@ console.log("showPreviewModal", showPreviewModal)
                   <div className="left_content">
                     {/* ===== Requisition code + dates row ===== */}
                     <div className="req-date-row">
-                      <span className="req-code">
+                      <span className="req-code" title={`${job.requisition_title} - ${job.requisition_code}`}>
                         {job.requisition_title} ({job.requisition_code})
                       </span>
 

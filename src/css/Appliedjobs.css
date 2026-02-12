@@ -20,7 +20,7 @@
    SEARCH BAR
 ========================================================= */
 .applied-search {
-display: flex;
+  display: flex;
   align-items: center;
   background: #ffffff;
   border-radius: 15px;
@@ -75,13 +75,19 @@ display: flex;
 
 .applied-jobs-page .jobtitle {
   font-size: 1rem;
-font-weight: 500;
+  font-weight: 500;
   color: #162B75;
 }
+
 .req-code {
-  color:  #F26522 ;
+  color: #F26522;
   font-weight: 500;
   font-size: 1rem;
+  max-width: 400px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
 }
 
 /* Date text */
@@ -95,7 +101,7 @@ font-weight: 500;
 
 /* Calendar icons */
 .applied-jobs-page .date-icon {
-width: 12px;
+  width: 12px;
   height: 12px;
 }
 
@@ -104,17 +110,20 @@ width: 12px;
   color: #1b2a6b;
   font-weight: 600;
 }
- .job-title{
-  	color: rgb(255, 112, 67) ;
+
+.job-title {
+  color: rgb(255, 112, 67);
   font-size: 1rem;
   float: left;
-    margin-bottom: 0px;
-    font-weight: 500 !important;
-  }
-  .titlecolor{
-    
-      color: #162B75;
-  }
+  margin-bottom: 0px;
+  font-weight: 500 !important;
+}
+
+.titlecolor {
+
+  color: #162B75;
+}
+
 /* =========================================================
    STATUS BADGES
 ========================================================= */
@@ -123,7 +132,7 @@ width: 12px;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 500;
-   background: #e7f0ff;
+  background: #e7f0ff;
   color: #0C5DFF;
 }
 
@@ -153,20 +162,21 @@ width: 12px;
 .job-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 32px;   /* row-gap | column-gap */
+  gap: 6px 32px;
+  /* row-gap | column-gap */
 
 }
 
 .job-meta-row {
   white-space: nowrap;
 
-  font-size:0.875rem;
+  font-size: 0.875rem;
   font-weight: 300;
   color: #404040;
 }
 
 .job-meta-row span {
-  font-size:0.875rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #4A5565;
 }
@@ -176,17 +186,19 @@ width: 12px;
 ========================================================= */
 .job-qualification-row {
   margin-top: 4px;
-  
+
 }
-.job-qualification-row{
-    white-space: nowrap;
- font-size:0.875rem;
+
+.job-qualification-row {
+  white-space: nowrap;
+  font-size: 0.875rem;
   font-weight: 300;
   color: #404040;
-  
+
 }
+
 .job-qualification-row span {
-   font-size:0.875rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #4A5565;
 }
@@ -215,6 +227,7 @@ width: 12px;
 .footer-link:hover {
   text-decoration: underline;
 }
+
 .footer-separator {
   font-size: 13px;
   color: #6c757d;
@@ -263,7 +276,7 @@ width: 12px;
 .meta-item .value {
   color: #404040;
   font-weight: 300;
-  font-size:0.875rem;
+  font-size: 0.875rem;
 }
 
 /*pagination*/
@@ -283,6 +296,7 @@ width: 12px;
 .applied-jobs-page .pagination .page-link:hover {
   background-color: #ffe5d1;
 }
+
 /* .page-loader-overlay {
   position: fixed;
   inset: 0;
@@ -348,25 +362,30 @@ width: 12px;
 .meta-item {
   width: 250px;
 }
+
 .meta-item-education {
   width: 100% !important;
 }
-.meta-item-education span.value{
+
+.meta-item-education span.value {
   color: #404040;
   font-weight: 300;
   font-size: 0.875rem;
 }
-.req-date-row{
-  width:85%;
+
+.req-date-row {
+  width: 85%;
 }
-.actionbtns{
-  width:15%;
+
+.actionbtns {
+  width: 15%;
   float: right;
   display: block;
   text-align: right;
   margin-top: 25px;
 }
-.downloadbtn{
+
+.downloadbtn {
   color: #F26522;
   border: 1px solid #F26522;
   border-radius: 20px;
@@ -374,10 +393,12 @@ width: 12px;
   margin: 15px 0 20px;
   background: #FDE8DE;
 }
-.track-application-modal{
-  width:1100px !important;
+
+.track-application-modal {
+  width: 1100px !important;
 }
-.dowload-icon{
+
+.dowload-icon {
   width: 17px;
   height: 18px;
 }

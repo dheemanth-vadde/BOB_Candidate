@@ -885,3 +885,9 @@ input::-ms-clear {
 .dark_text {
   color: #4A5565 !important
 }
+
+.wraptext{
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}

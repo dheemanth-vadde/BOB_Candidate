@@ -241,7 +241,7 @@ const ResumeUpload = ({ resumeFile, setResumeFile, setParsedData, setResumePubli
             />
 
             <div className='p-2'>
-              <div style={{ fontWeight: 600 }}>
+              <div style={{ fontWeight: 600 }} className='wraptext'>
                 {fileName}
               </div>
               <div className="text-muted" style={{ fontSize: "12px" }}>

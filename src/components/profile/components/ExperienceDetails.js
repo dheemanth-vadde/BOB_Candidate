@@ -209,7 +209,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 										src={greenCheck}
 										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
-									<div style={{ fontWeight: 600 }}>
+									<div style={{ fontWeight: 600 }} className="wraptext">
 										{existingDocument.displayName ?? existingDocument.fileName}
 									</div>
 								</div>
@@ -249,7 +249,7 @@ const ExperienceDetails = ({ goNext, goBack }) => {
 										style={{ fontSize: "22px", marginRight: "10px", width: "22px", height: "22px" }}
 									/>
 									<div>
-										<div style={{ fontWeight: 600 }}>{certificateFile.name}</div>
+										<div style={{ fontWeight: 600 }} className="wraptext">{certificateFile.name}</div>
 										<div className="text-muted" style={{ fontSize: "12px" }}>
 											{formatFileSize(certificateFile.size)}
 										</div>

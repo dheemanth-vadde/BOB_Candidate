@@ -380,4 +380,5 @@ select.form-control {
   color: #F26522;
   font-size: 1rem;
   font-weight: 600;
+  overflow-wrap: break-word;
 }
