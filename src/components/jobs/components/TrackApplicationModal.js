@@ -396,7 +396,7 @@ const sorted = [...list].sort(
         )}
 
         {/* ===== SUBMIT REQUEST ===== */}
-        {!hasActiveDiscrepancy && (
+        
           <div className="query-section bank-style">
             <h6 className="section-title">Submit Your Request</h6>
 
@@ -488,12 +488,12 @@ const sorted = [...list].sort(
                 )}
                 {/* ACTIONS */}
                 <div className="query-actions">
-                  <button
+                  {/* <button
                     className="btn btn-outline-secondary"
                     onClick={onHide}
                   >
                     Cancel
-                  </button>
+                  </button> */}
                   <button
                     className="btn btn-primaryy"
                     onClick={handleSubmitRequest}
@@ -506,9 +506,9 @@ const sorted = [...list].sort(
 
 
           </div>
-        )}
+        
         {/* ===== REQUEST HISTORY ===== */}
-        {!hasActiveDiscrepancy && (
+       
           <div className="query-section bank-style request-history">
             <h6 className="section-title">Request History</h6>
 
@@ -516,7 +516,7 @@ const sorted = [...list].sort(
 
 
           </div>
-        )}
+        
       </Modal.Body>
     </Modal>
   );

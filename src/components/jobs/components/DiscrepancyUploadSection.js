@@ -17,6 +17,7 @@ const DiscrepancyUploadSection = ({ applicationId, onSuccess }) => {
   const [docs, setDocs] = useState([]);
   const [uploads, setUploads] = useState({});
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchDocs();
@@ -68,23 +69,44 @@ const handleChange = (e, doc) => {
   const file = e.target.files[0];
   if (!file) return;
 
+  // File type validation
   if (!allowedTypes.includes(file.type)) {
-    toast.error("Only PDF, DOC, DOCX, JPG, PNG files are allowed");
+    setErrors(prev => ({
+      ...prev,
+      [doc.candidateDocumentId]:
+        "Only PDF, DOC, DOCX, JPG, PNG files are allowed"
+    }));
+
     return;
   }
 
-  // Just store file in state
-  setUploads(prev => ({
+  // Clear error if valid
+  setErrors(prev => ({
     ...prev,
-    [doc.verificationId]: file
+    [doc.candidateDocumentId]: ""
   }));
 
-  toast.success(`${doc.displayName} selected successfully`);
+  // Store file using candidateDocumentId (IMPORTANT)
+  setUploads(prev => ({
+    ...prev,
+    [doc.candidateDocumentId]: file
+  }));
 };
 
+
 const handleSubmit = async () => {
-  if (Object.keys(uploads).length !== docs.length) {
-    toast.error("Please upload all rejected documents");
+  const newErrors = {};
+
+  // Validate missing files
+  docs.forEach(doc => {
+    if (!uploads[doc.candidateDocumentId]) {
+      newErrors[doc.candidateDocumentId] =
+        "Please upload the document";
+    }
+  });
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
     return;
   }
 
@@ -92,46 +114,50 @@ const handleSubmit = async () => {
     setLoading(true);
 
     for (const doc of docs) {
-      const file = uploads[doc.verificationId];
+      const file = uploads[doc.candidateDocumentId];
 
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await jobsApiService.reUploadSingleDocument(
-        formData,
-        doc.verificationId
-      );
+      const response =
+        await jobsApiService.reUploadSingleDocument(
+          formData,
+          doc.verificationId   // API still needs verificationId
+        );
 
       if (response?.success === false) {
-        throw new Error(
-          response?.message || `Upload failed for ${doc.displayName}`
-        );
+        // Show error under that specific field
+        setErrors(prev => ({
+          ...prev,
+          [doc.candidateDocumentId]:
+            response?.message ||
+            `Upload failed for ${doc.displayName}`
+        }));
+
+        throw new Error("Upload stopped due to failure");
       }
     }
 
     toast.success("All documents uploaded successfully");
+
     await fetchDocs();
     onSuccess();
     setUploads({});
+    setErrors({});
 
   } catch (error) {
     console.error("Upload Error:", error);
 
-    toast.error(
-      error?.response?.data?.message ||
-      error?.message ||
-      "Upload failed. Please try again."
-    );
-
+    // ❌ No toast here for field errors
+    // Only unexpected system errors can use toast if needed
   } finally {
     setLoading(false);
   }
 };
 
-
   return (
 
-    <div className="mt-4 p-3 border rounded bg-light">
+    <div className="mt-4 p-3 border rounded bg-light discrepancy-section">
       {loading && <Loader />}
       <h6 className="section-title mb-3">
         Re-upload Rejected Documents
@@ -143,13 +169,22 @@ const handleSubmit = async () => {
           <div key={doc.candidateDocumentId} className="col-md-6 mb-3">
             <div className="p-2 border rounded bg-white">
               <div className="d-flex justify-content-between mb-2">
-                <span className="">{doc.displayName}</span>
+                <label className="">{doc.displayName} <span className="text-danger">*</span></label>
                 {/* <a href={doc.fileUrl} target="_blank" rel="noreferrer">
                   View
                 </a> */}
 
 
-                    <div onClick={() => handleEyeClick(doc.fileUrl)}>
+                    <div onClick={() => {
+                          const uploadedFile = uploads[doc.candidateDocumentId];
+
+                          if (uploadedFile) {
+                            const previewUrl = URL.createObjectURL(uploadedFile);
+                            window.open(previewUrl, "_blank");
+                          } else if (doc.fileUrl) {
+                            handleEyeClick(doc.fileUrl);
+                          }
+                        }}>
                         <img src={viewIcon} alt="View" style={{ width: "25px", cursor: "pointer" }} />
                     </div>
               </div>
@@ -160,25 +195,37 @@ const handleSubmit = async () => {
                 onChange={(e) => handleChange(e, doc)}
               />
 
-              {uploads[doc.candidateDocumentId] && (
+              
+              {errors[doc.candidateDocumentId] && (
+                <div className="invalid-feedback d-block">
+                  {errors[doc.candidateDocumentId]}
+                </div>
+)}
+
+              {/* {uploads[doc.candidateDocumentId] && (
                 <small className="text-success">
                   {uploads[doc.candidateDocumentId].name}
                 </small>
-              )}
+              )} */}
             </div>
           </div>
         ))}
       </div>
 
-      {/* {docs.length > 0 && (
+ 
+<div className="query-actions">
+      {docs.length > 0 && (
         <button
-          className="btn btn-danger mt-3"
+          className="btn btn-primaryy"
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? "Uploading..." : "Submit Documents"}
+          {loading ? "Uploading..." : "Submit"}
         </button>
-      )} */}
+
+        
+      )}
+      </div>
     </div>
   );
 };

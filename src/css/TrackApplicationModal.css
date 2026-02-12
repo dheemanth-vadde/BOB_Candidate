@@ -261,6 +261,41 @@
   border-color: #162B75;
   color: #fff;
 }
+
+
+
+
+.discrepancy-section .btn-primaryy:focus,
+.discrepancy-section .btn-primaryy:focus-visible {
+  background-color: #162B75;
+  border-color: #162B75;
+  color: #fff;
+}
+.discrepancy-section .btn-primaryy {
+  background: #162B75;
+  border-color: #162B75;
+  color:#fff;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+.discrepancy-section .btn-primaryy:hover {
+  background: #162B75;
+  border-color: #162B75;
+  color:#fff;
+}
+/* Active (on click) */
+.discrepancy-section .btn-primaryy:active,
+.discrepancy-section .btn-primaryy.active {  
+  background-color: #162B75;
+  border-color: #162B75;
+  color: #fff;
+}
+
+
+
+
+
+
 .query-actions .btn-outline-secondary{
 
   color: #364153;
@@ -579,7 +614,9 @@
   background-color: #fff3cd;
   color: #856404;
 }
-
+.discrepancy-section{
+  margin-bottom:24px;
+}
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .track-application-modal .status-stepper {
