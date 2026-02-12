@@ -891,3 +891,7 @@ input::-ms-clear {
   overflow-wrap: anywhere;
   white-space: normal;
 }
+.application-closed {
+	text-align: center;
+	color: #DC3545 !important;
+}

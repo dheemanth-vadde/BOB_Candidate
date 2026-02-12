@@ -402,3 +402,7 @@
   width: 17px;
   height: 18px;
 }
+.shortlisted{
+  background-color: rgba(255, 193, 7, 1) !important;
+  color: #fff !important;
+}

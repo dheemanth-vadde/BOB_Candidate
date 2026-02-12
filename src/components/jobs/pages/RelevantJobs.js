@@ -369,7 +369,7 @@ console.log("showPreviewModal", showPreviewModal)
                       >
                         Apply Now
                       </button>) : (
-                      <p className="text-danger fw-semibold small mb-2">
+                      <p className="text-danger fw-semibold small mb-2 application-closed">
                         Application Closed
                       </p>
                     )}
