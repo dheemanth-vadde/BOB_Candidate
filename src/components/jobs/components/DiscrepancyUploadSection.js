@@ -104,11 +104,23 @@ const handleSubmit = async () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response =
-        await jobsApiService.reUploadSingleDocument(
-          formData,
-          doc.verificationId   // API still needs verificationId
-        );
+      // const response =
+      //   await jobsApiService.reUploadSingleDocument(
+      //     formData,
+      //     doc.verificationId   // API still needs verificationId
+      //   );
+
+
+
+      let response;
+
+        if (status === "DISCREPANCY") {
+           response = await jobsApiService.reUploadSingleDocument(formData,doc.verificationId );
+        }
+
+        if (status === "PROVISIONALLY_APPROVED") {
+            response = await jobsApiService.reUploadzonalSingleDocument(formData,doc.verificationId);
+        }
 
       if (response?.success === false) {
         // Show error under that specific field
@@ -140,10 +152,15 @@ const handleSubmit = async () => {
   }
 };
 
+if (!loading && docs.length === 0) {
+  return null;
+}
+
   return (
 
     <div className="mt-4 p-3 border rounded bg-light discrepancy-section">
       {loading && <Loader />}
+      
       <h6 className="section-title mb-3">
         Re-upload Rejected Documents
       </h6>
