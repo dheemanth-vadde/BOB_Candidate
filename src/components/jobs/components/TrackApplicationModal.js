@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import bulb from "../../../assets/bulb-icon.png";
 import DiscrepancyUploadSection from "./DiscrepancyUploadSection";
 
-const TrackApplicationModal = ({ show, onHide, job }) => {
+const TrackApplicationModal = ({ show, onHide, job,onDecisionSuccess }) => {
   const [activeKey, setActiveKey] = useState("0");
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = React.useRef();
@@ -389,6 +389,8 @@ const sorted = [...list].sort(
             applicationId={job?.application_id}
             status={currentSubStatus}
             onSuccess={fetchApplicationStatus}
+            onHide={onHide}
+            onDecisionSuccess={onDecisionSuccess}
           />
         )}
 

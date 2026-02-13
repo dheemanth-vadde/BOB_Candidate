@@ -96,11 +96,21 @@ const jobsApiService = {
 
   getRejectDocuments: (applicationId) =>
     candidateApi.get(`/rejected-documents/screening/get-rejected-doc/${applicationId}`),
+  getProvisionallyApprovedDocs: (applicationId) =>
+    candidateApi.get(`/rejected-documents/zonal/get-rejected-doc/${applicationId}`),
 
 
   
   reUploadSingleDocument: (formData, verificationId) =>
     candidateApi.post(`/rejected-documents/screening/upload-rejected-doc/${verificationId}`, formData, {
+      headers: {
+        "X-Client": "candidate",
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+
+    reUploadzonalSingleDocument: (formData, verificationId) =>
+    candidateApi.post(`/rejected-documents/zonal/upload-rejected-doc/${verificationId}`, formData, {
       headers: {
         "X-Client": "candidate",
         "Content-Type": "multipart/form-data",

@@ -13,7 +13,7 @@ const allowedTypes = [
   "image/png"
 ];
 
-const DiscrepancyUploadSection = ({ applicationId,status, onSuccess }) => {
+const DiscrepancyUploadSection = ({ applicationId, status, onSuccess, onHide, onDecisionSuccess }) => {
   const [docs, setDocs] = useState([]);
   const [uploads, setUploads] = useState({});
   const [loading, setLoading] = useState(false);
@@ -141,6 +141,13 @@ const handleSubmit = async () => {
     onSuccess();
     setUploads({});
     setErrors({});
+    
+    // Close modal and refresh page
+    if (onHide) {
+      onHide();
+    }
+    
+  onDecisionSuccess?.();
 
   } catch (error) {
     console.error("Upload Error:", error);

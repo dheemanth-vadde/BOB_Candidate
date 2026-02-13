@@ -387,6 +387,7 @@ const AppliedJobs = () => {
         show={showTrackModal}
         onHide={() => setShowTrackModal(false)}
         job={selectedJob}
+        onDecisionSuccess={() => fetchAppliedJobs(masterData)}
       />
 
       <OfferLetterModal
